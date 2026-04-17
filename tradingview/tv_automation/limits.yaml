@@ -1,0 +1,68 @@
+# Safety limits — second line of defense against LLM hallucinations or
+# compromised webhook paths. All mutating trading actions check these
+# BEFORE any DOM interaction. Edit this file to tighten or widen.
+#
+# IMPORTANT: these are stricter than the bridge.py equivalents because
+# the CLI trusts an LLM, while the bridge trusted signed Pine alerts.
+
+# Symbols allowed for paper trading. Use the bare ticker (no exchange
+# prefix); the check strips "NASDAQ:AAPL" → "AAPL" before comparing.
+# Futures carry their "!" suffix (e.g. "MNQ1!") as part of the bare symbol.
+allowed_symbols:
+  - AAPL
+  - MSFT
+  - NVDA
+  - TSLA
+  - SPY
+  - QQQ
+  - AMD
+  - META
+  - GOOGL
+  - AMZN
+  - MNQ1!       # Micro E-mini Nasdaq-100 futures (user's primary instrument)
+
+# Global default max contracts/shares per order. Any single order larger
+# is rejected with LimitViolationError before any click. Per-symbol
+# overrides below take precedence when present — e.g. futures should be
+# tighter than equities because 1 futures contract = much larger notional.
+max_qty: 100
+
+# Per-symbol max_qty overrides. Use bare ticker (no exchange prefix).
+# If a symbol isn't listed here, the global `max_qty` applies.
+# MNQ1! at 1 contract ≈ $53k notional at current ~26,700 Nasdaq — one is
+# plenty for smoke tests. Raise manually when running real strategies.
+per_symbol_max_qty:
+  MNQ1!: 1
+
+# Per-symbol minimum price increment (tick size). When present, every
+# price-bearing field (limit, stop, TP, SL) is validated as a multiple
+# of this value before the click — off-tick submissions get rejected
+# with a LimitViolationError showing the nearest valid price, instead
+# of being silently rounded by TV or rejected at the exchange with a
+# cryptic error.
+#
+# Equities default to $0.01 tick for stocks ≥ $1. Listing them here is
+# optional — symbols without an entry are NOT validated (passthrough),
+# so low-tick-precision typos on equities still go through silently.
+# Add to this list when tick alignment matters for your workflow.
+per_symbol_tick_size:
+  MNQ1!: 0.25     # CME micro futures — $0.50/tick
+
+# Require active broker label to include one of these substrings
+# (case-insensitive). If the Trading Panel shows any other broker,
+# all mutating order actions refuse. Defense-in-depth beyond the
+# broker-picker-visible check.
+required_broker_contains:
+  - paper
+
+# Velocity limit — minimum seconds that must elapse between mutating
+# trading actions (place_order, close_position). Prevents runaway LLM
+# loops from hammering TradingView or accidentally double-submitting.
+# Set to 0 to disable. Enforced per-action via a stamp file in /tmp.
+#
+# 5s (up from 2s) because MNQ1! futures trade 24/5 — a runaway loop
+# at 3am has no market-closed backstop, and each contract is ~$53k
+# notional. The stamp only writes on verified success (see
+# config.record_action), and our place poll is 10-16s, so 5s really
+# only throttles the failed-verify → retry storm path.
+min_seconds_between_orders: 5

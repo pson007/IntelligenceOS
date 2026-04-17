@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# tv — thin shim for invoking tv_automation CLIs from any directory.
+#
+# Usage:
+#     tv chart metadata
+#     tv chart set-symbol NVDA --tf 1h
+#     tv chart screenshot AAPL 1D
+#     tv trading positions
+#     tv trading place-order NVDA buy 1
+#     tv trading place-order NVDA buy 1 --dry-run
+#     tv trading close-position NVDA
+#     tv pine_editor apply path/to/file.pine
+#     tv pine_editor errors
+#     tv strategy_tester open
+#     tv strategy_tester metrics
+#     tv strategy_tester trades
+#     tv strategy_tester close
+#
+# Resolves the tradingview/ directory relative to this script (following
+# symlinks) so you can place a symlink at ~/bin/tv or /usr/local/bin/tv
+# and invoke from anywhere without worrying about CWD.
+
+set -e
+
+SCRIPT="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT" ]; do
+    DIR="$(cd -P "$(dirname "$SCRIPT")" && pwd)"
+    SCRIPT="$(readlink "$SCRIPT")"
+    [[ "$SCRIPT" != /* ]] && SCRIPT="$DIR/$SCRIPT"
+done
+TV_DIR="$(cd -P "$(dirname "$SCRIPT")" && pwd)"
+
+if [ $# -lt 1 ]; then
+    echo "Usage: tv <module> <subcommand> [args...]" >&2
+    echo "Modules: chart, trading, orders, alerts, layouts, indicators, pine_editor, strategy_tester, status, probes" >&2
+    echo "" >&2
+    echo "Examples:" >&2
+    echo "  tv chart metadata" >&2
+    echo "  tv trading positions" >&2
+    echo "  tv trading place-order NVDA buy 1 --dry-run" >&2
+    echo "  tv orders place-limit AAPL buy 1 170.50 --dry-run" >&2
+    echo "  tv orders list" >&2
+    echo "  tv strategy_tester metrics" >&2
+    exit 64
+fi
+
+MODULE="$1"
+shift
+
+# Python -m resolves packages via sys.path. Exporting PYTHONPATH ensures
+# the tv_automation package is findable no matter where `tv` is invoked
+# from — so this shim works whether called by path, via $PATH, or from a
+# symlinked location.
+export PYTHONPATH="$TV_DIR${PYTHONPATH:+:$PYTHONPATH}"
+
+# Special case: `tv probes probe_positions` → tv_automation.probes.probe_positions
+if [ "$MODULE" = "probes" ] && [ $# -ge 1 ]; then
+    SUB="$1"; shift
+    exec "$TV_DIR/.venv/bin/python" -m "tv_automation.probes.$SUB" "$@"
+fi
+
+exec "$TV_DIR/.venv/bin/python" -m "tv_automation.$MODULE" "$@"

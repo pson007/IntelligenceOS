@@ -1,0 +1,20 @@
+{
+  // Cloudflare Worker config. Deploy with `npm run deploy`.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tv-router",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Non-secret env. Override per-env if needed.
+  "vars": {
+    // The HTTPS URL of your Cloudflare Tunnel that points at the local bridge.
+    // Example: "https://tv-bridge.your-domain.com/webhook"
+    // For local dev, you can override with `wrangler dev --var BRIDGE_URL:http://localhost:8787/webhook`
+    "BRIDGE_URL": "https://REPLACE-ME.trycloudflare.com/webhook"
+  }
+
+  // Secrets (set via `wrangler secret put <NAME>`):
+  //   WEBHOOK_AUTH_TOKEN     — included in Pine Script JSON, validated here
+  //   BRIDGE_SHARED_SECRET   — used to HMAC-sign forwarded body (must match bridge .env)
+}

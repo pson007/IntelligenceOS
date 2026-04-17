@@ -1,0 +1,159 @@
+{
+  "before": {
+    "qtyEl": {
+      "tag": "div",
+      "outerHTML": "<div data-name=\"qtyEl\" class=\"apply-common-tooltip button-SXMXfs_Z qty-SXMXfs_Z\" title=\"Quantity\" style=\"--inline-background: rgba(15, 15, 15, 0.8);\"><span>1</span></div>",
+      "contentEditable": null,
+      "text": "1"
+    },
+    "focused": {
+      "tag": "body",
+      "dataName": null,
+      "contentEditable": null,
+      "type": null,
+      "value": null,
+      "text": "11\nAAPL\n1m\n2m\n3m\n5m\n15m\n1h\n4h\nD\nIndicators\nAlert\nReplay\n3Macro-Visual copy\nSave\n",
+      "outerHTML": "<body class=\"chart-page unselectable i-no-scroll\"><div id=\"layout-size-sensor\" style=\"position: fixed; inset: 0px; pointer-events: none; visibility: hidden;\"></div><div class=\"js-rootresizer__contents\" style=\"position: relative; width: 100%; height: 100%;\"><div data-qa-id=\"chart-page-grid-area\" class=\"panel-Iwy8U8Rs black-border-bigger-radius layout-with-border-radius\" style=\"position: absolute; o"
+    },
+    "allInputs": [
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      },
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      }
+    ],
+    "contentEditables": []
+  },
+  "after_click": {
+    "qtyEl": {
+      "tag": "div",
+      "outerHTML": "<div data-name=\"qtyEl\" class=\"apply-common-tooltip button-SXMXfs_Z qty-SXMXfs_Z activeQty-SXMXfs_Z\" style=\"--inline-background: rgba(15, 15, 15, 0.8);\"><span>1</span></div>",
+      "contentEditable": null,
+      "text": "1"
+    },
+    "focused": {
+      "tag": "input",
+      "dataName": null,
+      "contentEditable": null,
+      "type": null,
+      "value": "1",
+      "text": null,
+      "outerHTML": "<input id=\"calculator-input\" tabindex=\"0\" inputmode=\"decimal\" class=\"input-RUSovanF size-small-RUSovanF with-end-slot-RUSovanF\" data-qa-id=\"ui-lib-Input-input\" value=\"1\">"
+    },
+    "allInputs": [
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      },
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      },
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "1",
+        "name": "",
+        "placeholder": ""
+      }
+    ],
+    "contentEditables": []
+  },
+  "after_type": {
+    "qtyEl": {
+      "tag": "div",
+      "outerHTML": "<div data-name=\"qtyEl\" class=\"apply-common-tooltip button-SXMXfs_Z qty-SXMXfs_Z activeQty-SXMXfs_Z\" style=\"--inline-background: rgba(15, 15, 15, 0.8);\"><span>5</span></div>",
+      "contentEditable": null,
+      "text": "5"
+    },
+    "focused": {
+      "tag": "input",
+      "dataName": null,
+      "contentEditable": null,
+      "type": null,
+      "value": "5",
+      "text": null,
+      "outerHTML": "<input id=\"calculator-input\" tabindex=\"0\" inputmode=\"decimal\" class=\"input-RUSovanF size-small-RUSovanF with-end-slot-RUSovanF\" data-qa-id=\"ui-lib-Input-input\" value=\"5\">"
+    },
+    "allInputs": [
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      },
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      },
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "5",
+        "name": "",
+        "placeholder": ""
+      }
+    ],
+    "contentEditables": []
+  },
+  "after_tab": {
+    "qtyEl": {
+      "tag": "div",
+      "outerHTML": "<div data-name=\"qtyEl\" class=\"apply-common-tooltip button-SXMXfs_Z qty-SXMXfs_Z activeQty-SXMXfs_Z\" style=\"--inline-background: rgba(15, 15, 15, 0.8);\"><span>5</span></div>",
+      "contentEditable": null,
+      "text": "5"
+    },
+    "focused": {
+      "tag": "button",
+      "dataName": "qtyButtonCalculator--0.01",
+      "contentEditable": null,
+      "type": null,
+      "value": "",
+      "text": null,
+      "outerHTML": "<button data-value=\"-0.01\" data-name=\"qtyButtonCalculator--0.01\" tabindex=\"0\" class=\"buttonWithOperation-PEaHQGRr button-D4RPB3ZC xsmall-D4RPB3ZC gray-D4RPB3ZC secondary-D4RPB3ZC no-corner-top-left-D4RPB3ZC no-corner-top-right-D4RPB3ZC no-corner-bottom-right-D4RPB3ZC no-corner-bottom-left-D4RPB3ZC apply-overflow-tooltip apply-overflow-tooltip--check-children-recursively apply-overflow-tooltip--all"
+    },
+    "allInputs": [
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      },
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "",
+        "name": "",
+        "placeholder": "Find existing chat"
+      },
+      {
+        "dataName": null,
+        "type": "text",
+        "value": "5",
+        "name": "",
+        "placeholder": ""
+      }
+    ],
+    "contentEditables": []
+  }
+}

@@ -1,0 +1,65 @@
+// =====================================================================
+// Webhook Alert Template — sends signed signals to your Cloudflare Worker
+// =====================================================================
+//
+// HOW TO USE:
+//   1. Paste this script into TradingView's Pine Editor → Save → Add to chart.
+//   2. Right-click the chart → "Add alert..." (or alt+A).
+//   3. In the alert dialog:
+//        - Condition:    "Webhook Alert Template" → "Any alert() function call"
+//        - Message:      Use the TEMPLATE below (substitute auth_token & qty)
+//        - Webhook URL:  https://tv-router.<your-account>.workers.dev/webhook
+//        - Tick "Webhook URL"
+//   4. Save. The alert will fire on every confirmed bar close where the
+//      crossover condition triggers.
+//
+// JSON MESSAGE TEMPLATE (paste into the alert "Message" field):
+//
+//   {
+//     "auth_token": "PASTE_YOUR_WEBHOOK_AUTH_TOKEN_HERE",
+//     "symbol": "{{ticker}}",
+//     "side": "{{strategy.order.action}}",
+//     "qty": 1
+//   }
+//
+// Notes:
+//   - {{ticker}} → "AAPL", "BTCUSD", etc. — TradingView fills it.
+//   - {{strategy.order.action}} → "buy" or "sell" — set by strategy.entry/exit.
+//   - Strategy alerts only fire on `strategy.entry` / `strategy.close` calls,
+//     never on past (repainted) bars when `calc_on_every_tick=false`.
+//
+// =====================================================================
+
+//@version=5
+strategy("Webhook Alert Template", overlay=true,
+     default_qty_type=strategy.fixed, default_qty_value=1,
+     calc_on_every_tick=false, process_orders_on_close=true)
+
+// --- Inputs ----------------------------------------------------------
+fastLen = input.int(20, "Fast SMA length", minval=1)
+slowLen = input.int(50, "Slow SMA length", minval=1)
+
+// --- Calculations ----------------------------------------------------
+fastMA  = ta.sma(close, fastLen)
+slowMA  = ta.sma(close, slowLen)
+goLong  = ta.crossover(fastMA, slowMA)
+goShort = ta.crossunder(fastMA, slowMA)
+
+// --- Plots -----------------------------------------------------------
+plot(fastMA, "Fast", color=color.new(color.aqua, 0))
+plot(slowMA, "Slow", color=color.new(color.orange, 0))
+
+// --- Orders (these trigger {{strategy.order.action}} = "buy"/"sell") --
+if goLong
+    strategy.entry("Long", strategy.long)
+
+if goShort
+    strategy.close("Long")
+
+// Alert messages — fired explicitly so a single alert subscription sees
+// both entries and exits. The string here is the FALLBACK message; the
+// actual JSON is configured in the alert dialog (see header).
+if goLong
+    alert("buy signal", alert.freq_once_per_bar_close)
+if goShort
+    alert("sell signal", alert.freq_once_per_bar_close)

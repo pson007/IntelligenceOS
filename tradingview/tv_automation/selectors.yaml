@@ -1,0 +1,453 @@
+# TradingView DOM selector registry — single source of truth.
+#
+# Structure:
+#   <surface>:
+#     <role>:
+#       - '<selector 1>'   # tried first
+#       - '<selector 2>'   # fallback
+#
+# Probes under tv_automation/probes/ regenerate these lists. When TV
+# ships a UI change and a selector drifts, a SelectorDriftError fires
+# with the role name — re-run the probe for that surface and update
+# the entry here.
+#
+# Keep selectors ordered from most-specific/stable to least — typically
+# [data-name] first, then aria-label, then class-prefix fallbacks.
+
+chart:
+  canvas:
+    - 'canvas'
+  center_pane:
+    - '.chart-container'
+    - '.layout__area--center'
+  header_symbol_button:
+    - '#header-toolbar-symbol-search'
+    - 'button[aria-label="Symbol Search"]'
+  header_interval_button:
+    - '#header-toolbar-intervals button[aria-label^="Change interval"]'
+    - 'button[id="header-toolbar-intervals"]'
+  header_interval_active:
+    - '#header-toolbar-intervals button[aria-pressed="true"]'
+
+trading_panel:
+  # Inline quick-trade bar at the top of the chart — verified live.
+  quick_trade_qty:
+    - '[data-name="qtyEl"]'
+  quick_trade_qty_input:
+    - 'input#calculator-input'
+  quick_trade_buy:
+    - '[data-name="buy-order-button"]'
+  quick_trade_sell:
+    - '[data-name="sell-order-button"]'
+  broker_picker_dialog:
+    - '[data-name="select-broker-dialog"]'
+  paper_trading_tile:
+    - 'div[role="dialog"] >> text=/^Paper Trading$/'
+  order_ticket:
+    - '[data-name="order-dialog"]'
+    - '[data-name="order-ticket"]'
+    - '[data-name="iep-dialog-content"]'
+
+  # Account Manager expand/collapse toggle — the broker chip is this
+  # button. Text is the broker name ("Paper Trading" when paper is on).
+  # Verified via probe_positions.py on 2026-04-16.
+  account_manager_toggle:
+    - 'button[aria-label="Open Account Manager"]'
+    - 'button[aria-label="Close Account Manager"]'
+  broker_chip:
+    - 'button[aria-label="Open Account Manager"]'
+    - 'button[aria-label="Close Account Manager"]'
+
+  # Tabs inside the expanded Account Manager. They have role="tab" but
+  # neither data-name nor aria-label, so we must match by visible text.
+  # Note: the Orders tab sometimes reads "Orders 1" (with a count badge);
+  # `has-text` substring match still resolves it correctly.
+  positions_tab:
+    - '[role="tab"]:has-text("Positions")'
+  orders_tab:
+    - '[role="tab"]:has-text("Orders")'
+  order_history_tab:
+    - '[role="tab"]:has-text("Order History")'
+  balance_history_tab:
+    - '[role="tab"]:has-text("Balance History")'
+  trading_journal_tab:
+    - '[role="tab"]:has-text("Trading Journal")'
+
+  # Orders sub-filter row (visible below the main tabs when Orders is
+  # active). TV added this in a recent build. The sub-tab row has a
+  # DOM-cache bug: clicking a sub-tab that's ALREADY selected doesn't
+  # refresh its rows. Workaround: click a different sub-tab first, then
+  # the target. `_ensure_orders_tab_active` implements this.
+  orders_working_subtab:
+    - '[role="tab"]:has-text("Working")'
+  orders_all_subtab:
+    - '[role="tab"]:has-text("All"):visible'
+  orders_filled_subtab:
+    - '[role="tab"]:has-text("Filled")'
+  orders_cancelled_subtab:
+    - '[role="tab"]:has-text("Cancelled")'
+  orders_rejected_subtab:
+    - '[role="tab"]:has-text("Rejected")'
+
+  # Positions table — broker-prefixed data-name makes this unambiguous.
+  # If a real broker ever connects, its table would be e.g. "IB.positions-table";
+  # our config guard prevents us from touching non-paper brokers.
+  positions_table:
+    - '[data-name="Paper.positions-table"]'
+  orders_table:
+    - '[data-name="Paper.orders-table"]'
+  order_history_table:
+    - '[data-name="Paper.history-table"]'
+  positions_rows:
+    - '[data-name="Paper.positions-table"] tbody tr:not(.emptyStateRow-pnigL71h)'
+    - '[data-name="Paper.positions-table"] tr.ka-row'
+  positions_empty_state:
+    - '[data-name="Paper.positions-table"] .emptyStateRow-pnigL71h'
+  # Column <th> elements carry stable data-names like "symbol-column",
+  # "side-column", "qty-column", "pl-column". Use for index→name mapping
+  # when scraping rows.
+  positions_column_header:
+    - '[data-name="Paper.positions-table"] th[data-name$="-column"]'
+
+pine_editor:
+  open_button:
+    - '[data-name="pine-dialog-button"]'
+  monaco:
+    - '.pine-editor-monaco'
+  monaco_textarea:
+    - '.pine-editor-monaco textarea'
+  save_button:
+    - 'button[class*="saveButton-"]'
+  add_to_chart_button:
+    - 'button[title="Add to chart"]'
+  # Pine console is a <table> inside the Pine Editor showing a log of
+  # Compiling..., Compiled., and Error/Warning rows. Rows carry stable
+  # class prefixes `error-` or `warning-` (with a rotating hash suffix).
+  # Verified 2026-04-16 against a deliberately broken script.
+  error_row:
+    - 'tr[class*="error-"]'
+  warning_row:
+    - 'tr[class*="warning-"]'
+  # Older selector retained for back-compat; no longer matched in current UI.
+  error_console:
+    - '[data-name="pine-editor-console"]'
+    - '[class*="consoleContainer"]'
+
+strategy_tester:
+  # Verified 2026-04-16 via probe_strategy_tester against a live strategy.
+  # TV calls this surface "Strategy Report" internally — not "Strategy
+  # Tester" or "Backtesting". The button lives in the right-side toolbar.
+  open_button:
+    - 'button[aria-label="Open Strategy Report"]'
+  # The report opens as a full-screen overlay (not a bottom panel) with
+  # two tabs: Metrics and List of trades. Neither tab has a data-name or
+  # aria-label, so we match by visible text.
+  metrics_tab:
+    - '[role="tab"]:has-text("Metrics")'
+  list_of_trades_tab:
+    - '[role="tab"]:has-text("List of trades")'
+  # The report's own settings gear — stable data-name.
+  report_settings_button:
+    - 'button[data-name="report-settings"]'
+  # Performance tables inside the Metrics tab — multiple tables with
+  # consistent "Metric / All / Long / Short" header shape. We select
+  # them collectively and concatenate.
+  performance_tables:
+    - 'table:has(th:has-text("Metric")):has(th:has-text("All"))'
+
+layouts:
+  # Header toolbar "Manage layouts" button — opens the layouts
+  # dropdown (Save / Rename / Create new / Open / RECENTLY USED …).
+  manage_button:
+    - '[data-name="save-load-menu"]'
+
+  # The dropdown itself appears as a floating menuBox after clicking
+  # the manage button. Menu items are plain <div>s with no stable
+  # data-name; we address them by exact visible text (including TV's
+  # Unicode ellipsis U+2026 for truncated labels).
+  dropdown_container:
+    - '[class*="menuBox-"]'
+
+  # The Open Layout… full picker dialog. Contains every saved layout
+  # (not just the last ~8 "RECENTLY USED"). Row structure encodes
+  # name on line 1 and "SYMBOL, INTERVAL" on line 2.
+  open_layout_dialog:
+    - 'div[class*="dialog-"]:has-text("LAYOUT NAME"):visible'
+
+  # Search box at the top of the picker.
+  open_layout_search:
+    - 'div[class*="dialog-"] input[placeholder*="Search" i]'
+
+alerts_panel:
+  # Right-sidebar alerts widget. Icon toggles the widgetbar open/closed.
+  sidebar_icon:
+    - '[data-name="alerts"]'
+  # "+" button at top of the alerts panel — opens the Create Alert dialog.
+  # IMPORTANT: the panel must be visible first. The element is a <div>,
+  # not a <button>; we use data-name directly.
+  set_alert_button:
+    - '[data-name="set-alert-button"]'
+  empty_state:
+    - '[data-name="alerts-empty-state"]'
+  # Alerts/Log tabs inside the widget.
+  alerts_tab:
+    - 'button:has-text("Alerts"):near([data-name="set-alert-button"])'
+    - '[role="tab"]:has-text("Alerts")'
+  log_tab:
+    - '[role="tab"]:has-text("Log")'
+  # Each alert row in the list (populated after at least one alert exists).
+  # TV uses hashed classes; we fall back to child queries from the
+  # widgetbar root when reading the list programmatically.
+
+alerts_dialog:
+  # Create Alert dialog — styled as a popup, NOT role=dialog. Class
+  # prefixes `dialog-` and `popup-` both carry hashes; we match on a
+  # distinctive child ("Create alert on") to disambiguate from other
+  # popups that share the prefix.
+  container:
+    # Playwright `:visible` is redundant with our `first_visible()`
+    # and sometimes mismatches when dialog has just finished
+    # animating in. The has-text filter disambiguates from other
+    # popups that share the dialog-/popup- class prefixes.
+    - 'div[class*="dialog-"][class*="popup-"]:has-text("Create alert on")'
+  # Final submit — class prefix `submitBtn-` is stable. `Create` text
+  # is a reliable fallback.
+  submit_button:
+    - 'div[class*="dialog-"] button[class*="submitBtn-"]'
+    - 'div[class*="dialog-"] button[type="submit"]:has-text("Create")'
+  cancel_button:
+    - 'div[class*="dialog-"] button:has-text("Cancel")'
+
+  # Condition row: "Price" dropdown chooses between Price / Indicator
+  # condition types. The clickable widget is a <span role="button">
+  # sitting inside a <div class="select-VfhgWFqC container-VfhgWFqC">.
+  condition_type_button:
+    - 'div[class*="dialog-"] div[class*="select-VfhgWFqC"] span[role="button"]'
+
+  # Operator dropdown: "Crossing" / "Crossing Up" / "Crossing Down"
+  # (only 3 for Price condition type). Uses class-prefixed button.
+  operator_button:
+    - 'div[class*="dialog-"] div[class*="dropdownBlock-lFPR_Qij"] button'
+    - 'div[class*="dialog-"] button[class*="button-pzM0w4il"]'
+
+  # Value input — the threshold price. Uses `input-RUSovanF` prefix.
+  value_input:
+    - 'div[class*="dialog-"] input[class*="input-RUSovanF"]'
+
+  # Trigger dropdown — "Once only" / "Every time". Class prefix
+  # `alertButton-` is distinctive; it wraps both this and the expiry
+  # button, but Trigger is the first.
+  trigger_button:
+    - 'div[class*="dialog-"] button[class*="alertButton-"]:nth-of-type(1)'
+
+  # Expiration button. Text is a rendered date like "May 17, 2026 at 17:06".
+  expiration_button:
+    - 'div[class*="dialog-"] button[class*="alertButton-"]:nth-of-type(2)'
+
+  # Expandable "Edit message" section — button whose text is the
+  # default message pattern like "SYMBOL OP VALUE". Opens a sub-modal
+  # with Alert Name input + Message textarea.
+  message_button:
+    - 'div[class*="dialog-"] button[class*="button-KijOUKJc"]:nth-of-type(1)'
+
+  # Expandable "Edit notifications" section — button whose visible
+  # text lists enabled notification types (always contains "Webhook"
+  # when any notification is configured). Opens a sub-modal.
+  notifications_button:
+    - 'div[class*="dialog-"] button[class*="button-KijOUKJc"]:has-text("Webhook")'
+    - 'div[class*="dialog-"] button[class*="button-KijOUKJc"]:nth-of-type(2)'
+
+  # Edit Message sub-modal — reached by clicking `message_button` in
+  # the parent dialog. Identified by its distinctive class-prefix
+  # `messagePopup-` on the popup wrapper. Every field has a stable
+  # `id=` attribute, which is the preferred target.
+  edit_message_popup:
+    - 'div[class*="messagePopup-"]'
+  edit_message_name_input:
+    - 'input#alert-name'
+  edit_message_textarea:
+    - 'textarea#alert-message'
+  # Apply button inside the Edit Message sub-modal (distinct from
+  # the parent Create button).
+  edit_message_apply:
+    - 'div[class*="messagePopup-"] button:has-text("Apply")'
+
+  # Edit Notifications sub-modal — the container has no distinctive
+  # class-prefix (same `dialog-`/`popup-` as parent), so we identify
+  # it by the title text. The webhook URL input has a stable id; each
+  # notification checkbox is identified by its sibling label text.
+  notif_popup:
+    # The Notifications sub-modal shares the generic
+    # `dialog-`/`popup-` classes with the parent. Disambiguate by
+    # text unique to the sub-modal body — "Notify in app" appears
+    # only here, while the parent has the word "Notifications" in
+    # its section label.
+    - 'div[class*="popup-"]:has-text("Notify in app")'
+  notif_webhook_url_input:
+    - 'input#webhook-url'
+  # Checkbox selectors use xpath to walk from the distinctive label
+  # text down to the nearest checkbox input. Labels are stable across
+  # the 2025-2026 builds.
+  notif_toggle_app:
+    - 'xpath=//*[normalize-space(text())="Notify in app"]/ancestor::*[.//input[@type="checkbox"]][1]//input[@type="checkbox"]'
+  notif_toggle_toast:
+    - 'xpath=//*[contains(text(),"toast notification")]/ancestor::*[.//input[@type="checkbox"]][1]//input[@type="checkbox"]'
+  notif_toggle_email:
+    - 'xpath=//*[normalize-space(text())="Send email"]/ancestor::*[.//input[@type="checkbox"]][1]//input[@type="checkbox"]'
+  notif_toggle_webhook:
+    - 'xpath=//*[normalize-space(text())="Webhook URL"]/ancestor::*[.//input[@type="checkbox"]][1]//input[@type="checkbox"]'
+  notif_toggle_sound:
+    - 'xpath=//*[normalize-space(text())="Play sound"]/ancestor::*[.//input[@type="checkbox"]][1]//input[@type="checkbox"]'
+  notif_toggle_plain_text:
+    - 'xpath=//*[normalize-space(text())="Send plain text"]/ancestor::*[.//input[@type="checkbox"]][1]//input[@type="checkbox"]'
+  # Sub-modal Apply button.
+  notif_apply:
+    - 'div[class*="popup-"]:has-text("Notify in app") button:has-text("Apply")'
+
+indicators_dialog:
+  # Top-header button that opens the indicators picker dialog.
+  # IMPORTANT: this button is responsive — collapses to icon-only at
+  # narrow widths and may be "not visible" to Playwright even when
+  # rendered. The more reliable entry is the `/` keyboard shortcut,
+  # which TV documents and always works when the chart canvas has
+  # focus. Both paths are kept here.
+  open_button:
+    - '[data-name="open-indicators-dialog"]:visible'
+    - '[data-name="open-indicators-dialog"]'
+  # The dialog wrapper carries a stable data-name.
+  dialog:
+    - '[data-name="indicators-dialog"]'
+    - '[data-dialog-name="Indicators, metrics, and strategies"]'
+  # Search input inside the dialog — no data-name, identify by
+  # placeholder. TV's class prefix is `input-RUSovanF`.
+  search_input:
+    - '[data-name="indicators-dialog"] input[placeholder="Search"]'
+    - '[data-name="indicators-dialog"] input'
+  # Result rows inside the dialog. Verified 2026-04-17.
+  result_rows:
+    - '[data-name="indicators-dialog"] [data-role="list-item"]'
+
+chart_legend:
+  # The chart's top-left indicator legend. Each indicator/strategy
+  # is a `legend-source-item`. The legend main wrapper is the
+  # `legend` data-qa-id (outer toolbar).
+  container:
+    - '[data-qa-id="legend"]'
+  source_item:
+    - '[data-qa-id="legend-source-item"]'
+  # Per-row hover-revealed action buttons. Data-qa-ids are stable
+  # across 2025-2026 builds; visibility flips on hover.
+  action_show_hide:
+    - '[data-qa-id="legend-show-hide-action"]'
+  action_settings:
+    - '[data-qa-id="legend-settings-action"]'
+  action_delete:
+    - '[data-qa-id="legend-delete-action"]'
+  action_more:
+    - '[data-qa-id="legend-more-action"]'
+  # Expand/collapse toggle for the indicators legend drawer. When
+  # the legend is "closed" (default on many layouts), all
+  # `legend-source-item` descendants have width:0, so clicks on
+  # their buttons are no-ops until the drawer is expanded.
+  toggler:
+    - '[data-qa-id="legend-toggler"]'
+
+order_panel:
+  # The on-chart order ticket is a persistent right-side panel, not a
+  # modal dialog. Opened by default on charts once Paper Trading is
+  # activated. Holds form state across interactions — SHIFT+click on the
+  # chart pre-fills the Limit tab + price; explicit field sets work too.
+  # Verified 2026-04-17 via probe_orders on MNQ1!.
+  panel:
+    - '[data-name="order-panel"]'
+  # Distinctive inner wrapper with the only aria-label in the panel.
+  ticket_inner:
+    - '[data-name="order-panel"] div[aria-label="Order ticket"]'
+
+  # Side selection toggles — clickable divs with role=button.
+  side_sell:
+    - '[data-name="side-control-sell"]'
+  side_buy:
+    - '[data-name="side-control-buy"]'
+
+  # Order-type tabs. Note: TV uses `id` (not `data-name`) here.
+  type_tab_market:
+    - '[data-name="order-panel"] button#Market'
+  type_tab_limit:
+    - '[data-name="order-panel"] button#Limit'
+  type_tab_stop:
+    - '[data-name="order-panel"] button#Stop'
+
+  # Stable-id price inputs — only visible for the matching tab.
+  limit_price_input:
+    - 'input#absolute-limit-price-field'
+  stop_price_input:
+    - 'input#absolute-stop-price-field'
+
+  # Quantity. The "Units" dropdown toggles between Units / Contracts /
+  # Shares / Risk / Amount. Risk and Amount modes silently reinterpret
+  # the qty field — e.g. qty=1 becomes "$1 of risk" instead of 1
+  # contract. We *assert* the mode is a native-unit value before
+  # submit; we don't auto-switch (TV's dropdown uses a hard-to-target
+  # portal).
+  quantity_input:
+    - '[data-name="order-panel"] input#quantity-field'
+  quantity_type_dropdown:
+    - '[data-name="order-panel"] button#quantity-dropdown-types'
+
+  # Duration: GTC / Day / Week / etc. dropdown.
+  duration_dropdown:
+    - '[data-name="order-panel"] button#duration-select-input'
+
+  # RTH-related checkboxes in the "Extra settings" section. Only
+  # present for equities (futures like MNQ1! don't have an RTH
+  # distinction — globex is a continuous session). Anchored by
+  # sibling label text; the inputs themselves have no stable ids.
+  fill_outside_rth_toggle:
+    - 'xpath=//*[contains(text(),"Fill order outside")]/preceding::input[@type="checkbox"][1]'
+    - 'xpath=//*[contains(text(),"Fill order outside")]/following::input[@type="checkbox"][1]'
+  fill_tp_outside_rth_toggle:
+    - 'xpath=//*[contains(text(),"Fill take profit outside")]/preceding::input[@type="checkbox"][1]'
+    - 'xpath=//*[contains(text(),"Fill take profit outside")]/following::input[@type="checkbox"][1]'
+
+  # TP/SL: no stable id/data-name. Anchor by adjacent label button.
+  # These elements use xpath to find the first <input> following the
+  # label button. Works because the layout is rigid in TV's React tree.
+  take_profit_toggle:
+    # The switch input that enables the TP section.
+    - 'xpath=//button[normalize-space()="Take profit, price"]/preceding::input[@type="checkbox"][1]'
+  take_profit_price:
+    - 'xpath=//button[normalize-space()="Take profit, price"]/following::input[1]'
+  stop_loss_toggle:
+    - 'xpath=//button[normalize-space()="Stop loss, price"]/preceding::input[@type="checkbox"][1]'
+  stop_loss_price:
+    - 'xpath=//button[normalize-space()="Stop loss, price"]/following::input[1]'
+
+  # The submit button. Its visible text is computed from panel state —
+  # e.g. "Buy\n2 MNQ1! @ 26,776.00 LIMIT" once fully configured, or
+  # "Start creating order" when not. We read the text BEFORE clicking
+  # to verify side / qty / symbol / price / type all match our intent.
+  submit_button:
+    - '[data-name="place-and-modify-button"]'
+
+  # When the panel isn't visible at all (e.g. collapsed by user, or
+  # layout defaulted it closed), the header "Trade" button toggles it.
+  # Verified 2026-04-17: one click = open when hidden, close when visible.
+  # Multiple "Trade" buttons exist on the page (header, bottom bar); we
+  # target the visible one via Playwright's :visible filter at call site.
+  header_trade_toggle:
+    - 'button:has-text("Trade")'
+
+  # On-chart order line cancel X. Drawn on canvas, NOT DOM. Cancel must
+  # go through the orders-table row button instead. Kept here for reference.
+  # on_chart_cancel_x: NOT IN DOM — canvas only.
+
+  # Per-row cancel button in the orders-table (settings-column). This
+  # resolves ROADMAP §5a: the button is always present in DOM regardless
+  # of hover state; the "empty in static DOM" was observed against an
+  # empty orders table. When rows exist, `close-settings-cell-button`
+  # with aria-label "Close" is the stable cancel handle.
+  row_cancel_button:
+    - '[data-name="Paper.orders-table"] tr [data-name="close-settings-cell-button"]'
+  row_protect_button:
+    - '[data-name="Paper.orders-table"] tr [data-name="edit-settings-cell-button"]'

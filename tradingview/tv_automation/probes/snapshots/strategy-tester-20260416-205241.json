@@ -1,0 +1,1536 @@
+{
+  "buttons": [
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Compare symbols",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 minute",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "2 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "3 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "5 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "15 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 hour",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "4 hours",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 day",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Chart interval",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Candles",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "open-indicators-dialog",
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "show-favorite-indicators",
+      "ariaLabel": "Favorite indicators",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Indicator templates",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Create alert",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Bar replay",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Undo insert Webhook Alert Template",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Layout setup",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Save all charts for all symbols and intervals on your layout",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Manage layouts",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Quick search",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Fullscreen mode",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Take a snapshot",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Share your idea with the trade community",
+      "text": "Publish",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Compare symbols",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 minute",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "2 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "3 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "5 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "15 minutes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 hour",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "4 hours",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 day",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Chart interval",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Candles",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "open-indicators-dialog",
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "show-favorite-indicators",
+      "ariaLabel": "Favorite indicators",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Indicator templates",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Create alert",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Bar replay",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Undo insert Webhook Alert Template",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Layout setup",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Save all charts for all symbols and intervals on your layout",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Manage layouts",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Quick search",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Fullscreen mode",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Take a snapshot",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Share your idea with the trade community",
+      "text": "Publish",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "AAPL",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Compare symbols",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 minute",
+      "text": "1m",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "2 minutes",
+      "text": "2m",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "3 minutes",
+      "text": "3m",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "5 minutes",
+      "text": "5m",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "15 minutes",
+      "text": "15m",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 hour",
+      "text": "1h",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "4 hours",
+      "text": "4h",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "1 day",
+      "text": "D",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Chart interval",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Candles",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "open-indicators-dialog",
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "show-favorite-indicators",
+      "ariaLabel": "Favorite indicators",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Indicator templates",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Create alert",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Bar replay",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Undo insert Webhook Alert Template",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Layout setup",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Save all charts for all symbols and intervals on your layout",
+      "text": "Money Print\nSave",
+      "visible": true
+    },
+    {
+      "dataName": "save-load-menu",
+      "ariaLabel": "Manage layouts",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "header-toolbar-quick-search",
+      "ariaLabel": "Quick search",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "header-toolbar-properties",
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "header-toolbar-fullscreen",
+      "ariaLabel": "Fullscreen mode",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Take a snapshot",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Share your idea with the trade community",
+      "text": "Publish",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Trade",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Share your idea with the trade community",
+      "text": "Publish",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Cross",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Cursors",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Trendline",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Trend tools",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Fib retracement",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Gann and Fibonacci tools",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "XABCD pattern",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Patterns",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Long position",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Forecasting and measurement tools",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Brush",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Geometric shapes",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Text",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Annotation tools",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Icon",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Icons",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "measure",
+      "ariaLabel": "Measure",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "zoom",
+      "ariaLabel": "Zoom in",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Magnet mode snaps drawings placed near price bars to the closest OHLC value",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Magnets",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "drawginmode",
+      "ariaLabel": "Keep drawing",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "lockAllDrawings",
+      "ariaLabel": "Lock all drawings",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide all drawings",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide options",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "New drawings will not be synced",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sync drawings options",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove objects",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove options",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show Favorite Drawing Tools Toolbar",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Change symbol",
+      "text": "AAPL",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Change symbol",
+      "text": "Apple Inc",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Change interval",
+      "text": "1",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Unflag symbol",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Symbol/interval chart syncing",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "More",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show indicators legend",
+      "text": "6",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show interval settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "More",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show interval settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "More",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show interval settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "More",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show interval settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "More",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show interval settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "More",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Hide",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Show interval settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Settings",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Remove",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "More",
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Toggle auto scale",
+      "text": "A",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Toggle log scale",
+      "text": "L",
+      "visible": true
+    },
+    {
+      "dataName": "date-ranges-menu",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-1D",
+      "ariaLabel": "1 day in 1 minute intervals",
+      "text": "1D",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-5D",
+      "ariaLabel": "5 days in 5 minutes intervals",
+      "text": "5D",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-1M",
+      "ariaLabel": "1 month in 30 minutes intervals",
+      "text": "1M",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-3M",
+      "ariaLabel": "3 months in 1 hour intervals",
+      "text": "3M",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-6M",
+      "ariaLabel": "6 months in 2 hours intervals",
+      "text": "6M",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-YTD",
+      "ariaLabel": "Year to day in 1 day intervals",
+      "text": "YTD",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-12M",
+      "ariaLabel": "1 year in 1 day intervals",
+      "text": "1Y",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-60M",
+      "ariaLabel": "5 years in 1 week intervals",
+      "text": "5Y",
+      "visible": true
+    },
+    {
+      "dataName": "date-range-tab-ALL",
+      "ariaLabel": "All data in 1 month intervals",
+      "text": "All",
+      "visible": true
+    },
+    {
+      "dataName": "go-to-date",
+      "ariaLabel": "Go to",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "time-zone-menu",
+      "ariaLabel": "Timezone",
+      "text": "08:52:40 PM UTC-4",
+      "visible": true
+    },
+    {
+      "dataName": "session-menu",
+      "ariaLabel": "Regular trading hours",
+      "text": "RTH",
+      "visible": true
+    },
+    {
+      "dataName": "adj",
+      "ariaLabel": "Adjust data for dividends",
+      "text": "ADJ",
+      "visible": true
+    },
+    {
+      "dataName": "base",
+      "ariaLabel": "Watchlist, details, and news",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "alerts",
+      "ariaLabel": "Alerts",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "object_tree",
+      "ariaLabel": "Object tree and data window",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "union_chats",
+      "ariaLabel": "Chats",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "screener-dialog-button",
+      "ariaLabel": "Screeners",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "pine-dialog-button",
+      "ariaLabel": "Pine",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "calendar-dialog-button",
+      "ariaLabel": "Calendars",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "community-hub-button",
+      "ariaLabel": "Community",
+      "text": "99+",
+      "visible": true
+    },
+    {
+      "dataName": "notifications-button",
+      "ariaLabel": "Notifications",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Products",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "help-button",
+      "ariaLabel": "Help Center",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Public",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Private",
+      "visible": false
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Open Strategy Report",
+      "text": "Strategy Report",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Open Account Manager",
+      "text": "Paper Trading",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Trade",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Open Strategy Report",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Open Account Manager",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toggle-visibility-button",
+      "ariaLabel": "Open panel",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toggle-maximize-button",
+      "ariaLabel": "Maximize panel",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-orders",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-orders",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-alerts",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-alerts",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-alertsFireControl",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-alertsFireControl",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-alertsWatchlistFireControl",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-alertsWatchlistFireControl",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-trading-notifications",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-trading-notifications",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-gift",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-gift",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-force-password-change",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-force-password-change",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-chat-message",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-chat-message",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-three-month-offer",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-account-deletion-initiated",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-account-deletion-initiated",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-account-deletion-cancelled",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-account-deletion-cancelled",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-support-portal",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-support-portal",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-global-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-global-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-news-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-news-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-chart_warning",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-chart_warning",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-chart_info",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-chart_info",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-x-share-group",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-x-share-group",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-bf-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-bf-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-coupon-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-coupon-notification",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-cookies",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-expand-button-charting-ad",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": "toast-group-close-button-charting-ad",
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Move overlay to split-view",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Close",
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Publish script",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "5 \u2219 Today, 20:52",
+      "visible": true
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Line 66, Col 1",
+      "visible": true
+    }
+  ],
+  "tabs": [
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Public"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Private"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Strategy Report"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Paper Trading\nTrade"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": ""
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "text": ""
+    }
+  ],
+  "tables": [
+    {
+      "index": 0,
+      "headers": [],
+      "rowCount": 20
+    }
+  ],
+  "inputs": [
+    {
+      "type": "text",
+      "name": "",
+      "dataName": null,
+      "placeholder": "Find existing chat",
+      "ariaLabel": null
+    },
+    {
+      "type": "text",
+      "name": "",
+      "dataName": null,
+      "placeholder": "Find existing chat",
+      "ariaLabel": null
+    },
+    {
+      "type": "text",
+      "name": "",
+      "dataName": null,
+      "placeholder": "",
+      "ariaLabel": "Press desired key combination and then press ENTER."
+    }
+  ]
+}

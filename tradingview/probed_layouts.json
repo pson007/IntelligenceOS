@@ -1,0 +1,411 @@
+{
+  "before_top": [
+    {
+      "dataName": "open-indicators-dialog",
+      "tag": "button",
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "title": null,
+      "text": "",
+      "x": 515,
+      "y": 0,
+      "w": 111,
+      "h": 38
+    },
+    {
+      "dataName": "show-favorite-indicators",
+      "tag": "button",
+      "ariaLabel": "Favorite indicators",
+      "title": null,
+      "text": "",
+      "x": 626,
+      "y": 0,
+      "w": 24,
+      "h": 38
+    },
+    {
+      "dataName": "open-indicators-dialog",
+      "tag": "button",
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "title": null,
+      "text": "",
+      "x": 515,
+      "y": 0,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "dataName": "show-favorite-indicators",
+      "tag": "button",
+      "ariaLabel": "Favorite indicators",
+      "title": null,
+      "text": "",
+      "x": 553,
+      "y": 0,
+      "w": 24,
+      "h": 38
+    },
+    {
+      "dataName": "open-indicators-dialog",
+      "tag": "button",
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "title": null,
+      "text": "Indicators",
+      "x": 567,
+      "y": 0,
+      "w": 111,
+      "h": 38
+    },
+    {
+      "dataName": "show-favorite-indicators",
+      "tag": "button",
+      "ariaLabel": "Favorite indicators",
+      "title": null,
+      "text": "",
+      "x": 678,
+      "y": 0,
+      "w": 24,
+      "h": 38
+    },
+    {
+      "dataName": "save-load-menu",
+      "tag": "button",
+      "ariaLabel": "Manage layouts",
+      "title": null,
+      "text": "",
+      "x": 1157,
+      "y": 0,
+      "w": 24,
+      "h": 38
+    },
+    {
+      "dataName": "header-toolbar-quick-search",
+      "tag": "button",
+      "ariaLabel": "Quick search",
+      "title": null,
+      "text": "",
+      "x": 1281,
+      "y": 0,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "dataName": "header-toolbar-properties",
+      "tag": "button",
+      "ariaLabel": "Settings",
+      "title": null,
+      "text": "",
+      "x": 1319,
+      "y": 0,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "dataName": "header-toolbar-fullscreen",
+      "tag": "button",
+      "ariaLabel": "Fullscreen mode",
+      "title": null,
+      "text": "",
+      "x": 1357,
+      "y": 0,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "dataName": "linetool-group-cursors",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "",
+      "x": 0,
+      "y": 48,
+      "w": 52,
+      "h": 38
+    },
+    {
+      "dataName": "price-axis-Z",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "USD\nA\nL",
+      "x": 56,
+      "y": 42,
+      "w": 68,
+      "h": 797
+    },
+    {
+      "dataName": "currency-unit-label-wrapper",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "USD",
+      "x": 56,
+      "y": 42,
+      "w": 68,
+      "h": 34
+    },
+    {
+      "dataName": "currency-label-selector",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "USD",
+      "x": 61,
+      "y": 47,
+      "w": 58,
+      "h": 24
+    },
+    {
+      "dataName": "actions",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "",
+      "x": 256,
+      "y": 46,
+      "w": 28,
+      "h": 24
+    },
+    {
+      "dataName": "sell-order-button",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "26,533.25\nSELL",
+      "x": 133,
+      "y": 74,
+      "w": 85,
+      "h": 34
+    },
+    {
+      "dataName": "buy-order-button",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "26,533.50\nBUY",
+      "x": 259,
+      "y": 74,
+      "w": 85,
+      "h": 34
+    },
+    {
+      "dataName": "pane-canvas",
+      "tag": "canvas",
+      "ariaLabel": null,
+      "title": null,
+      "text": "",
+      "x": 124,
+      "y": 42,
+      "w": 1045,
+      "h": 797
+    },
+    {
+      "dataName": "price-axis-A",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "USD\nA\nL",
+      "x": 1169,
+      "y": 42,
+      "w": 80,
+      "h": 797
+    },
+    {
+      "dataName": "currency-unit-label-wrapper",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "USD",
+      "x": 1169,
+      "y": 42,
+      "w": 80,
+      "h": 34
+    },
+    {
+      "dataName": "currency-label-selector",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "USD",
+      "x": 1174,
+      "y": 47,
+      "w": 70,
+      "h": 24
+    },
+    {
+      "dataName": "widgetbar-wrap",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "99+\nWatchlist\nSymbol\nLast\nChg\nChg%\nM\nMNQ1!\n26,532.50\n167.00\n",
+      "x": 1253,
+      "y": 42,
+      "w": 347,
+      "h": 958
+    },
+    {
+      "dataName": "right-toolbar",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "99+",
+      "x": 1555,
+      "y": 42,
+      "w": 45,
+      "h": 958
+    },
+    {
+      "dataName": "base",
+      "tag": "button",
+      "ariaLabel": "Watchlist, details, and news",
+      "title": null,
+      "text": "",
+      "x": 1556,
+      "y": 44,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "dataName": "widgetbar-pages-with-tabs",
+      "tag": "div",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Watchlist\nSymbol\nLast\nChg\nChg%\nM\nMNQ1!\n26,532.50\n167.00\n0.63",
+      "x": 1252,
+      "y": 42,
+      "w": 303,
+      "h": 958
+    },
+    {
+      "dataName": "watchlists-button",
+      "tag": "button",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Watchlist",
+      "x": 1261,
+      "y": 49,
+      "w": 96,
+      "h": 34
+    },
+    {
+      "dataName": "add-symbol-button",
+      "tag": "button",
+      "ariaLabel": "Add symbol",
+      "title": null,
+      "text": "",
+      "x": 1432,
+      "y": 47,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "dataName": "advanced-view-button",
+      "tag": "button",
+      "ariaLabel": "Advanced view",
+      "title": null,
+      "text": "",
+      "x": 1470,
+      "y": 47,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "dataName": "settings-button",
+      "tag": "button",
+      "ariaLabel": "Settings",
+      "title": null,
+      "text": "",
+      "x": 1508,
+      "y": 47,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "klass": "layout__area--right",
+      "tag": "div",
+      "title": null,
+      "ariaLabel": null,
+      "text": "99+\nWatchlist\nSymbol\nLast\nChg\nChg%\nM\nMNQ1!\n26,532.50\n167.00\n",
+      "x": 1253,
+      "y": 42
+    }
+  ],
+  "before_dialogs": [
+    {
+      "dataName": "save-load-menu",
+      "role": null,
+      "tag": "button",
+      "text": "",
+      "x": 1157,
+      "y": 0
+    },
+    {
+      "dataName": "date-ranges-menu",
+      "role": null,
+      "tag": "button",
+      "text": "",
+      "x": 64,
+      "y": 868
+    },
+    {
+      "dataName": "time-zone-menu",
+      "role": null,
+      "tag": "button",
+      "text": "12:01:56 PM UTC-4",
+      "x": 999,
+      "y": 868
+    },
+    {
+      "dataName": "session-menu",
+      "role": null,
+      "tag": "button",
+      "text": "ETH",
+      "x": 1143,
+      "y": 868
+    }
+  ],
+  "clicked": {
+    "dataName": "save-load-menu",
+    "tag": "button",
+    "ariaLabel": "Manage layouts",
+    "title": null,
+    "text": "",
+    "x": 1157,
+    "y": 0,
+    "w": 24,
+    "h": 38
+  },
+  "after_dialogs": [
+    {
+      "dataName": "save-load-menu",
+      "role": null,
+      "tag": "button",
+      "text": "",
+      "x": 1157,
+      "y": 0
+    },
+    {
+      "dataName": "date-ranges-menu",
+      "role": null,
+      "tag": "button",
+      "text": "",
+      "x": 64,
+      "y": 868
+    },
+    {
+      "dataName": "time-zone-menu",
+      "role": null,
+      "tag": "button",
+      "text": "12:01:56 PM UTC-4",
+      "x": 999,
+      "y": 868
+    },
+    {
+      "dataName": "session-menu",
+      "role": null,
+      "tag": "button",
+      "text": "ETH",
+      "x": 1143,
+      "y": 868
+    }
+  ]
+}

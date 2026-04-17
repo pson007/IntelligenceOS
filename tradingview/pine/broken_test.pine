@@ -1,0 +1,6 @@
+//@version=5
+// Deliberately broken — for testing the compile-error scraper.
+indicator("Broken Test Indicator", overlay=true)
+
+// This reference doesn't exist — should trigger a Pine compile error.
+plot(this_variable_does_not_exist)

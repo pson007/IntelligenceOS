@@ -1,0 +1,14 @@
+# Browser automation — drives TradingView UI for both screenshots and paper trades
+playwright==1.48.0
+
+# Webhook bridge server — receives forwarded alerts from the Cloudflare Worker
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# Request validation + env loading
+pydantic==2.9.2
+python-dotenv==1.0.1
+
+# Outbound HTTP for any side-channel calls (logging, notifications, etc.)
+httpx==0.27.2
+pyyaml==6.0.2

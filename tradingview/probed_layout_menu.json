@@ -1,0 +1,3765 @@
+[
+  {
+    "type": "popup-container",
+    "klass": "menuWrap-yRWAMXSg accessible-yRWAMXSg button-merBkM5y apply-common-tooltip accessible-merBkM5y",
+    "dataName": null,
+    "tag": "button",
+    "x": 1524,
+    "y": 0,
+    "w": 76,
+    "h": 38,
+    "preview": "Publish"
+  },
+  {
+    "type": "popup-container",
+    "klass": "menu-Uy_he976 menuWrap-Kq3ruQo8",
+    "dataName": null,
+    "tag": "div",
+    "x": 1266,
+    "y": 40,
+    "w": 201,
+    "h": 166,
+    "preview": "Save layout\n\u2318 S\nDownload chart data\u2026\nCreate new layout\u2026\nOpen layout\u2026\nDot"
+  },
+  {
+    "type": "popup-container",
+    "klass": "menuBox-Kq3ruQo8",
+    "dataName": null,
+    "tag": "div",
+    "x": 1266,
+    "y": 40,
+    "w": 201,
+    "h": 166,
+    "preview": "Save layout\n\u2318 S\nDownload chart data\u2026\nCreate new layout\u2026\nOpen layout\u2026\nDot"
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "widgetHeader-X9EuSe_t",
+    "text": "Watchlist",
+    "x": 1254,
+    "y": 42
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "container-mQBvegEO",
+    "text": "Watchlist",
+    "x": 1270,
+    "y": 47
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "container-u7Ufi_N7",
+    "text": "Watchlist",
+    "x": 1270,
+    "y": 47
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "leftSlot-u7Ufi_N7 widgetbarWidgetHeaderLeftSlot-mQBvegEO",
+    "text": "Watchlist",
+    "x": 1262,
+    "y": 47
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "button",
+    "dataName": "watchlists-button",
+    "role": null,
+    "klass": "button-merBkM5y button-g115eYH4 apply-common-tooltip accessible-merBkM5y",
+    "text": "Watchlist",
+    "x": 1262,
+    "y": 49
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-g115eYH4",
+    "text": "Watchlist",
+    "x": 1270,
+    "y": 52
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "headerMenuContent-mQBvegEO",
+    "text": "Watchlist",
+    "x": 1270,
+    "y": 52
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "titleRow-mQBvegEO",
+    "text": "Watchlist",
+    "x": 1270,
+    "y": 52
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-Nz1M1_XP",
+    "text": "Symbol\nLast\nChg\nChg%",
+    "x": 1254,
+    "y": 90
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "columnHeader-k67yvGbk symbolName-Nz1M1_XP",
+    "text": "Symbol",
+    "x": 1266,
+    "y": 90
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "button",
+    "dataName": null,
+    "role": null,
+    "klass": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk",
+    "text": "Symbol",
+    "x": 1270,
+    "y": 95
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "columnHeader-k67yvGbk last-Nz1M1_XP",
+    "text": "Last",
+    "x": 1344,
+    "y": 90
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "button",
+    "dataName": null,
+    "role": null,
+    "klass": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk",
+    "text": "Last",
+    "x": 1382,
+    "y": 95
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "columnHeader-k67yvGbk change-Nz1M1_XP",
+    "text": "Chg",
+    "x": 1418,
+    "y": 90
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "button",
+    "dataName": null,
+    "role": null,
+    "klass": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk",
+    "text": "Chg",
+    "x": 1452,
+    "y": 95
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "columnHeader-k67yvGbk changeInPercents-Nz1M1_XP lastItem-Nz1M1_XP",
+    "text": "Chg%",
+    "x": 1486,
+    "y": 90
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "button",
+    "dataName": null,
+    "role": null,
+    "klass": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk",
+    "text": "Chg%",
+    "x": 1499,
+    "y": 95
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "INDICES",
+    "x": 1254,
+    "y": 124
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "INDICES",
+    "x": 1254,
+    "y": 124
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "separator-eCC6Skn5 firstItem-eCC6Skn5",
+    "text": "INDICES",
+    "x": 1254,
+    "y": 124
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "innerWrapper-eCC6Skn5 hasExpand-eCC6Skn5",
+    "text": "INDICES",
+    "x": 1254,
+    "y": 131
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "label-eCC6Skn5",
+    "text": "INDICES",
+    "x": 1296,
+    "y": 138
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "S\nSPX\n7,033.80\n10.84\n0.15%",
+    "x": 1254,
+    "y": 160
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "S\nSPX\n7,033.80\n10.84\n0.15%",
+    "x": 1254,
+    "y": 160
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "S\nSPX",
+    "x": 1270,
+    "y": 162
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "S\nSPX",
+    "x": 1270,
+    "y": 165
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "S",
+    "x": 1270,
+    "y": 167
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "S",
+    "x": 1270,
+    "y": 167
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "S",
+    "x": 1270,
+    "y": 167
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "SPX",
+    "x": 1294,
+    "y": 165
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "SPX",
+    "x": 1294,
+    "y": 169
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "7,033.80",
+    "x": 1347,
+    "y": 162
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "7,033.80",
+    "x": 1351,
+    "y": 167
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "3.80",
+    "x": 1381,
+    "y": 167
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "10.84",
+    "x": 1419,
+    "y": 162
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "10.84",
+    "x": 1439,
+    "y": 167
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.15%",
+    "x": 1486,
+    "y": 162
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.15%",
+    "x": 1495,
+    "y": 167
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "N\nNDQ\n26,289.06\n84.48\n0.32%",
+    "x": 1254,
+    "y": 190
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "N\nNDQ\n26,289.06\n84.48\n0.32%",
+    "x": 1254,
+    "y": 190
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "N\nNDQ",
+    "x": 1270,
+    "y": 192
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "N\nNDQ",
+    "x": 1270,
+    "y": 195
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "N",
+    "x": 1270,
+    "y": 197
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "N",
+    "x": 1270,
+    "y": 197
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "N",
+    "x": 1270,
+    "y": 197
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "NDQ",
+    "x": 1294,
+    "y": 195
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "NDQ",
+    "x": 1294,
+    "y": 199
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "26,289.06",
+    "x": 1347,
+    "y": 192
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "26,289.06",
+    "x": 1347,
+    "y": 197
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "06",
+    "x": 1398,
+    "y": 197
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "84.48",
+    "x": 1419,
+    "y": 192
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "84.48",
+    "x": 1439,
+    "y": 197
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.32%",
+    "x": 1486,
+    "y": 192
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.32%",
+    "x": 1495,
+    "y": 197
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "D\nDJI\n48,569.28\n105.56\n0.22%",
+    "x": 1254,
+    "y": 220
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "D\nDJI\n48,569.28\n105.56\n0.22%",
+    "x": 1254,
+    "y": 220
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "D\nDJI",
+    "x": 1270,
+    "y": 222
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "D\nDJI",
+    "x": 1270,
+    "y": 225
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "D",
+    "x": 1270,
+    "y": 227
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "D",
+    "x": 1270,
+    "y": 227
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "D",
+    "x": 1270,
+    "y": 227
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "DJI",
+    "x": 1294,
+    "y": 225
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "DJI",
+    "x": 1294,
+    "y": 229
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "48,569.28",
+    "x": 1347,
+    "y": 222
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "48,569.28",
+    "x": 1347,
+    "y": 227
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "plus-RsFlttSS",
+    "text": "9.28",
+    "x": 1385,
+    "y": 227
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "105.56",
+    "x": 1419,
+    "y": 222
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "105.56",
+    "x": 1431,
+    "y": 227
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.22%",
+    "x": 1486,
+    "y": 222
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.22%",
+    "x": 1495,
+    "y": 227
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "V\nVIX\nD\n18.06\n\u22120.11\n\u22120.61%",
+    "x": 1254,
+    "y": 250
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "V\nVIX\nD\n18.06\n\u22120.11\n\u22120.61%",
+    "x": 1254,
+    "y": 250
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "V\nVIX\nD",
+    "x": 1270,
+    "y": 252
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "V\nVIX\nD",
+    "x": 1270,
+    "y": 255
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "V",
+    "x": 1270,
+    "y": 257
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "V",
+    "x": 1270,
+    "y": 257
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "V",
+    "x": 1270,
+    "y": 257
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "VIX\nD",
+    "x": 1294,
+    "y": 255
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "VIX",
+    "x": 1294,
+    "y": 259
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "tv-data-mode tv-data-mode--for-symbol-list apply-common-tooltip tv-data-mode--de",
+    "text": "D",
+    "x": 1320,
+    "y": 255
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "18.06",
+    "x": 1347,
+    "y": 252
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "18.06",
+    "x": 1372,
+    "y": 257
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "\u22120.11",
+    "x": 1419,
+    "y": 252
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.11",
+    "x": 1439,
+    "y": 257
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "\u22120.61%",
+    "x": 1486,
+    "y": 252
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.61%",
+    "x": 1487,
+    "y": 257
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "D\nDXY\n98.189\n0.139\n0.14%",
+    "x": 1254,
+    "y": 280
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "D\nDXY\n98.189\n0.139\n0.14%",
+    "x": 1254,
+    "y": 280
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "D\nDXY",
+    "x": 1270,
+    "y": 282
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "D\nDXY",
+    "x": 1270,
+    "y": 285
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "D",
+    "x": 1270,
+    "y": 287
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "D",
+    "x": 1270,
+    "y": 287
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "D",
+    "x": 1270,
+    "y": 287
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "DXY",
+    "x": 1294,
+    "y": 285
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "DXY",
+    "x": 1294,
+    "y": 289
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "98.189",
+    "x": 1347,
+    "y": 282
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "98.189",
+    "x": 1363,
+    "y": 287
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "0.139",
+    "x": 1419,
+    "y": 282
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.139",
+    "x": 1439,
+    "y": 287
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.14%",
+    "x": 1486,
+    "y": 282
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.14%",
+    "x": 1495,
+    "y": 287
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "STOCKS",
+    "x": 1254,
+    "y": 310
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "STOCKS",
+    "x": 1254,
+    "y": 310
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "separator-eCC6Skn5",
+    "text": "STOCKS",
+    "x": 1254,
+    "y": 310
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "innerWrapper-eCC6Skn5 hasExpand-eCC6Skn5",
+    "text": "STOCKS",
+    "x": 1254,
+    "y": 317
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "label-eCC6Skn5",
+    "text": "STOCKS",
+    "x": 1296,
+    "y": 324
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "A\nAAPL\n263.66\n\u22122.77\n\u22121.04%",
+    "x": 1254,
+    "y": 346
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "A\nAAPL\n263.66\n\u22122.77\n\u22121.04%",
+    "x": 1254,
+    "y": 346
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "A\nAAPL",
+    "x": 1270,
+    "y": 348
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "A\nAAPL",
+    "x": 1270,
+    "y": 351
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "A",
+    "x": 1270,
+    "y": 353
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "A",
+    "x": 1270,
+    "y": 353
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "A",
+    "x": 1270,
+    "y": 353
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "AAPL",
+    "x": 1294,
+    "y": 351
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "AAPL",
+    "x": 1294,
+    "y": 355
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "263.66",
+    "x": 1347,
+    "y": 348
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "263.66",
+    "x": 1363,
+    "y": 353
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "\u22122.77",
+    "x": 1419,
+    "y": 348
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22122.77",
+    "x": 1439,
+    "y": 353
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "\u22121.04%",
+    "x": 1486,
+    "y": 348
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22121.04%",
+    "x": 1487,
+    "y": 353
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "T\nTSLA\n387.37\n\u22124.58\n\u22121.17%",
+    "x": 1254,
+    "y": 376
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "T\nTSLA\n387.37\n\u22124.58\n\u22121.17%",
+    "x": 1254,
+    "y": 376
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "T\nTSLA",
+    "x": 1270,
+    "y": 378
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "T\nTSLA",
+    "x": 1270,
+    "y": 381
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "T",
+    "x": 1270,
+    "y": 383
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "T",
+    "x": 1270,
+    "y": 383
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "T",
+    "x": 1270,
+    "y": 383
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "TSLA",
+    "x": 1294,
+    "y": 381
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "TSLA",
+    "x": 1294,
+    "y": 385
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "387.37",
+    "x": 1347,
+    "y": 378
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "387.37",
+    "x": 1363,
+    "y": 383
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "37",
+    "x": 1393,
+    "y": 383
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "\u22124.58",
+    "x": 1419,
+    "y": 378
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22124.58",
+    "x": 1439,
+    "y": 383
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "\u22121.17%",
+    "x": 1486,
+    "y": 378
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22121.17%",
+    "x": 1487,
+    "y": 383
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "N\nNFLX\n108.22\n0.51\n0.47%",
+    "x": 1254,
+    "y": 406
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "N\nNFLX\n108.22\n0.51\n0.47%",
+    "x": 1254,
+    "y": 406
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "N\nNFLX",
+    "x": 1270,
+    "y": 408
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "N\nNFLX",
+    "x": 1270,
+    "y": 411
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "N",
+    "x": 1270,
+    "y": 413
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "N",
+    "x": 1270,
+    "y": 413
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "N",
+    "x": 1270,
+    "y": 413
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "NFLX",
+    "x": 1294,
+    "y": 411
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "NFLX",
+    "x": 1294,
+    "y": 415
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "108.22",
+    "x": 1347,
+    "y": 408
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS highlightUp-RsFlttSS",
+    "text": "108.22",
+    "x": 1363,
+    "y": 413
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "0.51",
+    "x": 1419,
+    "y": 408
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.51",
+    "x": 1448,
+    "y": 413
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.47%",
+    "x": 1486,
+    "y": 408
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.47%",
+    "x": 1495,
+    "y": 413
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "FUTURES",
+    "x": 1254,
+    "y": 436
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "FUTURES",
+    "x": 1254,
+    "y": 436
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "separator-eCC6Skn5",
+    "text": "FUTURES",
+    "x": 1254,
+    "y": 436
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "innerWrapper-eCC6Skn5 hasExpand-eCC6Skn5",
+    "text": "FUTURES",
+    "x": 1254,
+    "y": 443
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "label-eCC6Skn5",
+    "text": "FUTURES",
+    "x": 1296,
+    "y": 450
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "U\nUSOIL\n93.84\n2.44\n2.67%",
+    "x": 1254,
+    "y": 472
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "U\nUSOIL\n93.84\n2.44\n2.67%",
+    "x": 1254,
+    "y": 472
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "U\nUSOIL",
+    "x": 1270,
+    "y": 474
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "U\nUSOIL",
+    "x": 1270,
+    "y": 477
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "U",
+    "x": 1270,
+    "y": 479
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "U",
+    "x": 1270,
+    "y": 479
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "U",
+    "x": 1270,
+    "y": 479
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "USOIL",
+    "x": 1294,
+    "y": 477
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "USOIL",
+    "x": 1294,
+    "y": 481
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "93.84",
+    "x": 1347,
+    "y": 474
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "93.84",
+    "x": 1372,
+    "y": 479
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "4",
+    "x": 1402,
+    "y": 479
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "2.44",
+    "x": 1419,
+    "y": 474
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "2.44",
+    "x": 1448,
+    "y": 479
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "2.67%",
+    "x": 1486,
+    "y": 474
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "2.67%",
+    "x": 1495,
+    "y": 479
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "G\nGOLD\n4,793.000\n2.289\n0.05%",
+    "x": 1254,
+    "y": 502
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "G\nGOLD\n4,793.000\n2.289\n0.05%",
+    "x": 1254,
+    "y": 502
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "G\nGOLD",
+    "x": 1270,
+    "y": 504
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "G\nGOLD",
+    "x": 1270,
+    "y": 507
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "G",
+    "x": 1270,
+    "y": 509
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "G",
+    "x": 1270,
+    "y": 509
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "G",
+    "x": 1270,
+    "y": 509
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "GOLD",
+    "x": 1294,
+    "y": 507
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "GOLD",
+    "x": 1294,
+    "y": 511
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "4,793.000",
+    "x": 1347,
+    "y": 504
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "4,793.000",
+    "x": 1347,
+    "y": 509
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "plus-RsFlttSS",
+    "text": "3.000",
+    "x": 1377,
+    "y": 509
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "2.289",
+    "x": 1419,
+    "y": 504
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "2.289",
+    "x": 1439,
+    "y": 509
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.05%",
+    "x": 1486,
+    "y": 504
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.05%",
+    "x": 1495,
+    "y": 509
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "S\nSILVER\n78.7002\n\u22120.2281\n\u22120.29%",
+    "x": 1254,
+    "y": 532
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "S\nSILVER\n78.7002\n\u22120.2281\n\u22120.29%",
+    "x": 1254,
+    "y": 532
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "S\nSILVER",
+    "x": 1270,
+    "y": 534
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "S\nSILVER",
+    "x": 1270,
+    "y": 537
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "S",
+    "x": 1270,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "S",
+    "x": 1270,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "S",
+    "x": 1270,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "SILVER",
+    "x": 1294,
+    "y": 537
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "SILVER",
+    "x": 1294,
+    "y": 541
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "78.7002",
+    "x": 1347,
+    "y": 534
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "78.7002",
+    "x": 1357,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "plus-RsFlttSS",
+    "text": "7002",
+    "x": 1378,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "\u22120.2281",
+    "x": 1419,
+    "y": 534
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.2281",
+    "x": 1422,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "\u22120.29%",
+    "x": 1486,
+    "y": 534
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.29%",
+    "x": 1487,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "FOREX",
+    "x": 1254,
+    "y": 562
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "FOREX",
+    "x": 1254,
+    "y": 562
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "separator-eCC6Skn5",
+    "text": "FOREX",
+    "x": 1254,
+    "y": 562
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "innerWrapper-eCC6Skn5 hasExpand-eCC6Skn5",
+    "text": "FOREX",
+    "x": 1254,
+    "y": 569
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "label-eCC6Skn5",
+    "text": "FOREX",
+    "x": 1296,
+    "y": 576
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "E\nEURUSD\n1.17834\n\u22120.00154\n\u22120.13%",
+    "x": 1254,
+    "y": 598
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "E\nEURUSD\n1.17834\n\u22120.00154\n\u22120.13%",
+    "x": 1254,
+    "y": 598
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "E\nEURUSD",
+    "x": 1270,
+    "y": 600
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "E\nEURUSD",
+    "x": 1270,
+    "y": 603
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "E",
+    "x": 1270,
+    "y": 605
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "E",
+    "x": 1270,
+    "y": 605
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "E",
+    "x": 1270,
+    "y": 605
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "EURUSD",
+    "x": 1294,
+    "y": 603
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "EURUSD",
+    "x": 1294,
+    "y": 607
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "1.17834",
+    "x": 1347,
+    "y": 600
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "1.17834",
+    "x": 1357,
+    "y": 605
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "plus-RsFlttSS",
+    "text": "4",
+    "x": 1404,
+    "y": 605
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "\u22120.00154",
+    "x": 1419,
+    "y": 600
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.00154",
+    "x": 1419,
+    "y": 605
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "\u22120.13%",
+    "x": 1486,
+    "y": 600
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.13%",
+    "x": 1487,
+    "y": 605
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "G\nGBPUSD\n1.35325\n\u22120.00249\n\u22120.18%",
+    "x": 1254,
+    "y": 628
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "G\nGBPUSD\n1.35325\n\u22120.00249\n\u22120.18%",
+    "x": 1254,
+    "y": 628
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "G\nGBPUSD",
+    "x": 1270,
+    "y": 630
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "G\nGBPUSD",
+    "x": 1270,
+    "y": 633
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "G",
+    "x": 1270,
+    "y": 635
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "G",
+    "x": 1270,
+    "y": 635
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "G",
+    "x": 1270,
+    "y": 635
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "GBPUSD",
+    "x": 1294,
+    "y": 633
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "GBPUSD",
+    "x": 1294,
+    "y": 637
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "1.35325",
+    "x": 1347,
+    "y": 630
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "1.35325",
+    "x": 1357,
+    "y": 635
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "\u22120.00249",
+    "x": 1419,
+    "y": 630
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.00249",
+    "x": 1419,
+    "y": 635
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "\u22120.18%",
+    "x": 1486,
+    "y": 630
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.18%",
+    "x": 1487,
+    "y": 635
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "U\nUSDJPY\n159.173\n0.235\n0.15%",
+    "x": 1254,
+    "y": 658
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "U\nUSDJPY\n159.173\n0.235\n0.15%",
+    "x": 1254,
+    "y": 658
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "U\nUSDJPY",
+    "x": 1270,
+    "y": 660
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "U\nUSDJPY",
+    "x": 1270,
+    "y": 663
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "U",
+    "x": 1270,
+    "y": 665
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "U",
+    "x": 1270,
+    "y": 665
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "U",
+    "x": 1270,
+    "y": 665
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "USDJPY",
+    "x": 1294,
+    "y": 663
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "USDJPY",
+    "x": 1294,
+    "y": 667
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "159.173",
+    "x": 1347,
+    "y": 660
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "159.173",
+    "x": 1357,
+    "y": 665
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "3",
+    "x": 1404,
+    "y": 665
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "0.235",
+    "x": 1419,
+    "y": 660
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.235",
+    "x": 1439,
+    "y": 665
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.15%",
+    "x": 1486,
+    "y": 660
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.15%",
+    "x": 1495,
+    "y": 665
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "CRYPTO",
+    "x": 1254,
+    "y": 688
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "CRYPTO",
+    "x": 1254,
+    "y": 688
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "separator-eCC6Skn5",
+    "text": "CRYPTO",
+    "x": 1254,
+    "y": 688
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "innerWrapper-eCC6Skn5 hasExpand-eCC6Skn5",
+    "text": "CRYPTO",
+    "x": 1254,
+    "y": 695
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "label-eCC6Skn5",
+    "text": "CRYPTO",
+    "x": 1296,
+    "y": 702
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "B\nBTCUSD\n74,919\n101\n0.13%",
+    "x": 1254,
+    "y": 724
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "B\nBTCUSD\n74,919\n101\n0.13%",
+    "x": 1254,
+    "y": 724
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "B\nBTCUSD",
+    "x": 1270,
+    "y": 726
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "B\nBTCUSD",
+    "x": 1270,
+    "y": 729
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "B",
+    "x": 1270,
+    "y": 731
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "B",
+    "x": 1270,
+    "y": 731
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "B",
+    "x": 1270,
+    "y": 731
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "BTCUSD",
+    "x": 1294,
+    "y": 729
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "BTCUSD",
+    "x": 1294,
+    "y": 733
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "74,919",
+    "x": 1347,
+    "y": 726
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "74,919",
+    "x": 1363,
+    "y": 731
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "19",
+    "x": 1393,
+    "y": 731
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "101",
+    "x": 1419,
+    "y": 726
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "101",
+    "x": 1452,
+    "y": 731
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.13%",
+    "x": 1486,
+    "y": 726
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.13%",
+    "x": 1495,
+    "y": 731
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "B\nBTCUSDT\n74,922.29\n112.30\n0.15%",
+    "x": 1254,
+    "y": 754
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "B\nBTCUSDT\n74,922.29\n112.30\n0.15%",
+    "x": 1254,
+    "y": 754
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "B\nBTCUSDT",
+    "x": 1270,
+    "y": 756
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "B\nBTCUSDT",
+    "x": 1270,
+    "y": 759
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "B",
+    "x": 1270,
+    "y": 761
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "B",
+    "x": 1270,
+    "y": 761
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "B",
+    "x": 1270,
+    "y": 761
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "BTCUSDT",
+    "x": 1294,
+    "y": 759
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "BTCUSDT",
+    "x": 1294,
+    "y": 763
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "74,922.29",
+    "x": 1347,
+    "y": 756
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "74,922.29",
+    "x": 1347,
+    "y": 761
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "2.29",
+    "x": 1385,
+    "y": 761
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "112.30",
+    "x": 1419,
+    "y": 756
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "112.30",
+    "x": 1431,
+    "y": 761
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "0.15%",
+    "x": 1486,
+    "y": 756
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS plus-RsFlttSS",
+    "text": "0.15%",
+    "x": 1495,
+    "y": 761
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "E\nETHUSD\n2,341.7\n\u221217.9\n\u22120.76%",
+    "x": 1254,
+    "y": 784
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-IEe5qpW4",
+    "text": "E\nETHUSD\n2,341.7\n\u221217.9\n\u22120.76%",
+    "x": 1254,
+    "y": 784
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "firstItem-RsFlttSS symbolName-RsFlttSS",
+    "text": "E\nETHUSD",
+    "x": 1270,
+    "y": 786
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS flexCell-RsFlttSS",
+    "text": "E\nETHUSD",
+    "x": 1270,
+    "y": 789
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-RsFlttSS container-M1mz4quA",
+    "text": "E",
+    "x": 1270,
+    "y": 791
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "E",
+    "x": 1270,
+    "y": 791
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xxxsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "E",
+    "x": 1270,
+    "y": 791
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "flexCell-RsFlttSS",
+    "text": "ETHUSD",
+    "x": 1294,
+    "y": 789
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS symbolNameText-RsFlttSS",
+    "text": "ETHUSD",
+    "x": 1294,
+    "y": 793
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS last-RsFlttSS",
+    "text": "2,341.7",
+    "x": 1347,
+    "y": 786
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS",
+    "text": "2,341.7",
+    "x": 1359,
+    "y": 791
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "minus-RsFlttSS",
+    "text": "1.7",
+    "x": 1389,
+    "y": 791
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "cell-RsFlttSS change-RsFlttSS",
+    "text": "\u221217.9",
+    "x": 1419,
+    "y": 786
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u221217.9",
+    "x": 1439,
+    "y": 791
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "lastItem-RsFlttSS cell-RsFlttSS changeInPercents-RsFlttSS",
+    "text": "\u22120.76%",
+    "x": 1486,
+    "y": 786
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "inner-RsFlttSS minus-RsFlttSS",
+    "text": "\u22120.76%",
+    "x": 1487,
+    "y": 791
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "widgetHeader-X9EuSe_t",
+    "text": "A\nAAPL",
+    "x": 1254,
+    "y": 523
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "container-ZJX9Rmzv",
+    "text": "A\nAAPL",
+    "x": 1270,
+    "y": 516
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-d0vVmGvT container-M1mz4quA",
+    "text": "A",
+    "x": 1270,
+    "y": 535
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-M1mz4quA logo-PsAlMQQF xsmall-PsAlMQQF letter-PsAlMQQF hidden-PsAlMQQF",
+    "text": "A",
+    "x": 1270,
+    "y": 535
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "logo-PsAlMQQF xsmall-PsAlMQQF letter-PsAlMQQF",
+    "text": "A",
+    "x": 1270,
+    "y": 535
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "title-ZJX9Rmzv",
+    "text": "AAPL",
+    "x": 1302,
+    "y": 539
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "widgetWrapper-BSF4XTsE",
+    "text": "Apple Inc\nNASDAQ\nElectronic Technology\nTelecommunications Equipment",
+    "x": 1254,
+    "y": 571
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "Apple Inc\nNASDAQ",
+    "x": 1270,
+    "y": 571
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "main-lu2ARROZ",
+    "text": "Apple Inc\nNASDAQ",
+    "x": 1270,
+    "y": 571
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "a",
+    "dataName": null,
+    "role": null,
+    "klass": "link-eFCYpbUa",
+    "text": "Apple Inc",
+    "x": 1270,
+    "y": 575
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "text-eFCYpbUa",
+    "text": "Apple Inc",
+    "x": 1270,
+    "y": 575
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "NASDAQ",
+    "x": 1355,
+    "y": 575
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "Electronic Technology\nTelecommunications Equipment",
+    "x": 1270,
+    "y": 593
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "additional-lu2ARROZ",
+    "text": "Electronic Technology\nTelecommunications Equipment",
+    "x": 1270,
+    "y": 593
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "a",
+    "dataName": null,
+    "role": null,
+    "klass": "link-lu2ARROZ",
+    "text": "Electronic Technology",
+    "x": 1270,
+    "y": 597
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "a",
+    "dataName": null,
+    "role": null,
+    "klass": "link-lu2ARROZ",
+    "text": "Telecommunications Equipment",
+    "x": 1270,
+    "y": 597
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "container-qWcO4bp9 widgetWrapper-BSF4XTsE userSelectText-BSF4XTsE offsetDisabled",
+    "text": "263.66\nUSD\n\u22122.77\n\u22121.04%",
+    "x": 1254,
+    "y": 643
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "priceWrapper-qWcO4bp9",
+    "text": "263.66\nUSD",
+    "x": 1270,
+    "y": 643
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "highlight-maJ2WnzA highlight-BSF4XTsE price-qWcO4bp9",
+    "text": "263.66",
+    "x": 1270,
+    "y": 643
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "highlight-maJ2WnzA highlight-BSF4XTsE falling-maJ2WnzA falling-BSF4XTsE",
+    "text": "66",
+    "x": 1331,
+    "y": 645
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "info-qWcO4bp9",
+    "text": "USD",
+    "x": 1371,
+    "y": 643
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "currency-qWcO4bp9",
+    "text": "USD",
+    "x": 1371,
+    "y": 659
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "wrap-SNvPvlJ3 changeWrap-qWcO4bp9",
+    "text": "\u22122.77\n\u22121.04%",
+    "x": 1405,
+    "y": 654
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "change-SNvPvlJ3 highlight-maJ2WnzA highlight-BSF4XTsE falling-maJ2WnzA falling-B",
+    "text": "\u22122.77",
+    "x": 1405,
+    "y": 654
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "change-SNvPvlJ3 highlight-maJ2WnzA highlight-BSF4XTsE falling-maJ2WnzA falling-B",
+    "text": "\u22121.04%",
+    "x": 1458,
+    "y": 654
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "widgetWrapper-BSF4XTsE",
+    "text": "Market open",
+    "x": 1254,
+    "y": 679
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "statusWrapper-d1N3lNBX green-d1N3lNBX",
+    "text": "Market open",
+    "x": 1270,
+    "y": 679
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "status-d1N3lNBX",
+    "text": "Market open",
+    "x": 1270,
+    "y": 679
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "Market open",
+    "x": 1288,
+    "y": 679
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": "grid",
+    "klass": "menu-Uy_he976 menuWrap-Kq3ruQo8",
+    "text": "Save layout\n\u2318 S\nDownload chart data\u2026\nCreate new layout\u2026\nOpen layout\u2026\nDot",
+    "x": 1266,
+    "y": 40
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "scrollWrap-Kq3ruQo8 momentumBased-Kq3ruQo8",
+    "text": "Save layout\n\u2318 S\nDownload chart data\u2026\nCreate new layout\u2026\nOpen layout\u2026\nDot",
+    "x": 1266,
+    "y": 40
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "menuBox-Kq3ruQo8",
+    "text": "Save layout\n\u2318 S\nDownload chart data\u2026\nCreate new layout\u2026\nOpen layout\u2026\nDot",
+    "x": 1266,
+    "y": 40
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "",
+    "text": "Save layout\n\u2318 S\nDownload chart data\u2026\nCreate new layout\u2026\nOpen layout\u2026\nDot",
+    "x": 1266,
+    "y": 46
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "background-wJ4EfuBP medium-wJ4EfuBP neutral-wJ4EfuBP",
+    "text": "Save layout\n\u2318 S",
+    "x": 1272,
+    "y": 46
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": "row",
+    "klass": "button-HZXWyU6m",
+    "text": "Save layout\n\u2318 S",
+    "x": 1272,
+    "y": 46
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "buttonContent-_b0ghPff",
+    "text": "Save layout\n\u2318 S",
+    "x": 1276,
+    "y": 48
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "middle-RDCgMoEQ hasTitle-RDCgMoEQ",
+    "text": "Save layout",
+    "x": 1276,
+    "y": 48
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "title-RDCgMoEQ withGaps-tEiLUFuT apply-overflow-tooltip",
+    "text": "Save layout",
+    "x": 1280,
+    "y": 53
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": "gridcell",
+    "klass": "ellipsis-Uy_he976 apply-overflow-tooltip",
+    "text": "Save layout",
+    "x": 1280,
+    "y": 53
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "right-ocwOCm5j",
+    "text": "\u2318 S",
+    "x": 1407,
+    "y": 48
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "child-ocwOCm5j",
+    "text": "\u2318 S",
+    "x": 1407,
+    "y": 48
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "hotkey-VUKsQhT0",
+    "text": "\u2318 S",
+    "x": 1431,
+    "y": 54
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "background-wJ4EfuBP medium-wJ4EfuBP neutral-wJ4EfuBP",
+    "text": "Download chart data\u2026",
+    "x": 1272,
+    "y": 78
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": "row",
+    "klass": "button-HZXWyU6m",
+    "text": "Download chart data\u2026",
+    "x": 1272,
+    "y": 78
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "buttonContent-_b0ghPff",
+    "text": "Download chart data\u2026",
+    "x": 1276,
+    "y": 80
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "middle-RDCgMoEQ hasTitle-RDCgMoEQ hasNoEndSlot-RDCgMoEQ",
+    "text": "Download chart data\u2026",
+    "x": 1304,
+    "y": 80
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "title-RDCgMoEQ withGaps-tEiLUFuT apply-overflow-tooltip",
+    "text": "Download chart data\u2026",
+    "x": 1308,
+    "y": 85
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": "gridcell",
+    "klass": "ellipsis-Uy_he976 apply-overflow-tooltip",
+    "text": "Download chart data\u2026",
+    "x": 1308,
+    "y": 85
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "background-wJ4EfuBP medium-wJ4EfuBP neutral-wJ4EfuBP",
+    "text": "Create new layout\u2026",
+    "x": 1272,
+    "y": 123
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": "row",
+    "klass": "button-HZXWyU6m",
+    "text": "Create new layout\u2026",
+    "x": 1272,
+    "y": 123
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "buttonContent-_b0ghPff",
+    "text": "Create new layout\u2026",
+    "x": 1276,
+    "y": 125
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "middle-RDCgMoEQ hasTitle-RDCgMoEQ hasNoEndSlot-RDCgMoEQ",
+    "text": "Create new layout\u2026",
+    "x": 1304,
+    "y": 125
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "title-RDCgMoEQ withGaps-tEiLUFuT apply-overflow-tooltip",
+    "text": "Create new layout\u2026",
+    "x": 1308,
+    "y": 130
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": "gridcell",
+    "klass": "ellipsis-Uy_he976 apply-overflow-tooltip",
+    "text": "Create new layout\u2026",
+    "x": 1308,
+    "y": 130
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "background-wJ4EfuBP medium-wJ4EfuBP neutral-wJ4EfuBP",
+    "text": "Open layout\u2026\nDot",
+    "x": 1272,
+    "y": 168
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": "row",
+    "klass": "button-HZXWyU6m",
+    "text": "Open layout\u2026\nDot",
+    "x": 1272,
+    "y": 168
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "buttonContent-_b0ghPff",
+    "text": "Open layout\u2026\nDot",
+    "x": 1276,
+    "y": 170
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "middle-RDCgMoEQ hasTitle-RDCgMoEQ",
+    "text": "Open layout\u2026",
+    "x": 1304,
+    "y": 170
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "title-RDCgMoEQ withGaps-tEiLUFuT apply-overflow-tooltip",
+    "text": "Open layout\u2026",
+    "x": 1308,
+    "y": 175
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "span",
+    "dataName": null,
+    "role": "gridcell",
+    "klass": "ellipsis-Uy_he976 apply-overflow-tooltip",
+    "text": "Open layout\u2026",
+    "x": 1308,
+    "y": 175
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "right-ocwOCm5j",
+    "text": "Dot",
+    "x": 1409,
+    "y": 170
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "child-ocwOCm5j",
+    "text": "Dot",
+    "x": 1409,
+    "y": 170
+  },
+  {
+    "type": "menu-item-candidate",
+    "tag": "div",
+    "dataName": null,
+    "role": null,
+    "klass": "hotkey-VUKsQhT0",
+    "text": "Dot",
+    "x": 1433,
+    "y": 176
+  }
+]

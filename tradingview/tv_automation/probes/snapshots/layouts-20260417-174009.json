@@ -1,0 +1,157 @@
+{
+  "captured_at": "2026-04-17T17:40:06-0400",
+  "url": "https://www.tradingview.com/chart/8hp50raV/?symbol=MNQ1%21",
+  "phase1_header": {
+    "button_aria": "Manage layouts",
+    "layout_name_guess": "Money Print\nSave\n\u00a0\nO\nT",
+    "x": 1122,
+    "y": -1
+  },
+  "phase2_menu_items": [],
+  "phase2_commands": [],
+  "phase2_recent_layouts": [
+    {
+      "text": "Save layout",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    },
+    {
+      "text": "Autosave",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    },
+    {
+      "text": "Make a copy\u2026",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    },
+    {
+      "text": "Rename\u2026",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    },
+    {
+      "text": "Download chart data\u2026",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    },
+    {
+      "text": "Create new layout\u2026",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    },
+    {
+      "text": "RECENTLY USED",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    },
+    {
+      "text": "test",
+      "className": "ellipsis-KwvkRWJp apply-overflow-tooltip"
+    },
+    {
+      "text": "MNQ1!, 5",
+      "className": "description-RDCgMoEQ ellipsis-tEiLUFuT apply-overflow-toolti"
+    },
+    {
+      "text": "OC407",
+      "className": "ellipsis-KwvkRWJp apply-overflow-tooltip"
+    },
+    {
+      "text": "MNQ1!, 5",
+      "className": "description-RDCgMoEQ ellipsis-tEiLUFuT apply-overflow-toolti"
+    },
+    {
+      "text": "test",
+      "className": "ellipsis-KwvkRWJp apply-overflow-tooltip"
+    },
+    {
+      "text": "MNQ1!, 60",
+      "className": "description-RDCgMoEQ ellipsis-tEiLUFuT apply-overflow-toolti"
+    },
+    {
+      "text": "Money Print",
+      "className": "ellipsis-KwvkRWJp apply-overflow-tooltip"
+    },
+    {
+      "text": "MNQ1!, 1",
+      "className": "description-RDCgMoEQ ellipsis-tEiLUFuT apply-overflow-toolti"
+    },
+    {
+      "text": "Open layout\u2026",
+      "className": "ellipsis-Uy_he976 apply-overflow-tooltip"
+    }
+  ],
+  "phase3_picker_dump": {
+    "dialog_class": "dialog-qyCw0PaN dialog-b8SxMnzX dialog-T4Q8BJPb dialog-aRAWUDhF rounded-aRAWUDhF shadowed-aRAWUDhF",
+    "dialog_title": "Layouts\nClose menu\nLAYOUT NAME\ntest\nMNQ1!, 5m ()\nOC407\nMNQ1!, 5m ()\ntest\nMNQ1!, 1h ()\n\u00a0\n\u00a0Money Print",
+    "rows": [
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "test\nMNQ1!, 5m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "OC407\nMNQ1!, 5m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "test\nMNQ1!, 1h ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "Money Print\nMNQ1!, 1m ()",
+        "className": "itemRow-BadjY5sX active-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "openclaw-908\nMNQ1!, 5m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "New Layout\nMNQ1!, 15m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "openclaw-552\nMNQ1!, 15m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "test-1775786454\nMNQ1!, 15m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "openclaw-819\nMNQ1!, 5m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      },
+      {
+        "tag": "a",
+        "role": "row",
+        "text": "openclaw-472\nMNQ1!, 5m ()",
+        "className": "itemRow-BadjY5sX item-6tu1aYjZ"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Close menu",
+        "dataName": null,
+        "ariaLabel": null
+      }
+    ],
+    "inputs": [
+      {
+        "type": "text",
+        "placeholder": "Search"
+      }
+    ]
+  }
+}

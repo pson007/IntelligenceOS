@@ -1,0 +1,219 @@
+{
+  "captured_at": "2026-04-17T18:13:07-0400",
+  "url": "https://www.tradingview.com/chart/8hp50raV/",
+  "phase1_legend": [
+    {
+      "qa": "legend-source-item",
+      "title": null,
+      "description": null,
+      "text": "Ultima MNQ+0.000.00\u2205\u220526,801.4826,801.8826,802.2526,802.5926,802.9026,803.1826,803.4226,803.6226,803.7926,803.9226,804.01",
+      "buttons": [
+        {
+          "dataQa": "legend-show-hide-action",
+          "ariaLabel": "Hide",
+          "title": "Hide"
+        },
+        {
+          "dataQa": "legend-interval-show-hide-action",
+          "ariaLabel": "Show interval settings",
+          "title": "Show interval settings"
+        },
+        {
+          "dataQa": "legend-settings-action",
+          "ariaLabel": "Settings",
+          "title": "Settings"
+        },
+        {
+          "dataQa": "legend-delete-action",
+          "ariaLabel": "Remove",
+          "title": "Remove"
+        },
+        {
+          "dataQa": "legend-more-action",
+          "ariaLabel": "More",
+          "title": "More"
+        },
+        {
+          "dataQa": "legend-source-item-status",
+          "ariaLabel": null,
+          "title": "Active strategy"
+        }
+      ]
+    },
+    {
+      "qa": "legend-source-item",
+      "title": null,
+      "description": null,
+      "text": "Vol",
+      "buttons": [
+        {
+          "dataQa": "legend-show-hide-action",
+          "ariaLabel": "Show",
+          "title": "Show"
+        },
+        {
+          "dataQa": "legend-interval-show-hide-action",
+          "ariaLabel": "Show interval settings",
+          "title": "Show interval settings"
+        },
+        {
+          "dataQa": "legend-settings-action",
+          "ariaLabel": "Settings",
+          "title": "Settings"
+        },
+        {
+          "dataQa": "legend-delete-action",
+          "ariaLabel": "Remove",
+          "title": "Remove"
+        },
+        {
+          "dataQa": "legend-more-action",
+          "ariaLabel": "More",
+          "title": "More"
+        }
+      ]
+    },
+    {
+      "qa": "legend-source-item",
+      "title": null,
+      "description": null,
+      "text": "Visual Flow v2: Trend Filtered \ud83e\udde026,801.7026,795.07\u2205\u2205",
+      "buttons": [
+        {
+          "dataQa": "legend-show-hide-action",
+          "ariaLabel": "Hide",
+          "title": "Hide"
+        },
+        {
+          "dataQa": "legend-interval-show-hide-action",
+          "ariaLabel": "Show interval settings",
+          "title": "Show interval settings"
+        },
+        {
+          "dataQa": "legend-settings-action",
+          "ariaLabel": "Settings",
+          "title": "Settings"
+        },
+        {
+          "dataQa": "legend-delete-action",
+          "ariaLabel": "Remove",
+          "title": "Remove"
+        },
+        {
+          "dataQa": "legend-more-action",
+          "ariaLabel": "More",
+          "title": "More"
+        }
+      ]
+    },
+    {
+      "qa": "legend-source-item",
+      "title": null,
+      "description": null,
+      "text": "MTPC",
+      "buttons": [
+        {
+          "dataQa": "legend-show-hide-action",
+          "ariaLabel": "Hide",
+          "title": "Hide"
+        },
+        {
+          "dataQa": "legend-interval-show-hide-action",
+          "ariaLabel": "Show interval settings",
+          "title": "Show interval settings"
+        },
+        {
+          "dataQa": "legend-settings-action",
+          "ariaLabel": "Settings",
+          "title": "Settings"
+        },
+        {
+          "dataQa": "legend-delete-action",
+          "ariaLabel": "Remove",
+          "title": "Remove"
+        },
+        {
+          "dataQa": "legend-more-action",
+          "ariaLabel": "More",
+          "title": "More"
+        }
+      ]
+    },
+    {
+      "qa": "legend-source-item",
+      "title": null,
+      "description": null,
+      "text": "Vertical Line Timeline\u2205\u2205\u2205\u2205\u2205",
+      "buttons": [
+        {
+          "dataQa": "legend-show-hide-action",
+          "ariaLabel": "Hide",
+          "title": "Hide"
+        },
+        {
+          "dataQa": "legend-interval-show-hide-action",
+          "ariaLabel": "Show interval settings",
+          "title": "Show interval settings"
+        },
+        {
+          "dataQa": "legend-settings-action",
+          "ariaLabel": "Settings",
+          "title": "Settings"
+        },
+        {
+          "dataQa": "legend-delete-action",
+          "ariaLabel": "Remove",
+          "title": "Remove"
+        },
+        {
+          "dataQa": "legend-more-action",
+          "ariaLabel": "More",
+          "title": "More"
+        }
+      ]
+    }
+  ],
+  "phase2_error": "open-indicators-dialog click: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for locator(\"[data-name=\\\"open-indicators-dialog\\\"]\").first\n    - locator resolved to <button tabindex=\"-1\" type=\"button\" data-role=\"button\" data-name=\"open-indicators-dialog\" aria-label=\"Indicators, metrics, and strategies\" data-tooltip=\"Indicators, metrics, and strategies\" data-tooltip-hotkey=\"{&#34;keys&#34;:[&#34;/&#34;],&#34;text&#34;:&#34;{0}&#34;}\" class=\"button-OhqNVIYA button-ptpAHg8E withText-ptpAHg8E button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S\">\u2026</button>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n      - waiting 100ms\n    10 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying click action\n       - waiting 500ms\n",
+  "phase2_visible_dialogs": [],
+  "phase2_dialog_found": false,
+  "phase3_hover_legend_buttons": {
+    "target_title": null,
+    "buttons": [
+      {
+        "dataQa": "legend-show-hide-action",
+        "ariaLabel": "Show",
+        "title": "Show",
+        "text": "",
+        "visible": false
+      },
+      {
+        "dataQa": "legend-interval-show-hide-action",
+        "ariaLabel": "Show interval settings",
+        "title": "Show interval settings",
+        "text": "",
+        "visible": false
+      },
+      {
+        "dataQa": "legend-settings-action",
+        "ariaLabel": "Settings",
+        "title": "Settings",
+        "text": "",
+        "visible": false
+      },
+      {
+        "dataQa": "legend-delete-action",
+        "ariaLabel": "Remove",
+        "title": "Remove",
+        "text": "",
+        "visible": false
+      },
+      {
+        "dataQa": "legend-more-action",
+        "ariaLabel": "More",
+        "title": "More",
+        "text": "",
+        "visible": false
+      }
+    ]
+  }
+}

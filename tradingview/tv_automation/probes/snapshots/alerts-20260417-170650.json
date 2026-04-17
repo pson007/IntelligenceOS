@@ -1,0 +1,275 @@
+{
+  "captured_at": "2026-04-17T17:06:47-0400",
+  "url": "https://www.tradingview.com/chart/8hp50raV/?symbol=MNQ1%21",
+  "phase1_dialogs_after_alt_a": [
+    {
+      "tag": "button",
+      "dataName": "open-indicators-dialog",
+      "dataDialogName": null,
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "className": "button-OhqNVIYA button-ptpAHg8E withText-ptpAHg8E button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible",
+      "text": "",
+      "x": 515,
+      "y": 0,
+      "w": 111,
+      "h": 38
+    },
+    {
+      "tag": "button",
+      "dataName": "open-indicators-dialog",
+      "dataDialogName": null,
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "className": "button-OhqNVIYA button-ptpAHg8E withoutText-ptpAHg8E button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessi",
+      "text": "",
+      "x": 515,
+      "y": 0,
+      "w": 38,
+      "h": 38
+    },
+    {
+      "tag": "button",
+      "dataName": "open-indicators-dialog",
+      "dataDialogName": null,
+      "ariaLabel": "Indicators, metrics, and strategies",
+      "className": "button-OhqNVIYA button-ptpAHg8E withoutText-ptpAHg8E button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessi",
+      "text": "",
+      "x": 567,
+      "y": -1,
+      "w": 38,
+      "h": 38
+    }
+  ],
+  "phase1_error": "No alert dialog detected after Alt+A. Check phase1_dialogs_after_alt_a for what appeared.",
+  "phase2_panel_dump": [
+    {
+      "tag": "div",
+      "role": "toolbar",
+      "dataName": "right-toolbar",
+      "ariaLabel": null,
+      "title": null,
+      "text": "99+",
+      "x": 1520,
+      "y": 41
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "base",
+      "ariaLabel": "Watchlist, details, and news",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 43
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "alerts",
+      "ariaLabel": "Alerts",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 89
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "object_tree",
+      "ariaLabel": "Object tree and data window",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 135
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "union_chats",
+      "ariaLabel": "Chats",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 181
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "screener-dialog-button",
+      "ariaLabel": "Screeners",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 667
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "pine-dialog-button",
+      "ariaLabel": "Pine",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 711
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "calendar-dialog-button",
+      "ariaLabel": "Calendars",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 755
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "community-hub-button",
+      "ariaLabel": "Community",
+      "title": null,
+      "text": "99+",
+      "x": 1521,
+      "y": 801
+    },
+    {
+      "tag": "span",
+      "role": null,
+      "dataName": null,
+      "ariaLabel": "",
+      "title": null,
+      "text": "99+",
+      "x": 1531,
+      "y": 804
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "notifications-button",
+      "ariaLabel": "Notifications",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 847
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": null,
+      "ariaLabel": "Products",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 893
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": "help-button",
+      "ariaLabel": "Help Center",
+      "title": null,
+      "text": "",
+      "x": 1521,
+      "y": 950
+    },
+    {
+      "tag": "div",
+      "role": null,
+      "dataName": "widgetbar-pages-with-tabs",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Alerts\nLog\nAlerts notify you instantly when your conditions are met. Create one ",
+      "x": 1217,
+      "y": 41
+    },
+    {
+      "tag": "button",
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Alerts",
+      "x": 1237,
+      "y": 56
+    },
+    {
+      "tag": "button",
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Log",
+      "x": 1370,
+      "y": 56
+    },
+    {
+      "tag": "div",
+      "role": null,
+      "dataName": "set-alert-button",
+      "ariaLabel": null,
+      "title": "Create Alert",
+      "text": "",
+      "x": 1226,
+      "y": 89
+    },
+    {
+      "tag": "div",
+      "role": null,
+      "dataName": "alerts-search-button",
+      "ariaLabel": null,
+      "title": "Search",
+      "text": "",
+      "x": 1397,
+      "y": 89
+    },
+    {
+      "tag": "div",
+      "role": null,
+      "dataName": "alert-sort-button",
+      "ariaLabel": null,
+      "title": "Sorted by date created (newest first)",
+      "text": "",
+      "x": 1435,
+      "y": 89
+    },
+    {
+      "tag": "div",
+      "role": null,
+      "dataName": "alerts-settings-button",
+      "ariaLabel": null,
+      "title": "Options",
+      "text": "",
+      "x": 1473,
+      "y": 89
+    },
+    {
+      "tag": "div",
+      "role": null,
+      "dataName": "alerts-dropdown-filters-count",
+      "ariaLabel": null,
+      "title": null,
+      "text": "",
+      "x": 1485,
+      "y": 89
+    },
+    {
+      "tag": "div",
+      "role": null,
+      "dataName": "alerts-empty-state",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Alerts notify you instantly when your conditions are met. Create one to get star",
+      "x": 1218,
+      "y": 417
+    },
+    {
+      "tag": "button",
+      "role": null,
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Create alert",
+      "x": 1314,
+      "y": 654
+    }
+  ]
+}
