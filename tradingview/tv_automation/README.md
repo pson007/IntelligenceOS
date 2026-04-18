@@ -88,6 +88,39 @@ notices UI changes (e.g. `backdrop-aRAWUDhF` appearing means a
 modal opened). The viewport is typically 1565×812 (one of the
 useful coordinate baselines).
 
+**Inventory + click in one round-trip: `describe-screen`.**
+
+```bash
+tv chart describe-screen                    # full viewport: screenshot + addressable inventory
+tv chart describe-screen --area sidebar     # scope inventory to one panel
+tv chart describe-screen --include-all      # include unaddressable elements too
+```
+
+Returns the screenshot path AND a JSON list of every clickable element
+in the area, each with its `rect`, `center` (ready to feed into
+`click-at`), and a `selector_hint` (best-guess CSS selector). Default
+filter keeps only "addressable" elements — those with a `data-name`,
+`aria-label`, or `id` — since unaddressed elements are rarely useful
+targets and bloating the inventory hurts scan-ability. Inventory of
+the chart sidebar typically returns 8 entries; of the full chart,
+30-100. `--include-all` returns 500+.
+
+This is the read half of the vision-driven loop: instead of taking a
+screenshot and querying the DOM separately and cross-referencing,
+`describe-screen` returns both linked. Then pass an inventory entry's
+`center` to `click-at`.
+
+**Caveat — nested child elements.** A button's `center` may sit
+inside a child `<span>` that contains its label text. Clicking that
+center hits the child, and some React buttons delegate via
+`event.target === button` so the parent's click handler doesn't fire.
+The symptom: `element_before` reports a SPAN with no `data_name`,
+when you wanted the BUTTON with `data_name="..."`. Fix: click an
+offset position within the rect (e.g. 6-10px from the rect edge,
+inside the button's padding) so `elementFromPoint` returns the button
+itself. The `element_before` field surfaces this immediately so a
+vision loop can self-correct.
+
 ### trading (paper-only, safety-gated, order-verified)
 
 ```bash

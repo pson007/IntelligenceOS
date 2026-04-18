@@ -305,6 +305,9 @@ async def click_at(
         await assert_logged_in(page)
 
         async def _read_element_at(label: str) -> dict | None:
+            # snake_case keys to match describe_screen — so chaining
+            # the two (describe → identify → click → verify) doesn't
+            # need a key-translation step.
             return await page.evaluate(
                 r"""({px, py}) => {
                     const el = document.elementFromPoint(px, py);
@@ -312,8 +315,8 @@ async def click_at(
                     const r = el.getBoundingClientRect();
                     return {
                         tag: el.tagName,
-                        dataName: el.getAttribute('data-name'),
-                        ariaLabel: el.getAttribute('aria-label'),
+                        data_name: el.getAttribute('data-name'),
+                        aria_label: el.getAttribute('aria-label'),
                         title: el.getAttribute('title'),
                         text: (el.innerText || '').trim().slice(0, 60),
                         classes: (el.className || '').toString().slice(0, 80),
@@ -351,13 +354,178 @@ async def click_at(
         audit.log("chart.click_at",
                   x=x, y=y, button=button, double=double,
                   bypass_overlap=bypass_overlap,
-                  element_before_tag=(element_before or {}).get("tag"))
+                  element_before_tag=(element_before or {}).get("tag"),
+                  element_before_data_name=(element_before or {}).get("data_name"))
         return {
             "ok": True, "x": x, "y": y,
             "button": button, "double": double,
             "bypass_overlap": bypass_overlap,
             "element_before": element_before,
             "element_after": element_after,
+        }
+
+
+async def describe_screen(
+    *,
+    area: str = "full",
+    include_all: bool = False,
+    output: Path | None = None,
+) -> dict:
+    """Bridge the screenshot ↔ DOM gap in one round-trip: take a
+    screenshot AND return the inventory of clickable elements with
+    their bounding boxes + identifier hints.
+
+    Pairs with `click_at` for selector-free vision-driven control:
+    Read the returned screenshot, find the element you want by sight,
+    look up its `center` in the inventory, click those coords. No
+    manual DOM querying, no eyeballing pixel positions from a
+    downscaled image.
+
+    `area` selects the screenshot region AND scopes the inventory to
+    elements within that region. Use "full" for everything (default),
+    or "chart" / "sidebar" / "pine_editor" / "right_toolbar" /
+    "account_manager" to focus.
+
+    `include_all=True` returns every visible element — buttons,
+    links, role=tab/button/menuitem, inputs. Default behavior keeps
+    only "addressable" elements (those with data-name OR aria-label
+    OR id) since unaddressed elements are rarely useful targets and
+    they bloat the inventory. Inventories on the chart page typically
+    return 30-100 addressable items vs 500+ when `include_all` is set.
+
+    Returns:
+        {
+          "ok": True,
+          "screenshot": {"path": "...", "area": "...", "fell_back": False},
+          "viewport": {"w": 1565, "h": 812},
+          "element_count": 47,
+          "elements": [
+            {
+              "tag": "BUTTON",
+              "data_name": "alerts",
+              "aria_label": "Alerts",
+              "id": null,
+              "title": null,
+              "text": "",
+              "rect": {"x": 1520, "y": 89, "w": 44, "h": 30},
+              "center": {"x": 1542, "y": 104},
+              "selector_hint": "[data-name=\"alerts\"]"
+            },
+            ...
+          ]
+        }
+    """
+    # Screenshot first — also doubles as the "do we have a chart"
+    # check via assert_logged_in inside.
+    if output is None:
+        _DEFAULT_SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        output = _DEFAULT_SCREENSHOT_DIR / f"describe_{area}_{ts}.png"
+    else:
+        output.parent.mkdir(parents=True, exist_ok=True)
+
+    shot = await screenshot(symbol=None, interval=None, output=output, area=area)
+
+    await ensure_automation_chromium()
+    async with tv_context() as ctx:
+        page = await _find_or_open_chart(ctx)
+        await assert_logged_in(page)
+
+        scope_selector = None if area in ("full", "chart") else _SCREENSHOT_AREAS.get(area)
+
+        inventory = await page.evaluate(
+            r"""({scopeSel, includeAll}) => {
+                // Determine the root we scan within.
+                let root = document.body;
+                if (scopeSel) {
+                    const candidate = document.querySelector(scopeSel);
+                    if (candidate) root = candidate;
+                }
+                const viewport = {
+                    w: window.innerWidth,
+                    h: window.innerHeight,
+                };
+                // What counts as "potentially clickable":
+                // - Native interactive: button, a, input, select
+                // - ARIA interactive: role=button/tab/menuitem/link/checkbox
+                // - Anything with data-name (TV's stable handle)
+                // - Anything with aria-label (when paired with onclick-like wiring)
+                // We then filter to visible elements within the
+                // viewport (negative-x or off-bottom items are TV's
+                // overflow tricks — see ROADMAP §7g'/§4f).
+                const sels = [
+                    'button', 'a[href]', 'input', 'select',
+                    '[role="button"]', '[role="tab"]', '[role="menuitem"]',
+                    '[role="link"]', '[role="checkbox"]', '[data-name]',
+                ];
+                const all = new Set();
+                sels.forEach(s => {
+                    root.querySelectorAll(s).forEach(el => all.add(el));
+                });
+                const out = [];
+                all.forEach(el => {
+                    const r = el.getBoundingClientRect();
+                    if (r.width === 0 || r.height === 0) return;
+                    // Skip elements outside the viewport — TV's
+                    // "translateX(-999999)" overflow trick lives here.
+                    if (r.x + r.width < 0 || r.y + r.height < 0) return;
+                    if (r.x > viewport.w || r.y > viewport.h) return;
+                    const dataName = el.getAttribute('data-name');
+                    const ariaLabel = el.getAttribute('aria-label');
+                    const id = el.id || null;
+                    const title = el.getAttribute('title');
+                    const role = el.getAttribute('role');
+                    // Addressable filter: at least one stable identifier.
+                    if (!includeAll && !(dataName || ariaLabel || id)) return;
+                    // Build a best-guess selector (most-specific first).
+                    let selectorHint = null;
+                    if (dataName) selectorHint = `[data-name="${dataName}"]`;
+                    else if (id) selectorHint = `#${id}`;
+                    else if (ariaLabel) selectorHint = `[aria-label="${ariaLabel.replace(/"/g, '\\"')}"]`;
+                    else if (role) selectorHint = `[role="${role}"]`;
+                    out.push({
+                        tag: el.tagName,
+                        data_name: dataName,
+                        aria_label: ariaLabel,
+                        id,
+                        title,
+                        role,
+                        text: (el.innerText || '').trim().slice(0, 60).replace(/\s+/g, ' '),
+                        rect: {
+                            x: Math.round(r.x), y: Math.round(r.y),
+                            w: Math.round(r.width), h: Math.round(r.height),
+                        },
+                        center: {
+                            x: Math.round(r.x + r.width / 2),
+                            y: Math.round(r.y + r.height / 2),
+                        },
+                        selector_hint: selectorHint,
+                    });
+                });
+                // Stable sort: top-to-bottom, left-to-right (reading order).
+                out.sort((a, b) => {
+                    if (Math.abs(a.rect.y - b.rect.y) > 8) return a.rect.y - b.rect.y;
+                    return a.rect.x - b.rect.x;
+                });
+                return {viewport, elements: out};
+            }""",
+            {"scopeSel": scope_selector, "includeAll": include_all},
+        )
+
+        audit.log("chart.describe_screen",
+                  area=area, include_all=include_all,
+                  element_count=len(inventory["elements"]),
+                  screenshot_path=shot["path"])
+        return {
+            "ok": True,
+            "screenshot": {
+                "path": shot["path"],
+                "area": shot.get("area", area),
+                "fell_back": shot.get("fell_back", False),
+            },
+            "viewport": inventory["viewport"],
+            "element_count": len(inventory["elements"]),
+            "elements": inventory["elements"],
         }
 
 
@@ -398,6 +566,22 @@ def _main() -> None:
 
     sub.add_parser("metadata", help="Print current chart metadata")
 
+    ds = sub.add_parser(
+        "describe-screen",
+        help="Take a screenshot AND return the inventory of clickable "
+             "elements (with rects, centers, and selector hints) — bridges "
+             "the screenshot ↔ DOM gap for vision-driven control.",
+    )
+    ds.add_argument("--area", default="full",
+                    choices=sorted(list(_SCREENSHOT_AREAS) + ["full"]),
+                    help="Region to capture AND scope the inventory to "
+                         "(default: full)")
+    ds.add_argument("--include-all", action="store_true",
+                    help="Include unaddressable elements too (default: only "
+                         "elements with data-name OR aria-label OR id)")
+    ds.add_argument("-o", "--output", type=Path, default=None,
+                    help="Screenshot path (default: ~/Desktop/TradingView/...)")
+
     cl = sub.add_parser(
         "click-at",
         help="Click at viewport pixel coordinates (selector-free; "
@@ -425,6 +609,11 @@ def _main() -> None:
         run(lambda: click_at(
             args.x, args.y, button=args.button, double=args.double,
             bypass_overlap=args.bypass_overlap,
+        ))
+    elif args.cmd == "describe-screen":
+        run(lambda: describe_screen(
+            area=args.area, include_all=args.include_all,
+            output=args.output,
         ))
 
 
