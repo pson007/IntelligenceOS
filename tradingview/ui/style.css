@@ -393,3 +393,118 @@
     color: var(--muted); font-style: italic; cursor: default;
     justify-content: center; font-size: 12px;
   }
+
+  /* ----------------------------------------------------------------
+   * Mobile / narrow-viewport layout (≤ 768px).
+   * Sidebar → horizontal tab strip at top, cards tighter, fields
+   * full-width, long metadata wraps at word boundaries instead of
+   * falling back to per-character breaks in tight flex columns.
+   * ---------------------------------------------------------------- */
+  @media (max-width: 768px) {
+    .app { flex-direction: column; height: auto; min-height: 100vh; }
+
+    /* Sidebar collapses to a thin top bar */
+    .sidebar {
+      width: 100%; flex-shrink: 0;
+      border-right: 0; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+      background: var(--bg-1);
+    }
+    .brand {
+      padding: 8px 14px; border-bottom: 0;
+    }
+    .logo { width: 26px; height: 26px; font-size: 10px; }
+    .brand-name { font-size: 13px; }
+    .brand-sub { display: none; }
+
+    /* Tabs become a horizontal scrollable strip */
+    .nav {
+      display: flex; flex-wrap: nowrap; overflow-x: auto;
+      padding: 0 8px 6px; gap: 2px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav-item {
+      white-space: nowrap; padding: 5px 12px;
+      margin-bottom: 0; flex-shrink: 0;
+      font-size: 12px;
+    }
+    .nav-item .ico { display: none; }  /* labels alone — saves ~15px each */
+
+    .status {
+      padding: 6px 14px; font-size: 11px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Main content — tighter padding, smaller type */
+    .main { padding: 14px; }
+    .tab h1 { font-size: 17px; }
+    .tab .subtitle { font-size: 12px; margin-bottom: 14px; line-height: 1.35; }
+
+    .card { padding: 12px 14px; margin-bottom: 12px; }
+    .card h2 { font-size: 11px; margin-bottom: 10px; }
+
+    /* Field rows wrap cleanly; every label goes full-width */
+    .row { gap: 8px; }
+    .row > label.field { width: 100%; min-width: 0; }
+    .row > label.field[style*="min-width"] { min-width: 0 !important; }
+
+    /* Summary strips: allow individual items to shrink and wrap */
+    .summary-strip {
+      gap: 10px 18px; padding: 0 0 10px;
+    }
+    .summary-strip > div {
+      min-width: 0; max-width: 100%;
+      display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+    }
+    /* The key fix for the vertical-letter title bug: use overflow-wrap
+       which breaks at word boundaries when possible and only falls back
+       to character breaks when a single token is too long. */
+    .summary-strip .value,
+    .summary-strip .value.small {
+      overflow-wrap: anywhere; word-break: normal;
+    }
+
+    /* Tables — tighter, allow horizontal scroll when columns won't fit */
+    .card > table,
+    .card > div > table { font-size: 12px; }
+    table th, table td { padding: 6px 8px; }
+    tr.pos-row td { padding: 9px 8px; }
+    .sym-primary { font-size: 12px; }
+    .sym-exchange { font-size: 10px; }
+
+    /* Combobox dropdowns fit the viewport */
+    .combo-menu { max-height: 220px; }
+    .combo-option { padding: 8px 12px; }  /* bigger tap target */
+
+    /* Buttons — larger tap area on mobile */
+    button { padding: 8px 14px; font-size: 13px; }
+    .icon-btn { padding: 5px 10px; font-size: 11px; }
+
+    /* Audit log — shrink timestamps a touch */
+    .audit-entry { padding: 7px 8px; }
+    .audit-entry .t { min-width: 50px; font-size: 10px; }
+    .audit-entry .fields { font-size: 10px; }
+
+    /* Act steps */
+    .step { padding: 10px; }
+    .step .step-num { min-width: 18px; font-size: 10px; }
+    .step .step-reason { font-size: 11px; }
+
+    /* Toast — full-width on mobile */
+    .toast {
+      left: 10px; right: 10px; bottom: 10px;
+      max-width: none;
+    }
+
+    /* Screenshot display */
+    .screenshot-placeholder { padding: 24px; font-size: 12px; }
+  }
+
+  /* Very narrow (≤ 380px, e.g. iPhone SE portrait) — one more pass */
+  @media (max-width: 380px) {
+    .main { padding: 12px; }
+    .card { padding: 10px 12px; }
+    .tab h1 { font-size: 16px; }
+  }
