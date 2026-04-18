@@ -1,0 +1,411 @@
+{
+  "rows": {
+    "found": true,
+    "signatures": [
+      [
+        "DIV|",
+        31
+      ],
+      [
+        "DIV|wrap-IEe5qpW4",
+        31
+      ],
+      [
+        "DIV|symbol-RsFlttSS.active-RsFlttSS.blackBorder-RsFlttSS",
+        1
+      ],
+      [
+        "DIV|indicators-RsFlttSS.active-RsFlttSS.blackBorder-RsFlttSS",
+        1
+      ],
+      [
+        "DIV|symbol-RsFlttSS.blackBorder-RsFlttSS.common-tooltip-html",
+        30
+      ],
+      [
+        "DIV|indicators-RsFlttSS.blackBorder-RsFlttSS",
+        30
+      ]
+    ],
+    "sample": [
+      {
+        "sig": "DIV|",
+        "tag": "DIV",
+        "attrs": {
+          "style": "position: absolute; left: 0px; top: 6px; height: 30px; width: 100%;"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 124,
+          "w": 301,
+          "h": 30
+        },
+        "text": "M MNQ1! 26,825.50 338.25 1.28%"
+      },
+      {
+        "sig": "DIV|wrap-IEe5qpW4",
+        "tag": "DIV",
+        "attrs": {
+          "class": "wrap-IEe5qpW4",
+          "draggable": "true"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 124,
+          "w": 301,
+          "h": 31
+        },
+        "text": "M MNQ1! 26,825.50 338.25 1.28%"
+      },
+      {
+        "sig": "DIV|symbol-RsFlttSS.active-RsFlttSS.blackBorder-RsFlttSS",
+        "tag": "DIV",
+        "attrs": {
+          "class": "symbol-RsFlttSS active-RsFlttSS blackBorder-RsFlttSS firstRow-RsFlttSS common-tooltip-html common-tooltip-vertical apply-common-tooltip",
+          "data-tooltip-delay": "1500",
+          "data-symbol-full": "CME_MINI:MNQ1!",
+          "data-symbol-short": "MNQ1!",
+          "data-active": "true",
+          "data-selected": "false",
+          "data-status": "resolved",
+          "data-tooltip": "<div class=\"wrapper-bIGHJRgI\"><div class=\"description-bIGHJRgI\">Micro E-mini Nasdaq-100 Index Futures</div><span>CME_MINI</span><span class=\"dot-bIGHJRgI\">\u2022</span><span>Real-time</span><span class=\"dot-bIGHJRgI\">\u2022</span><span class=\"marketClose-bIGHJRgI\">Market closed</span></div>"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 124,
+          "w": 301,
+          "h": 31
+        },
+        "text": "M MNQ1! 26,825.50 338.25 1.28%"
+      },
+      {
+        "sig": "DIV|indicators-RsFlttSS.active-RsFlttSS.blackBorder-RsFlttSS",
+        "tag": "DIV",
+        "attrs": {
+          "class": "indicators-RsFlttSS active-RsFlttSS blackBorder-RsFlttSS"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 125,
+          "w": 301,
+          "h": 29
+        },
+        "text": ""
+      },
+      {
+        "sig": "DIV|",
+        "tag": "DIV",
+        "attrs": {
+          "style": "position: absolute; left: 0px; top: 36px; height: 30px; width: 100%;"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 154,
+          "w": 301,
+          "h": 30
+        },
+        "text": "V VX1! D 20.290 \u22120.210 \u22121.02%"
+      },
+      {
+        "sig": "DIV|wrap-IEe5qpW4",
+        "tag": "DIV",
+        "attrs": {
+          "class": "wrap-IEe5qpW4",
+          "draggable": "true"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 154,
+          "w": 301,
+          "h": 31
+        },
+        "text": "V VX1! D 20.290 \u22120.210 \u22121.02%"
+      },
+      {
+        "sig": "DIV|symbol-RsFlttSS.blackBorder-RsFlttSS.common-tooltip-html",
+        "tag": "DIV",
+        "attrs": {
+          "class": "symbol-RsFlttSS blackBorder-RsFlttSS common-tooltip-html common-tooltip-vertical apply-common-tooltip",
+          "data-tooltip-delay": "1500",
+          "data-symbol-full": "CBOE:VX1!",
+          "data-symbol-short": "VX1!",
+          "data-active": "false",
+          "data-selected": "false",
+          "data-status": "resolved",
+          "data-tooltip": "<div class=\"wrapper-bIGHJRgI\"><div class=\"description-bIGHJRgI\">Cboe Volatility Index (VIX) Futures</div><span>CBOE</span><span class=\"dot-bIGHJRgI\">\u2022</span><span>Delayed</span><span class=\"dot-bIGHJRgI\">\u2022</span><span class=\"marketClose-bIGHJRgI\">Market closed</span></div>"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 154,
+          "w": 301,
+          "h": 31
+        },
+        "text": "V VX1! D 20.290 \u22120.210 \u22121.02%"
+      },
+      {
+        "sig": "DIV|indicators-RsFlttSS.blackBorder-RsFlttSS",
+        "tag": "DIV",
+        "attrs": {
+          "class": "indicators-RsFlttSS blackBorder-RsFlttSS"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 155,
+          "w": 301,
+          "h": 29
+        },
+        "text": ""
+      },
+      {
+        "sig": "DIV|symbol-RsFlttSS.blackBorder-RsFlttSS.common-tooltip-html",
+        "tag": "DIV",
+        "attrs": {
+          "class": "symbol-RsFlttSS blackBorder-RsFlttSS common-tooltip-html common-tooltip-vertical apply-common-tooltip",
+          "data-tooltip-delay": "1500",
+          "data-symbol-full": "COINBASE:BTCUSD",
+          "data-symbol-short": "BTCUSD",
+          "data-active": "false",
+          "data-selected": "false",
+          "data-status": "resolved",
+          "data-tooltip": "<div class=\"wrapper-bIGHJRgI\"><div class=\"description-bIGHJRgI\">Bitcoin / U.S. Dollar</div><span>COINBASE</span><span class=\"dot-bIGHJRgI\">\u2022</span><span>Real-time</span><span class=\"dot-bIGHJRgI\">\u2022</span><span class=\"marketOpen-bIGHJRgI\">Market open</span></div>"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 184,
+          "w": 301,
+          "h": 31
+        },
+        "text": "B BTCUSD 76,962.85 1,799.76 2.39%"
+      },
+      {
+        "sig": "DIV|indicators-RsFlttSS.blackBorder-RsFlttSS",
+        "tag": "DIV",
+        "attrs": {
+          "class": "indicators-RsFlttSS blackBorder-RsFlttSS"
+        },
+        "rect": {
+          "x": 1218,
+          "y": 185,
+          "w": 301,
+          "h": 29
+        },
+        "text": ""
+      }
+    ]
+  },
+  "list_popup": {
+    "found": true,
+    "popupClass": "menuBox-Kq3ruQo8",
+    "items": [
+      {
+        "tag": "LABEL",
+        "attrs": {
+          "class": "wrapper-bl9AR3Gv accessible-bl9AR3Gv"
+        },
+        "text": "Share list"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "labelRow-bl9AR3Gv"
+        },
+        "text": "Share list"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "label-bl9AR3Gv"
+        },
+        "text": "Share list"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Add alert on the list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Add alert on the list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Add alert on the list\u2026"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Make a copy\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Make a copy\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Make a copy\u2026"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Rename"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Rename"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Rename"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Add section"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Add section"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Add section"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Clear list"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Clear list"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Clear list"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Create new list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Create new list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Create new list\u2026"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Upload list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Upload list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Upload list\u2026"
+      },
+      {
+        "tag": "DIV",
+        "attrs": {
+          "class": "accessible-NQERJsv9 item-jFqVJoPk item-E2qCgOMz withIcon-jFqVJoPk withIcon-E2qCg"
+        },
+        "text": "Open list\u2026 \u21e7 W"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "labelRow-jFqVJoPk"
+        },
+        "text": "Open list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "label-jFqVJoPk"
+        },
+        "text": "Open list\u2026"
+      },
+      {
+        "tag": "SPAN",
+        "attrs": {
+          "class": "shortcut-jFqVJoPk"
+        },
+        "text": "\u21e7 W"
+      }
+    ]
+  },
+  "add_dialog": {
+    "found": true,
+    "dialogClass": "wrapper-b8SxMnzX",
+    "dialogName": "Add symbol",
+    "inputs": [
+      {
+        "placeholder": "Symbol, ISIN, or CUSIP",
+        "ariaLabel": null,
+        "dataName": null,
+        "classes": "search-lANubSc2 search-ZXzPWcCf upperCase-ZXzPWcCf"
+      }
+    ]
+  }
+}

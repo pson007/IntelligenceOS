@@ -12,17 +12,19 @@ Tier 1 is complete and live-tested: `chart`, `trading`, `pine_editor`,
 `strategy_tester`, `status`. Tier 2 landed 2026-04-17: `orders.py`
 (limit/stop/bracket/market with offset TP/SL), `alerts.py` (price
 alerts with create/list/pause/delete + webhook/message/name
-customization), `layouts.py` (list/current/load/rename), and
-`indicators.py` (add/remove/configure chart indicators). Nine CLIs
-work against a logged-in Chromium-Automation profile on CDP port 9222. Foundation
-(guards, typed errors, audit log with `request_id` + `duration_ms`,
-retry on transient Playwright errors, flock serialization, safety
-limits with velocity throttle, tick-alignment validation,
-layout-preserving URL navigation, toast-overlay dismissal) is in
-place. The autonomous Pine→webhook→bridge loop is now unblocked —
-`tv alerts create-price` + `tv-worker/` + `bridge.py` + `tv orders
-place-market` form a complete closed loop (webhook customization is
-the final deferred piece).
+customization), `layouts.py` (list/current/load/rename),
+`indicators.py` (add/remove/configure chart indicators), and
+`watchlist.py` (current/contents/add/clear/create/rename/load/copy).
+Ten CLIs work against a logged-in Chromium-Automation profile on CDP
+port 9222. Foundation (guards, typed errors, audit log with
+`request_id` + `duration_ms`, retry on transient Playwright errors,
+flock serialization, safety limits with velocity throttle,
+tick-alignment validation, layout-preserving URL navigation,
+toast-overlay dismissal) is in place. The autonomous
+Pine→webhook→bridge loop is now unblocked — `tv alerts create-price`
++ `tv-worker/` + `bridge.py` + `tv orders place-market` form a
+complete closed loop (webhook customization is the final deferred
+piece).
 
 ---
 
@@ -160,24 +162,39 @@ automatable: `tv alerts create-price <sym> <op> <value> --webhook ...`
 - `resume` has a status-refresh lag that can mislead the immediate
   post-click read. Easy fix: poll for `alert-item-status` to flip.
 
-### 4d. watchlist.py — **medium value** (≈ 2 hrs)
+### 4d. watchlist.py — **BUILT 2026-04-17** ✓
 
-**Why**: setting up a dashboard programmatically. Useful for workflows
-like "morning prep: build a watchlist from these tickers" or "scan the
-screener, save matches to watchlist X".
+Shipped: `current`, `contents`, `list`, `add`, `clear` (with dry-run),
+`create`, `rename`, `load`, `copy`. Driven through the right-sidebar
+Watchlist widget + the `[data-name="watchlists-button"]` operations
+menu + the `data-dialog-name="Watchlists"` Open list… picker.
 
-**Scope**:
-- `create <name>` / `delete <name>`
-- `list` — all watchlists
-- `contents <name>` — symbols in a watchlist
-- `add <watchlist> <symbol>` / `remove <watchlist> <symbol>`
-- `reorder <watchlist> <symbol-list>`
+Symbol rows are unusually well-attributed for TV: each row carries
+`data-symbol-short`, `data-symbol-full`, `data-active`, and
+`data-status` — the cleanest scraping surface in this codebase.
+`contents` returns all four per row.
 
-**Where it lives**: right-panel watchlist widget. Simpler DOM — probably
-each symbol row has a stable `[data-name]` or at least a `data-symbol`.
+**Critical insight — virtualization**: the sidebar list is the third
+TV surface (after Strategy Tester trades and Layouts picker) that only
+renders ~10-15 rows in DOM at a time. A single static read produces
+inconsistent results — different symbols depending on scroll position.
+`_scroll_and_collect` scrolls `[data-name="symbol-list-wrap"]` and
+dedups by `data-symbol-short`. Termination anchors on `scrollTop +
+clientHeight >= scrollHeight` rather than the conventional
+"two-stagnant-rounds" stop — React's row virtualizer can falsely look
+stagnant for one or two iterations after a scroll while it mounts the
+new range.
 
-**Probe target**: the right-sidebar watchlist area with an existing
-watchlist loaded.
+**Deferred**:
+- `remove <symbol>` — per-row delete X is hover-reveal-only and TV's
+  React handlers don't fire on JS-dispatched mouseenter/mouseover
+  (same pattern from §7c on the indicators legend; would need real
+  pointer-event coordinates). Workaround: `clear` + `add` the
+  symbols you want to keep.
+- `delete <list>` — no Delete in the operations menu; likely needs
+  hover-reveal trash in the Open list… picker (same as
+  `layouts.delete`). Workaround: rename and reuse.
+- `reorder` — drag-and-drop on canvas-coordinates; complex.
 
 ### 4e. layouts.py — **BUILT 2026-04-17** ✓ (partial)
 

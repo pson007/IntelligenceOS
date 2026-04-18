@@ -451,3 +451,68 @@ order_panel:
     - '[data-name="Paper.orders-table"] tr [data-name="close-settings-cell-button"]'
   row_protect_button:
     - '[data-name="Paper.orders-table"] tr [data-name="edit-settings-cell-button"]'
+
+watchlist:
+  # Right-sidebar Watchlist widget — verified 2026-04-17 via
+  # probe_watchlist + probe_watchlist_dive. The sidebar toggle is
+  # `data-name="base"` (aria "Watchlist, details, and news") — TV
+  # combines watchlist + details + news under a single sidebar slot.
+  sidebar_icon:
+    - '[data-name="base"]'
+    - 'button[aria-label="Watchlist, details, and news"]'
+  # The widget panel containing header buttons + symbol list.
+  panel_container:
+    - '[data-name="widgetbar-pages-with-tabs"]'
+  # Scrollable symbol list (the list root with rows).
+  list_root:
+    - '[data-name="tree"]'
+  # Header button whose visible text equals the active watchlist name.
+  # Click opens the operations menu (Rename, Make a copy, Clear, Create,
+  # Open list, etc.). NOT a list-of-lists — that's the Open list… picker.
+  watchlists_button:
+    - '[data-name="watchlists-button"]'
+  add_symbol_button:
+    - '[data-name="add-symbol-button"]'
+  # Per-symbol row. Rows are <div>s carrying both data-symbol-short
+  # (e.g. "MNQ1!") and data-symbol-full (e.g. "CME_MINI:MNQ1!").
+  # data-active="true" marks the symbol whose chart is currently shown.
+  # Multiple DOM rows per symbol exist (symbol cell + indicators cell);
+  # use data-symbol-short matching with a `:has(...)` ancestor query
+  # OR scrape and dedup by data-symbol-short.
+  symbol_row:
+    - '[data-name="tree"] [data-symbol-short]'
+
+watchlist_menu:
+  # The menu popup that opens from watchlists-button. Items use a
+  # stable class prefix `item-jFqVJoPk` (rotates rarely; verified
+  # 2026-04-17). Items: Share list / Add alert / Make a copy… /
+  # Rename / Add section / Clear list / Create new list… /
+  # Upload list… / Open list… (⇧ W).
+  container:
+    - '[class*="menuBox-"]'
+  item:
+    - '[class*="item-jFqVJoPk"]'
+
+add_symbol_dialog:
+  # Modal that opens from add-symbol-button. Stable data-dialog-name.
+  # The single text input accepts symbol/ISIN/CUSIP. Submit by pressing
+  # Enter (no explicit OK/Add button needed — TV adds on Enter and
+  # closes the dialog).
+  container:
+    - '[data-dialog-name="Add symbol"]'
+  search_input:
+    - '[data-dialog-name="Add symbol"] input[placeholder^="Symbol"]'
+
+watchlists_dialog:
+  # The Open list… picker. Stable data-dialog-name="Watchlists".
+  # Two tabs: "My watchlists" (created lists) and "Hotlists" (TV's
+  # built-in market-leader lists). Search input filters within the
+  # active tab.
+  container:
+    - '[data-dialog-name="Watchlists"]'
+  search_input:
+    - '[data-dialog-name="Watchlists"] input[placeholder*="Search"]'
+  my_watchlists_tab:
+    - '[data-dialog-name="Watchlists"] button[role="tab"]:has-text("My watchlists")'
+  hotlists_tab:
+    - '[data-dialog-name="Watchlists"] button[role="tab"]:has-text("Hotlists")'

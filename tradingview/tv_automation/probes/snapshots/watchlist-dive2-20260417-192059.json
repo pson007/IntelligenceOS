@@ -1,0 +1,79 @@
+{
+  "hover": {
+    "found": true,
+    "rowRect": {
+      "x": 1218,
+      "y": 154,
+      "w": 301,
+      "h": 31
+    },
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "dataName": "object_tree",
+        "ariaLabel": "Object tree and data window",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI",
+        "rect": {
+          "x": 1521,
+          "y": 136,
+          "w": 44,
+          "h": 44
+        }
+      }
+    ]
+  },
+  "context_menu": {
+    "found": true,
+    "items": []
+  },
+  "open_list_dialog": {
+    "found": true,
+    "dialogClass": "wrapper-b8SxMnzX",
+    "dialogName": "Watchlists",
+    "inputs": [
+      {
+        "placeholder": "Search lists",
+        "ariaLabel": null
+      }
+    ],
+    "rows": [
+      {
+        "tag": "DIV",
+        "dataName": null,
+        "role": null,
+        "text": "Watchlists",
+        "classes": "ellipsis-BZKENkhT"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "role": "tab",
+        "text": "My watchlists",
+        "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-tooltip--check-children-recursively apply-overflow-tooltip--allow-text"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "role": "tab",
+        "text": "Hotlists",
+        "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-tooltip--check-children-recursively apply-overflow-tooltip--allow-text"
+      },
+      {
+        "tag": "DIV",
+        "dataName": null,
+        "role": null,
+        "text": "SYMBOLS",
+        "classes": "title-RvmSCAQq apply-overflow-tooltip secondTitle-iJvgOMWm"
+      },
+      {
+        "tag": "DIV",
+        "dataName": null,
+        "role": null,
+        "text": "CREATED LISTS",
+        "classes": "container-UmsFKpIc"
+      }
+    ]
+  }
+}

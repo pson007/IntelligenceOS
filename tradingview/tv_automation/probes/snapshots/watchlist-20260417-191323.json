@@ -1,0 +1,293 @@
+{
+  "captured_at": "2026-04-17T19:13:23",
+  "url": "https://www.tradingview.com/chart/8hp50raV/?symbol=MNQ1%21",
+  "opened_via": "[data-name=\"base\"]",
+  "widgetbar_icons": {
+    "found": true,
+    "icons": [
+      {
+        "tag": "DIV",
+        "dataName": "right-toolbar",
+        "ariaLabel": null,
+        "title": null,
+        "text": "99+",
+        "classes": "toolbar-S4V6IoxY"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "base",
+        "ariaLabel": "Watchlist, details, and news",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isA"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "alerts",
+        "ariaLabel": "Alerts",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "object_tree",
+        "ariaLabel": "Object tree and data window",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "union_chats",
+        "ariaLabel": "Chats",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "screener-dialog-button",
+        "ariaLabel": "Screeners",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "pine-dialog-button",
+        "ariaLabel": "Pine",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "calendar-dialog-button",
+        "ariaLabel": "Calendars",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "community-hub-button",
+        "ariaLabel": "Community",
+        "title": null,
+        "text": "99+",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "notifications-button",
+        "ariaLabel": "Notifications",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": "Products",
+        "title": null,
+        "text": "",
+        "classes": "button-pcFY_CU1 common-tooltip-vertical button-merBkM5y apply-common-tooltip acc"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "help-button",
+        "ariaLabel": "Help Center",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "widgetbar-pages-with-tabs",
+        "ariaLabel": null,
+        "title": null,
+        "text": "Watchlist\nSymbol\nLast\nChg\nChg%\nM\nMNQ1!\n2",
+        "classes": "widgetbar-pages"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "watchlists-button",
+        "ariaLabel": null,
+        "title": null,
+        "text": "Watchlist",
+        "classes": "button-merBkM5y button-g115eYH4 apply-common-tooltip accessible-merBkM5y"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "add-symbol-button",
+        "ariaLabel": "Add symbol",
+        "title": null,
+        "text": "",
+        "classes": "headerButton-mQBvegEO button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInt"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "advanced-view-button",
+        "ariaLabel": "Advanced view",
+        "title": null,
+        "text": "",
+        "classes": "headerButton-mQBvegEO button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInt"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "settings-button",
+        "ariaLabel": "Settings",
+        "title": null,
+        "text": "",
+        "classes": "headerButton-mQBvegEO button-merBkM5y apply-common-tooltip accessible-merBkM5y"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "classes": "button-D_3frAuZ accessible-D_3frAuZ"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Symbol",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Last",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Chg",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Chg%",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "symbol-list-wrap",
+        "ariaLabel": null,
+        "title": null,
+        "text": "M\nMNQ1!\n26,825.50\n338.25\n1.28%\nV\nVX1!\nD\n",
+        "classes": "scrollable-g71rrBCn"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "tree",
+        "ariaLabel": null,
+        "title": null,
+        "text": "M\nMNQ1!\n26,825.50\n338.25\n1.28%\nV\nVX1!\nD\n",
+        "classes": "tree-MgF6KBas"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Metrics",
+        "text": "",
+        "classes": "wrap-OfcgU7jK button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S access"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "details-add-note-button",
+        "ariaLabel": null,
+        "title": "Add note",
+        "text": "",
+        "classes": "notesBtn-dvJzenj7 button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInterac"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "details-settings-button",
+        "ariaLabel": null,
+        "title": "Settings",
+        "text": "",
+        "classes": "wrap-kyudUIs0 button-merBkM5y apply-common-tooltip"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "details-futures-chart-button",
+        "ariaLabel": null,
+        "title": null,
+        "text": "More info",
+        "classes": "buttonContainer-vll9ujXF"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More info",
+        "classes": "button-vll9ujXF"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More seasonals",
+        "classes": "button-vll9ujXF"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "details-more-technicals-button",
+        "ariaLabel": null,
+        "title": null,
+        "text": "More technicals",
+        "classes": "buttonContainer-vll9ujXF"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More technicals",
+        "classes": "button-vll9ujXF"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "details-more-options-button",
+        "ariaLabel": null,
+        "title": null,
+        "text": "More on options",
+        "classes": "buttonContainer-vll9ujXF"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More on options",
+        "classes": "button-vll9ujXF"
+      }
+    ]
+  },
+  "panel": {
+    "found": false
+  },
+  "list_menu_candidates": [
+    {
+      "selector": "button[aria-label*=\"atchlist\" i]",
+      "dataName": "base",
+      "ariaLabel": "Watchlist, details, and news",
+      "text": ""
+    }
+  ]
+}

@@ -268,6 +268,55 @@ by visible label text (case-sensitive). Modals vary per indicator;
 labels you can expect on RSI: `"Length"`, `"Source"`, `"Upper Band"`,
 `"Lower Band"`.
 
+### watchlist (named lists + symbol membership)
+
+The right-sidebar Watchlist is the "set of symbols I care about". Each
+named list (e.g. "Tech", "Crypto Watch") stores an ordered set of
+symbols rendered with realtime quote columns. `tv watchlist` makes the
+list scriptable — useful for "morning prep: build today's watchlist
+from screener results" or "reset my crypto list to a hot-list snapshot".
+
+```bash
+tv watchlist current                # active list name
+tv watchlist contents               # full symbol list (handles virtualization)
+tv watchlist list                   # all named lists from the picker
+tv watchlist add SPY                # add a symbol to the active list
+tv watchlist clear --dry-run        # preview a wipe without committing
+tv watchlist clear                  # actually wipe the active list
+tv watchlist create "Tech Watch"    # new list, switches to it
+tv watchlist rename "Tech v2"       # rename the active list
+tv watchlist load "Tech Watch"      # switch to a saved list
+tv watchlist copy "Tech Watch v2"   # duplicate the active list
+```
+
+**Virtualization**: the sidebar only renders ~10-15 rows in DOM at a
+time. `contents` scrolls `[data-name="symbol-list-wrap"]` top→bottom
+and dedups by `data-symbol-short`, anchoring termination on the
+container's own `scrollTop + clientHeight >= scrollHeight` (a
+"two-stagnant-rounds" stop fires falsely while React is still mounting
+new rows after a scroll).
+
+**Symbol row attributes** are unusually rich for TV: each row carries
+`data-symbol-short` ("MNQ1!"), `data-symbol-full`
+("CME_MINI:MNQ1!"), `data-active="true"` for the currently-charted
+symbol, and `data-status="resolved"` when the row finished loading.
+`contents` returns all four — most other TV tables require parsing
+visible text.
+
+**Add idempotency**: `add SYMBOL` short-circuits with
+`already_present: true` if the symbol is already in the list — safe
+to call from a script without first checking membership.
+
+**Deferred**:
+- `remove <symbol>` — per-row delete is hover-reveal-only and TV's
+  React handlers don't fire on JS-dispatched mouseenter (same gotcha
+  pattern from the indicators legend, §3 above). Workaround: `clear`
+  + `add` the symbols you want to keep.
+- `delete <list>` — no obvious "Delete" command in the operations
+  menu; probably needs hover-reveal trash inside the picker (similar
+  to `layouts delete`). Workaround: rename and reuse.
+- `reorder` — drag-and-drop on canvas-coordinates; complex.
+
 ### pine_editor
 
 ```bash

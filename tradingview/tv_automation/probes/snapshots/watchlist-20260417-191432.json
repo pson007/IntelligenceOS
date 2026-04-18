@@ -1,0 +1,470 @@
+{
+  "captured_at": "2026-04-17T19:14:32",
+  "url": "https://www.tradingview.com/chart/8hp50raV/?symbol=MNQ1%21",
+  "opened_via": "[data-name=\"base\"]",
+  "widgetbar_icons": {
+    "found": true,
+    "icons": [
+      {
+        "tag": "DIV",
+        "dataName": "right-toolbar",
+        "ariaLabel": null,
+        "title": null,
+        "text": "99+",
+        "classes": "toolbar-S4V6IoxY"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "base",
+        "ariaLabel": "Watchlist, details, and news",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "alerts",
+        "ariaLabel": "Alerts",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "object_tree",
+        "ariaLabel": "Object tree and data window",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "union_chats",
+        "ariaLabel": "Chats",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "screener-dialog-button",
+        "ariaLabel": "Screeners",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "pine-dialog-button",
+        "ariaLabel": "Pine",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "calendar-dialog-button",
+        "ariaLabel": "Calendars",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "community-hub-button",
+        "ariaLabel": "Community",
+        "title": null,
+        "text": "99+",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "notifications-button",
+        "ariaLabel": "Notifications",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": null,
+        "ariaLabel": "Products",
+        "title": null,
+        "text": "",
+        "classes": "button-pcFY_CU1 common-tooltip-vertical button-merBkM5y apply-common-tooltip acc"
+      },
+      {
+        "tag": "BUTTON",
+        "dataName": "help-button",
+        "ariaLabel": "Help Center",
+        "title": null,
+        "text": "",
+        "classes": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isI"
+      },
+      {
+        "tag": "DIV",
+        "dataName": "widgetbar-pages-with-tabs",
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "classes": "widgetbar-pages hidden"
+      }
+    ]
+  },
+  "panel": {
+    "found": true,
+    "wrapperClass": "widgetbar-pages",
+    "wrapperRect": {
+      "x": 1217,
+      "y": 42,
+      "width": 303,
+      "height": 770
+    },
+    "buttons": [
+      {
+        "dataName": "watchlists-button",
+        "ariaLabel": null,
+        "title": null,
+        "text": "Watchlist",
+        "classes": "button-merBkM5y button-g115eYH4 apply-common-tooltip accessible-merBkM5y"
+      },
+      {
+        "dataName": "add-symbol-button",
+        "ariaLabel": "Add symbol",
+        "title": null,
+        "text": "",
+        "classes": "headerButton-mQBvegEO button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInt"
+      },
+      {
+        "dataName": "advanced-view-button",
+        "ariaLabel": "Advanced view",
+        "title": null,
+        "text": "",
+        "classes": "headerButton-mQBvegEO button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInt"
+      },
+      {
+        "dataName": "settings-button",
+        "ariaLabel": "Settings",
+        "title": null,
+        "text": "",
+        "classes": "headerButton-mQBvegEO button-merBkM5y apply-common-tooltip accessible-merBkM5y"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "classes": "button-D_3frAuZ accessible-D_3frAuZ"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Symbol",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Last",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Chg",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Chg%",
+        "classes": "label-k67yvGbk sortable-k67yvGbk accessible-k67yvGbk"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Metrics",
+        "text": "",
+        "classes": "wrap-OfcgU7jK button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S access"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More info",
+        "classes": "button-vll9ujXF"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More seasonals",
+        "classes": "button-vll9ujXF"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More technicals",
+        "classes": "button-vll9ujXF"
+      },
+      {
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "More on options",
+        "classes": "button-vll9ujXF"
+      }
+    ],
+    "inputs": [],
+    "rows": [],
+    "dataNames": [
+      {
+        "dataName": "watchlists-button",
+        "tag": "BUTTON",
+        "text": "Watchlist"
+      },
+      {
+        "dataName": "add-symbol-button",
+        "tag": "BUTTON",
+        "text": ""
+      },
+      {
+        "dataName": "advanced-view-button",
+        "tag": "BUTTON",
+        "text": ""
+      },
+      {
+        "dataName": "settings-button",
+        "tag": "BUTTON",
+        "text": ""
+      },
+      {
+        "dataName": "symbol-list-wrap",
+        "tag": "DIV",
+        "text": "M MNQ1! 26,825.50 338.25 1.28% V VX1! D "
+      },
+      {
+        "dataName": "tree",
+        "tag": "DIV",
+        "text": "M MNQ1! 26,825.50 338.25 1.28% V VX1! D "
+      },
+      {
+        "dataName": "details-add-note-button",
+        "tag": "DIV",
+        "text": ""
+      },
+      {
+        "dataName": "details-settings-button",
+        "tag": "DIV",
+        "text": ""
+      },
+      {
+        "dataName": "details-futures-chart-button",
+        "tag": "DIV",
+        "text": "More info"
+      },
+      {
+        "dataName": "details-more-technicals-button",
+        "tag": "DIV",
+        "text": "More technicals"
+      },
+      {
+        "dataName": "details-more-options-button",
+        "tag": "DIV",
+        "text": "More on options"
+      },
+      {
+        "dataName": "new-chat",
+        "tag": "A",
+        "text": ""
+      },
+      {
+        "dataName": "search",
+        "tag": "A",
+        "text": ""
+      },
+      {
+        "dataName": "mentions",
+        "tag": "A",
+        "text": ""
+      },
+      {
+        "dataName": "detach",
+        "tag": "A",
+        "text": ""
+      },
+      {
+        "dataName": "search",
+        "tag": "A",
+        "text": ""
+      },
+      {
+        "dataName": "settings",
+        "tag": "A",
+        "text": ""
+      }
+    ],
+    "ariaLabels": [
+      {
+        "ariaLabel": "Add symbol",
+        "tag": "BUTTON"
+      },
+      {
+        "ariaLabel": "Advanced view",
+        "tag": "BUTTON"
+      },
+      {
+        "ariaLabel": "Settings",
+        "tag": "BUTTON"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Essential",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Essential",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Ultimate",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Essential",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Essential",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      },
+      {
+        "ariaLabel": "Premium",
+        "tag": "A"
+      }
+    ]
+  },
+  "list_menu_candidates": {
+    "watchlists_button": {
+      "found": true,
+      "popupClass": "menuBox-Kq3ruQo8",
+      "items": [
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Share list"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Add alert on the list\u2026"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Make a copy\u2026"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Rename"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Add section"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Clear list"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Create new list\u2026"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Upload list\u2026"
+        }
+      ]
+    },
+    "settings_button": {
+      "found": true,
+      "popupClass": "menuBox-Kq3ruQo8",
+      "items": [
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "Table view"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "CUSTOMIZE COLUMNS"
+        },
+        {
+          "tag": "DIV",
+          "dataName": null,
+          "ariaLabel": null,
+          "role": null,
+          "text": "SYMBOL DISPLAY"
+        }
+      ]
+    }
+  }
+}
