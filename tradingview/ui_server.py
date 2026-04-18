@@ -455,11 +455,13 @@ async def alerts_create(payload: dict) -> dict:
 
 @app.post("/api/alerts/delete")
 async def alerts_delete(payload: dict) -> dict:
-    identifier = str((payload or {}).get("id", "")).strip()
+    p = payload or {}
+    identifier = str(p.get("id", "")).strip()
+    dry_run = bool(p.get("dry_run", False))
     if not identifier:
         raise HTTPException(400, "id required")
     try:
-        return await alerts_mod.delete_alert(identifier)
+        return await alerts_mod.delete_alert(identifier, dry_run=dry_run)
     except Exception as e:
         raise HTTPException(500, str(e))
 

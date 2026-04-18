@@ -331,7 +331,15 @@ async def _read_pending_order_for_symbol(page: Page, symbol: str) -> dict | None
 async def _read_position_for_symbol(page: Page, symbol: str) -> dict | None:
     """Return {qty, side, raw_cells} for the bare ticker, or None if no
     position exists. Silent / read-only — does not expand the Account
-    Manager if it's collapsed; returns None if the table isn't in DOM."""
+    Manager if it's collapsed; returns None if the table isn't in DOM.
+
+    Row match accepts either the full exchange-qualified form
+    ("COINBASE:ETHUSD") OR the bare ticker ("ETHUSD"); TV's positions
+    table renders the full form but callers pass the bare ticker after
+    config.check_symbol strips the prefix. Previously the JS compared
+    only the full-form token against bare sym → every prefixed position
+    silently returned None, which made place_order verification report
+    fills as "unknown" even when they completed correctly."""
     bare = symbol.split(":")[-1].upper()
     return await page.evaluate("""(sym) => {
         const tbl = document.querySelector('[data-name="Paper.positions-table"]');
@@ -343,7 +351,8 @@ async def _read_position_for_symbol(page: Page, symbol: str) -> dict | None:
             const cells = Array.from(r.querySelectorAll('td'));
             if (!cells.length) continue;
             const token = (cells[0].innerText || '').trim().split(/\\s+/)[0].toUpperCase();
-            if (token !== sym) continue;
+            const tokenBare = token.includes(':') ? token.split(':').pop() : token;
+            if (token !== sym && tokenBare !== sym) continue;
             return {
                 symbol: (cells[0].innerText || '').trim(),
                 side: cells[1] ? (cells[1].innerText || '').trim() : '',
