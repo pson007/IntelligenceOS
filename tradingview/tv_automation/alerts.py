@@ -47,7 +47,7 @@ from .lib.errors import (
     ChartNotReadyError, ModalError, VerificationFailedError,
 )
 from .lib.guards import with_lock
-from .lib.overlays import dismiss_toasts
+from .lib.overlays import bypass_overlap_intercept, dismiss_toasts
 from .lib.urls import chart_url_for
 
 CHART_URL = "https://www.tradingview.com/chart/"
@@ -89,14 +89,19 @@ async def _ensure_alerts_sidebar_open(page: Page) -> None:
 
     Detects open-state by the presence (visible) of the set-alert
     button. Clicks the alerts icon only when needed — a redundant click
-    would toggle the sidebar closed."""
+    would toggle the sidebar closed.
+
+    Wraps the icon click in `bypass_overlap_intercept` so a right-docked
+    Pine Editor's wrapper doesn't intercept the click (see overlays.py
+    for context)."""
     if await selectors.any_visible(page, "alerts_panel", "set_alert_button"):
         return
     await dismiss_toasts(page)
     icon = await selectors.first_visible(
         page, "alerts_panel", "sidebar_icon", timeout_ms=5000,
     )
-    await icon.click()
+    async with bypass_overlap_intercept(page):
+        await icon.click()
     # Wait for the panel's "+" button to appear.
     await selectors.first_visible(
         page, "alerts_panel", "set_alert_button", timeout_ms=5000,

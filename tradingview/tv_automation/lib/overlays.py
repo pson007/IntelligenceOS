@@ -1,6 +1,6 @@
 """Shared UI-overlay handling for TradingView automation.
 
-Two concerns consolidated here:
+Three concerns consolidated here:
 
   1. **Toast dismissal**. When an order fills or cancels, TV renders a
      bottom-left toast that intercepts pointer events for ~5s. Any
@@ -19,13 +19,31 @@ Two concerns consolidated here:
      The correct check is "is any tab button in the AM tab strip
      visible?" — tab buttons are always visible once AM is expanded,
      regardless of which tab is active.
+
+  3. **Monaco / overlap-manager-root pointer-event interception**.
+     When the Pine Editor is right-docked, its wrapper inside
+     `#overlap-manager-root` (class prefix `wrapper-`) extends beyond
+     Monaco's visible area and intercepts pointer events targeting
+     the right-side widget toolbar (alerts icon, watchlist sidebar
+     icon, etc.). Playwright correctly detects the intercept and
+     refuses to click — but the user IS able to see the underlying
+     button. `bypass_overlap_intercept` injects a transient
+     `pointer-events: none` style on overlap-manager-root's children
+     so clicks pass through to whatever's beneath. Restored on exit.
 """
 
 from __future__ import annotations
 
+import contextlib
+from typing import AsyncIterator
+
 from playwright.async_api import Page
 
 from . import selectors
+
+# Injected style id — used as the marker for cleanup. Single shared id
+# is fine because the helper is a context manager that always cleans up.
+_BYPASS_STYLE_ID = "__tv_auto_overlap_bypass"
 
 
 async def dismiss_toasts(page: Page, *, attempts: int = 3) -> None:
@@ -57,6 +75,64 @@ async def dismiss_toasts(page: Page, *, attempts: int = 3) -> None:
                 await page.wait_for_timeout(150)
     except Exception:
         pass
+
+
+@contextlib.asynccontextmanager
+async def bypass_overlap_intercept(page: Page) -> AsyncIterator[None]:
+    """Temporarily disable pointer events on `#overlap-manager-root`'s
+    descendants so clicks targeting elements behind them (right-toolbar
+    icons, sidebar widgets) actually land.
+
+    Why this is needed: when the Pine Editor is right-docked, its
+    panel wrapper (`wrapper-<HASH>` inside `overlap-manager-root`)
+    extends invisibly into the right-toolbar area at y < Monaco's
+    top edge. Playwright's actionability check correctly reports
+    "subtree intercepts pointer events" and refuses to click — but
+    the user can SEE and click those buttons fine because the
+    wrapper is transparent at those coordinates.
+
+    Setting `pointer-events: none` on every descendant of
+    `overlap-manager-root` (with `!important` to outrank inline styles)
+    makes the entire overlap layer non-interactive for the duration
+    of the context. The Pine editor remains visually on screen but
+    pointer events pass through to underlying elements.
+
+    Use sparingly — wrap only the specific click that's being
+    intercepted, not larger blocks of code, so the user can
+    interact with Pine the rest of the time."""
+    await page.evaluate(
+        r"""(styleId) => {
+            // Remove any stale style first (defensive — context-manager
+            // exits should always clean up but better safe than sorry).
+            const stale = document.getElementById(styleId);
+            if (stale) stale.remove();
+            const s = document.createElement('style');
+            s.id = styleId;
+            s.textContent = `
+                #overlap-manager-root, #overlap-manager-root * {
+                    pointer-events: none !important;
+                }
+            `;
+            document.head.appendChild(s);
+        }""",
+        _BYPASS_STYLE_ID,
+    )
+    try:
+        yield
+    finally:
+        # Always clean up, even if the wrapped block raised.
+        try:
+            await page.evaluate(
+                r"""(styleId) => {
+                    const s = document.getElementById(styleId);
+                    if (s) s.remove();
+                }""",
+                _BYPASS_STYLE_ID,
+            )
+        except Exception:
+            # Page may have navigated/closed mid-operation. Style is
+            # tied to the document; new doc gets clean state anyway.
+            pass
 
 
 async def ensure_account_manager_open(page: Page, *, timeout_ms: int = 5000) -> None:

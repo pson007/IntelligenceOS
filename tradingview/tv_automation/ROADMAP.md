@@ -192,12 +192,15 @@ clientHeight >= scrollHeight` rather than the conventional
 stagnant for one or two iterations after a scroll while it mounts the
 new range.
 
+**Resolved 2026-04-17 (later)**:
+- `remove <symbol>` — combined `bypass_overlap_intercept` (new helper
+  in lib/overlays.py) with `page.mouse.move` + the `removeButton-`
+  class selector. The X reveal needs both real CSS `:hover` (cursor
+  position) AND no overlap-manager intercept from a right-docked
+  Pine Editor. Live-tested: SPY add→remove round trip with
+  `verified: true` and idempotent on absent symbol.
+
 **Deferred**:
-- `remove <symbol>` — per-row delete X is hover-reveal-only and TV's
-  React handlers don't fire on JS-dispatched mouseenter/mouseover
-  (same pattern from §7c on the indicators legend; would need real
-  pointer-event coordinates). Workaround: `clear` + `add` the
-  symbols you want to keep.
 - `delete <list>` — no Delete in the operations menu; likely needs
   hover-reveal trash in the Open list… picker (same as
   `layouts.delete`). Workaround: rename and reuse.
@@ -533,6 +536,31 @@ when building chart URLs** — it preserves the layout segment.
 caller can retry without waiting. This is intentional — the velocity
 limit exists to prevent RUNAWAY loops, not legitimate single retries
 after ambiguous outcomes.
+
+### 7g'. Pine Editor's `overlap-manager-root` intercepts right-toolbar clicks
+
+When the Pine Editor is right-docked, its panel wrapper (`wrapper-<HASH>`
+inside `#overlap-manager-root`) extends INVISIBLY into the right-toolbar
+area at y < Monaco's top edge. Playwright's actionability check
+correctly reports "subtree intercepts pointer events" and refuses to
+click the alerts/watchlist sidebar icons — but the user can SEE and
+click those buttons fine because the wrapper is transparent at those
+coordinates.
+
+`lib.overlays.bypass_overlap_intercept(page)` is an async context
+manager that injects a transient `pointer-events: none !important`
+style on every descendant of `#overlap-manager-root`, then removes it
+on exit. Wrap only the specific click that's being intercepted, not
+larger blocks of code, so the user can interact with Pine code the
+rest of the time. Used by `alerts._ensure_alerts_sidebar_open`,
+`watchlist._ensure_sidebar_open`, and `watchlist.remove_symbol`.
+
+This bypass also unlocks **CSS `:hover`-gated UI**: the watchlist
+row's per-row X button only reveals on real cursor hover (synthetic
+`mouseenter` doesn't trigger `:hover`). Without the bypass,
+`page.mouse.move` to the row's coordinates fails to reach the row
+because Monaco's wrapper claims the cursor position. With the
+bypass, the cursor lands and TV's CSS `:hover` selector matches.
 
 ### 7g. Market hours and fill behavior
 

@@ -481,6 +481,13 @@ watchlist:
   # OR scrape and dedup by data-symbol-short.
   symbol_row:
     - '[data-name="tree"] [data-symbol-short]'
+  # Hover-reveal X button on the symbol row. Class prefix
+  # `removeButton-` is stable (the suffix hash rotates rarely).
+  # ONLY visible on real CSS :hover — synthetic mouseenter doesn't
+  # trigger it. Combined with `bypass_overlap_intercept` to clear
+  # any Pine Editor / overlay intercepts.
+  symbol_remove_button:
+    - '[class*="removeButton-"]'
 
 watchlist_menu:
   # The menu popup that opens from watchlists-button. Items use a

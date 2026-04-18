@@ -1,0 +1,33 @@
+{
+  "target_symbol": "VIX",
+  "hover_buttons": {
+    "found": true,
+    "rowRect": {
+      "x": 1218,
+      "y": 352,
+      "w": 301,
+      "h": 31
+    },
+    "buttons": [
+      {
+        "tag": "SPAN",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "classes": "button-w6lVe_oI removeButton-RsFlttSS removeButton-Tf8QRdrk",
+        "rect": {
+          "x": 1491,
+          "y": 357,
+          "w": 22,
+          "h": 22
+        }
+      }
+    ]
+  },
+  "right_click_menu": {
+    "found": true,
+    "items": [],
+    "popupClass": "menuBox-Kq3ruQo8"
+  }
+}

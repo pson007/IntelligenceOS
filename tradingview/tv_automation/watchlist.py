@@ -41,7 +41,7 @@ from .lib.cli import run
 from .lib.context import chart_session
 from .lib.errors import ModalError
 from .lib.guards import with_lock
-from .lib.overlays import dismiss_toasts
+from .lib.overlays import bypass_overlap_intercept, dismiss_toasts
 
 # TV's menus use the Unicode ellipsis character U+2026 (one glyph), NOT
 # three ASCII dots. Match exactly for the menu-item text comparisons.
@@ -55,18 +55,24 @@ ELL = "\u2026"
 async def _ensure_sidebar_open(page: Page) -> None:
     """Open the right-sidebar Watchlist widget if it's not already.
 
-    Detection: the widget panel container is visible. Clicking the
-    sidebar icon when the panel is already open would TOGGLE it closed
-    — same idempotency hazard as the alerts sidebar."""
-    if await selectors.any_visible(page, "watchlist", "panel_container"):
+    Detection: the watchlists-button (a watchlist-specific header
+    control) is visible. The generic `panel_container` is shared by
+    alerts/details/news so it can't disambiguate WHICH widget is
+    currently expanded.
+
+    The icon click is wrapped in `bypass_overlap_intercept` so a
+    right-docked Pine Editor's wrapper inside `overlap-manager-root`
+    doesn't intercept the pointer event."""
+    if await selectors.any_visible(page, "watchlist", "watchlists_button"):
         return
     await dismiss_toasts(page)
     icon = await selectors.first_visible(
         page, "watchlist", "sidebar_icon", timeout_ms=5000,
     )
-    await icon.click()
+    async with bypass_overlap_intercept(page):
+        await icon.click()
     await selectors.first_visible(
-        page, "watchlist", "panel_container", timeout_ms=5000,
+        page, "watchlist", "watchlists_button", timeout_ms=5000,
     )
 
 
@@ -464,6 +470,105 @@ async def add_symbol(symbol: str) -> dict:
                 return {"ok": True, "symbol": symbol, "verified": verified}
 
 
+async def remove_symbol(symbol: str) -> dict:
+    """Remove `symbol` from the active watchlist via the per-row
+    hover-reveal X button.
+
+    The X button (`removeButton-<HASH>`) is gated on real CSS `:hover`
+    — synthetic mouseenter doesn't trigger it. We:
+      1. Open `bypass_overlap_intercept` so a right-docked Pine Editor's
+         wrapper doesn't intercept the cursor at the row position.
+      2. Scroll the row into view via JS.
+      3. Move the real cursor (`page.mouse.move`) over the row's
+         center to fire the CSS `:hover` reveal.
+      4. Click the now-visible removeButton with the cursor still
+         positioned over the row.
+    """
+    if not symbol or not symbol.strip():
+        raise ValueError("symbol must be non-empty")
+    symbol = symbol.strip().upper()
+
+    async with chart_session() as (_ctx, page):
+        async with with_lock("tv_browser"):
+            with audit.timed("watchlist.remove", symbol=symbol) as ac:
+                await _ensure_sidebar_open(page)
+                existing = await _read_symbols_inline(page)
+                if symbol not in existing:
+                    ac["already_absent"] = True
+                    return {
+                        "ok": True, "symbol": symbol,
+                        "already_absent": True, "verified": True,
+                    }
+
+                async with bypass_overlap_intercept(page):
+                    # Scroll the row into view so its center is on-screen.
+                    rect = await page.evaluate(
+                        r"""(sym) => {
+                            const row = document.querySelector(
+                                `[data-symbol-short="${CSS.escape(sym)}"]`
+                            );
+                            if (!row) return null;
+                            row.scrollIntoView({block: 'center'});
+                            const r = row.getBoundingClientRect();
+                            return {
+                                x: r.x + r.width / 2,
+                                y: r.y + r.height / 2,
+                            };
+                        }""",
+                        symbol,
+                    )
+                    if rect is None:
+                        return {
+                            "ok": False, "symbol": symbol,
+                            "reason": "row_vanished_before_hover",
+                        }
+                    # Real cursor move triggers TV's CSS :hover reveal.
+                    await page.mouse.move(rect["x"], rect["y"])
+                    await page.wait_for_timeout(350)
+                    # The X button reveals INSIDE the row; address it via
+                    # the row + class-prefix selector. Scope to the
+                    # specific row to avoid hitting another visible row's
+                    # X if multiple are revealed.
+                    clicked = await page.evaluate(
+                        r"""(sym) => {
+                            const row = document.querySelector(
+                                `[data-symbol-short="${CSS.escape(sym)}"]`
+                            );
+                            if (!row) return {clicked: false, reason: 'row_gone'};
+                            // The remove button is a sibling/cousin inside
+                            // the row's wrap-IEe5qpW4 ancestor — walk up.
+                            const wrap = row.closest('[class*="wrap-IEe5qpW4"]') || row.parentElement;
+                            const btn = wrap && wrap.querySelector('[class*="removeButton-"]');
+                            if (!btn) {
+                                return {clicked: false, reason: 'no_remove_button'};
+                            }
+                            btn.click();
+                            return {clicked: true};
+                        }""",
+                        symbol,
+                    )
+                    ac["click_result"] = clicked
+                    if not clicked.get("clicked"):
+                        return {
+                            "ok": False, "symbol": symbol,
+                            "reason": clicked.get("reason"),
+                        }
+
+                # Verify the row disappeared.
+                verified = False
+                for _ in range(8):
+                    await page.wait_for_timeout(250)
+                    post = await _read_symbols_inline(page)
+                    if symbol not in post:
+                        verified = True
+                        ac["post_count"] = len(post)
+                        break
+                ac["verified"] = verified
+                return {
+                    "ok": True, "symbol": symbol, "verified": verified,
+                }
+
+
 async def _read_symbols_inline(page: Page) -> list[str]:
     """Read the FULL data-symbol-short list (scroll-and-collect).
     Used inside locked sessions to avoid re-entering chart_session()."""
@@ -649,6 +754,9 @@ def _main() -> None:
     a = sub.add_parser("add", help="Add a symbol to the active watchlist")
     a.add_argument("symbol")
 
+    rm = sub.add_parser("remove", help="Remove a symbol from the active watchlist")
+    rm.add_argument("symbol")
+
     cl = sub.add_parser("clear", help="Remove all symbols from the active list")
     cl.add_argument("--dry-run", action="store_true")
 
@@ -673,6 +781,8 @@ def _main() -> None:
         run(lambda: list_lists())
     elif args.cmd == "add":
         run(lambda: add_symbol(args.symbol))
+    elif args.cmd == "remove":
+        run(lambda: remove_symbol(args.symbol))
     elif args.cmd == "clear":
         run(lambda: clear(dry_run=args.dry_run))
     elif args.cmd == "create":

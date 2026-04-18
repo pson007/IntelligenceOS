@@ -281,6 +281,7 @@ tv watchlist current                # active list name
 tv watchlist contents               # full symbol list (handles virtualization)
 tv watchlist list                   # all named lists from the picker
 tv watchlist add SPY                # add a symbol to the active list
+tv watchlist remove SPY             # remove a symbol from the active list
 tv watchlist clear --dry-run        # preview a wipe without committing
 tv watchlist clear                  # actually wipe the active list
 tv watchlist create "Tech Watch"    # new list, switches to it
@@ -308,10 +309,6 @@ visible text.
 to call from a script without first checking membership.
 
 **Deferred**:
-- `remove <symbol>` — per-row delete is hover-reveal-only and TV's
-  React handlers don't fire on JS-dispatched mouseenter (same gotcha
-  pattern from the indicators legend, §3 above). Workaround: `clear`
-  + `add` the symbols you want to keep.
 - `delete <list>` — no obvious "Delete" command in the operations
   menu; probably needs hover-reveal trash inside the picker (similar
   to `layouts delete`). Workaround: rename and reuse.
