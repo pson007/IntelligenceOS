@@ -30,51 +30,69 @@ from playwright.async_api import Page
 
 from . import audit
 
-# JS: find a visible dialog whose text includes "Session disconnected"
-# (or an equivalent TV reconnect phrasing), locate a button with text
-# matching Connect/Reconnect/Retry inside it, and return its center.
-# Returns None if no such modal is present — the common case.
+# JS: detect the TV reconnect modal and find its Connect button.
+#
+# The modal uses hash-suffixed class names (`wrapper-SiBYNi_V`,
+# `title-vhfmr0Do`, etc.) and carries NO role="dialog" / data-name —
+# our earlier selector-based search missed it entirely. All TV modals
+# are mounted inside `#overlap-manager-root`; we scope to there and
+# fast-reject on `textContent` when no trigger phrase is present.
+#
+# Hot path (no modal): one getElementById + one textContent regex test,
+# <1ms. Slow path (modal up): find title element → find Connect button.
 _DETECT_JS = r"""() => {
-    const dialogs = document.querySelectorAll(
-        'div[role="dialog"], [data-name$="-dialog"]'
-    );
-    const RECONNECT_BUTTON_TEXT = /^(connect|reconnect|retry|try again)$/i;
+    const root = document.getElementById('overlap-manager-root');
+    if (!root) return null;
     const RECONNECT_MODAL_TEXT = /session disconnected|session ended|connection lost/i;
-    for (const d of dialogs) {
-        // Skip hidden dialogs — TV keeps some offscreen for animation.
-        const r0 = d.getBoundingClientRect();
-        if (r0.width === 0 || r0.height === 0) continue;
-        const text = (d.innerText || '');
-        if (!RECONNECT_MODAL_TEXT.test(text)) continue;
-        const buttons = d.querySelectorAll('button');
-        for (const b of buttons) {
-            const t = (b.innerText || '').trim();
-            if (!RECONNECT_BUTTON_TEXT.test(t)) continue;
-            const r = b.getBoundingClientRect();
-            if (r.width === 0 || r.height === 0) continue;
-            return {
-                modal_text: text.replace(/\s+/g, ' ').slice(0, 160),
-                button_text: t,
-                center: {
-                    x: Math.round(r.x + r.width / 2),
-                    y: Math.round(r.y + r.height / 2),
-                },
-                rect: {
-                    x: Math.round(r.x), y: Math.round(r.y),
-                    w: Math.round(r.width), h: Math.round(r.height),
-                },
-            };
-        }
-        // Modal matched but no reconnect button found — report so the
-        // caller knows SOMETHING is up, even if we can't fix it.
+    const RECONNECT_BUTTON_TEXT = /^(connect|reconnect|retry|try again)$/i;
+    // Fast reject: textContent is cheap (no layout) and short when no
+    // modal is up (#overlap-manager-root is usually empty or just
+    // holds tooltip fragments).
+    if (!RECONNECT_MODAL_TEXT.test(root.textContent || '')) return null;
+
+    // Slow path: find the specific title element + button.
+    // Title tags in TV modals are typically <p>/<h1>/<h2>/<h3>.
+    const titleCandidates = root.querySelectorAll('p, h1, h2, h3, div, span');
+    let titleText = '';
+    for (const el of titleCandidates) {
+        const t = (el.innerText || '').trim();
+        if (t.length === 0 || t.length > 200) continue;
+        if (!RECONNECT_MODAL_TEXT.test(t)) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        titleText = t;
+        break;
+    }
+
+    // Find a reconnect button anywhere in the modal root.
+    const buttons = root.querySelectorAll('button');
+    for (const b of buttons) {
+        const t = (b.innerText || '').trim();
+        if (!RECONNECT_BUTTON_TEXT.test(t)) continue;
+        const r = b.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
         return {
-            modal_text: text.replace(/\s+/g, ' ').slice(0, 160),
-            button_text: null,
-            center: null,
-            rect: null,
+            modal_text: (titleText || 'matched by phrase').slice(0, 160),
+            button_text: t,
+            center: {
+                x: Math.round(r.x + r.width / 2),
+                y: Math.round(r.y + r.height / 2),
+            },
+            rect: {
+                x: Math.round(r.x), y: Math.round(r.y),
+                w: Math.round(r.width), h: Math.round(r.height),
+            },
         };
     }
-    return null;
+
+    // Modal matched but no reconnect button found — report so the
+    // caller knows SOMETHING is up, even if we can't fix it.
+    return {
+        modal_text: (titleText || 'matched by phrase').slice(0, 160),
+        button_text: null,
+        center: null,
+        rect: null,
+    };
 }"""
 
 

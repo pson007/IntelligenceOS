@@ -20,6 +20,14 @@ One manual step: ensure the Chromium-Automation profile is signed in.
 Cookies persist in the profile between runs. Re-sign-in is only needed if
 TradingView actively invalidates the session (rare — cookies last weeks).
 
+**Auto-reconnect preflight.** When TV's "Session disconnected" modal
+appears (account signed in from another device), every tv command
+auto-dismisses it before doing its work. No manual `reconnect` needed.
+Hot-path cost when the modal isn't present is <10ms (one JS
+`querySelector`). Explicit probe: `tv chart reconnect`. Detection logic
+lives in `lib/session_modal.py` — add new modal phrasings / button
+labels there if TV ships a variant.
+
 ## Invocation
 
 Two ways to run:
@@ -550,6 +558,65 @@ Per-pane failure isolation: a broken surface (e.g. Pine Editor
 unopenable) produces `{"error": "..."}` for that field while the rest
 still populate.
 
+### act (LLM-in-loop vision driver)
+
+Autonomous goal-follower. Wraps `describe-screen` + `click-label` +
+`click-at` in a loop: each turn sends (goal, inventory, screenshot,
+history) to an LLM, parses a JSON decision, executes one atomic
+action, loops until `done` / `fail` / step cap / cost cap.
+
+```bash
+tv act "open the watchlist sidebar"                      # anthropic default
+tv act "add SPY to the active watchlist" --max-steps 15
+tv act "<goal>" --provider ollama --model qwen2.5vl:7b --vision
+tv act "<goal>" --provider ollama --model qwen3.5:27b    # text-only
+tv act "<goal>" --read-only                              # refuses mutating
+tv act "<goal>" --dry-run                                # model decides, no clicks
+```
+
+**Three LLM backends:**
+
+| Provider | Endpoint | Cost | Vision default | Notes |
+|---|---|---|---|---|
+| `anthropic` | Anthropic SDK | paid | on | Needs `ANTHROPIC_API_KEY` in `.env`. Default model: `claude-sonnet-4-6`. Aliases: `sonnet` / `opus` / `haiku`. |
+| `ollama` | `http://localhost:11434/v1` | free | off | OpenAI-compat. Default model: `qwen3.5:27b` (text). Pass `--vision --model qwen2.5vl:7b` for screenshot support. |
+| `mlx` | `http://localhost:8080/v1` | free | off | OpenAI-compat (`mlx_lm.server`). No default model — pass `--model`. |
+
+Vision is on by default for Anthropic; off for local providers (most
+pulled local models aren't VL). `--vision` forces on; `--text-only`
+forces off. In text-only mode the model drives via the structured
+inventory alone — works for most UI goals where the target has a
+`data_name` / `aria_label`, fails for canvas targets (chart candles,
+drawings, heatmap cells).
+
+**Action schema** — the model emits ONE of these per turn:
+
+```json
+{"action": "click_label", "query": "<description>", "reason": "<why>"}
+{"action": "click_at",    "x": 120, "y": 240, "reason": "<why>"}
+{"action": "type",        "text": "<text>", "reason": "<why>"}
+{"action": "press",       "key": "Escape", "reason": "<why>"}
+{"action": "describe_only", "reason": "<re-scan after a state change>"}
+{"action": "done", "result": "<short success summary>"}
+{"action": "fail", "reason": "<blocked — e.g. missing permissions>"}
+```
+
+**Budget guards.** `--max-steps` (default 10) and `--max-cost-usd`
+(default $0.50) abort the loop before runaway cost. `--read-only`
+refuses any action whose `query` matches `/buy|sell|place|submit|
+confirm|delete|remove|cancel|close|save/i` plus all `click_at`
+(opaque intent). Raises `LoopBudgetExceededError` (exit 9) or
+`GoalUnachievableError` (exit 10).
+
+**Transcripts.** Every run persists per-step decisions + action
+results to `~/Desktop/TradingView/act_transcripts/<request_id>/` —
+one JSON file per step plus the screenshot path. Enables replay,
+debugging, and cost audit.
+
+**Limitations (Phase 1 scope).** Purely-visual targets (canvas,
+heatmaps), multi-app control, and streaming/realtime observation are
+future phases — see [VISION_LOOP_PLAN.md](VISION_LOOP_PLAN.md).
+
 ### heal (suggest replacement selectors when stored ones drift)
 
 When TradingView ships a UI tweak that breaks `selectors.yaml`, the
@@ -659,6 +726,8 @@ See [lib/retry.py](lib/retry.py).
 | 6    | `VerificationFailedError` — action seemed to succeed but post-check failed |
 | 7    | `LimitViolationError` — config limits rejected the request |
 | 8    | `ChartNotReadyError` — chart didn't reach usable state |
+| 9    | `LoopBudgetExceededError` — `tv act` hit --max-steps or --max-cost-usd |
+| 10   | `GoalUnachievableError` — `tv act` model declared goal blocked |
 
 ## Package layout
 
