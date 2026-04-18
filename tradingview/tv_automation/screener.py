@@ -200,9 +200,11 @@ async def column_tabs() -> dict:
 
     Tabs are split into `visible` (currently clickable in the strip)
     and `hidden` (responsively-overflowed off the right edge — TV
-    positions them at translateX(-999877px) until you click a "More"
-    chevron). Only visible tabs can be reliably switched to via this
-    module today; widening the browser viewport reveals more tabs."""
+    positions them at translateX(-999877px) and exposes them via a
+    "More" overflow button). `_switch_column_tab` handles both paths
+    automatically — visible tabs click directly, hidden tabs are
+    accessed through the More dropdown. Widening the browser viewport
+    moves more tabs into the visible strip."""
     async with browser_context() as ctx:
         page = await _find_or_open_screener(ctx)
         await assert_logged_in(page)
@@ -238,10 +240,10 @@ async def _switch_column_tab(page: Page, name: str) -> bool:
     """Click the column-tab whose visible text equals `name`. Returns
     True if found and clicked (or already active), False if not found.
 
-    Limitation: TV's tab strip uses responsive overflow — tabs that
-    don't fit get translated to x=-999999. We can find them in DOM
-    but clicking them is unreliable (off-screen + may need a "More"
-    overflow indicator). We detect this case and fail clearly."""
+    Handles TV's responsive overflow: tabs that don't fit in the visible
+    strip are translated to x=-999999 and exposed via a "More" overflow
+    button. When the target is hidden, click "More" to open the
+    dropdown, then click the target from there."""
     found = await page.evaluate(
         r"""(wanted) => {
             const root = document.querySelector('div[class*="screenerContainer-"]');
@@ -261,18 +263,43 @@ async def _switch_column_tab(page: Page, name: str) -> bool:
         return False
     if found["already_active"]:
         return True
+
     if found["hidden"]:
-        # Tab is responsively-overflowed off the visible strip; can't
-        # click reliably. Caller will surface this via column_tabs.
-        return False
-    # Use Playwright's native click — handles scroll + real pointer
-    # event sequence so TV's React handler fires.
+        # Open the "More" overflow dropdown, then click the named tab.
+        # The More button is a <button>, NOT [role="tab"] (the role-tab
+        # elements for the hidden tabs themselves are translated off
+        # screen at x=-999999).
+        more_btn = page.locator(
+            'div[class*="screenerContainer-"] button:has-text("More")'
+        ).first
+        if await more_btn.count() == 0:
+            return False
+        try:
+            await more_btn.click(timeout=5000)
+        except Exception:
+            return False
+        await page.wait_for_timeout(400)
+        # Dropdown items live in a menuBox portal. Match by visible
+        # text — items use the same item-jFqVJoPk class prefix from
+        # the watchlist menu.
+        item = page.locator(
+            f'[class*="menuBox-"] [class*="item-jFqVJoPk"]:has-text("{name}"), '
+            f'[class*="menuBox-"] [role="menuitem"]:has-text("{name}"), '
+            f'[class*="menuBox-"] :text-is("{name}")'
+        ).first
+        try:
+            await item.click(timeout=3000)
+        except Exception:
+            await page.keyboard.press("Escape")
+            return False
+        await page.wait_for_timeout(1200)
+        return True
+
+    # Visible tab — direct click.
     tab = page.locator(
         f'div[class*="screenerContainer-"] [role="tab"]:text-is("{name}")'
     ).first
     if await tab.count() == 0:
-        # Fallback: text-is may miss elements with duplicated child
-        # textContent (TV renders some labels twice). Match via filter.
         tab = page.locator(
             'div[class*="screenerContainer-"] [role="tab"]'
         ).filter(has_text=name).first

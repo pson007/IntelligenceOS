@@ -769,18 +769,37 @@ async def _toggle_alert(identifier: str, *, desired_active: bool) -> dict:
                         "reason": click_result.get("reason", "row_not_found"),
                     }
 
-                # Verify the status flipped.
-                await page.wait_for_timeout(500)
-                new_list = await _read_alerts_list(page)
-                new_row = next(
-                    (a for a in new_list
-                     if identifier in (a.get("description") or "")),
-                    None,
-                )
+                # Poll for the status to actually flip. A single 500ms
+                # wait + read is racy — TV's `alert-item-status`
+                # indicator can lag the click by 1-2s, returning the
+                # stale "Paused" status for a freshly-resumed alert
+                # (and vice versa). Poll until we see the desired
+                # state OR the timeout elapses.
+                want_status = "active" if desired_active else "paused"
+                new_row = row
+                verified = False
+                for _ in range(15):  # ~3s total at 200ms steps
+                    await page.wait_for_timeout(200)
+                    new_list = await _read_alerts_list(page)
+                    new_row = next(
+                        (a for a in new_list
+                         if identifier in (a.get("description") or "")),
+                        None,
+                    )
+                    if new_row is None:
+                        # Row vanished — alert may have been deleted
+                        # mid-toggle. Bail and let the caller handle.
+                        break
+                    cur_status = (new_row.get("status") or "").lower()
+                    if cur_status == want_status:
+                        verified = True
+                        break
+                audit_ctx["verified"] = verified
                 return {
                     "ok": True, "identifier": identifier,
                     "prev_status": row.get("status"),
                     "new_status": new_row.get("status") if new_row else None,
+                    "verified": verified,
                 }
 
 

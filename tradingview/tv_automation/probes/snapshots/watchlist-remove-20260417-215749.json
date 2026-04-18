@@ -1,0 +1,59 @@
+{
+  "target_symbol": "SPY",
+  "hover_buttons": {
+    "found": true,
+    "rowRect": {
+      "x": 1218,
+      "y": 411,
+      "w": 301,
+      "h": 31
+    },
+    "buttons": [
+      {
+        "tag": "DIV",
+        "dataName": "widgetbar-wrap",
+        "ariaLabel": null,
+        "title": null,
+        "text": "99+\nWatchlist\nSymbol\nLast\nChg\nChg%\nB\nBTC",
+        "classes": "widgetbar-wrap unselectable",
+        "rect": {
+          "x": 1218,
+          "y": 41,
+          "w": 347,
+          "h": 770
+        }
+      },
+      {
+        "tag": "DIV",
+        "dataName": "right-toolbar",
+        "ariaLabel": null,
+        "title": null,
+        "text": "99+",
+        "classes": "toolbar-S4V6IoxY",
+        "rect": {
+          "x": 1520,
+          "y": 41,
+          "w": 45,
+          "h": 770
+        }
+      },
+      {
+        "tag": "DIV",
+        "dataName": "widgetbar-pages-with-tabs",
+        "ariaLabel": null,
+        "title": null,
+        "text": "Watchlist\nSymbol\nLast\nChg\nChg%\nB\nBTCUSD\n",
+        "classes": "widgetbar-pages",
+        "rect": {
+          "x": 1217,
+          "y": 41,
+          "w": 303,
+          "h": 770
+        }
+      }
+    ]
+  },
+  "right_click_menu": {
+    "found": false
+  }
+}

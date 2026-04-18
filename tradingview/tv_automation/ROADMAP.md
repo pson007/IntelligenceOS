@@ -162,8 +162,12 @@ automatable: `tv alerts create-price <sym> <op> <value> --webhook ...`
 **Deferred**:
 - Indicator-based alerts (condition type "Indicator") — separate
   condition-builder surface.
-- `resume` has a status-refresh lag that can mislead the immediate
-  post-click read. Easy fix: poll for `alert-item-status` to flip.
+
+**Resolved 2026-04-17**:
+- `resume` / `pause` status-refresh lag — now polls `alert-item-status`
+  for up to ~3s waiting for the desired state, returning `verified:
+  true/false` so callers can distinguish "flipped successfully" from
+  "click went through but TV's indicator hasn't caught up yet".
 
 ### 4d. watchlist.py — **BUILT 2026-04-17** ✓
 
@@ -260,8 +264,14 @@ targets. Different surface entirely.
   screen, then call `results` programmatically.
 - `preset save / preset load` — would need probing the topbar
   screen-picker dropdown (the `screener-topbar-screen-title` element).
-- Hidden-tab access via "More" overflow chevron — possible but
-  needs probing the chevron's selector.
+
+**Resolved 2026-04-17**:
+- Hidden-tab access via "More" overflow — `_switch_column_tab` now
+  detects responsively-overflowed tabs (x < 0) and routes through
+  the More button → menuBox dropdown. All 4 previously-unreachable
+  tabs (Balance Sheet / Cash Flow / Per Share / Technicals) verified
+  end-to-end. The More button is a plain `<button>` not `[role="tab"]`
+  — that mismatch tripped the first attempt.
 
 ### 4g. drawings.py — **BUILT 2026-04-17** ✓ (Pine emitter path)
 
