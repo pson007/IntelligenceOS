@@ -272,7 +272,9 @@ async def act_start(payload: dict) -> dict:
         try:
             result = await act_mod.act(
                 goal,
-                provider=payload.get("provider", "anthropic"),
+                # Local-first default — no API key required out of the
+                # box. Pass provider='anthropic' explicitly to use Claude.
+                provider=payload.get("provider", "ollama"),
                 model=payload.get("model") or None,
                 base_url=payload.get("base_url") or None,
                 max_steps=int(payload.get("max_steps", 10)),

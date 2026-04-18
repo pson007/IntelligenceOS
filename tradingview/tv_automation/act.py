@@ -9,21 +9,22 @@ until `done`.
 This is Phase 1 of VISION_LOOP_PLAN.md — the "see → understand →
 choose → act → verify" cycle with an LLM in the inner loop.
 
-Three providers are supported:
-  - anthropic  — Claude via the Anthropic SDK (requires ANTHROPIC_API_KEY)
+Three providers are supported (Ollama is the default — local, $0/call):
   - ollama     — any Ollama model via its OpenAI-compatible endpoint
-                 (default http://localhost:11434/v1, no key)
+                 (default http://localhost:11434/v1, no API key). DEFAULT.
   - mlx        — any mlx_lm.server / mlx-vlm server (OpenAI-compatible,
                  default http://localhost:8080/v1, no key)
+  - anthropic  — Claude via the Anthropic SDK (needs ANTHROPIC_API_KEY).
+                 Opt-in; only used when `--provider anthropic` is passed.
 
 Vision is on by default for `anthropic`; off by default for local
 providers (they're usually text-only unless you pulled a VL model).
 Pass `--vision` to force-include the screenshot on local providers.
 
 CLI:
-    tv act "open the watchlist sidebar"                          # anthropic default
-    tv act "add SPY" --provider ollama --model qwen3.5:27b       # local text-only
-    tv act "open alerts" --provider ollama --model qwen2.5vl:7b --vision
+    tv act "open the watchlist sidebar"                          # ollama default
+    tv act "add SPY" --provider ollama --model qwen2.5vl:7b --vision
+    tv act "open alerts" --provider anthropic --model sonnet     # opt-in paid
     tv act "<goal>" --max-steps 15 --max-cost-usd 1.00
     tv act "<goal>" --read-only         # refuses mutating actions
     tv act "<goal>" --dry-run           # model decides, nothing executes
@@ -95,7 +96,7 @@ _PROVIDER_DEFAULTS: dict[str, dict] = {
     },
 }
 
-_DEFAULT_PROVIDER = "anthropic"
+_DEFAULT_PROVIDER = "ollama"
 _MAX_STEPS_DEFAULT = 10
 _MAX_COST_DEFAULT = 0.50
 
