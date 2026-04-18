@@ -394,6 +394,12 @@
     justify-content: center; font-size: 12px;
   }
 
+  /* Sidebar toggle — desktop hides it entirely; mobile media query below
+   * shows it inline in the brand row. Collapsed state only has visual
+   * effect inside the mobile @media block so desktop always renders the
+   * full sidebar regardless of stored state. */
+  .sidebar-toggle { display: none; }
+
   /* ----------------------------------------------------------------
    * Mobile / narrow-viewport layout (≤ 768px).
    * Sidebar → horizontal tab strip at top, cards tighter, fields
@@ -412,10 +418,25 @@
     }
     .brand {
       padding: 8px 14px; border-bottom: 0;
+      display: flex; align-items: center; gap: 10px;
     }
     .logo { width: 26px; height: 26px; font-size: 10px; }
     .brand-name { font-size: 13px; }
     .brand-sub { display: none; }
+
+    /* Toggle button shown in the brand row; collapses nav + status. */
+    .sidebar-toggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-left: auto;
+      width: 34px; height: 34px; padding: 0;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); border-radius: 6px;
+      font-family: inherit; font-size: 15px; line-height: 1;
+      cursor: pointer;
+    }
+    .sidebar-toggle:hover { color: var(--text); background: var(--hover); }
+    .sidebar.collapsed .nav,
+    .sidebar.collapsed .status { display: none; }
 
     /* Tabs become a horizontal scrollable strip */
     .nav {

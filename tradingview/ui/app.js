@@ -118,6 +118,33 @@ $('theme-toggle').addEventListener('click', () => {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 
 // ----------------------------------------------------------------------
+// Sidebar collapse (mobile) — show/hide the tabs + status strip. Desktop
+// ignores the state via CSS, so stored "collapsed" never breaks desktop.
+// ----------------------------------------------------------------------
+const _sidebar = document.querySelector('.sidebar');
+const _sidebarToggle = $('sidebar-toggle');
+const _mobileMQ = window.matchMedia('(max-width: 768px)');
+
+function applySidebarCollapsed(collapsed) {
+  _sidebar.classList.toggle('collapsed', collapsed);
+  // Icon shows the destination of a tap (same convention as theme toggle).
+  _sidebarToggle.textContent = collapsed ? '☰' : '✕';
+  _sidebarToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+}
+
+try {
+  applySidebarCollapsed(localStorage.getItem('ios-sidebar-collapsed') === '1');
+} catch (e) {
+  applySidebarCollapsed(false);
+}
+
+_sidebarToggle.addEventListener('click', () => {
+  const next = !_sidebar.classList.contains('collapsed');
+  applySidebarCollapsed(next);
+  try { localStorage.setItem('ios-sidebar-collapsed', next ? '1' : '0'); } catch (e) {}
+});
+
+// ----------------------------------------------------------------------
 // Tab switching
 // ----------------------------------------------------------------------
 document.querySelectorAll('.nav-item').forEach(btn => {
@@ -125,6 +152,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     const tab = btn.dataset.tab;
     document.querySelectorAll('.nav-item').forEach(x => x.classList.toggle('active', x === btn));
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('hidden', t.id !== `tab-${tab}`));
+    // Mobile: auto-collapse so the user sees content after picking a tab.
+    if (_mobileMQ.matches) {
+      applySidebarCollapsed(true);
+      try { localStorage.setItem('ios-sidebar-collapsed', '1'); } catch (e) {}
+    }
     // Tab-specific on-enter hooks
     if (tab === 'audit') startAuditPoll(); else stopAuditPoll();
     if (tab === 'trade') startPositionsPoll(); else stopPositionsPoll();
