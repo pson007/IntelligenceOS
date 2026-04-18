@@ -529,6 +529,152 @@ async def describe_screen(
         }
 
 
+async def click_label(
+    query: str,
+    *,
+    area: str = "full",
+    bypass_overlap: bool = False,
+    min_score: int = 25,
+) -> dict:
+    """Click an element by free-text description — no coords, no selectors.
+
+    Wraps the three vision-loop fragments into one call:
+      1. Scan DOM for elements matching `query` (data-name OR aria-label
+         OR text), score each by fuzzy closeness.
+      2. Pick the top candidate. Compute a "safe click point" — the
+         rect center, with auto-correction if it lands on a nested
+         child element that doesn't propagate clicks (the watchlist-
+         button-vs-inner-SPAN gotcha).
+      3. Issue `click_at` at the safe point.
+      4. Return the matched element + click verification.
+
+    Lower the bar to selector-free use:
+
+        tv chart click-label "Watchlist"      # opens watchlist sidebar / menu
+        tv chart click-label "Add symbol"     # clicks the + button
+        tv chart click-label "Pine"           # toggles Pine editor
+
+    `area` scopes the search to a region (default: "full"). `min_score`
+    rejects matches below the threshold (default 25; lower = more
+    permissive). Returns:
+
+        {
+          "ok": bool,
+          "query": "...",
+          "matched": <element from describe-screen inventory> | None,
+          "score": int,
+          "safe_point": {"x": ..., "y": ...},
+          "safe_point_corrected": bool,
+          "click_result": <click_at result with element_before/after>,
+          "alternates": [<top 3 other candidates for diagnostic>],
+        }
+    """
+    # Lazy imports — keep chart.py's import surface minimal.
+    from .lib.selectors_healer import find_candidates
+
+    if not query or not query.strip():
+        raise ValueError("query must be non-empty")
+    query = query.strip()
+    scope_selector = None if area in ("full", "chart") else _SCREENSHOT_AREAS.get(area)
+
+    await ensure_automation_chromium()
+    async with tv_context() as ctx:
+        page = await _find_or_open_chart(ctx)
+        await assert_logged_in(page)
+
+        # Reuse the healer's scoring — pass the query as all three hint
+        # types so data-name / aria-label / text matches all compete.
+        # Whichever scores highest wins.
+        hints = {
+            "data_name": query,
+            "aria_label": query,
+            "text": query,
+        }
+        candidates = await find_candidates(
+            page, hints, scope_selector=scope_selector,
+        )
+        candidates = [c for c in candidates if c["score"] >= min_score]
+        if not candidates:
+            return {
+                "ok": False, "query": query,
+                "reason": "no_match",
+                "min_score": min_score,
+            }
+
+        top = candidates[0]
+        rect = top["rect"]
+        # Default safe point: rect center.
+        sx = rect["x"] + rect["w"] // 2
+        sy = rect["y"] + rect["h"] // 2
+
+        # Verify the center isn't trapped by a nested child whose
+        # click handler doesn't propagate. We check what
+        # elementFromPoint returns at the center vs the candidate's
+        # identifying attributes (data-name / id / aria-label). If
+        # they don't match AND the candidate isn't an ancestor, shift
+        # to the rect's top padding (y = rect.y + small offset).
+        target_dn = top.get("data_name")
+        target_id = top.get("id")
+        target_al = top.get("aria_label")
+
+        async def _is_safe(px: int, py: int) -> bool:
+            return await page.evaluate(
+                r"""({px, py, dn, id, al}) => {
+                    const el = document.elementFromPoint(px, py);
+                    if (!el) return false;
+                    // Walk up: target is el, or el's ancestor, matches.
+                    let p = el;
+                    for (let i = 0; i < 6 && p; i++) {
+                        if (dn && p.getAttribute('data-name') === dn) return true;
+                        if (id && p.id === id) return true;
+                        if (al && p.getAttribute('aria-label') === al) return true;
+                        p = p.parentElement;
+                    }
+                    // Or maybe el is a descendant of the target — but
+                    // we only walk UP from elementFromPoint. To check
+                    // "is el a descendant of target", we'd need target
+                    // by selector. Skip for now — false negatives here
+                    // just trigger the corrective shift, no harm.
+                    return false;
+                }""",
+                {"px": px, "py": py, "dn": target_dn, "id": target_id, "al": target_al},
+            )
+
+        safe_point_corrected = False
+        if not await _is_safe(sx, sy):
+            # Try top padding — a few pixels in from the rect's top edge.
+            offset = max(3, min(8, rect["h"] // 6))
+            ty = rect["y"] + offset
+            if await _is_safe(sx, ty):
+                sy = ty
+                safe_point_corrected = True
+            else:
+                # Try left padding.
+                tx = rect["x"] + offset
+                if await _is_safe(tx, sy):
+                    sx = tx
+                    safe_point_corrected = True
+                # If neither worked, fall through with the original
+                # center — the click_result will surface element_before
+                # so the caller can see what was actually hit.
+
+        click_result = await click_at(
+            sx, sy, button="left", double=False,
+            bypass_overlap=bypass_overlap,
+        )
+
+        return {
+            "ok": True,
+            "query": query,
+            "matched": top,
+            "score": top["score"],
+            "safe_point": {"x": sx, "y": sy},
+            "safe_point_corrected": safe_point_corrected,
+            "click_result": click_result,
+            "alternates": candidates[1:4],
+        }
+
+
 async def metadata() -> dict:
     """Return current chart's symbol, interval, and URL. Read-only."""
     await ensure_automation_chromium()
@@ -582,6 +728,22 @@ def _main() -> None:
     ds.add_argument("-o", "--output", type=Path, default=None,
                     help="Screenshot path (default: ~/Desktop/TradingView/...)")
 
+    clbl = sub.add_parser(
+        "click-label",
+        help="Click an element by free-text description (data-name, "
+             "aria-label, or visible text — fuzzy match). No coords or "
+             "selectors needed.",
+    )
+    clbl.add_argument("query", help="Description of the element to click "
+                                    "(e.g. 'Watchlist', 'Add symbol', 'Pine')")
+    clbl.add_argument("--area", default="full",
+                      choices=sorted(list(_SCREENSHOT_AREAS) + ["full"]),
+                      help="Scope the search to a region (default: full)")
+    clbl.add_argument("--bypass-overlap", action="store_true",
+                      help="Wrap click in lib.overlays.bypass_overlap_intercept")
+    clbl.add_argument("--min-score", type=int, default=25,
+                      help="Reject matches below this score (default: 25)")
+
     cl = sub.add_parser(
         "click-at",
         help="Click at viewport pixel coordinates (selector-free; "
@@ -614,6 +776,11 @@ def _main() -> None:
         run(lambda: describe_screen(
             area=args.area, include_all=args.include_all,
             output=args.output,
+        ))
+    elif args.cmd == "click-label":
+        run(lambda: click_label(
+            args.query, area=args.area,
+            bypass_overlap=args.bypass_overlap, min_score=args.min_score,
         ))
 
 

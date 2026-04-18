@@ -121,6 +121,40 @@ inside the button's padding) so `elementFromPoint` returns the button
 itself. The `element_before` field surfaces this immediately so a
 vision loop can self-correct.
 
+**One-call abstraction: `click-label`.**
+
+```bash
+tv chart click-label "Watchlist"            # opens watchlist sidebar / menu
+tv chart click-label "Add symbol"           # clicks the + button
+tv chart click-label "Pine"                 # toggles Pine editor
+tv chart click-label "Settings" --area sidebar     # scope the search
+tv chart click-label "Buy" --bypass-overlap        # for Monaco-blocked targets
+```
+
+Wraps the three vision-loop fragments into one call: scan DOM for
+elements matching the query (data-name OR aria-label OR text, fuzzy-
+scored), pick the top candidate, compute a safe click point with
+auto-correction for nested-child traps, click, return verification.
+
+This is the closest thing in the codebase to "click the thing I see"
+— no coords, no selectors, just describe what you want. Lower the
+bar to selector-free use:
+
+  - data-name⊇/⊆ matches resolve typos in stored selectors
+    (the same fuzzy logic as `tv heal`)
+  - aria-label and visible-text matches handle UI rewordings
+  - safe-point heuristic walks up from `elementFromPoint` to verify
+    the click is within the target's subtree, falls back to top-
+    padding if center hits the wrong element
+
+**The asymptote.** The genie wish — Computer-Use-grade visual
+reasoning across arbitrary UI — needs an LLM in the inner loop to
+identify elements without stable identifiers (data-name / aria-label /
+text). `click-label` only works when SOMETHING about the target is
+addressable. For purely-visual targets (a specific candle on a chart,
+a colored bar in a heatmap), you'd need vision-model integration
+beyond what this codebase ships.
+
 ### trading (paper-only, safety-gated, order-verified)
 
 ```bash
