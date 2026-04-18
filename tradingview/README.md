@@ -122,28 +122,47 @@ The UI gives you a dashboard for chart control, vision-loop "act" runs,
 trade placement + positions, watchlist / alerts management, and a live
 audit-log tail. See the `ui/` directory for HTML / CSS / JS sources.
 
+#### Expose the UI to your tailnet via Tailscale
+```bash
+./run-ui-tailscale.sh
+```
+
+One-shot: generates a `UI_TOKEN` in `.env` if blank, configures
+`tailscale serve` to proxy `https://<your-node>/` → `http://127.0.0.1:8788`,
+and prints a clickable URL with `#token=…` baked in. Open that URL on
+any tailnet device (phone, another laptop) — the token stashes into
+that browser's `localStorage` and clears from the URL bar. Future
+visits just use `https://<your-node>/` with no token.
+
+Tailscale Serve is tailnet-only, not public. To stop: `tailscale serve reset`.
+
 **Coexistence with `bridge.py`**: both servers can run concurrently only
 in CDP-attach mode (`TV_CDP_URL` set). In launch mode they'd fight over
 the persistent Chromium profile.
 
 **Security posture**:
-- Binds to `127.0.0.1` only.
+- Binds to `127.0.0.1` only. Tailscale Serve (above) terminates TLS
+  and proxies from the tailnet to localhost — the UI never binds to
+  an external interface itself.
 - CSRF-protected: every mutating request must carry `X-UI: 1` (the UI
   adds this automatically; cross-origin attackers can't).
-- Optional shared-secret: set `UI_TOKEN` in `.env` and stash the same
-  value client-side via `localStorage.setItem('ios-ui-token', '…')`.
+- Optional shared-secret `UI_TOKEN`: required when exposing beyond
+  localhost. Set in `.env`; clients attach via `X-UI-Token: <value>`.
+  `run-ui-tailscale.sh` generates one for you. Manual stash:
+  `localStorage.setItem('ios-ui-token', '<value>')` or visit
+  `https://host/#token=<value>` (auto-stashes, clears from history).
+- `tv_automation/limits.yaml` is the single allowlist source — both
+  the UI and the webhook bridge read it. Changes take effect across
+  both.
 
 **Smoke tests**:
 ```bash
 .venv/bin/python tests/smoke_ui.py
 ```
 
-Tests CSRF, routes, health, and audit wiring. Requires the UI server
-to be running (does not start it for you).
-
-**Source of truth for the allowlist**: `tv_automation/limits.yaml`.
-Both the UI and the webhook bridge (`bridge.py`) read this file, so
-any allowlist / qty-cap change takes effect across both.
+Tests CSRF, routes, health, audit, and (when `UI_TOKEN` is set) auth
+wiring. Requires the UI server to be running (does not start it for
+you). Auto-picks up `UI_TOKEN` from `.env`.
 
 ---
 

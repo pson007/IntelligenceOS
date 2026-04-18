@@ -16,16 +16,35 @@ import os
 import sys
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 BASE = os.getenv("BASE", "http://127.0.0.1:8788")
+
+# Pick up UI_TOKEN from env, or from .env if present, so the suite
+# continues to pass after UI_TOKEN is configured (e.g. for Tailscale
+# exposure). Env beats file.
+UI_TOKEN = os.getenv("UI_TOKEN", "").strip()
+if not UI_TOKEN:
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            if line.startswith("UI_TOKEN="):
+                UI_TOKEN = line.split("=", 1)[1].strip()
+                break
+
 failures: list[str] = []
 
 
 def req(method: str, path: str, body: dict | None = None,
-        headers: dict | None = None) -> tuple[int, dict | str]:
+        headers: dict | None = None, skip_token: bool = False
+        ) -> tuple[int, dict | str]:
     url = BASE + path
     data = None
     req_headers = dict(headers or {})
+    # Attach UI_TOKEN by default so the suite passes when auth is on.
+    # Individual tests can pass skip_token=True to probe the 401 path.
+    if UI_TOKEN and not skip_token and "X-UI-Token" not in req_headers:
+        req_headers["X-UI-Token"] = UI_TOKEN
     if body is not None:
         data = json.dumps(body).encode()
         req_headers["Content-Type"] = "application/json"
@@ -103,13 +122,18 @@ expected = [
 for p in expected:
     check(f"  route registered: {p}", p in paths)
 
-# 7. UI_TOKEN wiring — if server was started with UI_TOKEN set, GETs
-#    without the token must fail. Skip if the env var isn't set.
-if os.getenv("UI_TOKEN"):
-    code, _ = req("GET", "/api/health")
+# 7. UI_TOKEN wiring — verify both 401 (no token) and 200 (correct token).
+if UI_TOKEN:
+    code, _ = req("GET", "/api/health", skip_token=True)
     check("UI_TOKEN set: GET without token → 401", code == 401)
-    code, _ = req("GET", "/api/health", headers={"X-UI-Token": os.getenv("UI_TOKEN", "")})
+    code, _ = req("GET", "/api/health")  # auto-attaches token
     check("UI_TOKEN set: GET with correct token → 200", code == 200)
+    code, _ = req("GET", "/api/health",
+                  headers={"X-UI-Token": "wrong-value"}, skip_token=True)
+    check("UI_TOKEN set: GET with bad token → 401", code == 401)
+else:
+    print("ui_token:")
+    print("  (UI_TOKEN not set — auth path not exercised)")
 
 print("\n" + ("FAIL: " + ", ".join(failures) if failures else "all smoke tests passed"))
 sys.exit(1 if failures else 0)
