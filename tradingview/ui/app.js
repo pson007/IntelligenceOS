@@ -1,4 +1,19 @@
 // ----------------------------------------------------------------------
+// UI_TOKEN handoff — if the URL carries "#token=<value>" (share-friendly
+// onboarding), stash it in localStorage and clean the fragment so the
+// token doesn't linger in browser history or referrers.
+// ----------------------------------------------------------------------
+(function () {
+  try {
+    const m = (location.hash || '').match(/(?:^#|&)token=([^&]+)/);
+    if (m) {
+      localStorage.setItem('ios-ui-token', decodeURIComponent(m[1]));
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  } catch (e) {}
+})();
+
+// ----------------------------------------------------------------------
 // Tiny API wrapper + UI helpers
 // ----------------------------------------------------------------------
 async function api(path, opts = {}) {
@@ -634,10 +649,20 @@ $('pos-refresh').addEventListener('click', loadPositions);
 
 // Positions auto-refresh — only while Trade tab is visible. 8s cadence
 // balances freshness of P&L against the cost of opening CDP each time.
+// In-flight guard prevents stacking when a refresh runs longer than the
+// interval (slow CDP attach / network). Dropped ticks are fine — the
+// next tick already carries fresh data.
 let _posPollTimer = null;
+let _posInFlight = false;
+async function loadPositionsGuarded() {
+  if (_posInFlight) return;
+  _posInFlight = true;
+  try { await loadPositions(); }
+  finally { _posInFlight = false; }
+}
 function startPositionsPoll() {
-  loadPositions();
-  if (!_posPollTimer) _posPollTimer = setInterval(loadPositions, 8000);
+  loadPositionsGuarded();
+  if (!_posPollTimer) _posPollTimer = setInterval(loadPositionsGuarded, 8000);
 }
 function stopPositionsPoll() {
   if (_posPollTimer) { clearInterval(_posPollTimer); _posPollTimer = null; }

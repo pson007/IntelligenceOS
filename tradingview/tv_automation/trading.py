@@ -460,6 +460,12 @@ async def close_position(symbol: str, *, dry_run: bool = False) -> dict:
                 # This lets us support dry-run naturally — the JS runs
                 # the same path and reports {found, reason} so we can
                 # either return a dry-run preview or proceed to click.
+                #
+                # Row match accepts EITHER the full exchange-qualified
+                # form ("COINBASE:ETHUSD") OR the bare ticker ("ETHUSD")
+                # since TV's positions table renders the full form but
+                # callers pass the bare ticker after config.check_symbol
+                # strips the prefix.
                 plan = await page.evaluate("""(sym) => {
                     const tbl = document.querySelector('[data-name="Paper.positions-table"]');
                     if (!tbl) return { found: false, reason: 'no_table' };
@@ -471,7 +477,9 @@ async def close_position(symbol: str, *, dry_run: bool = False) -> dict:
                         if (!first) continue;
                         const token = (first.innerText || '').trim()
                             .split(/\\s+/)[0].toUpperCase();
-                        if (token !== sym) continue;
+                        const tokenBare = token.includes(':')
+                            ? token.split(':').pop() : token;
+                        if (token !== sym && tokenBare !== sym) continue;
                         const lastCell = r.querySelector('td:last-child');
                         const btn = (lastCell || r).querySelector(
                             'button[aria-label^="Close"], button[data-name*="close"], button[title*="Close"]'
@@ -504,7 +512,9 @@ async def close_position(symbol: str, *, dry_run: bool = False) -> dict:
                         "symbol": symbol, "plan": plan,
                     }
 
-                # Commit: click via the same selector path.
+                # Commit: click via the same selector path. Matching
+                # logic must mirror the plan-discovery above — accept
+                # full or bare form of the first-cell token.
                 clicked = await page.evaluate("""(sym) => {
                     const tbl = document.querySelector('[data-name="Paper.positions-table"]');
                     if (!tbl) return false;
@@ -514,8 +524,11 @@ async def close_position(symbol: str, *, dry_run: bool = False) -> dict:
                     for (const r of rows) {
                         const first = r.querySelector('td');
                         if (!first) continue;
-                        if ((first.innerText || '').trim().split(/\\s+/)[0].toUpperCase() !== sym)
-                            continue;
+                        const token = (first.innerText || '').trim()
+                            .split(/\\s+/)[0].toUpperCase();
+                        const tokenBare = token.includes(':')
+                            ? token.split(':').pop() : token;
+                        if (token !== sym && tokenBare !== sym) continue;
                         const lastCell = r.querySelector('td:last-child');
                         const btn = (lastCell || r).querySelector(
                             'button[aria-label^="Close"], button[data-name*="close"], button[title*="Close"]'

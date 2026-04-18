@@ -26,6 +26,7 @@ import json
 import os
 import secrets
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -44,7 +45,17 @@ from tv_automation import trading as trading_mod
 from tv_automation import watchlist as watchlist_mod
 from tv_automation.lib import audit
 
-app = FastAPI(title="IntelligenceOS Console")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: prune screenshots older than _SCREENSHOT_TTL_DAYS. Cheap,
+    # runs once per process start. No shutdown cleanup needed — the ASGI
+    # app doesn't own any long-lived resources (browser attaches are
+    # per-request).
+    _prune_old_screenshots()
+    yield
+
+
+app = FastAPI(title="IntelligenceOS Console", lifespan=lifespan)
 
 _UI_DIR = Path(__file__).parent / "ui"
 _AUDIT_DIR = Path(__file__).parent / "audit"
@@ -121,9 +132,6 @@ def _prune_old_screenshots() -> None:
                   removed=removed, ttl_days=_SCREENSHOT_TTL_DAYS)
 
 
-@app.on_event("startup")
-async def _startup_hooks():
-    _prune_old_screenshots()
 
 
 # ---------------------------------------------------------------------------
@@ -437,6 +445,7 @@ async def alerts_create(payload: dict) -> dict:
             notify_toast=bool(p.get("notify_toast", False)),
             notify_email=bool(p.get("notify_email", False)),
             notify_sound=bool(p.get("notify_sound", False)),
+            dry_run=bool(p.get("dry_run", False)),
         )
     except Exception as e:
         raise HTTPException(500, f"{type(e).__name__}: {e}")
