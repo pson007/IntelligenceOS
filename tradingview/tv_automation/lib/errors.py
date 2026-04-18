@@ -79,3 +79,35 @@ class ChartNotReadyError(TVAutomationError):
     bar hydrated) within the timeout. Often means the page is on a
     non-chart URL or TradingView is having issues."""
     exit_code = 8
+
+
+class LoopBudgetExceededError(TVAutomationError):
+    """LLM-in-loop driver (`tv act`) hit the step cap or cost ceiling
+    without reaching `done`. Raised instead of spinning unbounded, so
+    a runaway goal can't rack up API cost or hammer TradingView."""
+    exit_code = 9
+
+    def __init__(self, *, reason: str, steps: int, cost_usd: float,
+                 max_steps: int, max_cost_usd: float):
+        self.reason = reason
+        self.steps = steps
+        self.cost_usd = cost_usd
+        self.max_steps = max_steps
+        self.max_cost_usd = max_cost_usd
+        super().__init__(
+            f"loop budget exceeded ({reason}): "
+            f"steps={steps}/{max_steps}, cost=${cost_usd:.4f}/${max_cost_usd:.2f}"
+        )
+
+
+class GoalUnachievableError(TVAutomationError):
+    """The model declared the goal can't be reached from the current
+    state (e.g. needed UI isn't present, logged-out user, missing
+    permissions). Distinct from a tool failure — the model isn't
+    stuck, it's concluding the goal was misspecified or blocked."""
+    exit_code = 10
+
+    def __init__(self, reason: str, *, steps: int):
+        self.reason = reason
+        self.steps = steps
+        super().__init__(f"goal unachievable after {steps} step(s): {reason}")

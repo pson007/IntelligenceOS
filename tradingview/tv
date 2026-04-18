@@ -32,7 +32,7 @@ TV_DIR="$(cd -P "$(dirname "$SCRIPT")" && pwd)"
 
 if [ $# -lt 1 ]; then
     echo "Usage: tv <module> <subcommand> [args...]" >&2
-    echo "Modules: chart, trading, orders, alerts, layouts, indicators, pine_editor, strategy_tester, status, probes" >&2
+    echo "Modules: chart, trading, orders, alerts, layouts, indicators, pine_editor, strategy_tester, status, act, probes" >&2
     echo "" >&2
     echo "Examples:" >&2
     echo "  tv chart metadata" >&2
@@ -41,6 +41,7 @@ if [ $# -lt 1 ]; then
     echo "  tv orders place-limit AAPL buy 1 170.50 --dry-run" >&2
     echo "  tv orders list" >&2
     echo "  tv strategy_tester metrics" >&2
+    echo "  tv act \"open the watchlist sidebar\"" >&2
     exit 64
 fi
 
