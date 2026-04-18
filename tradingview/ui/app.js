@@ -105,6 +105,11 @@ function applyTheme(t) {
   if (btn) btn.textContent = t === 'light' ? '☾' : '☀';
   // ☾ (moon) = "switch to dark"; ☀ (sun) = "switch to light". Icon shows
   // the *destination* of a click, not the current state.
+  // Keep the iOS status-bar color in sync with the chosen theme. Safari
+  // reads <meta name="theme-color"> whenever it changes — this is what
+  // makes the native status-bar backdrop match our sidebar on iPhone.
+  const meta = document.getElementById('theme-color-meta');
+  if (meta) meta.setAttribute('content', t === 'light' ? '#ffffff' : '#0d1117');
 }
 $('theme-toggle').addEventListener('click', () => {
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';

@@ -1,0 +1,13 @@
+{
+  "name": "IntelligenceOS Console",
+  "short_name": "IOS Console",
+  "description": "Local dashboard for TradingView automation — chart control, vision-loop act runs, trade placement, watchlist, alerts, and audit log.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    { "src": "/ui/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

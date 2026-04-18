@@ -49,7 +49,10 @@
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-  .app { display: flex; height: 100vh; }
+  /* 100dvh is the dynamic viewport height — on iOS Safari it accounts
+   * for the moving URL bar; in PWA standalone mode it's the full screen.
+   * Falls back to 100vh on browsers without dvh support. */
+  .app { display: flex; height: 100vh; height: 100dvh; }
 
   /* Sidebar */
   .sidebar {
@@ -528,4 +531,78 @@
     .main { padding: 12px; }
     .card { padding: 10px 12px; }
     .tab h1 { font-size: 16px; }
+  }
+
+  /* ----------------------------------------------------------------
+   * iOS safe areas + PWA / full-screen polish.
+   *
+   * viewport-fit=cover (set in the meta) lets the page paint under
+   * the Dynamic Island and home indicator. These rules restore the
+   * insets as padding so content stays readable, while our sidebar
+   * and toast backgrounds extend edge-to-edge.
+   *
+   * Tap targets: Apple HIG suggests 44×44pt minimum. Mobile button
+   * padding is bumped so rendered height meets that threshold.
+   * ---------------------------------------------------------------- */
+  @supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+      .sidebar {
+        padding-top: env(safe-area-inset-top);
+      }
+      .main {
+        padding-left: max(14px, env(safe-area-inset-left));
+        padding-right: max(14px, env(safe-area-inset-right));
+        padding-bottom: max(14px, env(safe-area-inset-bottom));
+      }
+      .toast {
+        bottom: max(10px, env(safe-area-inset-bottom));
+        left: max(10px, env(safe-area-inset-left));
+        right: max(10px, env(safe-area-inset-right));
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    /* Larger tap targets everywhere — Apple HIG minimum 44×44pt */
+    .nav-item { min-height: 36px; padding: 8px 14px; }
+    button { min-height: 40px; padding: 10px 16px; font-size: 14px; }
+    button.icon-btn { min-height: 32px; padding: 6px 12px; font-size: 11px; }
+    .sidebar-toggle { min-height: 36px; min-width: 36px; }
+    .theme-toggle { min-height: 36px; min-width: 36px; padding: 6px 10px; }
+    .combo input,
+    input[type="text"], input[type="number"], select, textarea {
+      padding: 10px 12px; font-size: 14px;
+    }
+    /* 16px font on form fields stops iOS from auto-zooming on focus */
+    input[type="number"] { font-size: 16px; }
+    .checkbox-row { gap: 14px 20px; }
+    .checkbox-row label { min-height: 28px; align-items: center; }
+    .combo-option { min-height: 40px; padding: 10px 12px; }
+
+    /* Main content scrolls with iOS momentum; prevent rubber-banding
+       of the whole page when scrolling a nested list. */
+    .main { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+    .audit-log, .steps, .combo-menu {
+      -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    }
+
+    /* Tables shouldn't force horizontal page scroll — wrap in auto-x
+       scroll so wide tables scroll inside their card. */
+    .card { overflow-x: hidden; }
+    #positions-body table,
+    #alerts-body table,
+    #watchlist-body table { display: block; overflow-x: auto; white-space: nowrap; }
+  }
+
+  /* PWA standalone-mode polish. Only applies when the user launched
+   * from the home screen (display: standalone reports true). */
+  @media (display-mode: standalone) {
+    /* No rounded corners at screen edges — the device bezel does that. */
+    .sidebar { border-radius: 0; }
+    /* Slightly larger type on the 430pt iPhone 15 Pro Max viewport. */
+    @media (min-width: 410px) and (max-width: 768px) {
+      body { font-size: 15px; }
+      .tab h1 { font-size: 19px; }
+      .card h2 { font-size: 12px; }
+    }
   }
