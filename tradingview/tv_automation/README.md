@@ -516,6 +516,52 @@ Per-pane failure isolation: a broken surface (e.g. Pine Editor
 unopenable) produces `{"error": "..."}` for that field while the rest
 still populate.
 
+### heal (suggest replacement selectors when stored ones drift)
+
+When TradingView ships a UI tweak that breaks `selectors.yaml`, the
+historical fix was: re-run the relevant probe, eyeball the snapshot
+diff, edit selectors.yaml. `tv heal` shortcuts that:
+
+```bash
+tv heal alerts_panel.sidebar_icon
+# Tries each candidate from selectors.yaml. If any work, prints
+# "still resolves" + which one. If all fail, runs the healer against
+# current DOM and prints ranked replacement candidates.
+
+tv heal --selector '[data-name="alerts-typo"]'
+# Heal an arbitrary selector — useful for testing or one-off recovery.
+
+tv heal --selector '[data-name="some-pill"]' \
+    --scope 'div[class*="screenerContainer-"]'
+# Restrict the healer's DOM scan to a specific area (e.g. screener
+# container) — prevents matching unrelated elements elsewhere.
+```
+
+**How it works**: parse the failed selector → extract identifying hints
+(data-name, aria-label, id, data-qa-id, has-text) → scan current DOM
+for elements that fuzzy-match the hints → rank by closeness:
+
+  - `data-name==`     — exact match (100 pts)
+  - `data-name⊇`      — current name CONTAINS the original (65 pts;
+                        e.g. original `alerts`, current `alerts-icon`)
+  - `data-name⊆`      — original CONTAINS current (45 pts;
+                        e.g. typo `alerts-typo` vs real `alerts`)
+  - `aria-label==`    — exact match (80 pts)
+  - `aria-label⊇/⊆`   — partial (50 / 30 pts)
+  - `id==/⊇`          — id match (95 / 60 pts)
+  - `data-qa-id==/⊇`  — chart-legend identifier (100 / 60 pts)
+  - `text==/⊇`        — visible-text match (35 / 18 pts; weakest)
+  - `role==`          — tie-breaker only (10 pts)
+
+Each candidate's response includes a `suggested_selector` ready to
+paste into `selectors.yaml` as a new fallback under the same role.
+
+**Deliberately report-only.** Auto-modifying `selectors.yaml` is the
+failure mode that makes this kind of system fragile (a wrong heal
+that works once but breaks later pollutes the file forever, and
+YAML edits would mangle the file's heavy comments). Healed
+selectors are SUGGESTIONS; the human/LLM in the loop applies them.
+
 ### probes (refresh selectors when TV ships UI changes)
 
 ```bash
