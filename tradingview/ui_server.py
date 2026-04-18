@@ -97,6 +97,12 @@ async def guard(request: Request, call_next):
 _act_tasks: dict[str, dict] = {}
 _ACT_TASK_TTL_S = 60 * 60  # 1 hour
 
+# At most one act run at a time — they all share the same Playwright
+# session, so concurrent runs would interleave clicks unpredictably.
+# Tracks the task_id of the currently-running act (or None if idle).
+# A second /api/act call while this is set returns 409 Conflict.
+_active_act_task: str | None = None
+
 
 def _prune_act_tasks() -> None:
     """Remove finished tasks older than TTL. Called opportunistically on
@@ -266,9 +272,22 @@ async def chart_image(path: str):
 
 @app.post("/api/act")
 async def act_start(payload: dict) -> dict:
+    global _active_act_task
     goal = (payload or {}).get("goal", "").strip()
     if not goal:
         raise HTTPException(400, "goal required")
+
+    # Refuse if another act run is in flight. They share a single
+    # Playwright session; concurrent runs produce interleaved clicks.
+    if _active_act_task and _active_act_task in _act_tasks:
+        other = _act_tasks[_active_act_task]
+        if other.get("state") == "running":
+            raise HTTPException(409, {
+                "detail": "another act run is in progress",
+                "active_task_id": _active_act_task,
+                "active_goal": other.get("goal"),
+                "started_at": other.get("started_at"),
+            })
 
     _prune_act_tasks()
     task_id = secrets.token_hex(6)
@@ -287,6 +306,7 @@ async def act_start(payload: dict) -> dict:
     }
 
     async def runner():
+        global _active_act_task
         try:
             result = await act_mod.act(
                 goal,
@@ -309,7 +329,13 @@ async def act_start(payload: dict) -> dict:
             _act_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
         finally:
             _act_tasks[task_id]["finished_at"] = time.time()
+            # Release the single-runner slot. If a new run somehow grabbed
+            # it under us (shouldn't be possible given the check at start),
+            # don't step on it.
+            if _active_act_task == task_id:
+                _active_act_task = None
 
+    _active_act_task = task_id
     asyncio.create_task(runner())
     return {"task_id": task_id, "request_id": request_id}
 

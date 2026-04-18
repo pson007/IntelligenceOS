@@ -1,0 +1,136 @@
+name: smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tradingview/**'
+      - '.github/workflows/smoke.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  ui-smoke:
+    name: UI server smoke tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tradingview
+    env:
+      # Dummy token — exercises the auth + CSRF paths in the smoke
+      # suite without requiring a real secret.
+      UI_TOKEN: ci-test-dummy
+      # bridge.py isn't started by these tests but the module is
+      # imported transitively. Give it a non-empty value so its
+      # SHARED_SECRET check doesn't SystemExit.
+      BRIDGE_SHARED_SECRET: ci-test-dummy-bridge
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'tradingview/requirements.txt'
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+        # Note: playwright Python package installs with pip above, but
+        # the Chromium binary isn't downloaded. Smoke tests deliberately
+        # skip browser-touching endpoints, so no `playwright install`
+        # step is needed. Keeps CI fast.
+
+      - name: Start UI server
+        run: |
+          python -m uvicorn ui_server:app --host 127.0.0.1 --port 8788 \
+            > /tmp/ui.log 2>&1 &
+          echo $! > /tmp/ui.pid
+          for i in $(seq 1 20); do
+            if curl -sf -H "X-UI-Token: $UI_TOKEN" \
+                http://127.0.0.1:8788/api/health > /dev/null; then
+              echo "UI server up after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::UI server did not become ready within 20s"
+          echo "--- server log ---"
+          cat /tmp/ui.log
+          exit 1
+
+      - name: Run smoke tests
+        run: python tests/smoke_ui.py
+
+      - name: Server log on failure
+        if: failure()
+        run: |
+          echo "--- /tmp/ui.log ---"
+          cat /tmp/ui.log || true
+
+      - name: Stop UI server
+        if: always()
+        run: |
+          kill $(cat /tmp/ui.pid) 2>/dev/null || true
+
+  static-checks:
+    name: Static checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tradingview
+    env:
+      BRIDGE_SHARED_SECRET: ci-test-dummy-bridge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install minimal deps
+        run: pip install pyyaml python-dotenv pydantic fastapi anthropic openai httpx playwright
+
+      - name: Python syntax — ui_server.py and bridge.py
+        run: |
+          python - <<'PY'
+          import ast
+          ast.parse(open('ui_server.py').read())
+          ast.parse(open('bridge.py').read())
+          print('syntax ok')
+          PY
+
+      - name: bridge.py imports cleanly; allowlist loads from limits.yaml
+        run: |
+          python - <<'PY'
+          import bridge
+          from tv_automation.config import limits
+          lim = limits()
+          print('allowlist size:', len(lim.allowed_symbols))
+          print('per-symbol caps:', len(lim.per_symbol_max_qty))
+          assert len(lim.allowed_symbols) > 0
+          PY
+
+      - name: limits.yaml validates
+        run: |
+          python - <<'PY'
+          import yaml
+          d = yaml.safe_load(open('tv_automation/limits.yaml').read())
+          assert d['allowed_symbols'], 'empty allowlist'
+          print('symbols:', len(d['allowed_symbols']))
+          PY
+
+      - name: CSS brace balance
+        run: |
+          python - <<'PY'
+          css = open('ui/style.css').read()
+          o, c = css.count('{'), css.count('}')
+          assert o == c, f'UNBALANCED: o={o} c={c}'
+          print(f'balanced: {o} blocks')
+          PY
+
+      - name: manifest.json valid
+        run: |
+          python - <<'PY'
+          import json
+          json.load(open('ui/manifest.json'))
+          print('ok')
+          PY
