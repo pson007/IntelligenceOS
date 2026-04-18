@@ -376,12 +376,33 @@ $('chart-set').addEventListener('click', async (e) => {
   finally { setBusy(btn, false, 'Set symbol'); }
 });
 
+// Fetch a served file with the UI auth headers and wrap it as a blob
+// URL. Used by <img> because native image loads don't carry the
+// X-UI-Token header — only JS fetch calls do.
+let _lastShotObjectUrl = null;
+async function fetchAsObjectUrl(url) {
+  const headers = {};
+  try {
+    const token = localStorage.getItem('ios-ui-token');
+    if (token) headers['X-UI-Token'] = token;
+  } catch (e) {}
+  const r = await fetch(url, { headers });
+  if (!r.ok) throw new Error('HTTP ' + r.status + ' — ' + (await r.text()).slice(0, 120));
+  return URL.createObjectURL(await r.blob());
+}
+
 $('chart-shoot').addEventListener('click', async (e) => {
   const btn = e.target;
   const area = $('chart-area').value;
   setBusy(btn, true);
   try {
     const r = await api('/api/chart/screenshot', { method: 'POST', body: { area } });
+    const imgUrl = await fetchAsObjectUrl(r.url);
+    // Revoke the previous blob URL — one Capture keeps memory steady
+    // regardless of how many times the user clicks.
+    if (_lastShotObjectUrl) URL.revokeObjectURL(_lastShotObjectUrl);
+    _lastShotObjectUrl = imgUrl;
+
     const box = $('chart-shot');
     const file = (r.path || '').split('/').pop();
     box.innerHTML = `
@@ -390,7 +411,7 @@ $('chart-shoot').addEventListener('click', async (e) => {
         <span class="mono">${escapeHtml(r.symbol)} ${escapeHtml(r.interval)}</span>
         <span class="muted mono" style="margin-left: auto; font-size: 11px;" title="${escapeHtml(r.path)}">${escapeHtml(file)}</span>
       </div>
-      <img class="screenshot" src="${r.url}" alt="chart screenshot" />
+      <img class="screenshot" src="${imgUrl}" alt="chart screenshot" />
     `;
   } catch (e) { toast(`screenshot: ${e.message}`, 'err'); }
   finally { setBusy(btn, false, 'Capture'); }
