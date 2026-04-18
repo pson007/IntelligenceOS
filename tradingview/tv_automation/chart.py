@@ -266,6 +266,101 @@ async def screenshot(
         }
 
 
+async def click_at(
+    x: int,
+    y: int,
+    *,
+    button: str = "left",
+    double: bool = False,
+    bypass_overlap: bool = False,
+) -> dict:
+    """Click at viewport pixel coordinates `(x, y)` — selector-free.
+
+    Combine with `screenshot --area full` for vision-driven control:
+    take a screenshot, identify the target visually, issue the click
+    by its pixel position. Useful when DOM selectors break (TV ships
+    a UI change), when an element has no stable selector, or when the
+    target is canvas-rendered.
+
+    `button` is "left" / "right" / "middle". `double` does a
+    double-click instead of a single. `bypass_overlap=True` wraps the
+    click in `lib.overlays.bypass_overlap_intercept` — set when a
+    right-docked Pine Editor's wrapper is intercepting events at the
+    target coords (see ROADMAP §7g').
+
+    Returns a result describing what was at `(x, y)` immediately
+    before AND after the click, so a vision-driven loop can verify
+    the click landed on the intended element AND notice if the click
+    triggered a UI change. `element_after` is best-effort — clicks
+    that navigate or animate may make the post-read race.
+    """
+    if button not in ("left", "right", "middle"):
+        raise ValueError(f"button must be left/right/middle (got {button!r})")
+    # Lazy import to keep chart.py's import surface small.
+    from .lib.overlays import bypass_overlap_intercept
+
+    await ensure_automation_chromium()
+    async with tv_context() as ctx:
+        page = await _find_or_open_chart(ctx)
+        await assert_logged_in(page)
+
+        async def _read_element_at(label: str) -> dict | None:
+            return await page.evaluate(
+                r"""({px, py}) => {
+                    const el = document.elementFromPoint(px, py);
+                    if (!el) return null;
+                    const r = el.getBoundingClientRect();
+                    return {
+                        tag: el.tagName,
+                        dataName: el.getAttribute('data-name'),
+                        ariaLabel: el.getAttribute('aria-label'),
+                        title: el.getAttribute('title'),
+                        text: (el.innerText || '').trim().slice(0, 60),
+                        classes: (el.className || '').toString().slice(0, 80),
+                        rect: {
+                            x: Math.round(r.x), y: Math.round(r.y),
+                            w: Math.round(r.width), h: Math.round(r.height),
+                        },
+                    };
+                }""",
+                {"px": x, "py": y},
+            )
+
+        element_before = await _read_element_at("before")
+
+        async def _do_click() -> None:
+            if double:
+                await page.mouse.dblclick(x, y, button=button)
+            else:
+                await page.mouse.click(x, y, button=button)
+
+        if bypass_overlap:
+            async with bypass_overlap_intercept(page):
+                await _do_click()
+        else:
+            await _do_click()
+
+        # Brief settle for animations / DOM updates triggered by the click.
+        await page.wait_for_timeout(200)
+        try:
+            element_after = await _read_element_at("after")
+        except Exception:
+            # Page may have navigated mid-click.
+            element_after = None
+
+        audit.log("chart.click_at",
+                  x=x, y=y, button=button, double=double,
+                  bypass_overlap=bypass_overlap,
+                  element_before_tag=(element_before or {}).get("tag"))
+        return {
+            "ok": True, "x": x, "y": y,
+            "button": button, "double": double,
+            "bypass_overlap": bypass_overlap,
+            "element_before": element_before,
+            "element_after": element_after,
+        }
+
+
 async def metadata() -> dict:
     """Return current chart's symbol, interval, and URL. Read-only."""
     await ensure_automation_chromium()
@@ -303,6 +398,21 @@ def _main() -> None:
 
     sub.add_parser("metadata", help="Print current chart metadata")
 
+    cl = sub.add_parser(
+        "click-at",
+        help="Click at viewport pixel coordinates (selector-free; "
+             "combine with screenshot --area full for vision-driven control)",
+    )
+    cl.add_argument("x", type=int, help="Viewport x (pixels)")
+    cl.add_argument("y", type=int, help="Viewport y (pixels)")
+    cl.add_argument("--button", choices=("left", "right", "middle"),
+                    default="left", help="Mouse button (default: left)")
+    cl.add_argument("--double", action="store_true", help="Double-click")
+    cl.add_argument("--bypass-overlap", action="store_true",
+                    help="Wrap in lib.overlays.bypass_overlap_intercept "
+                         "(disables Pine Editor / overlap-manager pointer "
+                         "events around the click)")
+
     args = p.parse_args()
 
     if args.cmd == "set-symbol":
@@ -311,6 +421,11 @@ def _main() -> None:
         run(lambda: screenshot(args.symbol, args.timeframe, args.output, area=args.area))
     elif args.cmd == "metadata":
         run(lambda: metadata())
+    elif args.cmd == "click-at":
+        run(lambda: click_at(
+            args.x, args.y, button=args.button, double=args.double,
+            bypass_overlap=args.bypass_overlap,
+        ))
 
 
 if __name__ == "__main__":

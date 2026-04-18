@@ -67,6 +67,27 @@ sidebar?"). Region captures fall back to `full` if the named region
 isn't found (e.g. Pine editor is collapsed); the response includes
 `area` (the actually-captured region) and `fell_back: true/false`.
 
+**Vision-driven control: click by pixel coordinates.**
+
+```bash
+tv chart click-at 120 19                          # click at viewport (x, y)
+tv chart click-at 120 19 --button right           # right-click
+tv chart click-at 120 19 --double                 # double-click
+tv chart click-at 120 19 --bypass-overlap         # bypass Monaco/overlap-manager intercepts
+```
+
+Selector-free — combine with `screenshot --area full` for a vision
+loop: take a screenshot → identify the target visually → issue the
+click. Useful when DOM selectors break, when the target lacks a
+stable selector, or when the target is canvas-rendered.
+
+Result includes `element_before` and `element_after` — what was at
+`(x, y)` immediately before and after the click. `element_before`
+verifies the click landed on the intended element; `element_after`
+notices UI changes (e.g. `backdrop-aRAWUDhF` appearing means a
+modal opened). The viewport is typically 1565×812 (one of the
+useful coordinate baselines).
+
 ### trading (paper-only, safety-gated, order-verified)
 
 ```bash
