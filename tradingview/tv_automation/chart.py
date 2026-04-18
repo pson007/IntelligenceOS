@@ -28,6 +28,7 @@ from session import tv_context
 from .lib import audit
 from .lib.cli import run
 from .lib.guards import assert_logged_in
+from .lib.session_modal import click_reconnect_if_present
 from .lib.urls import chart_url_for
 
 # Friendly timeframe → TradingView's URL `interval` param.
@@ -183,6 +184,7 @@ async def set_symbol(symbol: str, interval: str | None = None) -> dict:
     async with tv_context() as ctx:
         page = await _find_or_open_chart(ctx)
         await assert_logged_in(page)
+        await click_reconnect_if_present(page)
         await _navigate(page, symbol, tv_interval)
         meta = await _extract_metadata(page)
         audit.log("chart.set_symbol", symbol=symbol, interval=interval, resolved=meta)
@@ -222,6 +224,7 @@ async def screenshot(
     async with tv_context() as ctx:
         page = await _find_or_open_chart(ctx)
         await assert_logged_in(page)
+        await click_reconnect_if_present(page)
         await _navigate(page, symbol, tv_interval)
         meta = await _extract_metadata(page)
 
@@ -303,6 +306,7 @@ async def click_at(
     async with tv_context() as ctx:
         page = await _find_or_open_chart(ctx)
         await assert_logged_in(page)
+        await click_reconnect_if_present(page)
 
         async def _read_element_at(label: str) -> dict | None:
             # snake_case keys to match describe_screen — so chaining
@@ -430,6 +434,7 @@ async def describe_screen(
     async with tv_context() as ctx:
         page = await _find_or_open_chart(ctx)
         await assert_logged_in(page)
+        await click_reconnect_if_present(page)
 
         scope_selector = None if area in ("full", "chart") else _SCREENSHOT_AREAS.get(area)
 
@@ -581,6 +586,7 @@ async def click_label(
     async with tv_context() as ctx:
         page = await _find_or_open_chart(ctx)
         await assert_logged_in(page)
+        await click_reconnect_if_present(page)
 
         # Reuse the healer's scoring — pass the query as all three hint
         # types so data-name / aria-label / text matches all compete.
@@ -681,7 +687,28 @@ async def metadata() -> dict:
     async with tv_context() as ctx:
         page = await _find_or_open_chart(ctx)
         await assert_logged_in(page)
+        await click_reconnect_if_present(page)
         return await _extract_metadata(page)
+
+
+async def reconnect() -> dict:
+    """Explicit invocation of the session-disconnect-modal check.
+
+    The same check runs as a preflight on every other `tv chart`
+    subcommand (and all `chart_session`-using surfaces), so you rarely
+    need this. Useful for debugging ("is the modal actually up?") and
+    for a manual reconnect nudge when TV's auto-dismiss race is tight.
+    Returns `{present: False}` when no modal is visible."""
+    await ensure_automation_chromium()
+    async with tv_context() as ctx:
+        page = await _find_or_open_chart(ctx)
+        await assert_logged_in(page)
+        # Deliberately call the primitive WITHOUT relying on the
+        # auto-preflight — we want the full detect+click result
+        # returned to the caller, not swallowed upstream.
+        result = await click_reconnect_if_present(page)
+        audit.log("chart.reconnect", **result)
+        return result
 
 
 # ---------------------------------------------------------------------------
@@ -711,6 +738,13 @@ def _main() -> None:
                          "sidebar / Pine editor / Account Manager you want to see.")
 
     sub.add_parser("metadata", help="Print current chart metadata")
+
+    sub.add_parser(
+        "reconnect",
+        help="Detect + dismiss the 'Session disconnected' modal. "
+             "This check also runs as a preflight on every other tv "
+             "command; use this for explicit debugging.",
+    )
 
     ds = sub.add_parser(
         "describe-screen",
@@ -767,6 +801,8 @@ def _main() -> None:
         run(lambda: screenshot(args.symbol, args.timeframe, args.output, area=args.area))
     elif args.cmd == "metadata":
         run(lambda: metadata())
+    elif args.cmd == "reconnect":
+        run(lambda: reconnect())
     elif args.cmd == "click-at":
         run(lambda: click_at(
             args.x, args.y, button=args.button, double=args.double,

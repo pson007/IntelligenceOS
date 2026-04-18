@@ -32,6 +32,7 @@ from preflight import ensure_automation_chromium
 from session import tv_context
 
 from .guards import assert_logged_in
+from .session_modal import click_reconnect_if_present
 
 CHART_URL = "https://www.tradingview.com/chart/"
 
@@ -65,10 +66,22 @@ async def find_or_open_chart(ctx: BrowserContext) -> Page:
 
 
 @contextlib.asynccontextmanager
-async def chart_session() -> AsyncIterator[tuple[BrowserContext, Page]]:
+async def chart_session(
+    *, auto_reconnect: bool = True,
+) -> AsyncIterator[tuple[BrowserContext, Page]]:
     """browser_context + find_or_open_chart + assert_logged_in. Yields
-    (ctx, page) — what most operations actually want."""
+    (ctx, page) — what most operations actually want.
+
+    `auto_reconnect=True` (default) auto-dismisses the 'Session
+    disconnected' modal before yielding. This is a TradingView
+    preflight: the modal blocks the chart until Connect is clicked,
+    so every downstream read/write would operate on a frozen view
+    otherwise. Hot-path cost when no modal is present is <10ms (one
+    JS evaluate that returns null). Set False only for the reconnect
+    CLI itself — otherwise leave alone."""
     async with browser_context() as ctx:
         page = await find_or_open_chart(ctx)
         await assert_logged_in(page)
+        if auto_reconnect:
+            await click_reconnect_if_present(page)
         yield ctx, page
