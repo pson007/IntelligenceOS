@@ -164,6 +164,51 @@ async def _read_compile_errors(page: Page, include_warnings: bool = False) -> li
     }}""", include_warnings)
 
 
+async def _read_console_row_texts(page: Page) -> list[str]:
+    """Snapshot every console-log row's visible text. Used for the
+    apply-window boundary: rows present BEFORE an apply are baseline,
+    rows that appear AFTER are attributable to it.
+
+    Each row's text starts with its timestamp ('9:07:05 PMCompiling...')
+    so timestamps disambiguate identical-content entries (the same
+    'Compiling...' string fires every save)."""
+    return await page.evaluate(r"""() => {
+      const rows = Array.from(document.querySelectorAll(
+        'tr[class*="selectable-"]'
+      ));
+      return rows.map(r => (r.innerText || '').trim());
+    }""")
+
+
+async def _wait_for_new_compiling_row(
+    page: Page, baseline: set[str], timeout_s: float = 6.0,
+) -> str | None:
+    """Poll until a new console row appears whose text contains 'Compiling'
+    AND wasn't in the baseline snapshot. Returns the matching row text,
+    or None on timeout.
+
+    Rationale (ROADMAP §5d): the previous apply-window logic
+    (`new_errors = all[len(before):]`) silently fails if TV ever clears
+    the console — the diff goes to zero and looks like clean compile.
+    Anchoring on a strictly-new 'Compiling...' row proves OUR apply
+    triggered a recompile before we attribute any errors to it."""
+    import asyncio
+    deadline = asyncio.get_event_loop().time() + timeout_s
+    while asyncio.get_event_loop().time() < deadline:
+        current = await _read_console_row_texts(page)
+        for t in current:
+            if t in baseline:
+                continue
+            # Match the visible-content portion that follows the
+            # timestamp prefix. TV emits both 'Compiling...' and (more
+            # rarely) localized variants; substring match keeps it
+            # tolerant of whitespace / dot count drift.
+            if "Compiling" in t:
+                return t
+        await asyncio.sleep(0.2)
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -211,29 +256,51 @@ async def apply(
                              path=str(path), name=script_name, size=len(pine)) as ctx_audit:
                 await _ensure_editor_open(page)
 
-                # Snapshot the Pine console's current error-row count so
-                # we can distinguish NEW errors (from this apply) from
-                # historical ones (from earlier broken scripts in the
-                # same session). The console is a persistent log; it
-                # doesn't clear on re-apply.
-                before_errors = (
-                    await _read_compile_errors(page) if check_errors else []
-                )
+                # Snapshot every console row text BEFORE the apply. Used
+                # to disambiguate this apply's compile-window from the
+                # persistent history. Errors text alone isn't enough —
+                # if TV ever clears the console, the diff would silently
+                # go to zero. Snapshotting all row texts (timestamps
+                # included) lets us anchor on a strictly-new
+                # 'Compiling...' row to bound this apply's window.
+                console_baseline_texts: set[str] = set()
+                before_errors: list[str] = []
+                if check_errors:
+                    console_baseline_texts = set(await _read_console_row_texts(page))
+                    before_errors = await _read_compile_errors(page)
 
                 await _replace_editor_content(page, pine)
                 await _save(page, script_name)
                 status = await _add_to_chart_if_needed(page)
 
-                # Post-apply, diff against the snapshot. Only rows added
-                # since this apply started are attributed to it.
+                # Wait for OUR apply's compile to actually start. Without
+                # this, a fast post-apply error scrape can race the
+                # console — we'd see the pre-apply state and incorrectly
+                # report success. Once the boundary row appears, any new
+                # error rows belong to this apply.
+                compile_boundary: str | None = None
+                if check_errors:
+                    compile_boundary = await _wait_for_new_compiling_row(
+                        page, console_baseline_texts, timeout_s=6.0,
+                    )
+                    # Give the compiler a beat to produce its result row.
+                    await page.wait_for_timeout(800)
+
+                # Post-apply, attribute errors strictly by membership:
+                # any error row whose text isn't in the baseline is from
+                # this apply. Robust to console clears, row reorders,
+                # and de-duplication of identical messages across runs.
                 all_errors = (
                     await _read_compile_errors(page) if check_errors else []
                 )
-                new_errors = all_errors[len(before_errors):]
+                new_errors = [
+                    e for e in all_errors if e not in console_baseline_texts
+                ]
 
                 ctx_audit["status"] = status
                 ctx_audit["new_error_count"] = len(new_errors)
                 ctx_audit["total_error_count"] = len(all_errors)
+                ctx_audit["compile_boundary_seen"] = compile_boundary is not None
 
                 return {
                     "ok": len(new_errors) == 0,
@@ -243,6 +310,7 @@ async def apply(
                     "status": status,
                     "errors": new_errors,
                     "historical_errors": before_errors,
+                    "compile_boundary": compile_boundary,
                 }
 
 

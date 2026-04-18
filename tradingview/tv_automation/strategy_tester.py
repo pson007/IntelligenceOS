@@ -180,8 +180,21 @@ async def metrics() -> dict[str, Any]:
         return data
 
 
-async def trades(max_scrolls: int = 50) -> list[dict]:
-    """Open the Strategy Report, switch to List of trades, scrape rows."""
+async def trades(max_scrolls: int = 200) -> dict:
+    """Open the Strategy Report, switch to List of trades, scroll-collect
+    every row.
+
+    The trades table is virtualized — only ~10-20 <tr>s sit in DOM at
+    any given scroll position. A single static read truncates strategies
+    with long histories (the Webhook Alert Template has 488 trades).
+    We scroll the `ka-table-wrapper` container in steps and dedup
+    rows by their first-cell text (which contains "<trade_num><side>"
+    e.g. "1Short" — unique per trade).
+
+    Termination anchors on `scrollTop + clientHeight >= scrollHeight`
+    rather than "two stagnant rounds" (the React virtualizer can briefly
+    look stagnant after a scroll while it mounts the new range — same
+    pattern documented for watchlist.contents)."""
     await ensure_automation_chromium()
     async with tv_context() as ctx:
         page = await _find_chart_page(ctx)
@@ -189,28 +202,95 @@ async def trades(max_scrolls: int = 50) -> list[dict]:
         await _open_report(page)
         await _switch_to(page, "list_of_trades_tab")
 
-        # The trades list on Pine v5 is usually a single <table>; for
-        # very long histories TV virtualizes, but short runs fit in one
-        # render pass. Try the simple scrape first; if count seems too
-        # low for max_scrolls we'll upgrade to scroll-collect.
-        data = await page.evaluate("""() => {
-            const tbl = Array.from(document.querySelectorAll('table')).filter(t =>
-                (t.offsetWidth || t.offsetHeight) &&
-                t.closest('[role="tabpanel"], [class*="reportContainer"], body')
-            ).find(t => {
-                const heads = Array.from(t.querySelectorAll('th')).map(h => (h.innerText || '').trim().toLowerCase());
+        # Read headers once (table header is sticky and always rendered).
+        headers = await page.evaluate(r"""() => {
+            const tbl = Array.from(document.querySelectorAll('table')).find(t => {
+                if (!t.offsetWidth) return false;
+                const heads = Array.from(t.querySelectorAll('th'))
+                    .map(h => (h.innerText || '').trim().toLowerCase());
                 return heads.some(h => h.includes('trade')) || heads.some(h => h.includes('signal'));
             });
-            if (!tbl) return { headers: [], rows: [] };
-            const headers = Array.from(tbl.querySelectorAll('thead th, tr:first-child th'))
+            if (!tbl) return [];
+            return Array.from(tbl.querySelectorAll('thead th, tr:first-child th'))
                 .map(h => (h.innerText || '').trim());
-            const rows = Array.from(tbl.querySelectorAll('tbody tr, tr:not(:first-child)'))
-                .map(tr => Array.from(tr.querySelectorAll('th, td')).map(c => (c.innerText || '').trim()));
-            return { headers, rows };
         }""")
+        if not headers:
+            audit.log("strategy_tester.trades", count=0,
+                      note="trades_table_not_found")
+            return {"headers": [], "rows": []}
 
-        audit.log("strategy_tester.trades", count=len(data.get("rows", [])))
-        return data
+        # Reset scroll to top so we capture from row 1.
+        await page.evaluate(r"""() => {
+            const tbl = Array.from(document.querySelectorAll('table')).find(t => {
+                if (!t.offsetWidth) return false;
+                const heads = Array.from(t.querySelectorAll('th'))
+                    .map(h => (h.innerText || '').trim().toLowerCase());
+                return heads.some(h => h.includes('trade')) || heads.some(h => h.includes('signal'));
+            });
+            if (!tbl) return;
+            const wrap = tbl.closest('.ka-table-wrapper');
+            if (wrap) wrap.scrollTop = 0;
+        }""")
+        await page.wait_for_timeout(300)
+
+        seen: dict[str, list[str]] = {}
+        last_scroll_top = -1
+        for _ in range(max_scrolls):
+            scrape = await page.evaluate(r"""() => {
+                const tbl = Array.from(document.querySelectorAll('table')).find(t => {
+                    if (!t.offsetWidth) return false;
+                    const heads = Array.from(t.querySelectorAll('th'))
+                        .map(h => (h.innerText || '').trim().toLowerCase());
+                    return heads.some(h => h.includes('trade')) || heads.some(h => h.includes('signal'));
+                });
+                if (!tbl) return null;
+                const wrap = tbl.closest('.ka-table-wrapper');
+                const rows = Array.from(tbl.querySelectorAll('tbody tr, tr:not(:first-child)'))
+                    .map(tr => Array.from(tr.querySelectorAll('th, td'))
+                        .map(c => (c.innerText || '').trim()));
+                return {
+                    rows,
+                    scrollTop: wrap ? wrap.scrollTop : 0,
+                    clientHeight: wrap ? wrap.clientHeight : 0,
+                    scrollHeight: wrap ? wrap.scrollHeight : 0,
+                };
+            }""")
+            if scrape is None:
+                break
+            for row in scrape["rows"]:
+                if not row or not row[0]:
+                    continue  # skip empty/aggregate rows
+                key = row[0]  # "1Short", "2Long", etc. — unique per trade
+                if key not in seen:
+                    seen[key] = row
+
+            at_bottom = (
+                scrape["scrollTop"] + scrape["clientHeight"]
+                >= scrape["scrollHeight"] - 1
+            )
+            if at_bottom and scrape["scrollTop"] == last_scroll_top:
+                break
+            last_scroll_top = scrape["scrollTop"]
+            # Step ~half a viewport. Each row is ~30px; clientHeight is
+            # typically 300-500px, giving 100-150px overlap so each row
+            # is sampled in at least two windows (avoids racing the
+            # virtualizer's mount/unmount cycle).
+            await page.evaluate(r"""(step) => {
+                const tbl = Array.from(document.querySelectorAll('table')).find(t => {
+                    if (!t.offsetWidth) return false;
+                    const heads = Array.from(t.querySelectorAll('th'))
+                        .map(h => (h.innerText || '').trim().toLowerCase());
+                    return heads.some(h => h.includes('trade')) || heads.some(h => h.includes('signal'));
+                });
+                if (!tbl) return;
+                const wrap = tbl.closest('.ka-table-wrapper');
+                if (wrap) wrap.scrollBy(0, step);
+            }""", max(150, scrape["clientHeight"] // 2))
+            await page.wait_for_timeout(220)
+
+        rows = list(seen.values())
+        audit.log("strategy_tester.trades", count=len(rows))
+        return {"headers": headers, "rows": rows}
 
 
 # ---------------------------------------------------------------------------

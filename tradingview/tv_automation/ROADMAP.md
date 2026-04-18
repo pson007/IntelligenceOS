@@ -318,30 +318,36 @@ all tab-based navigation.
 to positional selectors (`[role="tab"]:nth-of-type(1)`) with a
 startup calibration that maps positions → roles once per session.
 
-### 5c. Strategy Tester "List of trades" virtualization
+### 5c. Strategy Tester "List of trades" virtualization — **RESOLVED 2026-04-17** ✓
 
-**Finding**: my current `strategy_tester trades` does a single-pass
-scrape of whatever rows are in DOM. For strategies with hundreds of
-trades (the applied Webhook Alert Template has 488), only the visible
-window is captured.
+`strategy_tester.trades` now scroll-collects against the
+`ka-table-wrapper` ancestor and dedups by first-cell text
+(`"<trade_num><side>"`, e.g. `"1Short"`). Smoke-tested against the
+currently-applied Structure & Flow strategy: 313 unique trades captured
+(continuous Trade #1 → #313), stable across re-runs. Termination uses
+`scrollTop + clientHeight >= scrollHeight` rather than the conventional
+"two-stagnant-rounds" stop, for the same React-virtualizer-mount race
+documented under watchlist (§4d).
 
-**Fix** (≈ 30min): use [lib/table.scrape_virtualized](lib/table.py)
-which is already built for this — scroll-and-collect with dedup. I
-didn't wire it in because smoke-testing with 488 trades felt slow and
-the immediate need is a single "how is this strategy doing" summary
-(which `metrics` covers). Wire when you actually need per-trade data.
+### 5d. Pine compile console robustness — **RESOLVED 2026-04-17** ✓
 
-### 5d. Pine compile console — stale entries
+`pine_editor.apply` now anchors the apply window on a strictly-new
+"Compiling..." console row. Pre-apply snapshots EVERY console row text
+(timestamps included — each row is keyed by full visible text), then
+after pasting/saving, polls up to 6s for the boundary row to appear
+via `_wait_for_new_compiling_row`. Error attribution switches from
+`new = all[len(before):]` (assumed append-order) to `new = [e for e in
+all if e not in baseline]` (set membership) — robust to console
+clears, row reorders, and de-duplication of repeated identical errors.
 
-**Finding**: the console log persists across applies. A broken apply
-leaves its error row in the table forever. Current `apply` does an
-error-diff (pre-apply snapshot vs post-apply) to attribute errors
-correctly. Works but feels fragile — if TV ever clears the console on
-new-script-load, the diff goes to zero and looks like success.
+The result dict now also includes `compile_boundary` (the matched
+"Compiling..." row, or null if not detected within timeout) — useful
+for diagnosing apply failures.
 
-**Robustness improvement**: add a "wait for a new timestamped row whose
-text starts with `<HH:MM:SS PM>Compiling...`" before checking errors.
-That gives a strict "my apply's log window" boundary.
+Smoke-tested against `pine/broken_test.pine`: boundary detected at
+`"8:54:26 PMCompiling..."`, 2 new errors at 8:54:27/8:54:28 attributed
+to this apply, 2 prior 9:07/9:26 entries correctly classified as
+historical, no overwrite of the loaded Structure & Flow strategy.
 
 ---
 

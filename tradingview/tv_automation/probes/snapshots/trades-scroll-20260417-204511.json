@@ -1,0 +1,136 @@
+{
+  "found": true,
+  "headers": [
+    "Trade #",
+    "",
+    "Type",
+    "Date and time",
+    "Signal",
+    "Price",
+    "Size",
+    "Net P&L",
+    "Favorable excursion",
+    "Adverse excursion",
+    "Cumulative P&L"
+  ],
+  "rowCount": 14,
+  "rowSamples": [
+    {
+      "attrs": {},
+      "classes": "",
+      "cells": [
+        ""
+      ]
+    },
+    {
+      "attrs": {},
+      "classes": "ka-tr ka-row  row-IQzO4H5R",
+      "cells": [
+        "1Short",
+        "",
+        "Exit\nEntry"
+      ]
+    },
+    {
+      "attrs": {},
+      "classes": "ka-tr ka-row  row-IQzO4H5R",
+      "cells": [
+        "2Long",
+        "",
+        "Exit\nEntry"
+      ]
+    }
+  ],
+  "ancestors": [
+    {
+      "tag": "DIV",
+      "classes": "ka-table-wrapper tableWrapper-IQzO4H5R",
+      "dataName": null,
+      "overflowY": "auto",
+      "scrollHeight": 173090,
+      "clientHeight": 0,
+      "canScroll": true
+    },
+    {
+      "tag": "DIV",
+      "classes": "ka root-IQzO4H5R table-HQCvGiR4",
+      "dataName": null,
+      "overflowY": "hidden",
+      "scrollHeight": 0,
+      "clientHeight": 0,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "wrapper-IQzO4H5R",
+      "dataName": null,
+      "overflowY": "hidden",
+      "scrollHeight": 89,
+      "clientHeight": 0,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "wrapper-knPc2LQU",
+      "dataName": null,
+      "overflowY": "visible",
+      "scrollHeight": 80,
+      "clientHeight": 50,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "wrapper-e0I22GdV",
+      "dataName": null,
+      "overflowY": "visible",
+      "scrollHeight": 80,
+      "clientHeight": 50,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "wrapper-NCyo4wMG",
+      "dataName": null,
+      "overflowY": "visible",
+      "scrollHeight": 80,
+      "clientHeight": 50,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "backtestingReport-qyUx4U7K",
+      "dataName": null,
+      "overflowY": "visible",
+      "scrollHeight": 80,
+      "clientHeight": 50,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "",
+      "dataName": null,
+      "overflowY": "visible",
+      "scrollHeight": 80,
+      "clientHeight": 50,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "bottom-widgetbar-content backtesting",
+      "dataName": null,
+      "overflowY": "hidden",
+      "scrollHeight": 80,
+      "clientHeight": 50,
+      "canScroll": false
+    },
+    {
+      "tag": "DIV",
+      "classes": "",
+      "dataName": null,
+      "overflowY": "visible",
+      "scrollHeight": 50,
+      "clientHeight": 50,
+      "canScroll": false
+    }
+  ]
+}
