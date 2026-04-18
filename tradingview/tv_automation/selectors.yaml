@@ -516,3 +516,36 @@ watchlists_dialog:
     - '[data-dialog-name="Watchlists"] button[role="tab"]:has-text("My watchlists")'
   hotlists_tab:
     - '[data-dialog-name="Watchlists"] button[role="tab"]:has-text("Hotlists")'
+
+screener:
+  # The screener page (https://www.tradingview.com/screener/ and the
+  # crypto/forex/futures variants). Verified 2026-04-17 via probe_screener.
+  # Container class prefix is stable; the hash suffix has rotated rarely
+  # in the 2025-2026 builds.
+  container:
+    - 'div[class*="screenerContainer-"]'
+  # Topbar title — visible text is the current preset name ("All stocks",
+  # "All cryptocurrencies", or a user-saved screen name). Clicking opens
+  # the screen-picker menu (deferred).
+  topbar_title:
+    - '[data-name="screener-topbar-screen-title"]'
+  # Main results table. The class prefix `table-` is broad; we anchor
+  # via the screener container to disambiguate.
+  results_table:
+    - 'div[class*="screenerContainer-"] table[class*="table-"]'
+  # Per-row anchor — most reliable scrape target. TV uses standard
+  # <tr><td> with the symbol cell carrying [data-symbol-short].
+  results_row:
+    - 'div[class*="screenerContainer-"] table[class*="table-"] tbody tr'
+  # Column-group tabs (Overview / Performance / Extended Hours /
+  # Valuation / Dividends / Profitability / Income Statement /
+  # Balance Sheet / Cash Flow / Per Share / Technicals). All
+  # role="tab" with no data-name; match by visible text.
+  column_tabs_container:
+    - '[data-name="square-tabs-buttons"]'
+  # Filter pills container. Each pill has data-name="screener-filter-
+  # pill-<HASH>" and visible text = filter name (Price, Market cap,
+  # P/E, Sector, Index, Change %, ...). Address by visible text since
+  # the per-pill hash is opaque.
+  filter_pill:
+    - 'button[data-name^="screener-filter-pill-"]'

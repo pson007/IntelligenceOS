@@ -1,0 +1,579 @@
+{
+  "url": "https://www.tradingview.com/screener/",
+  "title": "Stock Screener: Search and Filter Stocks \u2014 TradingView",
+  "tables": [
+    {
+      "index": 0,
+      "rowCount": 100,
+      "headers": [
+        "Symbol",
+        "Price",
+        "Change\u00a0%",
+        "Volume",
+        "Rel Volume",
+        "Market cap",
+        "P/E",
+        "EPS dil\nTTM",
+        "EPS dil growth\nTTM YoY",
+        "Div yield\u00a0%\nTTM",
+        "Sector",
+        "Analyst Rating",
+        ""
+      ],
+      "classes": "table-bSkIwNFe"
+    }
+  ],
+  "buttons": [
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Save screen as\u2026",
+      "text": "",
+      "classes": "saveScreenButton-IbFMVKff unsaved-IbFMVKff apply-common-tool"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Screener settings",
+      "text": "",
+      "classes": "apply-common-tooltip lightButton-bYDQcOkp noContent-bYDQcOkp"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Hide filters",
+      "text": "",
+      "classes": "iconRotated-AuA227mw apply-common-tooltip lightButton-bYDQcO"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "US",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Watchlist",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-D6KSkcIl--8M67294mezs",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Index",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-rdUy7EUBeVvjVO963RMuV",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Price",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-_44yB0Dn-79kos9qUOvPj",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Change %",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-OOxzqXEj4_QToI9j3jjMM",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Market cap",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-GfHAfKBWtqlziyFLiV0ef",
+      "ariaLabel": null,
+      "title": null,
+      "text": "P/E",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-vYI26pvTgkRRfgpPeP6ms",
+      "ariaLabel": null,
+      "title": null,
+      "text": "EPS dil growth",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-QesUUhHYaNx-EBGbgAYsR",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Div yield %",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-uXWRUM64vk60MkKhfzMwB",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Sector",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-grnJQNF3r-rnj68XZ_IaW",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Analyst Rating",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-Ye-bEye-K35obdwkwpI33",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Perf %",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-T9re_rtTzzUi5xqFl5s9h",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Revenue growth",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-IZNPZ-jHAjYBBL_N02vH1",
+      "ariaLabel": null,
+      "title": null,
+      "text": "PEG",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-O5FXYFacXkf5O8Up2y1O1",
+      "ariaLabel": null,
+      "title": null,
+      "text": "ROE",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-n-i4Hn28B7j69b_hQ2Gul",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Beta",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-ylOcw3NmBAX4CUl_nBcFu",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Recent earnings date",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": "screener-filter-pill-UeQYXSqsTXLg8PPvumW0d",
+      "ariaLabel": null,
+      "title": null,
+      "text": "Upcoming earnings date",
+      "classes": "activeArea-Vky4fFhK noStretch-Vky4fFhK hasClickListener-Vky4"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Add new filter",
+      "text": "",
+      "classes": "apply-common-tooltip lightButton-bYDQcOkp noContent-bYDQcOkp"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Reset options",
+      "text": "",
+      "classes": "apply-common-tooltip lightButton-bYDQcOkp noContent-bYDQcOkp"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "",
+      "classes": "segmentedControlBase-NZgAw_ip xsmall-NZgAw_ip checked-NZgAw_"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "",
+      "classes": "segmentedControlBase-NZgAw_ip xsmall-NZgAw_ip"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Overview",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Performance",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Extended Hours",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Valuation",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Dividends",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Profitability",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Income Statement",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Balance Sheet",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Cash Flow",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Per Share",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "Technicals",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": null,
+      "text": "More",
+      "classes": "apply-common-tooltip apply-overflow-tooltip apply-overflow-t"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Refresh",
+      "text": "",
+      "classes": "apply-common-tooltip lightButton-bYDQcOkp noContent-bYDQcOkp"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Search",
+      "text": "",
+      "classes": "searchButton-LasUBsXx apply-common-tooltip lightButton-bYDQc"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Change sort",
+      "title": "Change sort",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep sortInd"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": "Sort descending",
+      "title": "Sort descending",
+      "text": "",
+      "classes": "iconButton-RAiBjVep primary-RAiBjVep square-RAiBjVep hidden-"
+    },
+    {
+      "dataName": null,
+      "ariaLabel": null,
+      "title": "Column setup",
+      "text": "",
+      "classes": "button-nIxR7QWF apply-common-tooltip lightButton-bYDQcOkp no"
+    }
+  ],
+  "inputs": [],
+  "tabs": [
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": ""
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": ""
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Overview"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Performance"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Extended Hours"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Valuation"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Dividends"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Profitability"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Income Statement"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Balance Sheet"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Cash Flow"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Per Share"
+    },
+    {
+      "role": "tab",
+      "dataName": null,
+      "ariaLabel": null,
+      "text": "Technicals"
+    }
+  ],
+  "dataNames": [
+    {
+      "dataName": "screener-topbar-screen-title",
+      "tag": "DIV",
+      "text": "All stocks"
+    },
+    {
+      "dataName": "screener-filter-pill-D6KSkcIl--8M67294mezs",
+      "tag": "BUTTON",
+      "text": "Index"
+    },
+    {
+      "dataName": "screener-filter-pill-rdUy7EUBeVvjVO963RMuV",
+      "tag": "BUTTON",
+      "text": "Price"
+    },
+    {
+      "dataName": "screener-filter-pill-_44yB0Dn-79kos9qUOvPj",
+      "tag": "BUTTON",
+      "text": "Change %"
+    },
+    {
+      "dataName": "screener-filter-pill-OOxzqXEj4_QToI9j3jjMM",
+      "tag": "BUTTON",
+      "text": "Market cap"
+    },
+    {
+      "dataName": "screener-filter-pill-GfHAfKBWtqlziyFLiV0ef",
+      "tag": "BUTTON",
+      "text": "P/E"
+    },
+    {
+      "dataName": "screener-filter-pill-vYI26pvTgkRRfgpPeP6ms",
+      "tag": "BUTTON",
+      "text": "EPS dil growth"
+    },
+    {
+      "dataName": "screener-filter-pill-QesUUhHYaNx-EBGbgAYsR",
+      "tag": "BUTTON",
+      "text": "Div yield %"
+    },
+    {
+      "dataName": "screener-filter-pill-uXWRUM64vk60MkKhfzMwB",
+      "tag": "BUTTON",
+      "text": "Sector"
+    },
+    {
+      "dataName": "screener-filter-pill-grnJQNF3r-rnj68XZ_IaW",
+      "tag": "BUTTON",
+      "text": "Analyst Rating"
+    },
+    {
+      "dataName": "screener-filter-pill-Ye-bEye-K35obdwkwpI33",
+      "tag": "BUTTON",
+      "text": "Perf %"
+    },
+    {
+      "dataName": "screener-filter-pill-T9re_rtTzzUi5xqFl5s9h",
+      "tag": "BUTTON",
+      "text": "Revenue growth"
+    },
+    {
+      "dataName": "screener-filter-pill-IZNPZ-jHAjYBBL_N02vH1",
+      "tag": "BUTTON",
+      "text": "PEG"
+    },
+    {
+      "dataName": "screener-filter-pill-O5FXYFacXkf5O8Up2y1O1",
+      "tag": "BUTTON",
+      "text": "ROE"
+    },
+    {
+      "dataName": "screener-filter-pill-n-i4Hn28B7j69b_hQ2Gul",
+      "tag": "BUTTON",
+      "text": "Beta"
+    },
+    {
+      "dataName": "screener-filter-pill-ylOcw3NmBAX4CUl_nBcFu",
+      "tag": "BUTTON",
+      "text": "Recent earnings date"
+    },
+    {
+      "dataName": "screener-filter-pill-UeQYXSqsTXLg8PPvumW0d",
+      "tag": "BUTTON",
+      "text": "Upcoming earnings date"
+    },
+    {
+      "dataName": "square-tabs-buttons",
+      "tag": "DIV",
+      "text": "Overview Performance Extended Hours Valu"
+    }
+  ],
+  "ariaLabels": [
+    {
+      "ariaLabel": "Sort descending",
+      "tag": "BUTTON"
+    },
+    {
+      "ariaLabel": "Change sort",
+      "tag": "BUTTON"
+    }
+  ],
+  "screenerHints": {
+    "containerFound": true,
+    "containerClass": "screenerContainer-YDNuDm2h"
+  }
+}

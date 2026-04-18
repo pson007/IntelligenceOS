@@ -15,9 +15,11 @@ alerts with create/list/pause/delete + webhook/message/name
 customization), `layouts.py` (list/current/load/rename),
 `indicators.py` (add/remove/configure chart indicators),
 `watchlist.py` (current/contents/add/clear/create/rename/load/copy),
-and `drawings.py` (Pine-emitter for horizontal/trend_line/box/label/
-vertical via JSON sketch spec). Eleven CLIs work against a logged-in
-Chromium-Automation profile on CDP port 9222. Foundation (guards, typed errors, audit log with
+`drawings.py` (Pine-emitter for horizontal/trend_line/box/label/
+vertical via JSON sketch spec), and `screener.py` (open/current/
+filters/column-tabs/results against the modern unified stock
+screener). Twelve CLIs work against a logged-in Chromium-Automation
+profile on CDP port 9222. Foundation (guards, typed errors, audit log with
 `request_id` + `duration_ms`, retry on transient Playwright errors,
 flock serialization, safety limits with velocity throttle,
 tick-alignment validation, layout-preserving URL navigation,
@@ -222,21 +224,44 @@ Key discoveries this probe cycle:
   chart-management page is likely the true surface.
 - Multi-chart grid creation — stretch item (§9).
 
-### 4f. screener.py — **medium value** (≈ 3 hrs)
+### 4f. screener.py — **BUILT 2026-04-17** ✓ (read paths)
 
-**Why**: stock discovery. Given a filter set ("market cap > 10B AND RSI
-< 30 AND price change % today > 2%"), return matching tickers. This
-replaces "look at a chart heatmap with my eyes."
+Shipped: `open`, `current`, `filters`, `column-tabs`, `results` (with
+`--columns` to switch column groups and `--max-rows` to cap the
+scroll-collect). Scrape verified: 500 unique symbols captured in one
+call against the modern unified screener at `/screener/`, sorted by
+market cap descending (NVDA → FLUT).
 
-**Scope**:
-- `open` — navigate to the screener page (stocks/crypto/forex)
-- `filter <json-spec>` — apply a set of filters programmatically
-- `results` — scrape filtered results (virtualized table —
-  `lib/table.scrape_virtualized` is ready)
-- `preset-save <name>` / `preset-load <name>`
+Three discoveries this probe cycle:
+- The screener pre-loads ~100 rows in DOM (more generous than the
+  watchlist's ~10) but still virtualizes beyond that — same
+  scrollTop+clientHeight termination pattern as watchlist/trades.
+- TV uses **`translateX(-999999px)`** as a tab-strip overflow
+  technique. Tabs that don't fit in the visible width sit at x=-999877
+  in DOM but aren't clickable until exposed via a "More" chevron
+  (currently unhandled; column_tabs splits the result into `visible`
+  and `hidden` arrays so callers can see what's reachable).
+- Tab `textContent` is **doubled** — TV renders each label twice
+  internally (e.g. "OverviewOverview"). Playwright's `:text-is()`
+  matches innerText (single-rendered), but `filter(has_text=)` is
+  substring-matched and may need fallback for some tabs.
 
-**Probe target**: `https://www.tradingview.com/screener/`. Table is
-virtualized; use `scrape_virtualized` from [lib/table.py](lib/table.py).
+**Scope today**: stocks only. TV's crypto/forex/futures screeners
+live at separate URLs (`/crypto-screener/`, `/forex-screener/`,
+`/markets/futures/...`) and serve a legacy `tv-screener` DOM rather
+than the modern `screenerContainer-` React wrapper this module
+targets. Different surface entirely.
+
+**Deferred**:
+- crypto/forex/futures screener variants — different DOM shape.
+- `filter <pill> <value>` — programmatic filter setting. Each pill
+  is a different UI control; each needs its own setter. Workaround
+  today: configure filters once in the UI manually, save as a named
+  screen, then call `results` programmatically.
+- `preset save / preset load` — would need probing the topbar
+  screen-picker dropdown (the `screener-topbar-screen-title` element).
+- Hidden-tab access via "More" overflow chevron — possible but
+  needs probing the chevron's selector.
 
 ### 4g. drawings.py — **BUILT 2026-04-17** ✓ (Pine emitter path)
 

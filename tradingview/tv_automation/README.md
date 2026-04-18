@@ -317,6 +317,50 @@ to call from a script without first checking membership.
   to `layouts delete`). Workaround: rename and reuse.
 - `reorder` — drag-and-drop on canvas-coordinates; complex.
 
+### screener (stock discovery via the modern unified screener)
+
+Read paths over TradingView's modern stock screener
+(`tradingview.com/screener/`). The screener pre-loads ~100 rows
+and virtualizes beyond that — `results` scroll-collects up to
+`--max-rows` symbols in one call, deduped by ticker.
+
+```bash
+tv screener open                              # navigate to /screener/
+tv screener current                           # active screen / preset name
+tv screener filters                           # list active filter pills
+tv screener column-tabs                       # list visible + hidden tab groups
+tv screener results                           # scrape (default Overview, up to 1000)
+tv screener results --columns Performance     # switch column tab first
+tv screener results --max-rows 500            # cap on returned rows
+```
+
+**Scope**: STOCKS ONLY. TV's crypto/forex/futures screeners live at
+separate URLs and use a legacy `tv-screener` DOM rather than the
+modern `screenerContainer-` React wrapper this module targets.
+Adding them needs a parallel implementation; deferred.
+
+**Tab-strip overflow**: TV positions tabs that don't fit in the
+visible width at `translateX(-999999px)`. They're in DOM but
+unclickable until exposed (typically via a "More" overflow chevron
+that this module doesn't yet operate). `column-tabs` returns
+`visible` and `hidden` arrays so callers can see what's reachable.
+Workaround: widen the screener browser window to push more tabs into
+the visible strip.
+
+**Filter pills**: each pill carries a stable random hash in its
+`data-name` (e.g. `screener-filter-pill-kHEyk7MJ2yfz_KUJUYlOe` =
+"Index"). `filters` returns both the hash and the visible pill text
+(which includes the active value, e.g. "Price >50"). Setting a
+filter programmatically is **deferred** — each pill is a different
+UI control (range slider / dropdown / multi-select / date picker),
+so each needs its own setter. The pragmatic workflow today:
+configure filters once in the UI manually, save as a named screen,
+then call `results` programmatically.
+
+**Symbol cell**: the first column packs ticker + company name with a
+newline (e.g. `"NVDA\nNVIDIA Corporation"`). Split on `\n` if you
+need just the symbol.
+
 ### drawings (Pine-emitted chart annotations)
 
 Programmatic chart annotation via a JSON sketch spec. Each sketch is
