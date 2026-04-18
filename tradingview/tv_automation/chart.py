@@ -691,6 +691,169 @@ async def metadata() -> dict:
         return await _extract_metadata(page)
 
 
+# ---------------------------------------------------------------------------
+# Window management (CDP Browser.setWindowBounds + macOS fullscreen)
+# ---------------------------------------------------------------------------
+
+async def _window_bounds(page) -> tuple[object, int, dict]:
+    """Open a CDP session on `page`, return (session, window_id, bounds).
+
+    `bounds` is Chrome's current {left, top, width, height, windowState}.
+    Chrome enforces a minimum size (~500x400); smaller values get clamped
+    or rejected silently by DevTools."""
+    cdp = await page.context.new_cdp_session(page)
+    target = await cdp.send("Browser.getWindowForTarget")
+    window_id = target["windowId"]
+    bounds = target["bounds"]
+    return cdp, window_id, bounds
+
+
+async def size() -> dict:
+    """Report the current browser window bounds AND the page viewport.
+
+    Window bounds reflect OS-level window size; viewport is the page's
+    CSS-pixel content area (window - chrome + devicePixelRatio effects).
+    They differ because Chrome's tab strip, address bar, and macOS
+    traffic-lights take ~80-130px of the window height."""
+    await ensure_automation_chromium()
+    async with tv_context() as ctx:
+        page = await _find_or_open_chart(ctx)
+        await assert_logged_in(page)
+        await click_reconnect_if_present(page)
+        _, window_id, bounds = await _window_bounds(page)
+        viewport = await page.evaluate(
+            "() => ({w: window.innerWidth, h: window.innerHeight, "
+            "dpr: window.devicePixelRatio})"
+        )
+        audit.log("chart.size", window_id=window_id,
+                  bounds=bounds, viewport=viewport)
+        return {
+            "ok": True,
+            "window_id": window_id,
+            "bounds": bounds,
+            "viewport": viewport,
+        }
+
+
+async def resize(width: int, height: int) -> dict:
+    """Resize the browser window to `width` × `height` (OS pixels).
+
+    Uses CDP `Browser.setWindowBounds`. If the window is currently
+    fullscreen or maximized, setWindowBounds silently ignores size
+    changes — so we force `windowState: normal` first, then apply the
+    size. Returns the before/after bounds and the resulting viewport.
+
+    Affects the ENTIRE browser window (any other tabs move too). For
+    the dedicated Chromium-Automation profile that's expected."""
+    if width < 400 or height < 300:
+        raise ValueError(
+            f"width/height must be at least 400x300 (got {width}x{height}); "
+            "Chrome rejects smaller sizes"
+        )
+    await ensure_automation_chromium()
+    async with tv_context() as ctx:
+        page = await _find_or_open_chart(ctx)
+        await assert_logged_in(page)
+        await click_reconnect_if_present(page)
+        cdp, window_id, before = await _window_bounds(page)
+
+        # Chrome refuses size changes while fullscreen/maximized. Flip
+        # to normal first; Chrome preserves the resulting size when we
+        # then send width/height.
+        if before.get("windowState") in ("fullscreen", "maximized", "minimized"):
+            await cdp.send("Browser.setWindowBounds", {
+                "windowId": window_id,
+                "bounds": {"windowState": "normal"},
+            })
+            await page.wait_for_timeout(300)
+
+        await cdp.send("Browser.setWindowBounds", {
+            "windowId": window_id,
+            "bounds": {"width": width, "height": height},
+        })
+        # Give the page a moment to relayout before reading back.
+        await page.wait_for_timeout(400)
+
+        _, _, after = await _window_bounds(page)
+        viewport = await page.evaluate(
+            "() => ({w: window.innerWidth, h: window.innerHeight})"
+        )
+        audit.log("chart.resize",
+                  requested={"width": width, "height": height},
+                  before=before, after=after, viewport=viewport)
+        return {
+            "ok": True,
+            "window_id": window_id,
+            "before": before,
+            "after": after,
+            "viewport": viewport,
+        }
+
+
+async def fullscreen(mode: str = "toggle") -> dict:
+    """Enter, exit, or toggle the browser's fullscreen mode.
+
+    Uses CDP `Browser.setWindowBounds` with `windowState: fullscreen` /
+    `normal`. (Tried Cmd+Ctrl+F via Playwright first — doesn't work,
+    because Playwright dispatches keyboard events to page content, not
+    to Chrome's browser chrome where that shortcut is handled.)
+
+    `mode` ∈ {"on", "off", "toggle"}. Reads current windowState first
+    and no-ops if already in the desired state. CDP's state transition
+    is synchronous from our side but the OS animation (macOS Spaces)
+    runs in the background.
+
+    Cross-platform: `fullscreen` state works on macOS, Linux, and
+    Windows via CDP — the OS-level transition differs but the result
+    is the same (browser fills the display)."""
+    if mode not in ("on", "off", "toggle"):
+        raise ValueError(f"mode must be on/off/toggle (got {mode!r})")
+    await ensure_automation_chromium()
+    async with tv_context() as ctx:
+        page = await _find_or_open_chart(ctx)
+        await assert_logged_in(page)
+        await click_reconnect_if_present(page)
+        cdp, window_id, before = await _window_bounds(page)
+        was_fullscreen = before.get("windowState") == "fullscreen"
+
+        if mode == "toggle":
+            target_state = "normal" if was_fullscreen else "fullscreen"
+        elif mode == "on":
+            target_state = "fullscreen"
+        else:  # off
+            target_state = "normal"
+
+        changed = target_state != before.get("windowState")
+        if changed:
+            await cdp.send("Browser.setWindowBounds", {
+                "windowId": window_id,
+                "bounds": {"windowState": target_state},
+            })
+            # Allow the fullscreen animation + viewport relayout to
+            # settle before reading back state.
+            await page.wait_for_timeout(1000)
+
+        _, _, after = await _window_bounds(page)
+        is_fullscreen = after.get("windowState") == "fullscreen"
+        viewport = await page.evaluate(
+            "() => ({w: window.innerWidth, h: window.innerHeight})"
+        )
+        audit.log("chart.fullscreen",
+                  mode=mode, target_state=target_state, changed=changed,
+                  was_fullscreen=was_fullscreen,
+                  is_fullscreen=is_fullscreen,
+                  viewport=viewport)
+        return {
+            "ok": True,
+            "mode": mode,
+            "target_state": target_state,
+            "changed": changed,
+            "was_fullscreen": was_fullscreen,
+            "is_fullscreen": is_fullscreen,
+            "viewport": viewport,
+        }
+
+
 async def reconnect() -> dict:
     """Explicit invocation of the session-disconnect-modal check.
 
@@ -793,6 +956,28 @@ def _main() -> None:
                          "(disables Pine Editor / overlap-manager pointer "
                          "events around the click)")
 
+    sub.add_parser(
+        "size",
+        help="Report current browser window bounds AND page viewport.",
+    )
+
+    rs = sub.add_parser(
+        "resize",
+        help="Resize the browser window (OS pixels) via CDP. "
+             "Affects the whole window — any other tabs move too.",
+    )
+    rs.add_argument("width", type=int, help="Window width in pixels (>= 400)")
+    rs.add_argument("height", type=int, help="Window height in pixels (>= 300)")
+
+    fs = sub.add_parser(
+        "fullscreen",
+        help="Enter/exit macOS fullscreen via Cmd+Ctrl+F. "
+             "macOS only; wrong shortcut on Linux/Windows.",
+    )
+    fs.add_argument("mode", nargs="?", default="toggle",
+                    choices=("on", "off", "toggle"),
+                    help="on/off/toggle (default: toggle)")
+
     args = p.parse_args()
 
     if args.cmd == "set-symbol":
@@ -818,6 +1003,12 @@ def _main() -> None:
             args.query, area=args.area,
             bypass_overlap=args.bypass_overlap, min_score=args.min_score,
         ))
+    elif args.cmd == "size":
+        run(lambda: size())
+    elif args.cmd == "resize":
+        run(lambda: resize(args.width, args.height))
+    elif args.cmd == "fullscreen":
+        run(lambda: fullscreen(args.mode))
 
 
 if __name__ == "__main__":
