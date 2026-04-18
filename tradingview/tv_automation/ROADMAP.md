@@ -13,10 +13,11 @@ Tier 1 is complete and live-tested: `chart`, `trading`, `pine_editor`,
 (limit/stop/bracket/market with offset TP/SL), `alerts.py` (price
 alerts with create/list/pause/delete + webhook/message/name
 customization), `layouts.py` (list/current/load/rename),
-`indicators.py` (add/remove/configure chart indicators), and
-`watchlist.py` (current/contents/add/clear/create/rename/load/copy).
-Ten CLIs work against a logged-in Chromium-Automation profile on CDP
-port 9222. Foundation (guards, typed errors, audit log with
+`indicators.py` (add/remove/configure chart indicators),
+`watchlist.py` (current/contents/add/clear/create/rename/load/copy),
+and `drawings.py` (Pine-emitter for horizontal/trend_line/box/label/
+vertical via JSON sketch spec). Eleven CLIs work against a logged-in
+Chromium-Automation profile on CDP port 9222. Foundation (guards, typed errors, audit log with
 `request_id` + `duration_ms`, retry on transient Playwright errors,
 flock serialization, safety limits with velocity throttle,
 tick-alignment validation, layout-preserving URL navigation,
@@ -237,25 +238,40 @@ replaces "look at a chart heatmap with my eyes."
 **Probe target**: `https://www.tradingview.com/screener/`. Table is
 virtualized; use `scrape_virtualized` from [lib/table.py](lib/table.py).
 
-### 4g. drawings.py — **low value for LLM, medium for UX** (≈ 4 hrs)
+### 4g. drawings.py — **BUILT 2026-04-17** ✓ (Pine emitter path)
 
-**Why**: if you want me to draw a trend line from point A to B on the
-chart, this is how. **BUT**: the canvas-coordinate problem (see
-§7 insights) makes this hard. A cleaner path for LLM-driven drawings is
-Pine Script's `line.new()` / `label.new()` / `box.new()` — they render
-as chart objects and are trivial to emit from a Pine file.
+Shipped: a JSON sketch spec → Pine v5 indicator composer
+(`tv_automation/drawings.py`) plus the `tv drawings sketch` CLI.
+Five drawing primitives: `horizontal`, `trend_line`, `box`, `label`,
+`vertical`. Times accept ISO 8601 strings or Unix epoch seconds;
+colors accept named (red/blue/green/etc.) or hex (`#rrggbb`); line
+styles accept solid/dashed/dotted/arrows; line endpoints accept
+extend modes (none/left/right/both).
 
-**Scope (canvas path, hard)**:
-- `trend-line <p1> <p2>` — where p1/p2 are (timestamp, price)
-- `horizontal <price>`, `fibonacci <p1> <p2>`, `rectangle <box>`
+The composer wraps drawings in `if barstate.islast and not _drawn`
+with a one-shot guard, so drawings render once when the chart loads
+rather than on every realtime tick. Each sketch becomes an indicator;
+re-applying a sketch with the same name overwrites it cleanly. `tv
+drawings clear --name <X>` removes a named drawings indicator via
+`indicators.remove_indicator`.
 
-**Scope (Pine path, easy)**:
-- A library of helper Pine snippets you ask me to emit, then apply via
-  `pine_editor apply`. No new module needed — this is just a Pine
-  pattern library.
+Smoke-tested 2026-04-17: full example sketch (5 drawings) rendered
+successfully (`compile_boundary` detected, no errors), individual
+saved sketch (S/R Levels, 4 horizontals) applied + cleared cleanly.
 
-**Recommendation**: skip canvas; use Pine. Unless you specifically need
-user-editable drawings (dragable/adjustable after creation), Pine wins.
+**Why Pine, not canvas-coordinate clicks**: TV's chart canvas needs
+(price, time) → (pixel x, y) projection logic that lives inside React
+state (§7 insights). Pine drawings render natively via `xloc.bar_time`
+— timestamps drive positioning directly, no projection math. Trade-off:
+drawings are NOT user-draggable post-creation. For LLM-driven
+annotation that's the right trade.
+
+**Deferred**:
+- Polylines / linefills / fib retracement primitives — Pine supports
+  them (`polyline.new`, `linefill.new`, plus Pine snippets you can
+  emit yourself); not in the JSON spec yet, easy to add when needed.
+- Native draggable drawings (canvas-coord toolbar approach) —
+  possible-but-hard, see ROADMAP §7 for the projection-state hazards.
 
 ### 4h. Lower-priority surfaces
 

@@ -317,6 +317,56 @@ to call from a script without first checking membership.
   to `layouts delete`). Workaround: rename and reuse.
 - `reorder` — drag-and-drop on canvas-coordinates; complex.
 
+### drawings (Pine-emitted chart annotations)
+
+Programmatic chart annotation via a JSON sketch spec. Each sketch is
+composed into a Pine v5 indicator that renders horizontal/trend lines,
+boxes, labels, and verticals using `xloc.bar_time` (timestamps drive
+positioning, no canvas-coordinate math). Re-applying a sketch with
+the same name overwrites the chart instance — no clutter.
+
+```bash
+tv drawings sketch pine/drawings/sr_levels.json     # apply a saved sketch
+echo '<json>' | tv drawings sketch --stdin           # apply from stdin
+tv drawings sketch <file> --dry-run                  # emit Pine to /tmp without applying
+tv drawings example                                  # print an example sketch JSON
+tv drawings clear --name "S/R Levels"                # remove a drawings indicator
+```
+
+**Why an emitter, not canvas clicks**: TV's chart canvas needs (price,
+time) → (pixel x, y) projection logic that lives inside React state.
+Reading it from outside is hairy and breaks every UI tweak. Pine
+drawings render natively — `line.new()` accepts `xloc.bar_time` so
+timestamps drive positioning directly, no projection math. Trade-off:
+drawings aren't user-draggable post-creation. For LLM-driven
+annotation that's the right trade — drawings are recomputable from
+the JSON, not edited.
+
+**Drawing types** — see [drawings.py](drawings.py) for the full
+schema. Quick reference:
+
+```json
+{"type": "horizontal", "price": 27000, "color": "blue", "style": "dashed", "label": "R1"}
+{"type": "trend_line", "p1": ["2026-04-15T09:30", 26800.0], "p2": ["2026-04-17T15:00", 27200.0], "color": "orange", "extend": "right"}
+{"type": "box", "p1": ["...", 26800], "p2": ["...", 27200], "border_color": "green", "bg_color": "green", "bg_alpha": 85}
+{"type": "label", "at": ["...", 27000], "text": "Recent high", "color": "blue"}
+{"type": "vertical", "time": "2026-04-17T15:00", "color": "purple", "label": "Pivot"}
+```
+
+**Time formats**: ISO 8601 string (UTC assumed if no offset) OR Unix
+epoch seconds (int).
+
+**Color formats**: named (`"red"`, `"blue"`, `"green"`, `"orange"`,
+`"purple"`, `"yellow"`, `"aqua"`, `"fuchsia"`, `"white"`, `"black"`,
+`"gray"`, `"silver"`, `"lime"`, `"maroon"`, `"navy"`, `"olive"`,
+`"teal"`) OR hex (`"#ff0000"`).
+
+**Pine alpha is 0 (opaque) ↔ 100 (transparent)** — opposite of CSS.
+Most callers want `bg_alpha: 80-90` for subtly-tinted boxes.
+
+**Sample sketches**: see [pine/drawings/](../pine/drawings/) for ready-to-apply
+JSON files (S/R levels, range box).
+
 ### pine_editor
 
 ```bash

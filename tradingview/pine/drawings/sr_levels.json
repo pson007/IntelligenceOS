@@ -1,0 +1,9 @@
+{
+  "name": "S/R Levels",
+  "drawings": [
+    {"type": "horizontal", "price": 27000, "color": "blue", "style": "dashed", "label": "R1"},
+    {"type": "horizontal", "price": 26800, "color": "blue", "style": "dashed", "label": "R2"},
+    {"type": "horizontal", "price": 26500, "color": "red",  "style": "dashed", "label": "S1"},
+    {"type": "horizontal", "price": 26300, "color": "red",  "style": "dashed", "label": "S2"}
+  ]
+}

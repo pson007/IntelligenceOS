@@ -1,0 +1,21 @@
+{
+  "name": "Range box",
+  "drawings": [
+    {
+      "type": "box",
+      "p1": ["2026-04-15T14:00", 26800.0],
+      "p2": ["2026-04-17T20:00", 27200.0],
+      "border_color": "green",
+      "bg_color": "green",
+      "bg_alpha": 90,
+      "label": "Consolidation"
+    },
+    {
+      "type": "horizontal",
+      "price": 27000,
+      "color": "gray",
+      "style": "dotted",
+      "label": "Mid"
+    }
+  ]
+}
