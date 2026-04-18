@@ -223,6 +223,24 @@ async def chart_screenshot(payload: dict | None = None) -> dict:
         result = await chart_mod.screenshot(symbol, interval, None, area=area)
     except Exception as e:
         raise HTTPException(500, str(e))
+
+    # Inline the PNG as a data: URI so the UI's <img> renders it without
+    # a second authed request. Native <img src="…"> loads don't carry the
+    # X-UI-Token header, so serving via /api/chart/image would 401 on
+    # every request once auth is enabled. Size cost: base64 inflates
+    # ~33% (typical 300KB PNG → 400KB JSON), negligible over localhost
+    # or tailnet.
+    import base64
+    try:
+        png_bytes = Path(result["path"]).read_bytes()
+        result["data_url"] = "data:image/png;base64," + base64.b64encode(png_bytes).decode("ascii")
+        result["size_bytes"] = len(png_bytes)
+    except Exception as e:
+        # Non-fatal — older clients can still fall back to the URL path.
+        result["data_url"] = None
+        result["data_url_error"] = f"{type(e).__name__}: {e}"
+
+    # Keep a plain URL for curl / direct inspection. Still auth-gated.
     result["url"] = f"/api/chart/image?path={result['path']}&t={int(time.time())}"
     return result
 
