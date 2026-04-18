@@ -99,6 +99,16 @@ _DEFAULT_PROVIDER = "anthropic"
 _MAX_STEPS_DEFAULT = 10
 _MAX_COST_DEFAULT = 0.50
 
+# Per-call reserve used by the PRE-flight budget check. Rough upper bound
+# for one turn's (inventory + history + screenshot) × max_tokens output
+# so we refuse to fire a call whose worst-case cost would overshoot. Set
+# conservatively; overshoot after this is measured in cents, not dollars.
+_PER_CALL_RESERVE_USD = {
+    "claude-sonnet-4-6": 0.05,
+    "claude-opus-4-7":   0.30,
+    "claude-haiku-4-5":  0.01,
+}
+
 # Prune the inventory before sending — the full list can hit 100+ items
 # and the model's attention degrades on long structured lists. 30 is a
 # balance: enough to cover most relevant targets, short enough to keep
@@ -560,6 +570,22 @@ async def act(
         text_payload = _build_payload(goal, snap, inventory, history)
         image_path = snap["screenshot"]["path"] if send_image else None
 
+        # PRE-flight budget — refuse to fire the next call if its
+        # worst-case cost would push us past the cap. Zero reserve for
+        # local providers (cost always 0); small for Haiku, medium for
+        # Sonnet, larger for Opus.
+        reserve = _PER_CALL_RESERVE_USD.get(model, 0.0) if provider == "anthropic" else 0.0
+        if total_cost_usd + reserve > max_cost_usd:
+            audit.log("act.budget_preflight",
+                      reason="preflight_reserve_would_exceed",
+                      steps=steps, total_cost_usd=total_cost_usd,
+                      reserve=reserve, max_cost_usd=max_cost_usd)
+            raise LoopBudgetExceededError(
+                reason="max_cost_usd_preflight", steps=steps - 1,
+                cost_usd=total_cost_usd,
+                max_steps=max_steps, max_cost_usd=max_cost_usd,
+            )
+
         with audit.timed("act.llm_call",
                          step=steps, provider=provider, model=model,
                          send_image=send_image) as ctx:
@@ -572,8 +598,8 @@ async def act(
             ctx["cost_usd"] = cost
             ctx["total_cost_usd"] = total_cost_usd
 
-        # Budget guard only meaningful for paid providers, but the
-        # check is cheap and local always adds 0 so it's a no-op there.
+        # Post-call guard — catches providers whose call exceeded our
+        # reserve (rare; keeps the hard cap honest).
         if total_cost_usd > max_cost_usd:
             audit.log("act.budget_exceeded",
                       reason="max_cost_usd", steps=steps,

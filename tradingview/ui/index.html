@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IntelligenceOS Console</title>
+<script>
+  // Apply persisted theme BEFORE styles paint to avoid a flash of dark
+  // on light-mode reloads. Runs inline in <head>, before <style>.
+  (function () {
+    try {
+      var t = localStorage.getItem('ios-theme') || 'dark';
+      if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="/ui/style.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">IOS</div>
+      <div>
+        <div class="brand-name">IntelligenceOS</div>
+        <div class="brand-sub">Console</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-tab="chart"><span class="ico">▤</span> Chart</button>
+      <button class="nav-item" data-tab="act"><span class="ico">◈</span> Act</button>
+      <button class="nav-item" data-tab="trade"><span class="ico">◉</span> Trade</button>
+      <button class="nav-item" data-tab="watchlist"><span class="ico">☰</span> Watchlist</button>
+      <button class="nav-item" data-tab="alerts"><span class="ico">⊙</span> Alerts</button>
+      <button class="nav-item" data-tab="audit"><span class="ico">⎙</span> Audit</button>
+    </nav>
+    <div class="status">
+      <div class="status-dot" id="health-dot"></div>
+      <span id="health-text">checking…</span>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">☾</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- CHART TAB ----------------------------------------------------- -->
+    <section class="tab" id="tab-chart">
+      <h1>Chart</h1>
+      <div class="subtitle">Switch symbol/timeframe and capture screenshots of the live TradingView chart.</div>
+
+      <div class="card">
+        <h2>Navigate</h2>
+        <div class="row">
+          <label class="field" style="min-width: 200px;">
+            <span>Symbol <span class="muted" style="font-size: 10px;">(from watchlist)</span></span>
+            <div class="combo">
+              <input type="text" id="chart-symbol" value="MNQ1!" placeholder="MNQ1!, NVDA, BINANCE:BTCUSDT" autocomplete="off" />
+              <button class="combo-arrow" type="button" data-combo-target="chart-symbol" aria-label="Open symbol list">▾</button>
+              <div class="combo-menu hidden" data-combo-for="chart-symbol"></div>
+            </div>
+          </label>
+          <label class="field" style="min-width: 120px;">
+            Timeframe
+            <select id="chart-tf">
+              <option value="">(keep current)</option>
+              <option value="1m">1m</option>
+              <option value="5m">5m</option>
+              <option value="15m">15m</option>
+              <option value="30m">30m</option>
+              <option value="1h">1h</option>
+              <option value="4h">4h</option>
+              <option value="1D" selected>1D</option>
+              <option value="1W">1W</option>
+              <option value="1M">1M</option>
+            </select>
+          </label>
+          <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <button class="primary" id="chart-set">Set symbol</button>
+            <button id="chart-meta-refresh">Refresh</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Current chart</h2>
+        <div id="chart-meta" class="summary-strip">
+          <div><span class="label">Symbol</span><span class="value">—</span></div>
+          <div><span class="label">Interval</span><span class="value">—</span></div>
+        </div>
+        <div id="chart-meta-url" class="mono muted" style="font-size: 11px; word-break: break-all;">—</div>
+      </div>
+
+      <div class="card">
+        <h2>Screenshot</h2>
+        <div class="row">
+          <label class="field" style="min-width: 200px;">
+            Area
+            <select id="chart-area">
+              <option value="chart" selected>chart</option>
+              <option value="full">full (viewport)</option>
+              <option value="sidebar">sidebar</option>
+              <option value="pine_editor">pine_editor</option>
+              <option value="right_toolbar">right_toolbar</option>
+              <option value="account_manager">account_manager</option>
+            </select>
+          </label>
+          <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <button class="primary" id="chart-shoot">Capture</button>
+          </div>
+        </div>
+        <div id="chart-shot">
+          <div class="screenshot-placeholder">No screenshot yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACT TAB ------------------------------------------------------- -->
+    <section class="tab hidden" id="tab-act">
+      <h1>Act — vision loop</h1>
+      <div class="subtitle">Give Claude (or a local model) a natural-language goal. It observes, decides, and clicks until done.</div>
+
+      <div class="card">
+        <h2>Goal</h2>
+        <textarea id="act-goal" placeholder="e.g. open the watchlist sidebar and add SPY"></textarea>
+        <div class="row" style="margin-top: 12px;">
+          <label class="field" style="min-width: 140px;">
+            Provider
+            <select id="act-provider">
+              <option value="anthropic" selected>anthropic</option>
+              <option value="ollama">ollama (local)</option>
+              <option value="mlx">mlx (local)</option>
+            </select>
+          </label>
+          <label class="field" style="min-width: 180px;">
+            Model <span class="muted" style="font-size: 10px;">(leave empty for default)</span>
+            <input type="text" id="act-model" placeholder="sonnet / opus / haiku / qwen3.5:27b" />
+          </label>
+          <label class="field" style="min-width: 100px;">
+            Max steps
+            <input type="number" id="act-max-steps" value="10" min="1" max="50" />
+          </label>
+          <label class="field" style="min-width: 120px;">
+            Max cost (USD)
+            <input type="number" id="act-max-cost" value="0.50" step="0.10" min="0" />
+          </label>
+        </div>
+        <div class="checkbox-row" style="margin-top: 12px;">
+          <label><input type="checkbox" id="act-vision"> force vision</label>
+          <label><input type="checkbox" id="act-text-only"> text only</label>
+          <label><input type="checkbox" id="act-read-only"> read-only (refuse mutating actions)</label>
+          <label><input type="checkbox" id="act-dry-run"> dry-run (model decides, no execute)</label>
+        </div>
+        <div class="row" style="margin-top: 14px; align-items: center;">
+          <button class="primary" id="act-run">Run</button>
+          <div id="act-status-strip" class="summary-strip" style="flex: 1; padding: 0; margin: 0;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Steps</h2>
+        <div class="steps" id="act-steps">
+          <div class="empty">No run yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRADE TAB ----------------------------------------------------- -->
+    <section class="tab hidden" id="tab-trade">
+      <h1>Trade</h1>
+      <div class="subtitle">Place paper-trading market orders via the inline quick-trade bar. Allowlist + max-qty guards enforced by the automation layer.</div>
+
+      <div class="card">
+        <h2>Place order</h2>
+        <div class="row" style="align-items: flex-end;">
+          <label class="field" style="min-width: 200px;">
+            <span>Symbol <span class="muted" style="font-size: 10px;">(from watchlist)</span></span>
+            <div class="combo">
+              <input type="text" id="trade-symbol" value="NVDA" placeholder="NVDA, SPY…" autocomplete="off" />
+              <button class="combo-arrow" type="button" data-combo-target="trade-symbol" aria-label="Open symbol list">▾</button>
+              <div class="combo-menu hidden" data-combo-for="trade-symbol"></div>
+            </div>
+          </label>
+          <label class="field" style="min-width: 100px;">
+            Qty
+            <input type="number" id="trade-qty" value="1" min="1" max="100" />
+          </label>
+          <div class="checkbox-row" style="padding-bottom: 8px;">
+            <label><input type="checkbox" id="trade-dry-run" /> dry-run</label>
+          </div>
+          <div style="display: flex; gap: 8px; margin-left: auto;">
+            <button class="buy" id="trade-buy">BUY market</button>
+            <button class="sell" id="trade-sell">SELL market</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          Positions
+          <button id="pos-refresh" style="float: right; padding: 3px 10px; font-size: 11px;">Refresh</button>
+        </h2>
+        <div id="positions-body">
+          <div class="empty">Click refresh to load.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WATCHLIST TAB ------------------------------------------------- -->
+    <section class="tab hidden" id="tab-watchlist">
+      <h1>Watchlist</h1>
+      <div class="subtitle">Manage the symbols in your active TradingView watchlist.</div>
+
+      <div class="card">
+        <h2>
+          <span id="watchlist-current">Active list: —</span>
+          <button id="watchlist-refresh" style="float: right; padding: 3px 10px; font-size: 11px;">Refresh</button>
+        </h2>
+        <div id="watchlist-body">
+          <div class="empty">Click refresh to load.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Add symbol</h2>
+        <div class="row">
+          <input type="text" id="watchlist-add-symbol" placeholder="e.g. SPY" style="max-width: 240px;" />
+          <button class="primary" id="watchlist-add-btn">Add</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALERTS TAB ---------------------------------------------------- -->
+    <section class="tab hidden" id="tab-alerts">
+      <h1>Alerts</h1>
+      <div class="subtitle">Configured TradingView alerts — create new price alerts, or pause / resume / delete existing ones.</div>
+
+      <div class="card">
+        <h2>Create price alert</h2>
+        <div class="row" style="align-items: flex-end;">
+          <label class="field" style="min-width: 200px;">
+            <span>Symbol <span class="muted" style="font-size: 10px;">(from watchlist)</span></span>
+            <div class="combo">
+              <input type="text" id="alert-symbol" placeholder="e.g. MNQ1!" autocomplete="off" />
+              <button class="combo-arrow" type="button" data-combo-target="alert-symbol" aria-label="Open symbol list">▾</button>
+              <div class="combo-menu hidden" data-combo-for="alert-symbol"></div>
+            </div>
+          </label>
+          <label class="field" style="min-width: 160px;">
+            <span>Condition</span>
+            <select id="alert-op">
+              <option value="crossing">crossing</option>
+              <option value="crossing-up">crossing up</option>
+              <option value="crossing-down">crossing down</option>
+            </select>
+          </label>
+          <label class="field" style="min-width: 120px;">
+            <span>Value</span>
+            <input type="number" id="alert-value" step="0.01" placeholder="e.g. 27000" />
+          </label>
+          <label class="field grow" style="flex: 1; min-width: 180px;">
+            <span>Name <span class="muted" style="font-size: 10px;">(optional)</span></span>
+            <input type="text" id="alert-name" placeholder="e.g. MNQ breakout 27k" />
+          </label>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <label class="field grow" style="flex: 1; min-width: 300px;">
+            <span>Message <span class="muted" style="font-size: 10px;">(optional — sent to webhook as body)</span></span>
+            <input type="text" id="alert-message" placeholder='e.g. {"symbol":"{{ticker}}","price":"{{close}}"}' />
+          </label>
+          <label class="field grow" style="flex: 1; min-width: 260px;">
+            <span>Webhook URL <span class="muted" style="font-size: 10px;">(optional)</span></span>
+            <input type="text" id="alert-webhook" placeholder="https://your.worker.dev/hook" />
+          </label>
+        </div>
+        <div class="row" style="margin-top: 10px; align-items: center;">
+          <div class="checkbox-row">
+            <label><input type="checkbox" id="alert-notify-app" /> app</label>
+            <label><input type="checkbox" id="alert-notify-toast" /> toast</label>
+            <label><input type="checkbox" id="alert-notify-email" /> email</label>
+            <label><input type="checkbox" id="alert-notify-sound" /> sound</label>
+          </div>
+          <button class="primary" id="alert-create" style="margin-left: auto;">Create alert</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          Alert list
+          <button id="alerts-refresh" style="float: right; padding: 3px 10px; font-size: 11px;">Refresh</button>
+        </h2>
+        <div id="alerts-body">
+          <div class="empty">Click refresh to load.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUDIT TAB ----------------------------------------------------- -->
+    <section class="tab hidden" id="tab-audit">
+      <h1>Audit</h1>
+      <div class="subtitle">Live tail of today's audit log (<span class="mono">tradingview/audit/YYYY-MM-DD.jsonl</span>).</div>
+
+      <div class="card">
+        <h2>
+          Log
+          <span style="float: right; font-size: 11px; text-transform: none; letter-spacing: 0;">
+            <label><input type="checkbox" id="audit-autorefresh" checked /> auto-refresh (2s)</label>
+            <input type="text" id="audit-filter" placeholder="event prefix filter, e.g. chart." style="max-width: 180px; margin-left: 10px; padding: 3px 8px; font-size: 12px;" />
+          </span>
+        </h2>
+        <div class="audit-log" id="audit-log">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script src="/ui/app.js"></script>
+</body>
+</html>

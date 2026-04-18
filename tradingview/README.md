@@ -111,6 +111,40 @@ cd ../tv-worker && npx wrangler deploy
 # keep cloudflared running in another terminal
 ```
 
+### Run the web console (UI)
+```bash
+./run-ui.sh                                       # http://127.0.0.1:8788
+# or manually:
+.venv/bin/uvicorn ui_server:app --host 127.0.0.1 --port 8788 --reload
+```
+
+The UI gives you a dashboard for chart control, vision-loop "act" runs,
+trade placement + positions, watchlist / alerts management, and a live
+audit-log tail. See the `ui/` directory for HTML / CSS / JS sources.
+
+**Coexistence with `bridge.py`**: both servers can run concurrently only
+in CDP-attach mode (`TV_CDP_URL` set). In launch mode they'd fight over
+the persistent Chromium profile.
+
+**Security posture**:
+- Binds to `127.0.0.1` only.
+- CSRF-protected: every mutating request must carry `X-UI: 1` (the UI
+  adds this automatically; cross-origin attackers can't).
+- Optional shared-secret: set `UI_TOKEN` in `.env` and stash the same
+  value client-side via `localStorage.setItem('ios-ui-token', '…')`.
+
+**Smoke tests**:
+```bash
+.venv/bin/python tests/smoke_ui.py
+```
+
+Tests CSRF, routes, health, and audit wiring. Requires the UI server
+to be running (does not start it for you).
+
+**Source of truth for the allowlist**: `tv_automation/limits.yaml`.
+Both the UI and the webhook bridge (`bridge.py`) read this file, so
+any allowlist / qty-cap change takes effect across both.
+
 ---
 
 ## End-to-end test plan

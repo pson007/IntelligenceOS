@@ -54,6 +54,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from preflight import ensure_automation_chromium
 from session import open_chart, tv_context
+from tv_automation import config as _cfg
 
 load_dotenv()
 
@@ -72,15 +73,11 @@ if not SHARED_SECRET:
     )
 
 # ---------------------------------------------------------------------------
-# Allowlist — the bridge will reject anything outside these bounds even with
-# a valid signature. This is a second line of defense against a leaked secret.
+# Allowlist — delegated to `tv_automation/limits.yaml` so the bridge and
+# the CLI / UI share a single source of truth. Previously this was a
+# hardcoded set; drift between the two caused webhook-triggered trades
+# on new tickers to be rejected even when the UI accepted them.
 # ---------------------------------------------------------------------------
-ALLOWED_SYMBOLS: set[str] = {
-    # Add yours here. Use TradingView's full symbol form when needed,
-    # e.g. "NASDAQ:AAPL", "BINANCE:BTCUSDT".
-    "AAPL", "MSFT", "NVDA", "TSLA", "SPY", "QQQ",
-}
-MAX_QTY = 100  # Reject any single order larger than this.
 
 # ---------------------------------------------------------------------------
 # Verified inline quick-trade selectors (probed 2026-04-16 via probe_qty.py
@@ -109,17 +106,26 @@ SEL_BROKER_PICKER = '[data-name="select-broker-dialog"]'
 class OrderRequest(BaseModel):
     symbol: str = Field(..., min_length=1, max_length=32)
     side: Literal["buy", "sell"]
-    qty: int = Field(..., gt=0, le=MAX_QTY)
-    # Future: order_type: Literal["market", "limit"] = "market"
-    # Future: limit_price: float | None = None
+    qty: int = Field(..., gt=0)
 
     @field_validator("symbol")
     @classmethod
     def _allowed(cls, v: str) -> str:
-        # Strip exchange prefix for the allowlist check (NASDAQ:AAPL → AAPL)
-        bare = v.split(":")[-1].upper()
-        if bare not in ALLOWED_SYMBOLS:
-            raise ValueError(f"symbol {v!r} not in allowlist")
+        try:
+            _cfg.check_symbol(v)
+        except Exception as e:
+            raise ValueError(str(e))
+        return v
+
+    @field_validator("qty")
+    @classmethod
+    def _qty_ok(cls, v: int) -> int:
+        # Per-symbol caps are enforced in execute() once both fields are
+        # validated; here we check the global ceiling only.
+        try:
+            _cfg.check_qty(v)
+        except Exception as e:
+            raise ValueError(str(e))
         return v
 
 
@@ -155,6 +161,10 @@ class TVSession:
         """Set qty in the inline quick-trade bar, then click Buy or Sell."""
         assert self.page is not None
         page = self.page
+
+        # Per-symbol qty cap — now that symbol is known, apply the tighter
+        # limit if one is configured (e.g. futures cap of 1 contract).
+        _cfg.check_qty(order.qty, order.symbol)
 
         # Switch the chart to the requested symbol via URL. The inline
         # quick-trade bar (top of chart) re-renders for the new symbol but

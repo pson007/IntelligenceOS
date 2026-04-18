@@ -20,6 +20,36 @@ allowed_symbols:
   - GOOGL
   - AMZN
   - MNQ1!       # Micro E-mini Nasdaq-100 futures (user's primary instrument)
+  # Added from active watchlist on 2026-04-18.
+  # Equities
+  - GOOG
+  - HOOD
+  - NFLX
+  - RBLX
+  - RDDT
+  - FIG
+  - ATLN
+  # Futures — global max_qty applies (100). Add per_symbol_max_qty
+  # entries below for any of these you actually plan to trade.
+  - VX1!
+  - MET1!
+  - MBT1!
+  - MES1!
+  - YM1!
+  - M2K1!
+  - MCL1!
+  - M6B1!
+  - MXP1!
+  - MSL1!
+  - MYM1!
+  - XRP1!
+  # Crypto
+  - BTCUSD
+  - ETHUSD
+  - XRPUSD
+  - CROUSD
+  # Index
+  - VIX
 
 # Global default max contracts/shares per order. Any single order larger
 # is rejected with LimitViolationError before any click. Per-symbol
@@ -32,7 +62,22 @@ max_qty: 100
 # MNQ1! at 1 contract ≈ $53k notional at current ~26,700 Nasdaq — one is
 # plenty for smoke tests. Raise manually when running real strategies.
 per_symbol_max_qty:
+  # Futures — capped at 1 contract each. 1 future is already meaningful
+  # notional (MNQ1! ≈ $53k; ES1! ≈ $500k). Raise per-symbol if a strategy
+  # needs more. These are deliberately conservative — change one at a time.
   MNQ1!: 1
+  MES1!: 1
+  MYM1!: 1
+  M2K1!: 1
+  VX1!: 1
+  MCL1!: 1
+  M6B1!: 1
+  MXP1!: 1
+  MSL1!: 1
+  MET1!: 1
+  MBT1!: 1
+  XRP1!: 1
+  YM1!: 1
 
 # Per-symbol minimum price increment (tick size). When present, every
 # price-bearing field (limit, stop, TP, SL) is validated as a multiple
