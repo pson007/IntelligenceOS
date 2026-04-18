@@ -52,7 +52,20 @@ logged on every audit event from that call — use it to correlate
 python -m tv_automation.chart metadata
 python -m tv_automation.chart set-symbol NVDA --tf 60
 python -m tv_automation.chart screenshot AAPL 1D -o /tmp/aapl.png
+# Region-targeted captures — use when chart-only crop hides what you want:
+tv chart screenshot --area full -o /tmp/full.png             # entire viewport
+tv chart screenshot --area sidebar -o /tmp/sidebar.png       # right widgetbar (watchlist/alerts/etc)
+tv chart screenshot --area pine_editor -o /tmp/pine.png      # Pine editor pane
+tv chart screenshot --area account_manager -o /tmp/am.png    # bottom panel
+tv chart screenshot --area right_toolbar -o /tmp/tools.png   # right icon strip
 ```
+
+`--area` defaults to `chart` (the existing crop). `full` captures the
+whole viewport — the right call when you need to verify multi-panel
+state (e.g. "did the alert dialog actually appear next to the watchlist
+sidebar?"). Region captures fall back to `full` if the named region
+isn't found (e.g. Pine editor is collapsed); the response includes
+`area` (the actually-captured region) and `fell_back: true/false`.
 
 ### trading (paper-only, safety-gated, order-verified)
 

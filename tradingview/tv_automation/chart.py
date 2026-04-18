@@ -69,6 +69,19 @@ CHART_URL = "https://www.tradingview.com/chart/"
 
 _DEFAULT_SCREENSHOT_DIR = Path.home() / "Desktop" / "TradingView"
 
+# Named regions for `screenshot --area <name>`. Each entry maps a
+# user-facing area name to a Playwright selector. Special value "full"
+# (handled separately below) means "entire viewport, no crop" — the
+# right answer when the chart-canvas crop hides the sidebar/Pine
+# editor / Account Manager you actually want to see.
+_SCREENSHOT_AREAS: dict[str, str] = {
+    "chart": ".chart-container, .layout__area--center",
+    "sidebar": '[data-name="widgetbar-pages-with-tabs"]',
+    "right_toolbar": '[data-name="right-toolbar"]',
+    "pine_editor": ".pine-editor-monaco",
+    "account_manager": '[class*="bottom-widgetbar-content"]',
+}
+
 
 # ---------------------------------------------------------------------------
 # Core operations
@@ -180,9 +193,30 @@ async def screenshot(
     symbol: str | None,
     interval: str | None,
     output: Path | None,
+    *,
+    area: str = "chart",
 ) -> dict:
-    """Capture a PNG of the main chart area. If symbol/interval given,
-    navigate first. Returns path + metadata."""
+    """Capture a PNG. If symbol/interval given, navigate first.
+
+    `area` selects the region to capture:
+      - "chart" (default): the chart canvas only — best for "what does
+        the price action look like."
+      - "full": the entire browser viewport — captures everything
+        on screen including the right sidebar, Pine Editor, and
+        Account Manager. Use when you need to verify multi-panel
+        state.
+      - "sidebar" / "pine_editor" / "right_toolbar" /
+        "account_manager": specific named regions. Each maps to a
+        Playwright selector in `_SCREENSHOT_AREAS`. Falls back to
+        full viewport if the region isn't found (e.g. Pine Editor
+        is collapsed).
+    """
+    if area != "full" and area not in _SCREENSHOT_AREAS:
+        raise ValueError(
+            f"unknown area {area!r}; valid: "
+            f"{sorted(list(_SCREENSHOT_AREAS) + ['full'])}"
+        )
+
     tv_interval = resolve_timeframe(interval)
     await ensure_automation_chromium()
     async with tv_context() as ctx:
@@ -196,20 +230,40 @@ async def screenshot(
             ts = time.strftime("%Y%m%d_%H%M%S")
             safe_sym = re.sub(r"[^A-Za-z0-9]+", "_", meta["symbol"])
             safe_int = re.sub(r"[^A-Za-z0-9]+", "_", meta["interval"])
-            output = _DEFAULT_SCREENSHOT_DIR / f"{safe_sym}_{safe_int}_{ts}.png"
+            # Tag area in the filename when it's not the default — so
+            # captures of different regions don't collide on the same
+            # symbol/interval/second.
+            area_suffix = "" if area == "chart" else f"_{area}"
+            output = _DEFAULT_SCREENSHOT_DIR / f"{safe_sym}_{safe_int}{area_suffix}_{ts}.png"
         else:
             output.parent.mkdir(parents=True, exist_ok=True)
 
-        # Prefer the chart-only region; fall back to full viewport.
-        region = page.locator(".chart-container, .layout__area--center").first
-        try:
-            await region.wait_for(state="visible", timeout=5000)
-            await region.screenshot(path=str(output))
-        except Exception:
+        captured_area = area
+        fell_back = False
+        if area == "full":
+            # full_page=False captures the viewport (TV's UI is
+            # absolutely-positioned so there's no useful page scroll
+            # height — viewport is what the user sees).
             await page.screenshot(path=str(output), full_page=False)
+        else:
+            region = page.locator(_SCREENSHOT_AREAS[area]).first
+            try:
+                await region.wait_for(state="visible", timeout=5000)
+                await region.screenshot(path=str(output))
+            except Exception:
+                # Fall back to full viewport so the caller always gets
+                # a usable image — better than failing silently.
+                await page.screenshot(path=str(output), full_page=False)
+                captured_area = "full"
+                fell_back = True
 
-        audit.log("chart.screenshot", path=str(output), **meta)
-        return {"path": str(output), **meta}
+        audit.log("chart.screenshot",
+                  path=str(output), area=captured_area,
+                  fell_back=fell_back, **meta)
+        return {
+            "path": str(output), "area": captured_area,
+            "fell_back": fell_back, **meta,
+        }
 
 
 async def metadata() -> dict:
@@ -241,6 +295,11 @@ def _main() -> None:
                     help="Optional timeframe, e.g. 1D, 1h, 5m (case-insensitive)")
     sh.add_argument("-o", "--output", type=Path, default=None,
                     help="Output PNG path (default: ~/Desktop/TradingView/...)")
+    sh.add_argument("--area", default="chart",
+                    choices=sorted(list(_SCREENSHOT_AREAS) + ["full"]),
+                    help="Region to capture (default: chart). Use 'full' for "
+                         "the entire viewport when chart-only crops hide the "
+                         "sidebar / Pine editor / Account Manager you want to see.")
 
     sub.add_parser("metadata", help="Print current chart metadata")
 
@@ -249,7 +308,7 @@ def _main() -> None:
     if args.cmd == "set-symbol":
         run(lambda: set_symbol(args.symbol, args.interval))
     elif args.cmd == "screenshot":
-        run(lambda: screenshot(args.symbol, args.timeframe, args.output))
+        run(lambda: screenshot(args.symbol, args.timeframe, args.output, area=args.area))
     elif args.cmd == "metadata":
         run(lambda: metadata())
 
