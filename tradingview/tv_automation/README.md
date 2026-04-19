@@ -574,16 +574,15 @@ tv act "<goal>" --read-only                              # refuses mutating
 tv act "<goal>" --dry-run                                # model decides, no clicks
 ```
 
-**Three LLM backends (Ollama is the default — local, no API key):**
+**Two LLM backends (Ollama is the default — local, no API key):**
 
 | Provider | Endpoint | Cost | Vision default | Notes |
 |---|---|---|---|---|
-| `ollama` **(default)** | `http://localhost:11434/v1` | free | off | OpenAI-compat. Default model: `qwen3.5:27b` (text). Pass `--vision --model qwen2.5vl:7b` for screenshot support. |
-| `mlx` | `http://localhost:8080/v1` | free | off | OpenAI-compat (`mlx_lm.server`). No default model — pass `--model`. |
+| `ollama` **(default)** | `http://localhost:11434/v1` | free | off | OpenAI-compat. Default model: `qwen3.5:27b` (text). Pass `--vision --model gemma4:31b` for screenshot support. |
 | `anthropic` | Anthropic SDK | paid | on | Opt-in only. Needs `ANTHROPIC_API_KEY` in `.env`. Default model: `claude-sonnet-4-6`. Aliases: `sonnet` / `opus` / `haiku`. |
 
-Vision is off by default for local providers (most pulled local models
-aren't VL); on by default for Anthropic. `--vision` forces on;
+Vision is off by default for ollama (pure-text models are common);
+on by default for Anthropic. `--vision` forces on;
 `--text-only` forces off. In text-only mode the model drives via the structured
 inventory alone — works for most UI goals where the target has a
 `data_name` / `aria_label`, fails for canvas targets (chart candles,

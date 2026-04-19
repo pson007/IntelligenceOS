@@ -164,8 +164,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     }
     // Tab-specific on-enter hooks
     if (tab === 'audit') startAuditPoll(); else stopAuditPoll();
-    if (tab === 'trade') startPositionsPoll(); else stopPositionsPoll();
-    if (tab === 'chart') refreshMetadata();
+    if (tab === 'trade') { startPositionsPoll(); refreshChartMeta(); } else stopPositionsPoll();
     if (tab === 'watchlist') loadWatchlist();
     if (tab === 'alerts') loadAlerts();
   });
@@ -255,6 +254,7 @@ function setupCombo(inputId) {
     const list = matches(input.value);
     if (i < 0 || i >= list.length) return;
     input.value = list[i].symbol;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
     close();
     input.focus();
   }
@@ -299,6 +299,7 @@ function setupCombo(inputId) {
     if (!opt) return;
     e.preventDefault();
     input.value = opt.dataset.val;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
     close();
     input.focus();
   });
@@ -335,70 +336,491 @@ async function populateSymbolCombos(preFetched) {
 }
 
 // ----------------------------------------------------------------------
-// Chart tab
+// Trade deck — unified chart + order entry.
+//
+// One symbol field drives the live TradingView chart AND the trade panel.
+// Picking from the combo or pressing Enter commits the symbol, and we
+// auto-capture so the UI screenshot never goes stale relative to the
+// live chart. Timeframe pills do the same.
+//
+// The position-context strip surfaces any open position in the selected
+// symbol right above the quick-trade bar — the highest-value piece of
+// info for a day trader about to fire another order in a name they're
+// already in.
 // ----------------------------------------------------------------------
-function renderMetadata(meta) {
-  // Split "CME_MINI:MNQ1!" → "MNQ1!" + "CME_MINI" muted. Interval as a badge.
+let _currentChartSymbol = '';
+
+function renderChartMeta(meta) {
   const fullSym = meta.symbol || '';
   const idx = fullSym.indexOf(':');
   const sym = idx < 0 ? fullSym : fullSym.slice(idx + 1);
   const exch = idx < 0 ? '' : fullSym.slice(0, idx);
-  $('chart-meta').innerHTML = `
-    <div>
-      <span class="label">Symbol</span>
-      <span class="value">${escapeHtml(sym || '—')}</span>
-      ${exch ? `<span class="muted mono" style="font-size: 11px; margin-left: 6px;">${escapeHtml(exch)}</span>` : ''}
-    </div>
-    <div><span class="label">Interval</span><span class="value">${escapeHtml(meta.interval || '—')}</span></div>
-    ${meta.title ? `<div class="grow" style="flex: 1; min-width: 0;"><span class="label">Title</span><span class="value small" style="word-break: break-word;">${escapeHtml(meta.title)}</span></div>` : ''}
-  `;
-  $('chart-meta-url').textContent = meta.url || '—';
+  const parts = [];
+  parts.push(`<span class="sym">${escapeHtml(sym || '—')}</span>`);
+  if (exch) parts.push(`<span class="sep">·</span><span>${escapeHtml(exch)}</span>`);
+  parts.push(`<span class="sep">·</span><span>${escapeHtml(meta.interval || '—')}</span>`);
+  if (meta.title) parts.push(`<span class="sep">·</span><span>${escapeHtml(meta.title)}</span>`);
+  $('trade-chart-meta').innerHTML = parts.join('');
+  if (meta.interval) {
+    document.querySelectorAll('#trade-tf-bar .tf-pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.tf === meta.interval);
+    });
+  }
+  _currentChartSymbol = fullSym || _currentChartSymbol;
+  refreshPositionContext();
 }
-async function refreshMetadata() {
+
+async function refreshChartMeta() {
   try {
     const meta = await api('/api/chart/metadata');
-    renderMetadata(meta);
-  } catch (e) { toast(`metadata: ${e.message}`, 'err'); }
+    renderChartMeta(meta);
+  } catch (e) { /* silent — fires on initial load when browser may be offline */ }
 }
-$('chart-meta-refresh').addEventListener('click', refreshMetadata);
 
-$('chart-set').addEventListener('click', async (e) => {
-  const btn = e.target;
-  const symbol = $('chart-symbol').value.trim();
-  const interval = $('chart-tf').value || null;
-  if (!symbol) return toast('symbol required', 'err');
+// Position context — match chart symbol against any open position and
+// render a compact strip above the quick-trade bar. Symbols from TV
+// positions come exchange-prefixed ("CME_MINI:MNQ1!"); chart symbols may
+// or may not be. Compare on the bare ticker to handle both shapes.
+function refreshPositionContext() {
+  const card = $('position-context-card');
+  const ctx = $('position-context');
+  const chartSym = _currentChartSymbol || $('trade-symbol').value.trim();
+  const bare = s => {
+    const c = String(s || '').replace(/\s*\n\s*/g, ' ').trim();
+    const i = c.indexOf(':');
+    return i < 0 ? c : c.slice(i + 1);
+  };
+  const target = bare(chartSym);
+  if (!target || !_lastPositions.length) { card.classList.add('hidden'); return; }
+  const match = _lastPositions.find(p => bare(p.symbol) === target);
+  if (!match) { card.classList.add('hidden'); return; }
+
+  const clean = v => String(v ?? '').replace(/\s*\n\s*/g, ' ').trim();
+  const isNeg = s => /^[−-]/.test(s);
+  const side = clean(match.side);
+  const sideCls = side.toLowerCase() === 'short' ? 'short' : 'long';
+  const pl = clean(match.pl).replace(/\s*USD$/, '');
+  const plPct = clean(match.plPercent);
+  const plCls = pl ? (isNeg(pl) ? 'pnl-neg' : 'pnl-pos') : '';
+  ctx.innerHTML = `
+    <span class="position-context__label">Current</span>
+    <span class="side-pill ${sideCls}">${escapeHtml(side)}</span>
+    <span class="position-context__qty">${escapeHtml(clean(match.qty))}</span>
+    <span class="position-context__price">@ ${escapeHtml(clean(match.avgPrice))}</span>
+    <span class="position-context__price muted">last ${escapeHtml(clean(match.lastPrice))}</span>
+    <span class="position-context__pnl ${plCls}">${escapeHtml(pl)}${plPct ? ` (${escapeHtml(plPct)})` : ''}</span>
+    <span class="position-context__actions">
+      <button class="danger icon-btn" data-close="${escapeHtml(target)}">Close</button>
+    </span>`;
+  ctx.querySelector('[data-close]').addEventListener('click', async (e) => {
+    const sym = e.currentTarget.dataset.close;
+    if (!confirm(`Close position on ${sym}?`)) return;
+    setBusy(e.currentTarget, true);
+    try {
+      await api('/api/trade/close', { method: 'POST', body: { symbol: sym } });
+      toast(`closed ${sym}`);
+      loadPositions();
+    } catch (err) {
+      toast(`close ${sym}: ${err.message}`, 'err');
+      setBusy(e.currentTarget, false, 'Close');
+    }
+  });
+  card.classList.remove('hidden');
+}
+
+async function captureChart() {
+  const btn = $('trade-capture');
   setBusy(btn, true);
   try {
-    const meta = await api('/api/chart/set-symbol', { method: 'POST', body: { symbol, interval } });
-    renderMetadata(meta);
-    toast(`set to ${meta.symbol} ${meta.interval}`);
-  } catch (e) { toast(`set-symbol: ${e.message}`, 'err'); }
-  finally { setBusy(btn, false, 'Set symbol'); }
-});
-
-$('chart-shoot').addEventListener('click', async (e) => {
-  const btn = e.target;
-  const area = $('chart-area').value;
-  setBusy(btn, true);
-  try {
-    const r = await api('/api/chart/screenshot', { method: 'POST', body: { area } });
-    // Server inlines the PNG as a data: URI (data_url) so <img> renders
-    // it without needing a second authed request. Fall back to the URL
-    // form for older server responses that lack data_url.
+    const r = await api('/api/chart/screenshot', { method: 'POST', body: { area: 'chart' } });
     const src = r.data_url || r.url;
-    const box = $('chart-shot');
     const file = (r.path || '').split('/').pop();
-    box.innerHTML = `
+    $('trade-chart-shot').innerHTML = `
       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px;">
         <span class="badge ${r.fell_back ? 'yellow' : ''}">${escapeHtml(r.area)}${r.fell_back ? ' · fallback' : ''}</span>
-        <span class="mono">${escapeHtml(r.symbol)} ${escapeHtml(r.interval)}</span>
         <span class="muted mono" style="margin-left: auto; font-size: 11px;" title="${escapeHtml(r.path)}">${escapeHtml(file)}</span>
       </div>
-      <img class="screenshot" src="${src}" alt="chart screenshot" />
-    `;
+      <img class="screenshot" src="${src}" alt="chart screenshot" />`;
+    renderChartMeta({ symbol: r.symbol, interval: r.interval });
   } catch (e) { toast(`screenshot: ${e.message}`, 'err'); }
   finally { setBusy(btn, false, 'Capture'); }
+}
+
+// commitSymbol — called when user picks from combo, hits Enter, or clicks
+// a timeframe pill. Sets the live TV chart, then auto-captures so the UI
+// screenshot matches the new state. Toast on failure only.
+async function commitSymbol(symbol, interval) {
+  if (!symbol) return toast('symbol required', 'err');
+  try {
+    const meta = await api('/api/chart/set-symbol', { method: 'POST', body: { symbol, interval: interval || null } });
+    renderChartMeta(meta);
+    toast(`set to ${meta.symbol} ${meta.interval}`);
+    captureChart();
+  } catch (e) { toast(`set-symbol: ${e.message}`, 'err'); }
+}
+
+$('trade-capture').addEventListener('click', captureChart);
+
+// Symbol combo: picking from dropdown dispatches 'change' (see setupCombo).
+// Typing + Enter commits as well. Blur doesn't commit — prevents accidental
+// chart switches from tabbing through the form.
+$('trade-symbol').addEventListener('change', () => {
+  const sym = $('trade-symbol').value.trim();
+  const tf = document.querySelector('#trade-tf-bar .tf-pill.active')?.dataset.tf || null;
+  commitSymbol(sym, tf);
 });
+$('trade-symbol').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const sym = $('trade-symbol').value.trim();
+    const tf = document.querySelector('#trade-tf-bar .tf-pill.active')?.dataset.tf || null;
+    commitSymbol(sym, tf);
+  }
+});
+
+// Timeframe pills — immediate visual update then apply + capture.
+document.querySelectorAll('#trade-tf-bar .tf-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    const tf = pill.dataset.tf;
+    const sym = $('trade-symbol').value.trim();
+    document.querySelectorAll('#trade-tf-bar .tf-pill').forEach(p => p.classList.toggle('active', p === pill));
+    commitSymbol(sym, tf);
+  });
+});
+
+// ----------------------------------------------------------------------
+// Multi-timeframe analysis
+//
+// Captures 9 timeframes (~45-90s), feeds them to a vision LLM in one
+// turn, then renders a consolidated Long/Short/Skip signal + per-TF
+// breakdown + saved pine script. Task-based: POST returns a task_id,
+// we poll /api/analyze/{task_id} every 1.5s while listening to the
+// audit stream for per-TF progress.
+// ----------------------------------------------------------------------
+let analyzeCurrent = null;  // {task_id, request_id, pollTimer, total, done}
+let _analyzeStartAt = 0;
+let _analyzeElapsedTimer = null;
+
+// Set a timeframe-pill's state (pending / active / done). Cheap class toggle
+// off a data-tf selector so we don't rebuild the DOM on every poll tick.
+function setTFStatus(tf, status) {
+  const el = document.querySelector(`.tf-status[data-tf="${tf}"]`);
+  if (!el) return;
+  el.classList.remove('active', 'done');
+  if (status) el.classList.add(status);
+}
+
+function resetTFStatuses() {
+  document.querySelectorAll('#analyze-progress-tfs .tf-status').forEach(el => {
+    el.classList.remove('active', 'done');
+  });
+}
+
+function startElapsedTicker() {
+  _analyzeStartAt = Date.now();
+  stopElapsedTicker();
+  _analyzeElapsedTimer = setInterval(() => {
+    const el = $('analyze-progress-elapsed');
+    if (!el) return;
+    const s = Math.round((Date.now() - _analyzeStartAt) / 1000);
+    el.textContent = s < 60 ? `${s}s` : `${Math.floor(s/60)}m ${s%60}s`;
+  }, 500);
+}
+
+function stopElapsedTicker() {
+  if (_analyzeElapsedTimer) {
+    clearInterval(_analyzeElapsedTimer);
+    _analyzeElapsedTimer = null;
+  }
+}
+
+// setAnalyzeProgress — phase = top-line status, detail = supporting line,
+// pct = 0..100 for the bar (pass null for the LLM "thinking" shimmer).
+function setAnalyzeProgress(phase, detail, pct) {
+  $('analyze-progress').classList.remove('hidden');
+  $('analyze-progress-phase').textContent = phase;
+  $('analyze-progress-detail').textContent = detail || '';
+  const bar = document.querySelector('.analyze-progress-bar');
+  if (pct === null) {
+    bar.classList.add('thinking');
+  } else {
+    bar.classList.remove('thinking');
+    $('analyze-progress-fill').style.width = `${Math.max(0, Math.min(100, pct))}%`;
+  }
+}
+
+function hideAnalyzeProgress() {
+  $('analyze-progress').classList.add('hidden');
+  document.querySelector('.analyze-progress-bar')?.classList.remove('thinking');
+  stopElapsedTicker();
+}
+
+function showAnalyzeError(msg) {
+  $('analyze-error').textContent = msg;
+  $('analyze-error').classList.remove('hidden');
+  $('analyze-result').classList.add('hidden');
+}
+
+function clearAnalyzeError() {
+  $('analyze-error').classList.add('hidden');
+  $('analyze-error').textContent = '';
+}
+
+function dismissAnalysis() {
+  stopAnalyzePoll();
+  $('analyze-card').classList.add('hidden');
+  $('analyze-result').classList.add('hidden');
+  hideAnalyzeProgress();
+  clearAnalyzeError();
+}
+$('analyze-dismiss').addEventListener('click', dismissAnalysis);
+
+function renderAnalysisResult(r) {
+  hideAnalyzeProgress();
+  clearAnalyzeError();
+  $('analyze-result').classList.remove('hidden');
+
+  const sig = String(r.signal || 'Skip');
+  const sigCls = sig.toLowerCase();
+  const pill = $('analyze-signal-pill');
+  pill.textContent = sig;
+  pill.className = `analyze-signal ${sigCls}`;
+
+  const conf = Math.max(0, Math.min(100, +r.confidence || 0));
+  $('analyze-confidence-val').textContent = `${conf}%`;
+  $('analyze-confidence-fill').style.width = `${conf}%`;
+
+  const fmt = v => (v === null || v === undefined || v === '') ? '—' : String(v);
+  $('analyze-entry').textContent = fmt(r.entry);
+  $('analyze-stop').textContent = fmt(r.stop);
+  $('analyze-tp').textContent = fmt(r.tp);
+
+  // Apply-to-order: pre-populate Quick Order bracket fields + pre-select
+  // side based on the consolidated signal. Skip disables the button so
+  // the trader doesn't accidentally fire a no-edge trade.
+  const applyBtn = $('analyze-apply-order');
+  applyBtn.disabled = (sigCls === 'skip');
+  applyBtn.onclick = () => {
+    if (r.entry !== null && r.entry !== undefined) {
+      // Entry is informational — the UI fires market orders, not limits.
+      // Setting it visually via trade-symbol/qty isn't meaningful; the
+      // bracket fields below carry the real impact.
+    }
+    if (r.stop !== null && r.stop !== undefined) $('trade-sl').value = r.stop;
+    if (r.tp !== null && r.tp !== undefined) $('trade-tp').value = r.tp;
+    refreshBracketArmed();
+    toast(`applied ${sig.toLowerCase()} brackets to order`, 'ok');
+    $('trade-sl').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  // Apply-pine button — enabled only if the backend saved a pine script.
+  const pineBtn = $('analyze-apply-pine');
+  if (r.pine_path) {
+    pineBtn.disabled = false;
+    pineBtn.onclick = async () => {
+      if (!confirm('Paste this analysis pine script into TradingView? Takes ~20s and takes over the chart view briefly.')) return;
+      setBusy(pineBtn, true);
+      try {
+        const ar = await api('/api/analyze/apply-pine', { method: 'POST', body: { path: r.pine_path } });
+        if (ar.ok) toast('pine applied to chart', 'ok');
+        else toast(`pine apply failed: ${(ar.stderr || 'see server log').slice(-200)}`, 'err');
+      } catch (e) { toast(`apply-pine: ${e.message}`, 'err'); }
+      finally { setBusy(pineBtn, false, 'Apply pine to chart'); }
+    };
+  } else {
+    pineBtn.disabled = true;
+    pineBtn.onclick = null;
+  }
+
+  $('analyze-rationale').textContent = r.rationale || '';
+
+  // Per-TF table.
+  const rows = (r.per_tf || []).map(row => {
+    const s = String(row.signal || 'Skip');
+    const cls = s.toLowerCase();
+    return `<tr>
+      <td class="tf">${escapeHtml(row.tf || '—')}</td>
+      <td class="sig"><span class="pill ${cls}">${escapeHtml(s)}</span></td>
+      <td class="conf">${Math.max(0, Math.min(100, +row.confidence || 0))}%</td>
+      <td class="num">${escapeHtml(String(row.entry ?? '—'))}</td>
+      <td class="num">${escapeHtml(String(row.stop ?? '—'))}</td>
+      <td class="num">${escapeHtml(String(row.tp ?? '—'))}</td>
+      <td>${escapeHtml(row.rationale || '')}</td>
+    </tr>`;
+  }).join('');
+  $('analyze-pertf-body').innerHTML = rows
+    ? `<table>
+         <thead><tr>
+           <th>TF</th><th>Signal</th><th class="num">Conf</th>
+           <th class="num">Entry</th><th class="num">Stop</th><th class="num">TP</th>
+           <th>Rationale</th>
+         </tr></thead>
+         <tbody>${rows}</tbody>
+       </table>`
+    : '<div class="empty">No per-TF breakdown returned.</div>';
+
+  // Meta strip — provider/model/cost/elapsed for transparency
+  const meta = [];
+  if (r.provider) meta.push(`<span>provider: ${escapeHtml(r.provider)}</span>`);
+  if (r.model) meta.push(`<span>model: ${escapeHtml(r.model)}</span>`);
+  // Only show cost when it's actually nonzero — local providers return 0
+  // and a "cost: $0.0000" line is just noise when you're running for free.
+  if (r.cost_usd !== undefined && r.cost_usd !== null && +r.cost_usd > 0) {
+    meta.push(`<span>cost: $${(+r.cost_usd).toFixed(4)}</span>`);
+  }
+  if (r.elapsed_s) meta.push(`<span>total: ${r.elapsed_s}s</span>`);
+  if (r.llm_elapsed_s) meta.push(`<span>llm: ${r.llm_elapsed_s}s</span>`);
+  if (r.pine_path) {
+    const name = String(r.pine_path).split('/').pop();
+    meta.push(`<span>pine: ${escapeHtml(name)}</span>`);
+  }
+  $('analyze-meta').innerHTML = meta.join('<span class="sep"> · </span>');
+}
+
+async function pollAnalyzeStatus() {
+  if (!analyzeCurrent) return;
+  const { task_id, request_id } = analyzeCurrent;
+  try {
+    const [status, auditTail] = await Promise.all([
+      api(`/api/analyze/${task_id}`),
+      api(`/api/audit/tail?n=100&request_id=${request_id}`),
+    ]);
+
+    // Stream per-TF progress from the audit log. analyze_mtf emits:
+    //   analyze.start       { symbol, timeframes[] }
+    //   analyze.tf_start    { tf, index, total }
+    //   analyze.tf_captured { tf, index, total, path }
+    //   analyze.llm_request { provider, model, n_images }
+    //   analyze.done | analyze.fail | analyze.parse_fail
+    //
+    // We derive three UI pieces per tick:
+    //   1. Per-TF pill states — active (currently capturing) vs done
+    //   2. Top-line phase label + supporting detail
+    //   3. Bar: 0..100 during capture, indeterminate shimmer during LLM
+    const events = auditTail.entries || [];
+    let tfTotal = analyzeCurrent.total || 9;
+    let phase = 'starting', detail = '', pct = 0;
+    let llmStarted = false, activeTF = null, symbol = '', model = '';
+    const doneTFs = new Set();
+
+    for (const e of events) {
+      const ev = e.event || '';
+      if (ev === 'analyze.start') {
+        tfTotal = (e.timeframes || []).length || tfTotal;
+        symbol = e.symbol || symbol;
+      } else if (ev === 'analyze.tf_start') {
+        activeTF = e.tf || activeTF;
+      } else if (ev === 'analyze.tf_captured') {
+        if (e.tf) doneTFs.add(e.tf);
+        if (activeTF === e.tf) activeTF = null;
+      } else if (ev === 'analyze.llm_request') {
+        llmStarted = true;
+        model = e.model || model;
+      } else if (ev === 'analyze.done') {
+        phase = 'done';
+      } else if (ev === 'analyze.fail' || ev === 'analyze.parse_fail') {
+        phase = `failed: ${e.error || e.raw_head || ''}`;
+      }
+    }
+
+    // Reflect derived state into the DOM. Reset first so events arriving
+    // out of order or after a re-run don't leave stale classes behind.
+    resetTFStatuses();
+    doneTFs.forEach(tf => setTFStatus(tf, 'done'));
+    if (activeTF && !doneTFs.has(activeTF)) setTFStatus(activeTF, 'active');
+
+    if (llmStarted) {
+      phase = `Analyzing ${tfTotal} charts`;
+      detail = model ? `${model} integrating timeframes…` : 'model integrating timeframes…';
+      pct = null;  // indeterminate shimmer
+    } else if (doneTFs.size === tfTotal && tfTotal > 0) {
+      phase = 'All timeframes captured';
+      detail = 'handing off to model…';
+      pct = 100;
+    } else if (activeTF) {
+      phase = `Capturing ${activeTF} (${doneTFs.size + 1} of ${tfTotal})`;
+      detail = symbol ? `symbol: ${symbol}` : '';
+      pct = (doneTFs.size / tfTotal) * 100;
+    } else if (doneTFs.size > 0) {
+      phase = `Captured ${doneTFs.size} of ${tfTotal}`;
+      detail = 'next timeframe…';
+      pct = (doneTFs.size / tfTotal) * 100;
+    } else if (symbol) {
+      phase = `Starting — ${symbol}`;
+      detail = `preparing ${tfTotal} timeframe captures…`;
+      pct = 0;
+    }
+
+    analyzeCurrent.total = tfTotal;
+    analyzeCurrent.done = doneTFs.size;
+
+    if (status.state === 'running') {
+      setAnalyzeProgress(phase, detail, pct);
+    } else if (status.state === 'done') {
+      stopAnalyzePoll();
+      renderAnalysisResult(status.result || {});
+      setBusy($('trade-analyze'), false, 'Analyze');
+    } else if (status.state === 'failed') {
+      stopAnalyzePoll();
+      showAnalyzeError(`${status.error || 'analysis failed'}`);
+      setBusy($('trade-analyze'), false, 'Analyze');
+    }
+  } catch (e) {
+    // transient — keep polling
+  }
+}
+
+function stopAnalyzePoll() {
+  if (analyzeCurrent && analyzeCurrent.pollTimer) {
+    clearInterval(analyzeCurrent.pollTimer);
+    analyzeCurrent.pollTimer = null;
+  }
+}
+
+async function startAnalysis() {
+  const symbol = $('trade-symbol').value.trim();
+  if (!symbol) return toast('symbol required', 'err');
+
+  const btn = $('trade-analyze');
+  setBusy(btn, true);
+
+  // Reveal the card and reset transient UI: hide any prior result, clear
+  // any prior error, wipe TF pills back to pending, start the elapsed
+  // ticker. Only these pieces change per run — the provider/model
+  // selectors in the card head persist intentionally.
+  $('analyze-card').classList.remove('hidden');
+  $('analyze-result').classList.add('hidden');
+  clearAnalyzeError();
+  resetTFStatuses();
+  startElapsedTicker();
+  setAnalyzeProgress(`Starting — ${symbol}`, 'preparing 9 timeframe captures…', 0);
+
+  try {
+    const r = await api('/api/analyze/multi-tf', {
+      method: 'POST',
+      body: {
+        symbol,
+        provider: $('analyze-provider').value,
+        model: $('analyze-model').value.trim() || null,
+      },
+    });
+    stopAnalyzePoll();
+    analyzeCurrent = {
+      task_id: r.task_id,
+      request_id: r.request_id,
+      pollTimer: setInterval(pollAnalyzeStatus, 1500),
+      total: 9, done: 0,
+    };
+    pollAnalyzeStatus();
+  } catch (e) {
+    showAnalyzeError(e.message);
+    toast(`analyze: ${e.message}`, 'err');
+    setBusy(btn, false, 'Analyze');
+  }
+  // Note: on success we leave the spinner spinning — pollAnalyzeStatus will
+  // re-enable the button when status.state flips to done/failed.
+}
+$('trade-analyze').addEventListener('click', startAnalysis);
 
 // ----------------------------------------------------------------------
 // Act tab
@@ -561,22 +983,58 @@ $('act-run').addEventListener('click', async (e) => {
 });
 
 // ----------------------------------------------------------------------
-// Trade tab
+// Trade tab — order placement, bracket arming, flatten
 // ----------------------------------------------------------------------
+
+// Reflect TP/SL field state into the "bracket armed" badge + button glow.
+// Run on every input change so the trader sees exactly which order shape
+// (market vs. bracket) their next BUY/SELL click will fire.
+function refreshBracketArmed() {
+  const tp = $('trade-tp').value.trim();
+  const sl = $('trade-sl').value.trim();
+  const armed = !!(tp || sl);
+  $('trade-bracket-armed').classList.toggle('hidden', !armed);
+  $('trade-quick').classList.toggle('bracket-armed-state', armed);
+}
+$('trade-tp').addEventListener('input', refreshBracketArmed);
+$('trade-sl').addEventListener('input', refreshBracketArmed);
+
 async function placeOrder(side) {
   const symbol = $('trade-symbol').value.trim();
   const qty = +$('trade-qty').value;
   const dry_run = $('trade-dry-run').checked;
+  const tpRaw = $('trade-tp').value.trim();
+  const slRaw = $('trade-sl').value.trim();
+  const take_profit = tpRaw ? +tpRaw : null;
+  const stop_loss = slRaw ? +slRaw : null;
   if (!symbol || !qty) return toast('symbol + qty required', 'err');
+  if (take_profit !== null && !isFinite(take_profit)) return toast('take profit must be numeric', 'err');
+  if (stop_loss !== null && !isFinite(stop_loss)) return toast('stop loss must be numeric', 'err');
+
+  const bracketNote = (take_profit !== null || stop_loss !== null)
+    ? ` · bracket TP ${take_profit ?? '—'} / SL ${stop_loss ?? '—'}`
+    : '';
   const confirmMsg = dry_run
-    ? `DRY-RUN: ${side.toUpperCase()} ${qty} ${symbol}?`
-    : `Confirm ${side.toUpperCase()} ${qty} ${symbol} (paper)?`;
+    ? `DRY-RUN: ${side.toUpperCase()} ${qty} ${symbol}${bracketNote}?`
+    : `Confirm ${side.toUpperCase()} ${qty} ${symbol} (paper)${bracketNote}?`;
   if (!confirm(confirmMsg)) return;
+
   const btn = side === 'buy' ? $('trade-buy') : $('trade-sell');
   setBusy(btn, true);
   try {
-    const r = await api('/api/trade/order', { method: 'POST', body: { symbol, side, qty, dry_run } });
-    toast(`${r.ok ? '✓' : '✗'} ${side.toUpperCase()} ${qty} ${symbol}${dry_run ? ' (dry-run)' : ''}`, r.ok ? 'ok' : 'err');
+    const body = { symbol, side, qty, dry_run };
+    if (take_profit !== null) body.take_profit = take_profit;
+    if (stop_loss !== null) body.stop_loss = stop_loss;
+    const r = await api('/api/trade/order', { method: 'POST', body });
+    const tag = (take_profit !== null || stop_loss !== null) ? ' (bracket)' : '';
+    toast(`${r.ok ? '✓' : '✗'} ${side.toUpperCase()} ${qty} ${symbol}${tag}${dry_run ? ' (dry-run)' : ''}`, r.ok ? 'ok' : 'err');
+    // Clear brackets after a successful fire — avoids the footgun of a
+    // subsequent market order carrying last trade's SL/TP unintentionally.
+    if (r.ok) {
+      $('trade-tp').value = '';
+      $('trade-sl').value = '';
+      refreshBracketArmed();
+    }
     loadPositions();
   } catch (e) { toast(`order: ${e.message}`, 'err'); }
   finally { setBusy(btn, false, side === 'buy' ? 'BUY market' : 'SELL market'); }
@@ -584,12 +1042,37 @@ async function placeOrder(side) {
 $('trade-buy').addEventListener('click', () => placeOrder('buy'));
 $('trade-sell').addEventListener('click', () => placeOrder('sell'));
 
+// Flatten — close every open position. Blast-radius button; gated by an
+// explicit count confirmation and auto-disables when no positions are open.
+async function flattenAll() {
+  const count = _lastPositions.length;
+  if (!count) return toast('no open positions', 'ok');
+  if (!confirm(`Close ALL ${count} open position${count === 1 ? '' : 's'}? This can't be undone.`)) return;
+  const btn = $('pos-flatten');
+  setBusy(btn, true);
+  try {
+    const r = await api('/api/trade/flatten', { method: 'POST', body: {} });
+    const msg = r.failed
+      ? `flatten: closed ${r.closed}/${r.total} · ${r.failed} failed`
+      : `flattened ${r.closed}/${r.total}`;
+    toast(msg, r.failed ? 'err' : 'ok');
+    loadPositions();
+  } catch (e) { toast(`flatten: ${e.message}`, 'err'); }
+  finally { setBusy(btn, false, 'Flatten'); }
+}
+$('pos-flatten').addEventListener('click', flattenAll);
+
+let _lastPositions = [];
+
 async function loadPositions() {
   const body = $('positions-body');
   body.innerHTML = '<div class="empty"><span class="spinner"></span> loading…</div>';
   try {
     const r = await api('/api/trade/positions');
     const positions = r.positions || [];
+    _lastPositions = positions;
+    $('pos-flatten').disabled = positions.length === 0;
+    refreshPositionContext();
     if (!positions.length) {
       body.innerHTML = '<div class="empty">No open positions.</div>';
       return;
@@ -976,8 +1459,7 @@ $('audit-filter').addEventListener('input', () => fetchAudit());
 // ----------------------------------------------------------------------
 // Initial load
 // ----------------------------------------------------------------------
-refreshMetadata();
-setupCombo('chart-symbol');
+refreshChartMeta();
 setupCombo('trade-symbol');
 setupCombo('alert-symbol');
 populateSymbolCombos();  // fire-and-forget — fills all three combos from watchlist

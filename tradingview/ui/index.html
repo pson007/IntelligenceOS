@@ -45,9 +45,8 @@
               aria-label="Toggle sidebar" aria-expanded="true">✕</button>
     </div>
     <nav class="nav">
-      <button class="nav-item active" data-tab="chart"><span class="ico">▤</span> Chart</button>
+      <button class="nav-item active" data-tab="trade"><span class="ico">◉</span> Trade</button>
       <button class="nav-item" data-tab="act"><span class="ico">◈</span> Act</button>
-      <button class="nav-item" data-tab="trade"><span class="ico">◉</span> Trade</button>
       <button class="nav-item" data-tab="watchlist"><span class="ico">☰</span> Watchlist</button>
       <button class="nav-item" data-tab="alerts"><span class="ico">⊙</span> Alerts</button>
       <button class="nav-item" data-tab="audit"><span class="ico">⎙</span> Audit</button>
@@ -61,73 +60,185 @@
 
   <main class="main">
 
-    <!-- CHART TAB ----------------------------------------------------- -->
-    <section class="tab" id="tab-chart">
-      <h1>Chart</h1>
-      <div class="subtitle">Switch symbol/timeframe and capture screenshots of the live TradingView chart.</div>
+    <!-- TRADE TAB (chart + order entry + positions, unified) --------- -->
+    <section class="tab" id="tab-trade">
+      <h1>Trade</h1>
+      <div class="subtitle">Chart, order entry, and positions — one view, one symbol.</div>
 
+      <!-- Deck: symbol + timeframe + capture + chart meta + screenshot.
+           One symbol field drives the live TradingView chart; pick from
+           the combo or press Enter to apply + auto-capture. Timeframe
+           pills do the same. No stale screenshots. -->
       <div class="card">
-        <h2>Navigate</h2>
-        <div class="row">
-          <label class="field" style="min-width: 200px;">
-            <span>Symbol <span class="muted" style="font-size: 10px;">(from watchlist)</span></span>
+        <div class="trade-bar">
+          <label class="field" style="min-width: 200px; flex: 0 0 auto;">
+            <span>Symbol <span class="muted field-hint">(watchlist)</span></span>
             <div class="combo">
-              <input type="text" id="chart-symbol" value="MNQ1!" placeholder="MNQ1!, NVDA, BINANCE:BTCUSDT" autocomplete="off" />
-              <button class="combo-arrow" type="button" data-combo-target="chart-symbol" aria-label="Open symbol list">▾</button>
-              <div class="combo-menu hidden" data-combo-for="chart-symbol"></div>
+              <input type="text" id="trade-symbol" value="MNQ1!" placeholder="MNQ1!, NVDA, BINANCE:BTCUSDT" autocomplete="off" />
+              <button class="combo-arrow" type="button" data-combo-target="trade-symbol" aria-label="Open symbol list">▾</button>
+              <div class="combo-menu hidden" data-combo-for="trade-symbol"></div>
             </div>
           </label>
-          <label class="field" style="min-width: 120px;">
-            Timeframe
-            <select id="chart-tf">
-              <option value="">(keep current)</option>
-              <option value="1m">1m</option>
-              <option value="5m">5m</option>
-              <option value="15m">15m</option>
-              <option value="30m">30m</option>
-              <option value="1h">1h</option>
-              <option value="4h">4h</option>
-              <option value="1D" selected>1D</option>
-              <option value="1W">1W</option>
-              <option value="1M">1M</option>
-            </select>
+          <div class="tf-bar" id="trade-tf-bar" role="group" aria-label="Timeframe">
+            <button class="tf-pill" type="button" data-tf="1m">1m</button>
+            <button class="tf-pill" type="button" data-tf="5m">5m</button>
+            <button class="tf-pill" type="button" data-tf="15m">15m</button>
+            <button class="tf-pill" type="button" data-tf="30m">30m</button>
+            <button class="tf-pill" type="button" data-tf="1h">1h</button>
+            <button class="tf-pill" type="button" data-tf="4h">4h</button>
+            <button class="tf-pill active" type="button" data-tf="1D">1D</button>
+            <button class="tf-pill" type="button" data-tf="1W">1W</button>
+            <button class="tf-pill" type="button" data-tf="1M">1M</button>
+          </div>
+          <div class="trade-bar__actions">
+            <button class="primary" id="trade-capture">Capture</button>
+            <button id="trade-analyze" title="Multi-timeframe analysis across all 9 TFs">Analyze</button>
+          </div>
+        </div>
+        <div class="chart-meta-strip" id="trade-chart-meta">
+          <span class="muted">—</span>
+        </div>
+        <div id="trade-chart-shot">
+          <div class="empty dashed">No screenshot yet. Pick a symbol or click Capture.</div>
+        </div>
+      </div>
+
+      <!-- Multi-timeframe analysis — captures chart screenshots across
+           all 9 timeframes, feeds them to a vision LLM in one turn, and
+           returns a consolidated Long/Short/Skip signal with entry/stop/tp
+           plus a per-TF breakdown and a pine overlay script. -->
+      <div class="card hidden" id="analyze-card">
+        <div class="card-head">
+          <h2>Analysis</h2>
+          <div class="card-head__actions" id="analyze-head-actions">
+            <label>Provider
+              <select id="analyze-provider" style="padding: 3px 8px; font-size: var(--fs-sm); min-width: 0;">
+                <option value="ollama" selected>ollama (local, $0)</option>
+              </select>
+            </label>
+            <label>Model
+              <input type="text" id="analyze-model" placeholder="auto (gemma4:31b)" style="width: 180px;" />
+            </label>
+            <button class="icon-btn" id="analyze-dismiss" title="Dismiss this analysis">Dismiss</button>
+          </div>
+        </div>
+
+        <!-- Progress strip: phase label + running elapsed, a 9-TF checklist
+             that flips pending → active → done as captures complete, then a
+             progress bar + a muted detail line for current-step context.
+             Runs for ~60-120s total, so this has to communicate "still
+             moving, here's where we are" at a glance. -->
+        <div class="analyze-progress hidden" id="analyze-progress">
+          <div class="analyze-progress-head">
+            <span class="spinner"></span>
+            <span id="analyze-progress-phase">Starting…</span>
+            <span class="analyze-progress-elapsed" id="analyze-progress-elapsed">0s</span>
+          </div>
+          <div class="analyze-progress-tfs" id="analyze-progress-tfs">
+            <span class="tf-status" data-tf="1m">1m</span>
+            <span class="tf-status" data-tf="5m">5m</span>
+            <span class="tf-status" data-tf="15m">15m</span>
+            <span class="tf-status" data-tf="30m">30m</span>
+            <span class="tf-status" data-tf="1h">1h</span>
+            <span class="tf-status" data-tf="4h">4h</span>
+            <span class="tf-status" data-tf="1D">1D</span>
+            <span class="tf-status" data-tf="1W">1W</span>
+            <span class="tf-status" data-tf="1M">1M</span>
+          </div>
+          <div class="analyze-progress-bar"><div id="analyze-progress-fill"></div></div>
+          <div class="analyze-progress-detail mono muted" id="analyze-progress-detail"></div>
+        </div>
+
+        <!-- Result — consolidated signal + entry/stop/tp + actions -->
+        <div class="analyze-result hidden" id="analyze-result">
+          <div class="analyze-verdict">
+            <div class="analyze-signal" id="analyze-signal-pill">—</div>
+            <div class="analyze-confidence">
+              <div class="analyze-confidence-label">
+                <span class="label">Confidence</span>
+                <span class="value" id="analyze-confidence-val">—%</span>
+              </div>
+              <div class="analyze-confidence-bar">
+                <div id="analyze-confidence-fill"></div>
+              </div>
+            </div>
+            <div class="analyze-levels">
+              <div><span class="label">Entry</span><span class="value mono" id="analyze-entry">—</span></div>
+              <div><span class="label">Stop</span><span class="value mono" id="analyze-stop">—</span></div>
+              <div><span class="label">TP</span><span class="value mono" id="analyze-tp">—</span></div>
+            </div>
+            <div class="analyze-actions">
+              <button class="primary" id="analyze-apply-order" title="Copy Entry / Stop / TP into the Quick Order bar">Apply to order</button>
+              <button id="analyze-apply-pine" disabled title="Paste the generated Pine script into TradingView's Pine Editor">Apply pine to chart</button>
+            </div>
+          </div>
+
+          <div class="analyze-rationale" id="analyze-rationale"></div>
+
+          <!-- Per-TF breakdown table -->
+          <details class="analyze-pertf" id="analyze-pertf" open>
+            <summary>Per-timeframe breakdown</summary>
+            <div class="analyze-pertf-body" id="analyze-pertf-body"></div>
+          </details>
+
+          <div class="analyze-meta mono muted" id="analyze-meta"></div>
+        </div>
+
+        <!-- Failure surface -->
+        <div class="analyze-error hidden" id="analyze-error"></div>
+      </div>
+
+      <!-- Contextual current-symbol position — only rendered when the
+           selected chart symbol matches an open position. This is the
+           highest-value piece of info right before a buy/sell click. -->
+      <div class="card hidden" id="position-context-card">
+        <div class="position-context" id="position-context"></div>
+      </div>
+
+      <!-- Quick order — qty + optional TP/SL brackets + BUY/SELL.
+           Filling TP or SL routes the order through the bracket-capable
+           order-panel path; empty fields keep the fast quick-trade bar. -->
+      <div class="card">
+        <div class="card-head">
+          <h2>Quick order</h2>
+          <div class="card-head__actions">
+            <span class="bracket-armed hidden" id="trade-bracket-armed">◈ bracket armed</span>
+          </div>
+        </div>
+        <div class="quick-trade" id="trade-quick">
+          <label class="field" style="min-width: 90px; flex: 0 0 auto;">
+            Qty
+            <input type="number" id="trade-qty" value="1" min="1" max="100" />
           </label>
-          <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <button class="primary" id="chart-set">Set symbol</button>
-            <button id="chart-meta-refresh">Refresh</button>
+          <label class="field bracket-field" style="min-width: 120px; flex: 0 0 auto;">
+            <span>Take profit <span class="muted field-hint">(price)</span></span>
+            <input type="number" id="trade-tp" step="any" placeholder="optional" autocomplete="off" />
+          </label>
+          <label class="field bracket-field" style="min-width: 120px; flex: 0 0 auto;">
+            <span>Stop loss <span class="muted field-hint">(price)</span></span>
+            <input type="number" id="trade-sl" step="any" placeholder="optional" autocomplete="off" />
+          </label>
+          <label class="quick-trade__dryrun">
+            <input type="checkbox" id="trade-dry-run" /> dry-run
+          </label>
+          <div class="quick-trade__actions">
+            <button class="buy" id="trade-buy">BUY market</button>
+            <button class="sell" id="trade-sell">SELL market</button>
           </div>
         </div>
       </div>
 
+      <!-- All positions (book-wide awareness) -->
       <div class="card">
-        <h2>Current chart</h2>
-        <div id="chart-meta" class="summary-strip">
-          <div><span class="label">Symbol</span><span class="value">—</span></div>
-          <div><span class="label">Interval</span><span class="value">—</span></div>
-        </div>
-        <div id="chart-meta-url" class="mono muted" style="font-size: 11px; word-break: break-all;">—</div>
-      </div>
-
-      <div class="card">
-        <h2>Screenshot</h2>
-        <div class="row">
-          <label class="field" style="min-width: 200px;">
-            Area
-            <select id="chart-area">
-              <option value="chart" selected>chart</option>
-              <option value="full">full (viewport)</option>
-              <option value="sidebar">sidebar</option>
-              <option value="pine_editor">pine_editor</option>
-              <option value="right_toolbar">right_toolbar</option>
-              <option value="account_manager">account_manager</option>
-            </select>
-          </label>
-          <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <button class="primary" id="chart-shoot">Capture</button>
+        <div class="card-head">
+          <h2>All positions</h2>
+          <div class="card-head__actions">
+            <button class="danger icon-btn" id="pos-flatten" disabled title="Flatten closes every open position">Flatten</button>
+            <button class="icon-btn" id="pos-refresh">Refresh</button>
           </div>
         </div>
-        <div id="chart-shot">
-          <div class="screenshot-placeholder">No screenshot yet.</div>
+        <div id="positions-body">
+          <div class="empty">Click refresh to load.</div>
         </div>
       </div>
     </section>
@@ -144,14 +255,12 @@
           <label class="field" style="min-width: 140px;">
             Provider
             <select id="act-provider">
-              <option value="ollama" selected>ollama (local)</option>
-              <option value="mlx">mlx (local)</option>
-              <option value="anthropic">anthropic (needs API key)</option>
+              <option value="ollama" selected>ollama (local, $0)</option>
             </select>
           </label>
           <label class="field" style="min-width: 180px;">
             Model <span class="muted" style="font-size: 10px;">(leave empty for default)</span>
-            <input type="text" id="act-model" placeholder="sonnet / opus / haiku / qwen3.5:27b" />
+            <input type="text" id="act-model" placeholder="gemma4:31b / qwen3.5:27b" />
           </label>
           <label class="field" style="min-width: 100px;">
             Max steps
@@ -182,57 +291,18 @@
       </div>
     </section>
 
-    <!-- TRADE TAB ----------------------------------------------------- -->
-    <section class="tab hidden" id="tab-trade">
-      <h1>Trade</h1>
-      <div class="subtitle">Place paper-trading market orders via the inline quick-trade bar. Allowlist + max-qty guards enforced by the automation layer.</div>
-
-      <div class="card">
-        <h2>Place order</h2>
-        <div class="row" style="align-items: flex-end;">
-          <label class="field" style="min-width: 200px;">
-            <span>Symbol <span class="muted" style="font-size: 10px;">(from watchlist)</span></span>
-            <div class="combo">
-              <input type="text" id="trade-symbol" value="NVDA" placeholder="NVDA, SPY…" autocomplete="off" />
-              <button class="combo-arrow" type="button" data-combo-target="trade-symbol" aria-label="Open symbol list">▾</button>
-              <div class="combo-menu hidden" data-combo-for="trade-symbol"></div>
-            </div>
-          </label>
-          <label class="field" style="min-width: 100px;">
-            Qty
-            <input type="number" id="trade-qty" value="1" min="1" max="100" />
-          </label>
-          <div class="checkbox-row" style="padding-bottom: 8px;">
-            <label><input type="checkbox" id="trade-dry-run" /> dry-run</label>
-          </div>
-          <div style="display: flex; gap: 8px; margin-left: auto;">
-            <button class="buy" id="trade-buy">BUY market</button>
-            <button class="sell" id="trade-sell">SELL market</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>
-          Positions
-          <button id="pos-refresh" style="float: right; padding: 3px 10px; font-size: 11px;">Refresh</button>
-        </h2>
-        <div id="positions-body">
-          <div class="empty">Click refresh to load.</div>
-        </div>
-      </div>
-    </section>
-
     <!-- WATCHLIST TAB ------------------------------------------------- -->
     <section class="tab hidden" id="tab-watchlist">
       <h1>Watchlist</h1>
       <div class="subtitle">Manage the symbols in your active TradingView watchlist.</div>
 
       <div class="card">
-        <h2>
-          <span id="watchlist-current">Active list: —</span>
-          <button id="watchlist-refresh" style="float: right; padding: 3px 10px; font-size: 11px;">Refresh</button>
-        </h2>
+        <div class="card-head">
+          <h2 id="watchlist-current">Active list: —</h2>
+          <div class="card-head__actions">
+            <button class="icon-btn" id="watchlist-refresh">Refresh</button>
+          </div>
+        </div>
         <div id="watchlist-body">
           <div class="empty">Click refresh to load.</div>
         </div>
@@ -302,10 +372,12 @@
       </div>
 
       <div class="card">
-        <h2>
-          Alert list
-          <button id="alerts-refresh" style="float: right; padding: 3px 10px; font-size: 11px;">Refresh</button>
-        </h2>
+        <div class="card-head">
+          <h2>Alert list</h2>
+          <div class="card-head__actions">
+            <button class="icon-btn" id="alerts-refresh">Refresh</button>
+          </div>
+        </div>
         <div id="alerts-body">
           <div class="empty">Click refresh to load.</div>
         </div>
@@ -318,13 +390,13 @@
       <div class="subtitle">Live tail of today's audit log (<span class="mono">tradingview/audit/YYYY-MM-DD.jsonl</span>).</div>
 
       <div class="card">
-        <h2>
-          Log
-          <span style="float: right; font-size: 11px; text-transform: none; letter-spacing: 0;">
+        <div class="card-head">
+          <h2>Log</h2>
+          <div class="card-head__actions">
             <label><input type="checkbox" id="audit-autorefresh" checked /> auto-refresh (2s)</label>
-            <input type="text" id="audit-filter" placeholder="event prefix filter, e.g. chart." style="max-width: 180px; margin-left: 10px; padding: 3px 8px; font-size: 12px;" />
-          </span>
-        </h2>
+            <input type="text" id="audit-filter" placeholder="event prefix filter, e.g. chart." />
+          </div>
+        </div>
         <div class="audit-log" id="audit-log">
           <div class="empty">Loading…</div>
         </div>

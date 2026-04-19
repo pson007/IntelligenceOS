@@ -9,21 +9,19 @@ until `done`.
 This is Phase 1 of VISION_LOOP_PLAN.md — the "see → understand →
 choose → act → verify" cycle with an LLM in the inner loop.
 
-Three providers are supported (Ollama is the default — local, $0/call):
+Two providers are supported (Ollama is the default — local, $0/call):
   - ollama     — any Ollama model via its OpenAI-compatible endpoint
                  (default http://localhost:11434/v1, no API key). DEFAULT.
-  - mlx        — any mlx_lm.server / mlx-vlm server (OpenAI-compatible,
-                 default http://localhost:8080/v1, no key)
   - anthropic  — Claude via the Anthropic SDK (needs ANTHROPIC_API_KEY).
                  Opt-in; only used when `--provider anthropic` is passed.
 
-Vision is on by default for `anthropic`; off by default for local
-providers (they're usually text-only unless you pulled a VL model).
-Pass `--vision` to force-include the screenshot on local providers.
+Vision is on by default for `anthropic`; off by default for ollama
+(text-only unless you pulled a VL model).
+Pass `--vision` to force-include the screenshot on ollama.
 
 CLI:
     tv act "open the watchlist sidebar"                          # ollama default
-    tv act "add SPY" --provider ollama --model qwen2.5vl:7b --vision
+    tv act "add SPY" --provider ollama --model gemma4:31b --vision
     tv act "open alerts" --provider anthropic --model sonnet     # opt-in paid
     tv act "<goal>" --max-steps 15 --max-cost-usd 1.00
     tv act "<goal>" --read-only         # refuses mutating actions
@@ -56,7 +54,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Per-million-token (input, output) USD pricing for Anthropic. Approximate
 # — enough to drive the budget guard, not invoice-accurate. Local
-# providers (ollama, mlx) are zero-cost; the budget guard is a no-op.
+# provider (ollama) is zero-cost; the budget guard is a no-op.
 _PRICING: dict[str, tuple[float, float]] = {
     "claude-sonnet-4-6": (3.0, 15.0),
     "claude-opus-4-7":   (15.0, 75.0),
@@ -86,13 +84,6 @@ _PROVIDER_DEFAULTS: dict[str, dict] = {
         "has_cost": False,
         "vision_default": False,
         "api_key_env": None,  # ollama ignores the key
-    },
-    "mlx": {
-        "base_url": "http://localhost:8080/v1",
-        "default_model": None,  # user must specify — no stable default
-        "has_cost": False,
-        "vision_default": False,
-        "api_key_env": None,
     },
 }
 
@@ -194,7 +185,7 @@ def _usage_dict_anthropic(usage: Any) -> dict:
 
 def _usage_dict_openai(usage: Any) -> dict:
     """OpenAI-compat usage shape: prompt_tokens / completion_tokens /
-    total_tokens. Some local servers (ollama/mlx) omit usage entirely —
+    total_tokens. Ollama sometimes omits usage entirely —
     we tolerate that with None defaults."""
     if usage is None:
         return {}
@@ -350,8 +341,8 @@ async def _call_anthropic(client: Any, *, model: str, system: str,
 async def _call_openai_compat(client: Any, *, model: str, system: str,
                               text: str, image_path: str | None
                               ) -> tuple[str, dict, float]:
-    """One turn against an OpenAI-compatible endpoint (Ollama, MLX, LM
-    Studio, vLLM, etc.). Returns (text, usage_dict, cost_usd=0)."""
+    """One turn against an OpenAI-compatible endpoint (Ollama). Returns
+    (text, usage_dict, cost_usd=0)."""
     content: list[dict] = [{"type": "text", "text": text}]
     if image_path:
         content.append(_openai_image_block(image_path))
@@ -477,7 +468,7 @@ def _build_llm_caller(provider: str, model: str, base_url: str | None):
         client = AsyncAnthropic(api_key=api_key)
         return partial(_call_anthropic, client, model=model)
 
-    # ollama / mlx — OpenAI-compatible path.
+    # ollama — OpenAI-compatible path.
     from openai import AsyncOpenAI
     client = AsyncOpenAI(
         base_url=base_url or _PROVIDER_DEFAULTS[provider]["base_url"],
@@ -502,12 +493,12 @@ async def act(
 ) -> dict:
     """Run the vision-loop driver until `done`, `fail`, or a budget cap.
 
-    `provider` picks the LLM backend: anthropic / ollama / mlx.
+    `provider` picks the LLM backend: anthropic / ollama.
     `model` defaults to the provider's default. `base_url` overrides
-    the default endpoint for ollama/mlx. `text_only` skips the
+    the default endpoint for ollama. `text_only` skips the
     screenshot entirely; `vision` forces it on (wins over provider
-    default). Anthropic defaults to vision-on; local providers default
-    to text-only."""
+    default). Anthropic defaults to vision-on; ollama defaults to
+    text-only."""
     if provider not in _PROVIDER_DEFAULTS:
         raise ValueError(
             f"unknown provider {provider!r}; known: {sorted(_PROVIDER_DEFAULTS)}"
@@ -705,22 +696,20 @@ def _main() -> None:
     p.add_argument("--provider", choices=sorted(_PROVIDER_DEFAULTS),
                    default=_DEFAULT_PROVIDER,
                    help=f"LLM backend (default: {_DEFAULT_PROVIDER}). "
-                        f"ollama/mlx use the OpenAI-compat path.")
+                        f"ollama uses the OpenAI-compat path.")
     p.add_argument("--model", default=None,
                    help="Model name. Default depends on provider: "
-                        "anthropic=claude-sonnet-4-6, ollama=qwen3.5:27b, "
-                        "mlx=(required). Anthropic aliases: "
-                        f"{', '.join(sorted(_MODEL_ALIASES))}")
+                        "anthropic=claude-sonnet-4-6, ollama=qwen3.5:27b. "
+                        f"Anthropic aliases: {', '.join(sorted(_MODEL_ALIASES))}")
     p.add_argument("--base-url", default=None,
-                   help="Override provider base URL (ollama/mlx). "
-                        "Defaults: ollama=http://localhost:11434/v1, "
-                        "mlx=http://localhost:8080/v1")
+                   help="Override provider base URL (ollama). "
+                        "Default: ollama=http://localhost:11434/v1")
     p.add_argument("--text-only", action="store_true",
                    help="Skip the screenshot entirely — send only the "
-                        "inventory + history. Default on for local providers.")
+                        "inventory + history. Default on for ollama.")
     p.add_argument("--vision", action="store_true",
                    help="Force-include the screenshot (use when a local "
-                        "VL model is loaded, e.g. qwen2.5vl:7b). Mutually "
+                        "VL model is loaded, e.g. gemma4:31b). Mutually "
                         "exclusive with --text-only.")
     p.add_argument("--max-steps", type=int, default=_MAX_STEPS_DEFAULT,
                    help=f"Abort after this many steps (default: {_MAX_STEPS_DEFAULT})")

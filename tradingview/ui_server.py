@@ -40,7 +40,9 @@ load_dotenv()
 
 from tv_automation import alerts as alerts_mod
 from tv_automation import act as act_mod
+from tv_automation import analyze_mtf as analyze_mtf_mod
 from tv_automation import chart as chart_mod
+from tv_automation import orders as orders_mod
 from tv_automation import trading as trading_mod
 from tv_automation import watchlist as watchlist_mod
 from tv_automation.lib import audit
@@ -103,6 +105,12 @@ _ACT_TASK_TTL_S = 60 * 60  # 1 hour
 # A second /api/act call while this is set returns 409 Conflict.
 _active_act_task: str | None = None
 
+# Multi-timeframe analysis tasks share the same CDP session as act, so
+# the two must be mutually exclusive. Separate registry (different result
+# shape), shared conflict check via _cdp_busy().
+_analyze_tasks: dict[str, dict] = {}
+_active_analyze_task: str | None = None
+
 
 def _prune_act_tasks() -> None:
     """Remove finished tasks older than TTL. Called opportunistically on
@@ -113,6 +121,28 @@ def _prune_act_tasks() -> None:
              if t.get("finished_at") and t["finished_at"] < cutoff]
     for tid in stale:
         _act_tasks.pop(tid, None)
+    stale_a = [tid for tid, t in _analyze_tasks.items()
+               if t.get("finished_at") and t["finished_at"] < cutoff]
+    for tid in stale_a:
+        _analyze_tasks.pop(tid, None)
+
+
+def _cdp_busy() -> dict | None:
+    """Return info about any in-flight act or analyze run, or None if idle.
+    Both hold the single CDP session exclusively; used to 409 concurrent
+    starts regardless of which endpoint the conflicting run came from."""
+    if _active_act_task and _active_act_task in _act_tasks:
+        t = _act_tasks[_active_act_task]
+        if t.get("state") == "running":
+            return {"kind": "act", "task_id": _active_act_task,
+                    "started_at": t.get("started_at"), "goal": t.get("goal")}
+    if _active_analyze_task and _active_analyze_task in _analyze_tasks:
+        t = _analyze_tasks[_active_analyze_task]
+        if t.get("state") == "running":
+            return {"kind": "analyze", "task_id": _active_analyze_task,
+                    "started_at": t.get("started_at"),
+                    "symbol": t.get("symbol")}
+    return None
 
 
 # Screenshot cleanup — chart.screenshot() writes PNGs to ~/Desktop/TradingView/
@@ -277,17 +307,14 @@ async def act_start(payload: dict) -> dict:
     if not goal:
         raise HTTPException(400, "goal required")
 
-    # Refuse if another act run is in flight. They share a single
-    # Playwright session; concurrent runs produce interleaved clicks.
-    if _active_act_task and _active_act_task in _act_tasks:
-        other = _act_tasks[_active_act_task]
-        if other.get("state") == "running":
-            raise HTTPException(409, {
-                "detail": "another act run is in progress",
-                "active_task_id": _active_act_task,
-                "active_goal": other.get("goal"),
-                "started_at": other.get("started_at"),
-            })
+    # Refuse if another CDP-holding run is in flight (act OR analyze).
+    # They share a single Playwright session; concurrent runs interleave
+    # clicks / chart navigations unpredictably.
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
 
     _prune_act_tasks()
     task_id = secrets.token_hex(6)
@@ -350,18 +377,154 @@ async def act_status(task_id: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Multi-timeframe analysis — captures 9 TFs, one vision-LLM call, returns a
+# consolidated trade recommendation + per-TF breakdown + saved Pine script.
+# Task-based (like /api/act) because a full run is ~60–120s end-to-end.
+# ---------------------------------------------------------------------------
+
+@app.post("/api/analyze/multi-tf")
+async def analyze_start(payload: dict) -> dict:
+    global _active_analyze_task
+    p = payload or {}
+    symbol = (p.get("symbol") or "").strip()
+    if not symbol:
+        raise HTTPException(400, "symbol required")
+    tfs = p.get("timeframes") or None  # None → module default (all 9)
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+
+    # Same contextvar pattern as /api/act — the background runner inherits
+    # the request_id so all audit events from analyze_mtf.* carry it and
+    # the UI can stream progress via /api/audit/tail?request_id=...
+    audit.current_request_id.set(request_id)
+
+    _analyze_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "symbol": symbol,
+        "timeframes": tfs,
+    }
+
+    async def runner():
+        global _active_analyze_task
+        try:
+            result = await analyze_mtf_mod.analyze_multi_tf(
+                symbol,
+                timeframes=tfs,
+                # Local-first default — no API key or per-call cost. Pass
+                # provider="anthropic" explicitly to opt into Claude.
+                provider=p.get("provider", "ollama"),
+                model=p.get("model") or None,
+                base_url=p.get("base_url") or None,
+            )
+            _analyze_tasks[task_id]["state"] = "done"
+            _analyze_tasks[task_id]["result"] = result
+        except Exception as e:
+            _analyze_tasks[task_id]["state"] = "failed"
+            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _analyze_tasks[task_id]["finished_at"] = time.time()
+            if _active_analyze_task == task_id:
+                _active_analyze_task = None
+
+    _active_analyze_task = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.get("/api/analyze/{task_id}")
+async def analyze_status(task_id: str) -> dict:
+    t = _analyze_tasks.get(task_id)
+    if not t:
+        raise HTTPException(404, "unknown task_id")
+    return {k: v for k, v in t.items() if not callable(v)}
+
+
+@app.post("/api/analyze/apply-pine")
+async def analyze_apply_pine(payload: dict) -> dict:
+    """Apply a previously-generated pine script to the TradingView chart.
+
+    Reuses the existing apply_pine.py orchestration — paste into Pine
+    Editor → save → add to chart. Path must be inside the repo's
+    `pine/generated/` directory, never an arbitrary file.
+    """
+    p = payload or {}
+    path = (p.get("path") or "").strip()
+    if not path:
+        raise HTTPException(400, "path required")
+
+    pine_root = Path(__file__).parent / "pine" / "generated"
+    try:
+        resolved = Path(path).resolve()
+    except Exception:
+        raise HTTPException(400, "invalid path")
+    if not str(resolved).startswith(str(pine_root.resolve())):
+        raise HTTPException(403, "path outside allowed pine root")
+    if not resolved.exists():
+        raise HTTPException(404, "pine file not found")
+
+    # Import lazily — apply_pine module lives at top-level, not under
+    # tv_automation, and does Playwright UI work we'd rather only pay
+    # for when actually applying.
+    import subprocess
+    apply_script = Path(__file__).parent / "apply_pine.py"
+    venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
+    python_exe = str(venv_python) if venv_python.exists() else "python"
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            python_exe, str(apply_script), str(resolved),
+            cwd=str(Path(__file__).parent),
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        ok = proc.returncode == 0
+        return {
+            "ok": ok, "path": str(resolved),
+            "returncode": proc.returncode,
+            "stdout": stdout.decode("utf-8", errors="replace")[-2000:],
+            "stderr": stderr.decode("utf-8", errors="replace")[-2000:],
+        }
+    except asyncio.TimeoutError:
+        return {"ok": False, "path": str(resolved), "error": "apply_pine timeout (120s)"}
+    except Exception as e:
+        raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
+
+
+# ---------------------------------------------------------------------------
 # Trade
 # ---------------------------------------------------------------------------
 
 @app.post("/api/trade/order")
 async def trade_order(payload: dict) -> dict:
-    symbol = (payload or {}).get("symbol", "").strip()
-    side = (payload or {}).get("side", "").strip().lower()
-    qty = int((payload or {}).get("qty", 0))
-    dry_run = bool((payload or {}).get("dry_run", False))
+    p = payload or {}
+    symbol = p.get("symbol", "").strip()
+    side = p.get("side", "").strip().lower()
+    qty = int(p.get("qty", 0))
+    dry_run = bool(p.get("dry_run", False))
+    # Optional bracket prices — when either is supplied we route through the
+    # order panel (orders.place_market) which supports TP/SL. Plain markets
+    # stay on the faster inline quick-trade bar (trading.place_order).
+    tp = p.get("take_profit")
+    sl = p.get("stop_loss")
     if not symbol or side not in ("buy", "sell") or qty <= 0:
         raise HTTPException(400, "symbol, side=buy|sell, qty>0 required")
     try:
+        if tp is not None or sl is not None:
+            return await orders_mod.place_market(
+                symbol=symbol, side=side, qty=qty,
+                take_profit=float(tp) if tp is not None else None,
+                stop_loss=float(sl) if sl is not None else None,
+                dry_run=dry_run,
+            )
         return await trading_mod.place_order(
             symbol=symbol, side=side, qty=qty, dry_run=dry_run,
         )
@@ -379,6 +542,40 @@ async def trade_close(payload: dict) -> dict:
         return await trading_mod.close_position(symbol, dry_run=dry_run)
     except Exception as e:
         raise HTTPException(500, f"{type(e).__name__}: {e}")
+
+
+@app.post("/api/trade/flatten")
+async def trade_flatten(payload: dict | None = None) -> dict:
+    """Close every open position, one at a time.
+
+    Sequential (not parallel) because close_position() drives the TV DOM
+    and only one CDP session can interact with the paper-trading panel at
+    a time. Errors on a single symbol don't abort the sweep — they're
+    collected into `failed` so the UI can surface partial progress.
+    """
+    dry_run = bool((payload or {}).get("dry_run", False))
+    try:
+        pos = await trading_mod.positions()
+    except Exception as e:
+        raise HTTPException(500, f"positions: {type(e).__name__}: {e}")
+    symbols: list[str] = []
+    for row in (pos.get("positions") or []):
+        s = (row.get("symbol") or "").replace("\n", " ").strip()
+        if s:
+            symbols.append(s)
+    closed: list[dict] = []
+    failed: list[dict] = []
+    for sym in symbols:
+        try:
+            r = await trading_mod.close_position(sym, dry_run=dry_run)
+            closed.append({"symbol": sym, "result": r})
+        except Exception as e:
+            failed.append({"symbol": sym, "error": f"{type(e).__name__}: {e}"})
+    return {
+        "total": len(symbols), "closed": len(closed), "failed": len(failed),
+        "symbols": symbols, "results": closed, "errors": failed,
+        "dry_run": dry_run,
+    }
 
 
 @app.get("/api/trade/positions")

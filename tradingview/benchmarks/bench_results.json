@@ -1,0 +1,216 @@
+[
+  {
+    "model": "gemma4:26b",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 70.81,
+        "input_tokens": 3047,
+        "output_tokens": 3913,
+        "score": 8,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Skip",
+        "confidence": 10,
+        "details": {
+          "signal": "Skip",
+          "confidence": 10,
+          "entry": null,
+          "stop": null,
+          "tp": null,
+          "rationale_len": 291,
+          "per_tf_count": 9,
+          "pine_len": 1126,
+          "pine_real": true,
+          "pine_marker_groups": 4
+        }
+      },
+      {
+        "run": 2,
+        "elapsed_s": 140.68,
+        "input_tokens": 3047,
+        "output_tokens": 7986,
+        "score": 8,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Skip",
+        "confidence": 30,
+        "details": {
+          "signal": "Skip",
+          "confidence": 30,
+          "entry": null,
+          "stop": null,
+          "tp": null,
+          "rationale_len": 256,
+          "per_tf_count": 9,
+          "pine_len": 1847,
+          "pine_real": true,
+          "pine_marker_groups": 4
+        }
+      }
+    ]
+  },
+  {
+    "model": "gemma4:31b",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 284.7,
+        "input_tokens": 3047,
+        "output_tokens": 3215,
+        "score": 8,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Skip",
+        "confidence": 0,
+        "details": {
+          "signal": "Skip",
+          "confidence": 0,
+          "entry": null,
+          "stop": null,
+          "tp": null,
+          "rationale_len": 222,
+          "per_tf_count": 9,
+          "pine_len": 1875,
+          "pine_real": true,
+          "pine_marker_groups": 4
+        }
+      },
+      {
+        "run": 2,
+        "elapsed_s": 199.12,
+        "input_tokens": 3047,
+        "output_tokens": 2328,
+        "score": 8,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Skip",
+        "confidence": 0,
+        "details": {
+          "signal": "Skip",
+          "confidence": 0,
+          "entry": null,
+          "stop": null,
+          "tp": null,
+          "rationale_len": 269,
+          "per_tf_count": 9,
+          "pine_len": 2393,
+          "pine_real": true,
+          "pine_marker_groups": 4
+        }
+      }
+    ]
+  },
+  {
+    "model": "qwen3-vl:8b",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 397.55,
+        "input_tokens": 18490,
+        "output_tokens": 11338,
+        "score": 8,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Skip",
+        "confidence": 10,
+        "details": {
+          "signal": "Skip",
+          "confidence": 10,
+          "entry": null,
+          "stop": null,
+          "tp": null,
+          "rationale_len": 230,
+          "per_tf_count": 9,
+          "pine_len": 1625,
+          "pine_real": true,
+          "pine_marker_groups": 4
+        }
+      },
+      {
+        "run": 2,
+        "elapsed_s": 197.89,
+        "input_tokens": 18490,
+        "output_tokens": 7647,
+        "score": 8,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Skip",
+        "confidence": 80,
+        "details": {
+          "signal": "Skip",
+          "confidence": 80,
+          "entry": null,
+          "stop": null,
+          "tp": null,
+          "rationale_len": 313,
+          "per_tf_count": 9,
+          "pine_len": 687,
+          "pine_real": true,
+          "pine_marker_groups": 5
+        }
+      }
+    ]
+  },
+  {
+    "model": "qwen2.5vl:7b",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 191.12,
+        "input_tokens": 23905,
+        "output_tokens": 701,
+        "score": 7,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Short",
+        "confidence": 75,
+        "details": {
+          "signal": "Short",
+          "confidence": 75,
+          "entry": 2352.88,
+          "stop": 2355.88,
+          "tp": 2345.88,
+          "rationale_len": 248,
+          "per_tf_count": 9,
+          "pine_len": 389,
+          "pine_real": false,
+          "pine_marker_groups": 1,
+          "pine_warning": "echo-of-prompt suspected (newline=False, marker_groups=1/5 \u2014 need \u22653)"
+        }
+      },
+      {
+        "run": 2,
+        "elapsed_s": 33.72,
+        "input_tokens": 23905,
+        "output_tokens": 707,
+        "score": 7,
+        "max_score": 8,
+        "json_ok": true,
+        "json_error": null,
+        "signal": "Skip",
+        "confidence": 50,
+        "details": {
+          "signal": "Skip",
+          "confidence": 50,
+          "entry": null,
+          "stop": null,
+          "tp": null,
+          "rationale_len": 144,
+          "per_tf_count": 9,
+          "pine_len": 389,
+          "pine_real": false,
+          "pine_marker_groups": 1,
+          "pine_warning": "echo-of-prompt suspected (newline=False, marker_groups=1/5 \u2014 need \u22653)"
+        }
+      }
+    ]
+  }
+]
