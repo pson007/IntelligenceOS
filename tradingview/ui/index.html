@@ -92,7 +92,7 @@
           </div>
           <div class="trade-bar__actions">
             <button class="primary" id="trade-capture">Capture</button>
-            <button id="trade-analyze" title="Multi-timeframe analysis across all 9 TFs">Analyze</button>
+            <button id="trade-analyze" title="Analyze the chart at the selected timeframe">Analyze</button>
           </div>
         </div>
         <div class="chart-meta-strip" id="trade-chart-meta">
@@ -103,10 +103,9 @@
         </div>
       </div>
 
-      <!-- Multi-timeframe analysis — captures chart screenshots across
-           all 9 timeframes, feeds them to a vision LLM in one turn, and
-           returns a consolidated Long/Short/Skip signal with entry/stop/tp
-           plus a per-TF breakdown and a pine overlay script. -->
+      <!-- Single-timeframe analysis — captures the chart at the selected
+           timeframe, feeds it to a vision LLM, and returns a Long/Short/Skip
+           signal with entry/stop/tp plus a pine overlay script. -->
       <div class="card hidden" id="analyze-card">
         <div class="card-head">
           <h2>Analysis</h2>
@@ -123,27 +122,14 @@
           </div>
         </div>
 
-        <!-- Progress strip: phase label + running elapsed, a 9-TF checklist
-             that flips pending → active → done as captures complete, then a
-             progress bar + a muted detail line for current-step context.
-             Runs for ~60-120s total, so this has to communicate "still
-             moving, here's where we are" at a glance. -->
+        <!-- Progress strip: phase label + running elapsed, a progress bar
+             (0% capturing → 50% captured → indeterminate during LLM → 100%
+             done) + a muted detail line for current-step context. -->
         <div class="analyze-progress hidden" id="analyze-progress">
           <div class="analyze-progress-head">
             <span class="spinner"></span>
             <span id="analyze-progress-phase">Starting…</span>
             <span class="analyze-progress-elapsed" id="analyze-progress-elapsed">0s</span>
-          </div>
-          <div class="analyze-progress-tfs" id="analyze-progress-tfs">
-            <span class="tf-status" data-tf="1m">1m</span>
-            <span class="tf-status" data-tf="5m">5m</span>
-            <span class="tf-status" data-tf="15m">15m</span>
-            <span class="tf-status" data-tf="30m">30m</span>
-            <span class="tf-status" data-tf="1h">1h</span>
-            <span class="tf-status" data-tf="4h">4h</span>
-            <span class="tf-status" data-tf="1D">1D</span>
-            <span class="tf-status" data-tf="1W">1W</span>
-            <span class="tf-status" data-tf="1M">1M</span>
           </div>
           <div class="analyze-progress-bar"><div id="analyze-progress-fill"></div></div>
           <div class="analyze-progress-detail mono muted" id="analyze-progress-detail"></div>
@@ -166,6 +152,7 @@
               <div><span class="label">Entry</span><span class="value mono" id="analyze-entry">—</span></div>
               <div><span class="label">Stop</span><span class="value mono" id="analyze-stop">—</span></div>
               <div><span class="label">TP</span><span class="value mono" id="analyze-tp">—</span></div>
+              <div><span class="label">R:R</span><span class="value mono" id="analyze-rr">—</span></div>
             </div>
             <div class="analyze-actions">
               <button class="primary" id="analyze-apply-order" title="Copy Entry / Stop / TP into the Quick Order bar">Apply to order</button>
@@ -174,12 +161,6 @@
           </div>
 
           <div class="analyze-rationale" id="analyze-rationale"></div>
-
-          <!-- Per-TF breakdown table -->
-          <details class="analyze-pertf" id="analyze-pertf" open>
-            <summary>Per-timeframe breakdown</summary>
-            <div class="analyze-pertf-body" id="analyze-pertf-body"></div>
-          </details>
 
           <div class="analyze-meta mono muted" id="analyze-meta"></div>
         </div>

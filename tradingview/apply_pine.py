@@ -11,6 +11,8 @@ Flow:
   5. Focus the editor, select-all, paste, save (⌘S) — TV asks for a
      script name on first save; we pre-fill the indicator's title.
   6. Click "Add to chart".
+  7. Collapse the Pine Editor panel so the trader sees the full chart
+     with the new indicator applied.
 
 Usage:
     .venv/bin/python apply_pine.py                       # latest .pine in pine/generated/
@@ -59,6 +61,22 @@ SEL_SAVE_BUTTON_CANDIDATES = [
 # (TV uses `title` for the tooltip on this icon-only button).
 SEL_ADD_TO_CHART_CANDIDATES = [
     'button[title="Add to chart"]',
+]
+
+# Closing the Pine Editor has two different affordances depending on
+# where the user has it docked — discovered live on 2026-04-19:
+#
+#   1. Side-docked (right panel): an X button with aria-label="Close"
+#      sits in the panel's outer chrome, *above* .pine-editor-monaco.
+#      It's not a descendant of .tv-script-widget, so we have to walk
+#      up the DOM from Monaco until we hit an ancestor that contains it.
+#   2. Bottom-docked (widget bar): a chevron with aria-label="Collapse
+#      panel" and data-name="toggle-visibility-button" collapses the
+#      whole widget bar. The label flips to "Expand panel" when closed,
+#      which is our built-in guard against re-expanding.
+SEL_COLLAPSE_PANEL_CANDIDATES = [
+    'button[aria-label="Collapse panel"]',
+    '[data-name="toggle-visibility-button"][aria-label="Collapse panel"]',
 ]
 
 
@@ -194,6 +212,53 @@ async def save_and_add_to_chart(page: Page, script_name: str | None) -> None:
         )
 
 
+async def close_pine_editor(page: Page) -> None:
+    """Close / collapse the Pine Editor panel so the chart gets its full
+    visible area back. Handles both side-docked (right panel, X button)
+    and bottom-docked (widget bar, Collapse chevron) layouts. Best-effort
+    — the indicator is already on chart by this point, so a failure here
+    is cosmetic, not functional."""
+    try:
+        if not await page.locator(SEL_MONACO).first.is_visible():
+            return  # already closed / never opened
+    except Exception:
+        return
+
+    # Side-docked layout: walk up from Monaco to the first ancestor that
+    # contains a button[aria-label="Close"]. The close button lives in
+    # the panel's outer chrome, not inside .tv-script-widget, so a
+    # straight `locator(..., has=...)` against a fixed container won't
+    # find it — hence the JS walk.
+    closed_via_x = await page.evaluate("""() => {
+      const m = document.querySelector('.pine-editor-monaco');
+      if (!m) return false;
+      let node = m;
+      while (node && node !== document.body) {
+        const btn = node.querySelector('button[aria-label="Close"]');
+        if (btn) { btn.click(); return true; }
+        node = node.parentElement;
+      }
+      return false;
+    }""")
+    if closed_via_x:
+        try:
+            await page.wait_for_selector(SEL_MONACO, state="hidden", timeout=3000)
+            print("Closed Pine Editor panel (side-dock).", flush=True)
+            return
+        except PWTimeoutError:
+            pass  # click landed but Monaco didn't go hidden — try fallback
+
+    # Bottom-docked layout: Collapse-panel chevron in the widget bar.
+    try:
+        btn = await first_visible(page, SEL_COLLAPSE_PANEL_CANDIDATES, timeout=2000)
+        await btn.click()
+        await page.wait_for_selector(SEL_MONACO, state="hidden", timeout=3000)
+        print("Collapsed Pine Editor panel (bottom-dock).", flush=True)
+    except PWTimeoutError:
+        print("NOTE: could not auto-close Pine Editor panel "
+              "(indicator is still applied to the chart).", flush=True)
+
+
 # -------------------------------------------------------------------------
 # Main
 # -------------------------------------------------------------------------
@@ -249,6 +314,9 @@ async def main() -> int:
 
         print("Saving + adding to chart...", flush=True)
         await save_and_add_to_chart(page, name)
+
+        print("Collapsing Pine Editor panel...", flush=True)
+        await close_pine_editor(page)
 
         await page.screenshot(path="/tmp/tv_pine_applied.png")
         print("Screenshot → /tmp/tv_pine_applied.png", flush=True)

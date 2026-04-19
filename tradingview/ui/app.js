@@ -350,20 +350,37 @@ async function populateSymbolCombos(preFetched) {
 // ----------------------------------------------------------------------
 let _currentChartSymbol = '';
 
+// TradingView's URL-param interval format → our friendly pill format.
+// Kept in sync with _TIMEFRAME_MAP in tv_automation/chart.py. Without
+// this reverse map the pill bar drifts from the actual chart on every
+// intraday TF (pill data-tf="5m" vs meta.interval="5"), which in turn
+// makes Analyze run on whatever pill stayed stuck-active (usually 1D).
+const TV_INTERVAL_TO_PILL = {
+  '1': '1m', '2': '2m', '3': '3m', '5': '5m', '15': '15m', '30': '30m',
+  '60': '1h', '120': '2h', '240': '4h',
+  'D': '1D', 'W': '1W', 'M': '1M',
+};
+
+function intervalToPill(iv) {
+  if (!iv) return null;
+  return TV_INTERVAL_TO_PILL[iv] || iv;  // pass-through if already friendly
+}
+
 function renderChartMeta(meta) {
   const fullSym = meta.symbol || '';
   const idx = fullSym.indexOf(':');
   const sym = idx < 0 ? fullSym : fullSym.slice(idx + 1);
   const exch = idx < 0 ? '' : fullSym.slice(0, idx);
+  const pillTf = intervalToPill(meta.interval);
   const parts = [];
   parts.push(`<span class="sym">${escapeHtml(sym || '—')}</span>`);
   if (exch) parts.push(`<span class="sep">·</span><span>${escapeHtml(exch)}</span>`);
-  parts.push(`<span class="sep">·</span><span>${escapeHtml(meta.interval || '—')}</span>`);
+  parts.push(`<span class="sep">·</span><span>${escapeHtml(pillTf || meta.interval || '—')}</span>`);
   if (meta.title) parts.push(`<span class="sep">·</span><span>${escapeHtml(meta.title)}</span>`);
   $('trade-chart-meta').innerHTML = parts.join('');
-  if (meta.interval) {
+  if (pillTf) {
     document.querySelectorAll('#trade-tf-bar .tf-pill').forEach(p => {
-      p.classList.toggle('active', p.dataset.tf === meta.interval);
+      p.classList.toggle('active', p.dataset.tf === pillTf);
     });
   }
   _currentChartSymbol = fullSym || _currentChartSymbol;
@@ -489,32 +506,16 @@ document.querySelectorAll('#trade-tf-bar .tf-pill').forEach(pill => {
 });
 
 // ----------------------------------------------------------------------
-// Multi-timeframe analysis
+// Single-timeframe analysis
 //
-// Captures 9 timeframes (~45-90s), feeds them to a vision LLM in one
-// turn, then renders a consolidated Long/Short/Skip signal + per-TF
-// breakdown + saved pine script. Task-based: POST returns a task_id,
-// we poll /api/analyze/{task_id} every 1.5s while listening to the
-// audit stream for per-TF progress.
+// Captures the chart at the selected timeframe, sends one vision-LLM
+// turn, then renders a Long/Short/Skip signal + saved pine script.
+// Task-based: POST returns a task_id, we poll /api/analyze/{task_id}
+// every 1.5s while listening to the audit stream for capture/LLM phases.
 // ----------------------------------------------------------------------
-let analyzeCurrent = null;  // {task_id, request_id, pollTimer, total, done}
+let analyzeCurrent = null;  // {task_id, request_id, pollTimer}
 let _analyzeStartAt = 0;
 let _analyzeElapsedTimer = null;
-
-// Set a timeframe-pill's state (pending / active / done). Cheap class toggle
-// off a data-tf selector so we don't rebuild the DOM on every poll tick.
-function setTFStatus(tf, status) {
-  const el = document.querySelector(`.tf-status[data-tf="${tf}"]`);
-  if (!el) return;
-  el.classList.remove('active', 'done');
-  if (status) el.classList.add(status);
-}
-
-function resetTFStatuses() {
-  document.querySelectorAll('#analyze-progress-tfs .tf-status').forEach(el => {
-    el.classList.remove('active', 'done');
-  });
-}
 
 function startElapsedTicker() {
   _analyzeStartAt = Date.now();
@@ -590,10 +591,38 @@ function renderAnalysisResult(r) {
   $('analyze-confidence-val').textContent = `${conf}%`;
   $('analyze-confidence-fill').style.width = `${conf}%`;
 
-  const fmt = v => (v === null || v === undefined || v === '') ? '—' : String(v);
+  // Thousand-separator commas on numeric values. Non-numeric → em-dash.
+  // Up to 2 decimals so tick-sized instruments (ES 0.25, MNQ 0.25) read
+  // correctly while clean integer levels like 26836 stay integer.
+  const fmt = v => {
+    if (v === null || v === undefined || v === '') return '—';
+    const n = Number(v);
+    if (!Number.isFinite(n)) return String(v);
+    return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  };
   $('analyze-entry').textContent = fmt(r.entry);
   $('analyze-stop').textContent = fmt(r.stop);
   $('analyze-tp').textContent = fmt(r.tp);
+
+  // Risk/Reward ratio — (reward / risk) given the consolidated side.
+  // Only meaningful when all three levels are numeric AND signal is a
+  // direction (Long/Short). Skip signals or missing levels → hide.
+  const e = Number(r.entry), s = Number(r.stop), t = Number(r.tp);
+  const rrEl = $('analyze-rr');
+  if (rrEl) {
+    rrEl.className = 'value mono';
+    if (sigCls === 'long' && Number.isFinite(e) && Number.isFinite(s) && Number.isFinite(t) && e > s) {
+      const rr = (t - e) / (e - s);
+      rrEl.textContent = `${rr.toFixed(2)}:1`;
+      rrEl.classList.add(rr >= 2 ? 'rr-good' : rr >= 1 ? 'rr-ok' : 'rr-bad');
+    } else if (sigCls === 'short' && Number.isFinite(e) && Number.isFinite(s) && Number.isFinite(t) && s > e) {
+      const rr = (e - t) / (s - e);
+      rrEl.textContent = `${rr.toFixed(2)}:1`;
+      rrEl.classList.add(rr >= 2 ? 'rr-good' : rr >= 1 ? 'rr-ok' : 'rr-bad');
+    } else {
+      rrEl.textContent = '—';
+    }
+  }
 
   // Apply-to-order: pre-populate Quick Order bracket fields + pre-select
   // side based on the consolidated signal. Skip disables the button so
@@ -634,33 +663,9 @@ function renderAnalysisResult(r) {
 
   $('analyze-rationale').textContent = r.rationale || '';
 
-  // Per-TF table.
-  const rows = (r.per_tf || []).map(row => {
-    const s = String(row.signal || 'Skip');
-    const cls = s.toLowerCase();
-    return `<tr>
-      <td class="tf">${escapeHtml(row.tf || '—')}</td>
-      <td class="sig"><span class="pill ${cls}">${escapeHtml(s)}</span></td>
-      <td class="conf">${Math.max(0, Math.min(100, +row.confidence || 0))}%</td>
-      <td class="num">${escapeHtml(String(row.entry ?? '—'))}</td>
-      <td class="num">${escapeHtml(String(row.stop ?? '—'))}</td>
-      <td class="num">${escapeHtml(String(row.tp ?? '—'))}</td>
-      <td>${escapeHtml(row.rationale || '')}</td>
-    </tr>`;
-  }).join('');
-  $('analyze-pertf-body').innerHTML = rows
-    ? `<table>
-         <thead><tr>
-           <th>TF</th><th>Signal</th><th class="num">Conf</th>
-           <th class="num">Entry</th><th class="num">Stop</th><th class="num">TP</th>
-           <th>Rationale</th>
-         </tr></thead>
-         <tbody>${rows}</tbody>
-       </table>`
-    : '<div class="empty">No per-TF breakdown returned.</div>';
-
-  // Meta strip — provider/model/cost/elapsed for transparency
+  // Meta strip — provider/model/timeframe/cost/elapsed for transparency
   const meta = [];
+  if (r.timeframe) meta.push(`<span>tf: ${escapeHtml(r.timeframe)}</span>`);
   if (r.provider) meta.push(`<span>provider: ${escapeHtml(r.provider)}</span>`);
   if (r.model) meta.push(`<span>model: ${escapeHtml(r.model)}</span>`);
   // Only show cost when it's actually nonzero — local providers return 0
@@ -686,33 +691,30 @@ async function pollAnalyzeStatus() {
       api(`/api/audit/tail?n=100&request_id=${request_id}`),
     ]);
 
-    // Stream per-TF progress from the audit log. analyze_mtf emits:
-    //   analyze.start       { symbol, timeframes[] }
-    //   analyze.tf_start    { tf, index, total }
-    //   analyze.tf_captured { tf, index, total, path }
-    //   analyze.llm_request { provider, model, n_images }
+    // Stream progress from the audit log. analyze_mtf emits:
+    //   analyze.start         { symbol, timeframe }
+    //   analyze.capture_start { symbol, tf }
+    //   analyze.captured      { symbol, tf, path }
+    //   analyze.llm_request   { provider, model }
     //   analyze.done | analyze.fail | analyze.parse_fail
     //
-    // We derive three UI pieces per tick:
-    //   1. Per-TF pill states — active (currently capturing) vs done
-    //   2. Top-line phase label + supporting detail
-    //   3. Bar: 0..100 during capture, indeterminate shimmer during LLM
+    // Three phases: capturing (0%) → captured (50%) → LLM (shimmer) → done.
     const events = auditTail.entries || [];
-    let tfTotal = analyzeCurrent.total || 9;
     let phase = 'starting', detail = '', pct = 0;
-    let llmStarted = false, activeTF = null, symbol = '', model = '';
-    const doneTFs = new Set();
+    let capturing = false, captured = false, llmStarted = false;
+    let symbol = '', tf = '', model = '';
 
     for (const e of events) {
       const ev = e.event || '';
       if (ev === 'analyze.start') {
-        tfTotal = (e.timeframes || []).length || tfTotal;
         symbol = e.symbol || symbol;
-      } else if (ev === 'analyze.tf_start') {
-        activeTF = e.tf || activeTF;
-      } else if (ev === 'analyze.tf_captured') {
-        if (e.tf) doneTFs.add(e.tf);
-        if (activeTF === e.tf) activeTF = null;
+        tf = e.timeframe || tf;
+      } else if (ev === 'analyze.capture_start') {
+        capturing = true;
+        tf = e.tf || tf;
+      } else if (ev === 'analyze.captured') {
+        captured = true;
+        capturing = false;
       } else if (ev === 'analyze.llm_request') {
         llmStarted = true;
         model = e.model || model;
@@ -723,36 +725,23 @@ async function pollAnalyzeStatus() {
       }
     }
 
-    // Reflect derived state into the DOM. Reset first so events arriving
-    // out of order or after a re-run don't leave stale classes behind.
-    resetTFStatuses();
-    doneTFs.forEach(tf => setTFStatus(tf, 'done'));
-    if (activeTF && !doneTFs.has(activeTF)) setTFStatus(activeTF, 'active');
-
     if (llmStarted) {
-      phase = `Analyzing ${tfTotal} charts`;
-      detail = model ? `${model} integrating timeframes…` : 'model integrating timeframes…';
+      phase = `Analyzing ${tf || 'chart'}`;
+      detail = model ? `${model} reading the chart…` : 'model reading the chart…';
       pct = null;  // indeterminate shimmer
-    } else if (doneTFs.size === tfTotal && tfTotal > 0) {
-      phase = 'All timeframes captured';
+    } else if (captured) {
+      phase = 'Chart captured';
       detail = 'handing off to model…';
-      pct = 100;
-    } else if (activeTF) {
-      phase = `Capturing ${activeTF} (${doneTFs.size + 1} of ${tfTotal})`;
+      pct = 50;
+    } else if (capturing) {
+      phase = `Capturing ${tf || 'chart'}`;
       detail = symbol ? `symbol: ${symbol}` : '';
-      pct = (doneTFs.size / tfTotal) * 100;
-    } else if (doneTFs.size > 0) {
-      phase = `Captured ${doneTFs.size} of ${tfTotal}`;
-      detail = 'next timeframe…';
-      pct = (doneTFs.size / tfTotal) * 100;
+      pct = 10;
     } else if (symbol) {
-      phase = `Starting — ${symbol}`;
-      detail = `preparing ${tfTotal} timeframe captures…`;
+      phase = `Starting — ${symbol} ${tf || ''}`.trim();
+      detail = 'preparing capture…';
       pct = 0;
     }
-
-    analyzeCurrent.total = tfTotal;
-    analyzeCurrent.done = doneTFs.size;
 
     if (status.state === 'running') {
       setAnalyzeProgress(phase, detail, pct);
@@ -780,26 +769,27 @@ function stopAnalyzePoll() {
 async function startAnalysis() {
   const symbol = $('trade-symbol').value.trim();
   if (!symbol) return toast('symbol required', 'err');
+  const tf = document.querySelector('#trade-tf-bar .tf-pill.active')?.dataset.tf || null;
 
   const btn = $('trade-analyze');
   setBusy(btn, true);
 
   // Reveal the card and reset transient UI: hide any prior result, clear
-  // any prior error, wipe TF pills back to pending, start the elapsed
-  // ticker. Only these pieces change per run — the provider/model
-  // selectors in the card head persist intentionally.
+  // any prior error, start the elapsed ticker. Only these pieces change
+  // per run — the provider/model selectors in the card head persist
+  // intentionally.
   $('analyze-card').classList.remove('hidden');
   $('analyze-result').classList.add('hidden');
   clearAnalyzeError();
-  resetTFStatuses();
   startElapsedTicker();
-  setAnalyzeProgress(`Starting — ${symbol}`, 'preparing 9 timeframe captures…', 0);
+  setAnalyzeProgress(`Starting — ${symbol} ${tf || ''}`.trim(), 'preparing capture…', 0);
 
   try {
-    const r = await api('/api/analyze/multi-tf', {
+    const r = await api('/api/analyze', {
       method: 'POST',
       body: {
         symbol,
+        timeframe: tf,
         provider: $('analyze-provider').value,
         model: $('analyze-model').value.trim() || null,
       },
@@ -809,10 +799,10 @@ async function startAnalysis() {
       task_id: r.task_id,
       request_id: r.request_id,
       pollTimer: setInterval(pollAnalyzeStatus, 1500),
-      total: 9, done: 0,
     };
     pollAnalyzeStatus();
   } catch (e) {
+    hideAnalyzeProgress();
     showAnalyzeError(e.message);
     toast(`analyze: ${e.message}`, 'err');
     setBusy(btn, false, 'Analyze');

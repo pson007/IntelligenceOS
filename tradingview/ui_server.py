@@ -377,19 +377,19 @@ async def act_status(task_id: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Multi-timeframe analysis — captures 9 TFs, one vision-LLM call, returns a
-# consolidated trade recommendation + per-TF breakdown + saved Pine script.
-# Task-based (like /api/act) because a full run is ~60–120s end-to-end.
+# Single-timeframe analysis — captures the chart at the user-selected TF,
+# runs one vision-LLM call, returns a trade recommendation + saved Pine
+# script. Task-based (like /api/act) because a full run is ~30-60s.
 # ---------------------------------------------------------------------------
 
-@app.post("/api/analyze/multi-tf")
+@app.post("/api/analyze")
 async def analyze_start(payload: dict) -> dict:
     global _active_analyze_task
     p = payload or {}
     symbol = (p.get("symbol") or "").strip()
     if not symbol:
         raise HTTPException(400, "symbol required")
-    tfs = p.get("timeframes") or None  # None → module default (all 9)
+    timeframe = (p.get("timeframe") or "").strip() or None
 
     busy = _cdp_busy()
     if busy:
@@ -411,21 +411,22 @@ async def analyze_start(payload: dict) -> dict:
         "request_id": request_id,
         "started_at": time.time(),
         "symbol": symbol,
-        "timeframes": tfs,
+        "timeframe": timeframe,
     }
 
     async def runner():
         global _active_analyze_task
         try:
-            result = await analyze_mtf_mod.analyze_multi_tf(
-                symbol,
-                timeframes=tfs,
+            kwargs = {
                 # Local-first default — no API key or per-call cost. Pass
                 # provider="anthropic" explicitly to opt into Claude.
-                provider=p.get("provider", "ollama"),
-                model=p.get("model") or None,
-                base_url=p.get("base_url") or None,
-            )
+                "provider": p.get("provider", "ollama"),
+                "model": p.get("model") or None,
+                "base_url": p.get("base_url") or None,
+            }
+            if timeframe:
+                kwargs["timeframe"] = timeframe
+            result = await analyze_mtf_mod.analyze_chart(symbol, **kwargs)
             _analyze_tasks[task_id]["state"] = "done"
             _analyze_tasks[task_id]["result"] = result
         except Exception as e:
