@@ -567,6 +567,27 @@ function clearAnalyzeError() {
   $('analyze-error').textContent = '';
 }
 
+// When *any* analyze run is in flight, disable BOTH Analyze and Deep so
+// the user can't kick off a second (which the server would 409 anyway,
+// but a disabled button communicates intent more clearly than an error
+// toast). The `primary` arg picks which button visually spins; the
+// other is just greyed. Re-enable both in one call when the run ends.
+function setAnalyzeBusy(primary) {
+  const a = $('trade-analyze'), d = $('trade-analyze-deep');
+  if (primary === 'analyze') {
+    setBusy(a, true);
+    d.disabled = true;
+  } else if (primary === 'deep') {
+    setBusy(d, true);
+    a.disabled = true;
+  } else {  // done
+    setBusy(a, false, 'Analyze');
+    setBusy(d, false, 'Deep');
+    a.disabled = false;
+    d.disabled = false;
+  }
+}
+
 function dismissAnalysis() {
   stopAnalyzePoll();
   $('analyze-card').classList.add('hidden');
@@ -663,9 +684,58 @@ function renderAnalysisResult(r) {
 
   $('analyze-rationale').textContent = r.rationale || '';
 
+  // Deep-mode extras: optimal-TF badge above the verdict + per-TF
+  // breakdown table below the rationale. Both hidden for single-TF.
+  const isDeep = r.mode === 'deep' || Array.isArray(r.per_tf) && r.per_tf.length > 0;
+  const optimalBox = $('analyze-optimal-tf');
+  if (isDeep && r.optimal_tf) {
+    $('analyze-optimal-tf-val').textContent = String(r.optimal_tf);
+    optimalBox.classList.remove('hidden');
+    // Auto-switch the chart to the optimal TF so "Apply to order" and
+    // "Apply pine to chart" hit the same timeframe the analysis is
+    // calibrated for. Only navigate if the optimal TF is one we have
+    // a pill for (guards against LLM hallucinating a TF outside the
+    // 9-set) and it's different from the current chart TF.
+    const pills = Array.from(document.querySelectorAll('#trade-tf-bar .tf-pill'));
+    const match = pills.find(p => p.dataset.tf === r.optimal_tf);
+    const currentActive = document.querySelector('#trade-tf-bar .tf-pill.active')?.dataset.tf;
+    if (match && match.dataset.tf !== currentActive) {
+      const sym = $('trade-symbol').value.trim() || r.symbol;
+      commitSymbol(sym, match.dataset.tf);
+      toast(`chart → ${match.dataset.tf} (optimal)`, 'ok');
+    }
+  } else {
+    optimalBox.classList.add('hidden');
+  }
+
+  const pertfWrap = $('analyze-pertf');
+  if (isDeep && Array.isArray(r.per_tf) && r.per_tf.length) {
+    const rows = r.per_tf.map(row => {
+      const s = String(row.signal || 'Skip');
+      const cls = s.toLowerCase();
+      const isOpt = row.tf === r.optimal_tf;
+      return `<tr class="${isOpt ? 'optimal' : ''}">
+        <td class="tf">${escapeHtml(row.tf || '—')}${isOpt ? ' ★' : ''}</td>
+        <td class="sig"><span class="pill ${cls}">${escapeHtml(s)}</span></td>
+        <td class="conf">${Math.max(0, Math.min(100, +row.confidence || 0))}%</td>
+        <td>${escapeHtml(row.rationale || '')}</td>
+      </tr>`;
+    }).join('');
+    $('analyze-pertf-body').innerHTML = `<table>
+      <thead><tr>
+        <th>TF</th><th>Signal</th><th class="num">Conf</th><th>Rationale</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+    pertfWrap.classList.remove('hidden');
+  } else {
+    pertfWrap.classList.add('hidden');
+  }
+
   // Meta strip — provider/model/timeframe/cost/elapsed for transparency
   const meta = [];
   if (r.timeframe) meta.push(`<span>tf: ${escapeHtml(r.timeframe)}</span>`);
+  if (isDeep && r.optimal_tf) meta.push(`<span>optimal: ${escapeHtml(r.optimal_tf)}</span>`);
   if (r.provider) meta.push(`<span>provider: ${escapeHtml(r.provider)}</span>`);
   if (r.model) meta.push(`<span>model: ${escapeHtml(r.model)}</span>`);
   // Only show cost when it's actually nonzero — local providers return 0
@@ -692,29 +762,36 @@ async function pollAnalyzeStatus() {
     ]);
 
     // Stream progress from the audit log. analyze_mtf emits:
-    //   analyze.start         { symbol, timeframe }
-    //   analyze.capture_start { symbol, tf }
-    //   analyze.captured      { symbol, tf, path }
+    //   analyze.start         { symbol, timeframe?, timeframes?[], mode? }
+    //   analyze.capture_start { symbol, tf, index?, total? }
+    //   analyze.captured      { symbol, tf, path, index?, total? }
     //   analyze.llm_request   { provider, model }
     //   analyze.done | analyze.fail | analyze.parse_fail
     //
-    // Three phases: capturing (0%) → captured (50%) → LLM (shimmer) → done.
+    // Progress shape varies by mode:
+    //   single-TF: 1 capture → LLM → done. Phases map cleanly to %.
+    //   deep: N=9 captures → LLM → done. We count done vs total so the
+    //     bar moves smoothly through the ~45s capture phase instead of
+    //     sitting at 10% until the last capture lands.
     const events = auditTail.entries || [];
     let phase = 'starting', detail = '', pct = 0;
-    let capturing = false, captured = false, llmStarted = false;
-    let symbol = '', tf = '', model = '';
+    let llmStarted = false, activeTf = null;
+    let symbol = '', tf = '', model = '', total = 1;
+    const doneTfs = new Set();
 
     for (const e of events) {
       const ev = e.event || '';
       if (ev === 'analyze.start') {
         symbol = e.symbol || symbol;
         tf = e.timeframe || tf;
+        if (Array.isArray(e.timeframes)) total = e.timeframes.length;
       } else if (ev === 'analyze.capture_start') {
-        capturing = true;
-        tf = e.tf || tf;
+        activeTf = e.tf || activeTf;
+        if (e.total) total = e.total;
       } else if (ev === 'analyze.captured') {
-        captured = true;
-        capturing = false;
+        if (e.tf) doneTfs.add(e.tf);
+        if (activeTf === e.tf) activeTf = null;
+        if (e.total) total = e.total;
       } else if (ev === 'analyze.llm_request') {
         llmStarted = true;
         model = e.model || model;
@@ -725,21 +802,30 @@ async function pollAnalyzeStatus() {
       }
     }
 
+    const done = doneTfs.size;
+    const isDeep = total > 1;
+
     if (llmStarted) {
-      phase = `Analyzing ${tf || 'chart'}`;
-      detail = model ? `${model} reading the chart…` : 'model reading the chart…';
+      phase = isDeep ? `Integrating ${total} timeframes` : `Analyzing ${tf || 'chart'}`;
+      detail = model ? `${model} reading chart${isDeep ? 's' : ''}…` : 'model reading chart…';
       pct = null;  // indeterminate shimmer
-    } else if (captured) {
-      phase = 'Chart captured';
+    } else if (done >= total && total > 0) {
+      phase = isDeep ? `All ${total} timeframes captured` : 'Chart captured';
       detail = 'handing off to model…';
       pct = 50;
-    } else if (capturing) {
-      phase = `Capturing ${tf || 'chart'}`;
+    } else if (activeTf) {
+      phase = isDeep
+        ? `Capturing ${activeTf} (${done + 1} of ${total})`
+        : `Capturing ${activeTf}`;
       detail = symbol ? `symbol: ${symbol}` : '';
-      pct = 10;
+      pct = isDeep ? Math.round((done / total) * 50) : 10;
+    } else if (done > 0 && isDeep) {
+      phase = `Captured ${done} of ${total}`;
+      detail = 'next timeframe…';
+      pct = Math.round((done / total) * 50);
     } else if (symbol) {
       phase = `Starting — ${symbol} ${tf || ''}`.trim();
-      detail = 'preparing capture…';
+      detail = isDeep ? `preparing ${total} captures…` : 'preparing capture…';
       pct = 0;
     }
 
@@ -748,11 +834,11 @@ async function pollAnalyzeStatus() {
     } else if (status.state === 'done') {
       stopAnalyzePoll();
       renderAnalysisResult(status.result || {});
-      setBusy($('trade-analyze'), false, 'Analyze');
+      setAnalyzeBusy(null);
     } else if (status.state === 'failed') {
       stopAnalyzePoll();
       showAnalyzeError(`${status.error || 'analysis failed'}`);
-      setBusy($('trade-analyze'), false, 'Analyze');
+      setAnalyzeBusy(null);
     }
   } catch (e) {
     // transient — keep polling
@@ -771,8 +857,7 @@ async function startAnalysis() {
   if (!symbol) return toast('symbol required', 'err');
   const tf = document.querySelector('#trade-tf-bar .tf-pill.active')?.dataset.tf || null;
 
-  const btn = $('trade-analyze');
-  setBusy(btn, true);
+  setAnalyzeBusy('analyze');
 
   // Reveal the card and reset transient UI: hide any prior result, clear
   // any prior error, start the elapsed ticker. Only these pieces change
@@ -791,7 +876,7 @@ async function startAnalysis() {
         symbol,
         timeframe: tf,
         provider: $('analyze-provider').value,
-        model: $('analyze-model').value.trim() || null,
+        model: _analyzeModelValue(),
       },
     });
     stopAnalyzePoll();
@@ -805,12 +890,71 @@ async function startAnalysis() {
     hideAnalyzeProgress();
     showAnalyzeError(e.message);
     toast(`analyze: ${e.message}`, 'err');
-    setBusy(btn, false, 'Analyze');
+    setAnalyzeBusy(null);
   }
   // Note: on success we leave the spinner spinning — pollAnalyzeStatus will
   // re-enable the button when status.state flips to done/failed.
 }
 $('trade-analyze').addEventListener('click', startAnalysis);
+
+// Deep analysis — captures all 9 timeframes and asks the LLM to pick
+// the optimal one, then produces a backtestable Pine strategy. Same
+// task shape as single-TF, so we reuse pollAnalyzeStatus unchanged —
+// the only differences are the endpoint and a note in the phase label.
+async function startDeepAnalysis() {
+  const symbol = $('trade-symbol').value.trim();
+  if (!symbol) return toast('symbol required', 'err');
+
+  setAnalyzeBusy('deep');
+
+  $('analyze-card').classList.remove('hidden');
+  $('analyze-result').classList.add('hidden');
+  clearAnalyzeError();
+  startElapsedTicker();
+  setAnalyzeProgress(`Deep analyzing — ${symbol}`, 'preparing 9 captures…', 0);
+
+  try {
+    const r = await api('/api/analyze/deep', {
+      method: 'POST',
+      body: {
+        symbol,
+        provider: $('analyze-provider').value,
+        model: _analyzeModelValue(),
+      },
+    });
+    stopAnalyzePoll();
+    analyzeCurrent = {
+      task_id: r.task_id,
+      request_id: r.request_id,
+      mode: 'deep',
+      pollTimer: setInterval(pollAnalyzeStatus, 1500),
+    };
+    pollAnalyzeStatus();
+  } catch (e) {
+    hideAnalyzeProgress();
+    showAnalyzeError(e.message);
+    toast(`deep analyze: ${e.message}`, 'err');
+    setAnalyzeBusy(null);
+  }
+}
+$('trade-analyze-deep').addEventListener('click', startDeepAnalysis);
+
+// Provider → model control swap. Ollama has an open-ended model zoo
+// (text input) while claude.ai exposes a fixed three-tier dropdown. We
+// show exactly one at a time and read from the visible one at submit.
+function _syncAnalyzeModelControl() {
+  const isClaudeWeb = $('analyze-provider').value === 'claude_web';
+  $('analyze-model').classList.toggle('hidden', isClaudeWeb);
+  $('analyze-model-claude').classList.toggle('hidden', !isClaudeWeb);
+}
+function _analyzeModelValue() {
+  if ($('analyze-provider').value === 'claude_web') {
+    return $('analyze-model-claude').value || null;
+  }
+  return $('analyze-model').value.trim() || null;
+}
+$('analyze-provider').addEventListener('change', _syncAnalyzeModelControl);
+_syncAnalyzeModelControl();  // initialize on page load
 
 // ----------------------------------------------------------------------
 // Act tab

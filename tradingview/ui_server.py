@@ -442,6 +442,65 @@ async def analyze_start(payload: dict) -> dict:
     return {"task_id": task_id, "request_id": request_id}
 
 
+# Deep multi-TF analysis — captures 9 TFs and produces an integrated
+# signal + optimal-TF recommendation + Pine strategy script. Same task
+# shape as /api/analyze so the UI can use the same polling loop; the
+# result dict carries `mode: "deep"` + `optimal_tf` + `per_tf[]` for
+# renderer-side branching.
+@app.post("/api/analyze/deep")
+async def analyze_deep_start(payload: dict) -> dict:
+    global _active_analyze_task
+    p = payload or {}
+    symbol = (p.get("symbol") or "").strip()
+    if not symbol:
+        raise HTTPException(400, "symbol required")
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _analyze_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "symbol": symbol,
+        "mode": "deep",
+    }
+
+    async def runner():
+        global _active_analyze_task
+        try:
+            result = await analyze_mtf_mod.analyze_deep(
+                symbol,
+                # claude_web default — bench confirmed it beats Gemma on
+                # multi-image reasoning and the 9-image upload is a single
+                # message against the subscription.
+                provider=p.get("provider", "claude_web"),
+                model=p.get("model") or None,
+                base_url=p.get("base_url") or None,
+            )
+            _analyze_tasks[task_id]["state"] = "done"
+            _analyze_tasks[task_id]["result"] = result
+        except Exception as e:
+            _analyze_tasks[task_id]["state"] = "failed"
+            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _analyze_tasks[task_id]["finished_at"] = time.time()
+            if _active_analyze_task == task_id:
+                _active_analyze_task = None
+
+    _active_analyze_task = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
 @app.get("/api/analyze/{task_id}")
 async def analyze_status(task_id: str) -> dict:
     t = _analyze_tasks.get(task_id)

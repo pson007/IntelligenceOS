@@ -462,6 +462,28 @@
   }
   .trade-bar__actions { margin-left: auto; display: flex; gap: var(--s-2); }
 
+  /* Analyze provider + model — small inline cluster that sits in the
+     trade-bar between the TF pills and the Capture/Analyze buttons.
+     Muted labels + compact controls so it reads as "config for the
+     Analyze button" without competing with the primary actions. */
+  .analyze-config {
+    display: flex; gap: var(--s-2); align-items: flex-end;
+    flex: 0 0 auto;
+  }
+  .analyze-config__field {
+    display: flex; flex-direction: column; gap: 2px;
+    font-size: var(--fs-xs);
+  }
+  .analyze-config__field > span {
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.5px; font-weight: 500;
+  }
+  .analyze-config__field > select,
+  .analyze-config__field > input {
+    padding: 4px 8px; font-size: var(--fs-sm);
+    min-width: 0; max-width: 200px;
+  }
+
   /* Timeframe segmented control — pills replace the old <select>.
      Day traders flip timeframes constantly; one-click switching with
      a persistent visual of the current interval is the whole point. */
@@ -693,6 +715,75 @@
     color: var(--text);
   }
 
+  /* Optimal-TF badge for deep analysis — a prominent strip above the
+     verdict that declares "trade THIS timeframe." Bordered, gently
+     accented, big TF text on the right. Reads at a glance so the
+     trader knows which chart to pull up before reading levels. */
+  .analyze-optimal-tf {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--s-2) var(--s-3);
+    margin-bottom: var(--s-3);
+    background: rgba(88, 166, 255, 0.08);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    border-radius: 6px;
+  }
+  .analyze-optimal-tf .label {
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+    font-size: var(--fs-xs); font-weight: 600;
+  }
+  .analyze-optimal-tf .value {
+    font-family: var(--mono); font-size: var(--fs-lg);
+    color: var(--accent); font-weight: 700;
+  }
+
+  /* Per-TF breakdown for deep mode. Compact, mono numerics. The row
+     matching optimal_tf gets a subtle accent so it's clear which
+     timeframe the integrated signal came from. */
+  .analyze-pertf { margin-top: var(--s-2); }
+  .analyze-pertf > summary {
+    cursor: pointer; color: var(--muted);
+    font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.5px;
+    font-weight: 600; padding: var(--s-2) 0;
+    list-style: none;
+  }
+  .analyze-pertf > summary::marker,
+  .analyze-pertf > summary::-webkit-details-marker { display: none; }
+  .analyze-pertf > summary::before {
+    content: '▸'; display: inline-block; width: 14px;
+    transition: transform 0.15s;
+  }
+  .analyze-pertf[open] > summary::before { transform: rotate(90deg); }
+  .analyze-pertf-body { padding-top: var(--s-2); }
+  .analyze-pertf-body table {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .analyze-pertf-body th, .analyze-pertf-body td {
+    text-align: left; padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .analyze-pertf-body th {
+    color: var(--muted); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px; font-size: var(--fs-xs);
+  }
+  .analyze-pertf-body td.num { font-family: var(--mono); text-align: right; }
+  .analyze-pertf-body td.tf {
+    font-family: var(--mono); font-weight: 600; color: var(--text);
+  }
+  .analyze-pertf-body td.conf { font-family: var(--mono); color: var(--muted); }
+  .analyze-pertf-body tr.optimal {
+    background: rgba(88, 166, 255, 0.06);
+  }
+  .analyze-pertf-body tr.optimal td.tf { color: var(--accent); }
+  .analyze-pertf-body td.sig .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: var(--fs-xs); font-weight: 600;
+    font-family: var(--sans); text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .analyze-pertf-body .pill.long  { background: rgba(63,185,80,0.15); color: var(--green); }
+  .analyze-pertf-body .pill.short { background: rgba(248,81,73,0.15); color: var(--red); }
+  .analyze-pertf-body .pill.skip  { background: var(--bg-3); color: var(--muted); }
+
   .analyze-meta {
     padding-top: var(--s-2); font-size: var(--fs-xs);
     display: flex; gap: var(--s-3); flex-wrap: wrap;
@@ -882,6 +973,12 @@
     .tf-pill { flex: 0 0 auto; padding: 7px 12px; }
     .trade-bar__actions { width: 100%; }
     .trade-bar__actions button { width: 100%; }
+    /* Mobile: analyze config goes full-width on its own row so the
+       Provider/Model fields don't squash against the trade actions. */
+    .analyze-config { width: 100%; }
+    .analyze-config__field { flex: 1 1 0; }
+    .analyze-config__field > select,
+    .analyze-config__field > input { max-width: none; width: 100%; }
 
     .position-context { gap: var(--s-2) var(--s-3); }
 
@@ -897,6 +994,13 @@
     .analyze-actions { width: 100%; }
     .analyze-actions button { flex: 1; }
     #analyze-head-actions { flex-wrap: wrap; gap: var(--s-2) var(--s-3); }
+    /* Per-TF table (deep mode) — 4 columns with a free-text Rationale
+       can't fit on a phone. Scroll horizontally, preserve a reasonable
+       minimum so columns stay readable. */
+    .analyze-pertf-body { overflow-x: auto; }
+    .analyze-pertf-body table { min-width: 480px; }
+    .analyze-optimal-tf { padding: var(--s-2); }
+    .analyze-optimal-tf .value { font-size: var(--fs-md); }
   }
 
   /* Very narrow (≤ 380px, e.g. iPhone SE portrait) — one more pass */

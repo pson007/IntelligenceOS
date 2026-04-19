@@ -90,9 +90,31 @@
             <button class="tf-pill" type="button" data-tf="1W">1W</button>
             <button class="tf-pill" type="button" data-tf="1M">1M</button>
           </div>
+          <!-- Analyze provider + model — visible BEFORE clicking Analyze
+               so the trader sees exactly how the next analysis will run.
+               Hidden on narrow layouts to keep the action row tight. -->
+          <div class="analyze-config" id="analyze-config">
+            <label class="analyze-config__field">
+              <span>Provider</span>
+              <select id="analyze-provider">
+                <option value="ollama" selected>ollama (local, $0)</option>
+                <option value="claude_web">claude.ai (browser, $0)</option>
+              </select>
+            </label>
+            <label class="analyze-config__field">
+              <span>Model</span>
+              <input type="text" id="analyze-model" placeholder="auto (gemma4:31b)" />
+              <select id="analyze-model-claude" class="hidden">
+                <option value="sonnet" selected>Sonnet 4.6 (balanced)</option>
+                <option value="opus">Opus 4.7 (most capable)</option>
+                <option value="haiku">Haiku 4.5 (fastest)</option>
+              </select>
+            </label>
+          </div>
           <div class="trade-bar__actions">
             <button class="primary" id="trade-capture">Capture</button>
             <button id="trade-analyze" title="Analyze the chart at the selected timeframe">Analyze</button>
+            <button id="trade-analyze-deep" title="Capture all 9 timeframes, pick the optimal one, produce a backtestable Pine strategy">Deep</button>
           </div>
         </div>
         <div class="chart-meta-strip" id="trade-chart-meta">
@@ -110,14 +132,10 @@
         <div class="card-head">
           <h2>Analysis</h2>
           <div class="card-head__actions" id="analyze-head-actions">
-            <label>Provider
-              <select id="analyze-provider" style="padding: 3px 8px; font-size: var(--fs-sm); min-width: 0;">
-                <option value="ollama" selected>ollama (local, $0)</option>
-              </select>
-            </label>
-            <label>Model
-              <input type="text" id="analyze-model" placeholder="auto (gemma4:31b)" style="width: 180px;" />
-            </label>
+            <!-- Provider + Model controls live in the trade-bar now so
+                 they're visible BEFORE the analysis runs. Only Dismiss
+                 remains here — the rest of the config is read at click
+                 time from #analyze-provider / #analyze-model* up top. -->
             <button class="icon-btn" id="analyze-dismiss" title="Dismiss this analysis">Dismiss</button>
           </div>
         </div>
@@ -135,8 +153,14 @@
           <div class="analyze-progress-detail mono muted" id="analyze-progress-detail"></div>
         </div>
 
-        <!-- Result — consolidated signal + entry/stop/tp + actions -->
+        <!-- Result — consolidated signal + entry/stop/tp + actions.
+             For deep mode the optimal-TF badge renders above the verdict;
+             the per-TF breakdown table is appended below the rationale. -->
         <div class="analyze-result hidden" id="analyze-result">
+          <div class="analyze-optimal-tf hidden" id="analyze-optimal-tf">
+            <span class="label">Optimal timeframe</span>
+            <span class="value" id="analyze-optimal-tf-val">—</span>
+          </div>
           <div class="analyze-verdict">
             <div class="analyze-signal" id="analyze-signal-pill">—</div>
             <div class="analyze-confidence">
@@ -161,6 +185,14 @@
           </div>
 
           <div class="analyze-rationale" id="analyze-rationale"></div>
+
+          <!-- Per-TF breakdown — only rendered for deep analysis, hidden
+               for single-TF runs. Populated by renderAnalysisResult when
+               the result carries a per_tf[] array. -->
+          <details class="analyze-pertf hidden" id="analyze-pertf" open>
+            <summary>Per-timeframe breakdown</summary>
+            <div class="analyze-pertf-body" id="analyze-pertf-body"></div>
+          </details>
 
           <div class="analyze-meta mono muted" id="analyze-meta"></div>
         </div>
