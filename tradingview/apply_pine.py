@@ -59,8 +59,14 @@ SEL_SAVE_BUTTON_CANDIDATES = [
 
 # "Add to chart" button — stable via the accessible `title` attribute
 # (TV uses `title` for the tooltip on this icon-only button).
+#
+# When a script with the same title is ALREADY on the chart, TV swaps
+# the label to "Update on chart" (verified 2026-04-20). Both variants
+# do the same thing: compile the current editor contents and apply
+# to the chart. Either button present = success path.
 SEL_ADD_TO_CHART_CANDIDATES = [
     'button[title="Add to chart"]',
+    'button[title="Update on chart"]',
 ]
 
 # Closing the Pine Editor has two different affordances depending on
@@ -182,34 +188,58 @@ async def save_and_add_to_chart(page: Page, script_name: str | None) -> None:
         await page.keyboard.press("Enter")
         await page.wait_for_timeout(1500)
 
-    # Click "Add to chart". If the script is already on chart, TV hides the
-    # button (save alone re-compiles and refreshes the in-place instance).
-    # So a missing button is a success signal, not a failure.
+    # Find "Add to chart" (brand-new script) or "Update on chart" (same-
+    # titled script already on chart). Both do the same thing when
+    # enabled: compile + apply. Key nuance: after a successful save of
+    # an already-on-chart script, TV DISABLES the Update button — the
+    # chart is already in sync, so there's nothing to click. A disabled
+    # button is the clearest "already applied" signal we have; treat it
+    # as success.
     try:
-        btn = await first_visible(page, SEL_ADD_TO_CHART_CANDIDATES, timeout=3000)
+        btn = await first_visible(page, SEL_ADD_TO_CHART_CANDIDATES, timeout=6000)
+        title = await btn.get_attribute("title")
+        is_enabled = await btn.is_enabled()
+        if not is_enabled:
+            print(f"'{title}' button is disabled — script is already in "
+                  f"sync with the chart (save was sufficient).", flush=True)
+            return
         await btn.click()
         await page.wait_for_timeout(1500)
-        print("Added indicator to chart.", flush=True)
+        print(f"Clicked '{title}'. Indicator applied to chart.", flush=True)
     except PWTimeoutError:
-        # Verify by reading the chart's indicator legend — if the new
-        # indicator name appears, the save implicitly refreshed it.
-        name_re = re.escape(extract_indicator_title(await page.evaluate(
+        # Neither variant appeared. Fall back to the legend check —
+        # search the entire chart DOM for the indicator's title text
+        # rather than relying on a specific legend selector (TV's legend
+        # wrapper classes rotate across builds).
+        script_title = extract_indicator_title(await page.evaluate(
             "() => document.querySelector('.pine-editor-monaco')?.innerText || ''"
-        )) or "")
-        if name_re:
-            legend_text = await page.evaluate("""() =>
-              Array.from(document.querySelectorAll(
-                '[data-name="legend-source-title"], [class*="legendMainSourceWrapper"]'
-              )).map(e => e.innerText).join(' | ')""")
-            if name_re and re.search(name_re, legend_text, re.I):
-                print("Indicator already on chart — save refreshed it in place.",
-                      flush=True)
+        )) or ""
+        if script_title:
+            found = await page.evaluate(
+                """(title) => {
+                    const root = document.querySelector('.chart-markup-table')
+                              || document.querySelector('.layout__area--center')
+                              || document.body;
+                    return (root.innerText || '').toLowerCase()
+                            .includes(title.toLowerCase());
+                }""",
+                script_title,
+            )
+            if found:
+                print(f"Indicator '{script_title}' already on chart — "
+                      f"save refreshed it in place.", flush=True)
                 return
+        # Hard fail: the toolbar button wasn't there AND we couldn't
+        # confirm the indicator in the chart legend. Exit non-zero so
+        # the UI shows an explicit error instead of a misleading
+        # success toast.
         print(
-            "NOTE: 'Add to chart' button not found and the indicator name "
-            "was not detected in the chart legend. Check TradingView manually.",
-            flush=True,
+            "ERROR: neither 'Add to chart' nor 'Update on chart' button "
+            f"was visible, and indicator name {script_title!r} was not "
+            "detected in the chart. Check TradingView manually.",
+            flush=True, file=sys.stderr,
         )
+        sys.exit(2)
 
 
 async def close_pine_editor(page: Page) -> None:
