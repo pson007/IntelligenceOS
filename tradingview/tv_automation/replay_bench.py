@@ -175,10 +175,74 @@ def generate_samples(start: datetime, end: datetime, step: timedelta,
 
 
 # ---------------------------------------------------------------------------
-# Grading — now data-source-agnostic. Takes a pre-fetched list of bars
-# (from `bars.fetch_bars`) instead of scraping TV's DOM. See
-# REPLAY_BENCH_PLAN.md UNKNOWN #1: we picked option (c) after option
-# (a)'s legend-scrape approach proved too fragile in Replay context.
+# OHLC reader — scrapes TV's chart legend for the current replay
+# cursor's bar. The earlier version of this reader was unreliable
+# because `enter_replay` wasn't clicking "Start new" in the replay-state
+# modal — that's the flow that scrolls the chart view to the cursor.
+# With the view at the cursor, the legend IS the current bar's OHLC.
+# ---------------------------------------------------------------------------
+
+
+_LEGEND_JS = r"""() => {
+    // Class anchor: each OHLC cell is a `[class*="valueTitle"]` element
+    // whose sibling holds the numeric value. Hashed class suffixes
+    // rotate across TV builds, so we match on prefix. This beats the
+    // earlier innerText-regex approach, which conflated with the
+    // price-scale Log-toggle button's "L" text.
+    const titles = document.querySelectorAll('[class*="valueTitle"]');
+    const out = { open: null, high: null, low: null, close: null };
+    for (const title of titles) {
+        const label = (title.textContent || '').trim();
+        if (!['O', 'H', 'L', 'C'].includes(label)) continue;
+        const parent = title.parentElement;
+        if (!parent) continue;
+        let valueText = null;
+        for (const sib of parent.children) {
+            if (sib === title) continue;
+            const t = (sib.textContent || '').trim();
+            if (!t) continue;
+            if (/^[−\-+]?[\d.,]+$/.test(t.replace(/\s/g, ''))) {
+                valueText = t;
+                break;
+            }
+        }
+        if (valueText == null) continue;
+        const n = parseFloat(valueText.replace(/,/g, '').replace(/[−]/g, '-'));
+        if (isNaN(n)) continue;
+        const key = label === 'O' ? 'open' :
+                    label === 'H' ? 'high' :
+                    label === 'L' ? 'low'  : 'close';
+        if (out[key] == null) out[key] = n;
+    }
+    if (out.open === null) return null;
+    return out;
+}"""
+
+
+async def _read_current_bar_ohlc(page) -> dict | None:
+    """Read TV's OHLC legend for the current Replay-cursor bar. Assumes
+    Replay is active and the chart VIEW is at the cursor (this holds
+    when `enter_replay` used the Start new workflow and `step_forward`
+    clicks the Forward button, which re-centers the view)."""
+    # Park the mouse at the top-left corner so the crosshair doesn't
+    # override the legend with whichever bar the cursor was last over.
+    try:
+        await page.mouse.move(0, 0)
+        await page.wait_for_timeout(100)
+    except Exception:
+        pass
+    try:
+        result = await page.evaluate(_LEGEND_JS)
+    except Exception:
+        return None
+    if not result or result.get("open") is None:
+        return None
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Grading — TV-native stepping. Clicks Forward N times and reads the
+# legend after each step. Matches the manual workflow.
 # ---------------------------------------------------------------------------
 
 
@@ -191,21 +255,19 @@ def _r_multiple(entry: float, stop: float, tp: float, signal: str) -> float:
     return (reward / risk) if signal == "Long" or signal == "Short" else 0.0
 
 
-def grade_sample(bars: list["bars_mod.Bar"], result: dict, horizon: int,
-                 ) -> tuple[str, float | None, int]:
-    """First-touch grading against pre-fetched bars.
+async def grade_sample(page, result: dict, horizon: int,
+                       ) -> tuple[str, float | None, int]:
+    """Step TV's Replay forward one bar at a time, reading the legend's
+    OHLC after each step, until the first bar tags either stop or TP
+    (or `horizon` bars elapse).
 
-    `bars` must be the `horizon` bars strictly after T₀ (use
-    `bars_mod.slice_forward(all_bars, t0, horizon)` to produce this).
-
-    Outcomes:
-      'hit_tp'   — TP touched first → realized_r = +R
+    Returns (outcome, realized_r, graded_bars). Outcomes:
+      'hit_tp'   — TP touched first → realized_r = +R (reward/risk)
       'hit_stop' — stop touched first → realized_r = -1.0
-      'expired'  — neither touched within horizon → mark-to-market at
-                   the final bar's close
-      'skip'     — analyze signal was Skip → realized_r = 0.0
-      'ungraded' — not enough bars available for grading (Yahoo window
-                   edge, weekend gap, etc.)
+      'expired'  — neither touched → mark-to-market on last close
+      'skip'     — analyze signal was Skip → no trade taken
+      'ungraded' — replay went inactive mid-walk, or OHLC unreadable
+                   for too many bars in a row
     """
     signal = result.get("signal")
     if signal == "Skip":
@@ -216,36 +278,61 @@ def grade_sample(bars: list["bars_mod.Bar"], result: dict, horizon: int,
     tp = result.get("tp")
     if not all(isinstance(v, (int, float)) for v in (entry, stop, tp)):
         return "ungraded", None, 0
-    if not bars:
+
+    if not await replay.is_active(page):
+        audit.log("replay_bench.grade_skip", reason="replay_inactive")
         return "ungraded", None, 0
 
     r = _r_multiple(entry, stop, tp, signal)
-    used = min(len(bars), horizon)
+    last_close: float | None = None
+    readable = 0
+    unreadable_streak = 0
 
-    for i, bar in enumerate(bars[:horizon], 1):
+    for i in range(1, horizon + 1):
+        await replay.step_forward(page, 1)
+        ohlc = await _read_current_bar_ohlc(page)
+        if ohlc is None:
+            unreadable_streak += 1
+            audit.log("replay_bench.ohlc_none", bar=i, streak=unreadable_streak)
+            # 5 consecutive unreadable bars = TV's legend is broken for
+            # this sample; don't waste the full horizon failing to read.
+            if unreadable_streak >= 5:
+                return "ungraded", None, readable
+            continue
+        unreadable_streak = 0
+        readable += 1
+        last_close = ohlc.get("close")
+
+        # Log the first few bar reads so we can spot stale-legend bugs
+        # without drowning in 40 lines per sample.
+        if i <= 3 or i == horizon:
+            audit.log("replay_bench.ohlc_read", bar=i,
+                      o=ohlc.get("open"), h=ohlc.get("high"),
+                      l=ohlc.get("low"), c=ohlc.get("close"))
+
         if signal == "Long":
-            hit_stop = bar.low <= stop
-            hit_tp = bar.high >= tp
+            hit_stop = ohlc["low"] <= stop
+            hit_tp = ohlc["high"] >= tp
         else:  # Short
-            hit_stop = bar.high >= stop
-            hit_tp = bar.low <= tp
+            hit_stop = ohlc["high"] >= stop
+            hit_tp = ohlc["low"] <= tp
 
         # Pessimistic tie-break: if a single bar tags BOTH levels, assume
         # the stop was hit first. Real markets don't guarantee order
         # within a bar — conservative grading matches how a trader would
         # actually experience a same-bar both-touched outcome.
         if hit_stop:
-            return "hit_stop", -1.0, i
+            return "hit_stop", -1.0, readable
         if hit_tp:
-            return "hit_tp", r, i
+            return "hit_tp", r, readable
 
-    # No touch within the fetched horizon. Mark-to-market on the last
-    # bar's close.
-    last = bars[used - 1]
-    pnl = (last.close - entry) if signal == "Long" else (entry - last.close)
+    # No touch within horizon. Mark-to-market using last readable close.
+    if last_close is None:
+        return "ungraded", None, readable
+    pnl = (last_close - entry) if signal == "Long" else (entry - last_close)
     risk = abs(entry - stop)
     mtm_r = (pnl / risk) if risk else 0.0
-    return "expired", round(mtm_r, 4), used
+    return "expired", round(mtm_r, 4), readable
 
 
 # ---------------------------------------------------------------------------
@@ -304,31 +391,11 @@ async def run_bench(
               symbol=symbol, tf=tf, provider=provider, model=model,
               dry_run=dry_run, rth_only=rth_only, horizon=horizon)
 
-    # Pre-fetch all bars covering the run's window + grading horizon.
-    # Single yfinance call for the whole run — massively cheaper than
-    # per-sample fetches. Buffer the end by horizon * bar_seconds so
-    # late-window samples have enough forward bars.
-    all_bars: list[bars_mod.Bar] = []
-    if not dry_run:
-        tf_sec = _TF_SECONDS[tf]
-        end_with_buffer = end + timedelta(seconds=tf_sec * horizon + 3600)
-        try:
-            all_bars = bars_mod.fetch_bars(symbol, tf, start, end_with_buffer)
-        except Exception as e:
-            audit.log("replay_bench.bars_fetch_fail",
-                      error=f"{type(e).__name__}: {e}")
-        audit.log("replay_bench.bars_fetched",
-                  symbol=symbol, tf=tf, count=len(all_bars),
-                  first_ts=str(all_bars[0].ts) if all_bars else None,
-                  last_ts=str(all_bars[-1].ts) if all_bars else None)
-        if not all_bars:
-            audit.log("replay_bench.run_done",
-                      run_id=run_id, error="no_bars",
-                      ok=0, skip=0, fail=0, resumed=0, ungraded=0)
-            return {"run_id": run_id, "total": total, "error": "no_bars",
-                    "ok": 0, "skip": 0, "fail": 0,
-                    "resumed": 0, "ungraded": 0,
-                    "checkpoint": str(checkpoint_path(run_id))}
+    # Note: we grade via TV's native stepping (click Forward, read
+    # legend) rather than a pre-fetched bars array. This matches the
+    # user's manual workflow exactly and avoids yfinance's 60-day cap
+    # on 5m history. The `bars.py` helper is retained for future
+    # cross-checking but not used in the hot path.
 
     # Open the page and save the pre-run chart state so we can restore
     # it even if the loop crashes mid-sample.
@@ -357,7 +424,6 @@ async def run_bench(
                         page, spec, horizon=horizon,
                         provider=provider, model=model,
                         dry_run=dry_run, request_id=req_id,
-                        all_bars=all_bars,
                     )
                 except Exception as e:
                     elapsed = round(time.time() - t_start, 2)
@@ -418,10 +484,10 @@ async def run_bench(
 async def _run_one_sample(
     page, spec: SampleSpec, *, horizon: int, provider: str,
     model: str | None, dry_run: bool, request_id: str,
-    all_bars: list["bars_mod.Bar"],
 ) -> SampleResult:
-    """Single-sample body: navigate chart, activate replay, pick T₀,
-    analyze, grade against external bars, tag outcome."""
+    """Single-sample body matching the manual workflow: enter replay
+    (Start new) → pick T₀ → screenshot + analyze → log decision → step
+    forward bar-by-bar until first-touch of stop/TP → set outcome."""
     t_start = time.time()
 
     # Ensure chart is on the right symbol/tf. Cheap when already correct
@@ -443,21 +509,23 @@ async def _run_one_sample(
             elapsed_s=round(time.time() - t_start, 2), graded_bars=0,
         )
 
+    # Analyze screenshot shows historical chart at T₀ because the
+    # Start new workflow scrolled the view. `log_decision` is called
+    # inside analyze_chart with the current audit request_id.
+    # `chart._navigate` no-ops when URL already matches (added in
+    # chart.py), so Replay stays active through analyze — no re-entry
+    # needed before grading.
     result = await analyze_mtf.analyze_chart(
         spec.symbol, timeframe=spec.tf,
         provider=provider, model=model,
     )
 
-    # Grade against external bars — no more stepping through TV.
-    forward = bars_mod.slice_forward(all_bars, t0_dt, horizon)
-    outcome, realized_r, graded_bars = grade_sample(forward, result, horizon)
-
-    # `log_decision` was called inside `analyze_chart`. Tag the outcome.
+    outcome, realized_r, graded_bars = await grade_sample(page, result, horizon)
     decision_log.set_outcome(request_id, outcome, realized_r)
 
     audit.log("replay_bench.graded",
-              t0=spec.t0_iso,
-              bars_available=len(forward),
+              t0=spec.t0_iso, horizon=horizon,
+              graded_bars=graded_bars,
               outcome=outcome, realized_r=realized_r)
 
     return SampleResult(

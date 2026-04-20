@@ -110,15 +110,46 @@ async def _find_or_open_chart(ctx: BrowserContext) -> Page:
 async def _navigate(page: Page, symbol: str | None, interval: str | None) -> None:
     """Navigate the chart to symbol/interval, PRESERVING any saved-layout
     path segment in the current URL (e.g. `/chart/wqVfOr3Z/`). Without
-    this, every symbol change wipes the user's saved indicators/drawings."""
+    this, every symbol change wipes the user's saved indicators/drawings.
+
+    Skips `page.goto` when the current URL already carries the target
+    symbol + interval — a reload would otherwise exit any active Bar
+    Replay session, which breaks workflows (e.g. `replay_bench.py`)
+    that activate Replay around a screenshot."""
     if not symbol and not interval:
         return
     target = chart_url_for(page.url, symbol, interval)
+    if _url_matches_target(page.url, symbol, interval):
+        audit.log("chart.navigate.skip",
+                  reason="already_on_target",
+                  current=page.url[:120], target=target[:120])
+        return
     await page.goto(target, wait_until="domcontentloaded")
     await page.wait_for_selector("canvas", state="visible", timeout=30_000)
     # Slight buffer — quick-trade bar, indicators, legend all hydrate
     # after the canvas paints.
     await page.wait_for_timeout(1500)
+
+
+def _url_matches_target(url: str, symbol: str | None,
+                        interval: str | None) -> bool:
+    """True if `url` already carries `symbol` and `interval` as query
+    params. Case-sensitive for symbol (TV is), interval compared after
+    `resolve_timeframe` so "5m" and "5" both count as matches."""
+    from urllib.parse import parse_qs, urlparse
+    try:
+        q = parse_qs(urlparse(url).query)
+    except Exception:
+        return False
+    if symbol:
+        if q.get("symbol", [None])[0] != symbol:
+            return False
+    if interval:
+        want = resolve_timeframe(interval)
+        got = q.get("interval", [None])[0]
+        if got != want:
+            return False
+    return True
 
 
 async def _extract_metadata(page: Page) -> dict:

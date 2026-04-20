@@ -48,12 +48,28 @@ from .lib.visible_locator import any_visible, pick_visible, wait_visible
 _TOGGLE = 'button[aria-label="Bar replay"]'
 _STRIP = 'div[data-name="replay-bottom-toolbar"]'
 
-_SELECT_DATE = 'div[data-role="button"][title="Select date"]'
+# After clicking the toolbar Replay button, TV shows a modal IF it has
+# saved state from a prior replay ("Continue your last replay?"). The
+# Start new button is the workflow that jumps chart view to the picked
+# date — Continue resumes at the old cursor, which for our bench is
+# always the wrong place. So we always click Start new.
+_MODAL_START_NEW = 'button[data-qa-id="start_new-btn"]'
+_MODAL_CONTINUE = 'button[data-qa-id="ok-btn"]'
+
+# Class prefix `selectDateBar__button` is stable; the `title` attribute
+# is dropped when TV's Replay Trading panel is open, so title-based
+# selectors break in that state.
+_SELECT_DATE = ('div[data-role="button"][class*="selectDateBar__button"], '
+                'div[data-role="button"][title="Select date"]')
 _START_MODE = 'div[data-role="button"][data-qa-id="select-date-bar-mode-menu"]'
 _SPEED = 'div[data-role="button"][title="Replay speed"]'
 _INTERVAL = 'div[data-role="button"][title="Update interval"]'
 _JUMP_LIVE = 'div[data-role="button"][title="Jump to real-time chart"]'
 _EXIT = 'div[data-role="button"][title="Exit Bar Replay"]'
+_PLAY = 'div[data-role="button"][title="Play"]'
+# Forward loses its `title` when TV's Replay Trading panel is open.
+# Located via DOM walk from Play (which keeps its title) rather than
+# a CSS selector. See `_click_forward_via_js`.
 
 # TV's speed options in the menu. Text label → click target.
 SpeedLabel = Literal["0.1x", "0.3x", "0.5x", "1x", "3x", "10x"]
@@ -75,8 +91,15 @@ async def is_active(page: Page) -> bool:
 
 
 async def enter_replay(page: Page) -> None:
-    """Activate Bar Replay. No-op if already active. Waits for the
-    playback strip to appear before returning."""
+    """Activate Bar Replay via the full user workflow: toolbar toggle →
+    handle 'Continue your last replay?' modal by clicking Start new →
+    wait for strip.
+
+    Start new (vs Continue) is what makes TV auto-scroll the chart VIEW
+    to the picked date during `select_start_date`. Continue resumes the
+    prior cursor position and leaves the view at live-time, which breaks
+    the analyze screenshot (LLM sees current prices, not historical).
+    """
     if await is_active(page):
         audit.log("replay.enter.skip", reason="already_active")
         return
@@ -84,9 +107,20 @@ async def enter_replay(page: Page) -> None:
     if toggle is None:
         raise SelectorDriftError("toggle", "replay", [_TOGGLE])
     await toggle.click()
+
+    # Modal appears within ~1s if TV has saved replay state. When no
+    # state exists (fresh profile), Replay activates directly with no
+    # modal. Poll briefly for either outcome.
+    start_new = await wait_visible(page, _MODAL_START_NEW, timeout_ms=1500)
+    if start_new is not None:
+        await start_new.click()
+        audit.log("replay.enter.start_new")
+
     strip = await wait_visible(page, _STRIP, timeout_ms=5000)
     if strip is None:
         raise SelectorDriftError("strip", "replay", [_STRIP])
+    # Let the strip's inner controls hydrate before callers hit them.
+    await page.wait_for_timeout(400)
     audit.log("replay.enter")
 
 
@@ -194,39 +228,11 @@ async def select_start_date(page: Page, when: datetime) -> None:
     else:
         raise SelectorDriftError("date_dialog_lingered", "replay", [_DATE_DIALOG])
 
-    # TV needs a beat to repaint the chart at the new cursor.
-    await page.wait_for_timeout(500)
-
-    # Quirk: clicking Select in the date picker can exit Replay — TV
-    # treats the picked date as a one-shot jump rather than a cursor
-    # set. Re-activate so `step_forward` (Shift+→) steps bars, not
-    # scroll. TV preserves the picked date when re-entering.
-    if not await is_active(page):
-        toggle = await pick_visible(page, _TOGGLE)
-        if toggle is None:
-            raise SelectorDriftError("toggle_after_date", "replay", [_TOGGLE])
-        await toggle.click()
-        strip = await wait_visible(page, _STRIP, timeout_ms=5000)
-        if strip is None:
-            raise SelectorDriftError("strip_after_date", "replay", [_STRIP])
-        await page.wait_for_timeout(400)  # let strip's inner controls hydrate
-
-    # CRITICAL: TV's Replay cursor and chart view are independent.
-    # `select_start_date` sets the cursor but leaves the view wherever
-    # the user last scrolled (usually current-time). For analysis, we
-    # need the VIEW to show the cursor's bar at the right edge. Nudging
-    # with Shift+→ then Shift+← advances the cursor by 1 and back,
-    # and TV's replay engine re-centers the view on each step.
-    try:
-        await page.bring_to_front()
-        await page.keyboard.press("Shift+ArrowRight")
-        await page.wait_for_timeout(200)
-        await page.keyboard.press("Shift+ArrowLeft")
-        await page.wait_for_timeout(400)  # give TV time to redraw
-    except Exception as e:
-        audit.log("replay.view_center_fail",
-                  error=f"{type(e).__name__}: {e}")
-
+    # TV needs a beat to repaint the chart at the new cursor. When
+    # Replay was activated via the Start new workflow (see enter_replay),
+    # TV auto-scrolls the view to the picked date — no extra nudging
+    # needed.
+    await page.wait_for_timeout(800)
     audit.log("replay.select_start_date",
               when=f"{date_str} {time_str}")
 
@@ -236,45 +242,67 @@ async def select_start_date(page: Page, when: datetime) -> None:
 # ---------------------------------------------------------------------------
 
 
-async def _focus_chart(page: Page) -> None:
-    """Bring the chart tab to front so `page.keyboard.press(...)` routes
-    to Replay's hotkey handler.
-
-    Do NOT click the canvas — clicking places a crosshair which TV then
-    uses as the legend's OHLC source, overriding the replay cursor's
-    readout. `bring_to_front()` alone is enough in CDP-attach mode:
-    Playwright sends keyboard events over CDP, not through OS focus."""
-    try:
-        await page.bring_to_front()
-    except Exception:
-        pass
+_FORWARD_JS_CLICK = r"""() => {
+    // Forward is the button immediately after Play in the strip. Play's
+    // title is stable across TV UI states; Forward's is not (it drops
+    // when the Replay Trading panel is open). Walk up from Play to its
+    // containing `.controls__control` wrapper, then to the next sibling
+    // wrapper, and click its data-role=button descendant.
+    const play = document.querySelector('[data-role="button"][title="Play"]');
+    if (!play) return 'no_play';
+    let cur = play;
+    while (cur && cur.parentElement) {
+        cur = cur.parentElement;
+        if ((cur.className || '').includes && (cur.className || '').includes('controls__control')) break;
+    }
+    if (!cur) return 'no_control_wrapper';
+    const next = cur.nextElementSibling;
+    if (!next) return 'no_sibling';
+    const btn = next.querySelector('[data-role="button"]');
+    if (!btn) return 'no_btn';
+    btn.click();
+    return 'ok';
+}"""
 
 
 async def step_forward(page: Page, bars: int = 1) -> None:
-    """Advance the replay cursor by `bars` bars via Shift+→.
-    `bars` must be ≥ 0. Idempotent at bars=0."""
+    """Advance the replay cursor by `bars` bars by clicking the Forward
+    button in the playback strip. `bars` must be ≥ 0; idempotent at 0.
+
+    Clicking Forward (vs sending Shift+→) matches the manual workflow
+    and is more reliable — it advances the cursor AND re-centers the
+    chart view on the new cursor bar, so the legend readout reflects
+    the new bar's OHLC."""
     if bars < 0:
         raise ValueError("bars must be non-negative; use step_backward")
     if bars == 0:
         return
-    await _focus_chart(page)
-    for _ in range(bars):
-        await page.keyboard.press("Shift+ArrowRight")
-        # Slight pause so TV's replay engine keeps up on fast iteration.
-        await page.wait_for_timeout(50)
+    for i in range(bars):
+        result = await page.evaluate(_FORWARD_JS_CLICK)
+        if result != "ok":
+            raise SelectorDriftError(
+                f"forward_{result}", "replay", ["[title=Play]~sibling"],
+            )
+        # TV repaints the chart + legend after each step; 200ms is the
+        # minimum that keeps the legend readout reliable bar-to-bar.
+        await page.wait_for_timeout(200)
     audit.log("replay.step_forward", bars=bars)
 
 
 async def step_backward(page: Page, bars: int = 1) -> None:
-    """Retreat the replay cursor by `bars` bars via Shift+←."""
+    """Retreat the replay cursor by `bars` bars via Shift+←. TV has no
+    dedicated back button in the strip; the shortcut is our only lever."""
     if bars < 0:
         raise ValueError("bars must be non-negative; use step_forward")
     if bars == 0:
         return
-    await _focus_chart(page)
+    try:
+        await page.bring_to_front()
+    except Exception:
+        pass
     for _ in range(bars):
         await page.keyboard.press("Shift+ArrowLeft")
-        await page.wait_for_timeout(50)
+        await page.wait_for_timeout(150)
     audit.log("replay.step_backward", bars=bars)
 
 
