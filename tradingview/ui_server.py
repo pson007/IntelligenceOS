@@ -430,9 +430,13 @@ async def analyze_start(payload: dict) -> dict:
         global _active_analyze_task
         try:
             kwargs = {
-                # Local-first default — no API key or per-call cost. Pass
-                # provider="anthropic" explicitly to opt into Claude.
-                "provider": p.get("provider", "ollama"),
+                # Browser-subscription default — chatgpt.com via the
+                # attached Chrome. Same $0-per-call as the other _web
+                # providers but tends to return cleaner JSON for chart
+                # analysis. Pass provider="anthropic" explicitly for
+                # API calls, "ollama" for local, "claude_web" for the
+                # claude.ai route.
+                "provider": p.get("provider", "chatgpt_web"),
                 "model": p.get("model") or None,
                 "base_url": p.get("base_url") or None,
             }
@@ -494,10 +498,12 @@ async def analyze_deep_start(payload: dict) -> dict:
         try:
             result = await analyze_mtf_mod.analyze_deep(
                 symbol,
-                # claude_web default — bench confirmed it beats Gemma on
-                # multi-image reasoning and the 9-image upload is a single
-                # message against the subscription.
-                provider=p.get("provider", "claude_web"),
+                # chatgpt_web default — single subscription call on the
+                # attached Chrome, $0/call, matches Analyze's default so
+                # the deck doesn't flip providers between Analyze and
+                # Deep. Pass `provider="claude_web"` or `"ollama"` to
+                # override from the UI's provider dropdown.
+                provider=p.get("provider", "chatgpt_web"),
                 model=p.get("model") or None,
                 base_url=p.get("base_url") or None,
             )
