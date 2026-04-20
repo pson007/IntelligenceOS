@@ -49,6 +49,7 @@
       <button class="nav-item" data-tab="act"><span class="ico">◈</span> Act</button>
       <button class="nav-item" data-tab="watchlist"><span class="ico">☰</span> Watchlist</button>
       <button class="nav-item" data-tab="alerts"><span class="ico">⊙</span> Alerts</button>
+      <button class="nav-item" data-tab="journal"><span class="ico">◐</span> Journal</button>
       <button class="nav-item" data-tab="audit"><span class="ico">⎙</span> Audit</button>
     </nav>
     <div class="status">
@@ -65,6 +66,24 @@
       <h1>Trade</h1>
       <div class="subtitle">Chart, order entry, and positions — one view, one symbol.</div>
 
+      <!-- Session scorecard + daily risk budget. Scorecard pulls from
+           the decision log (hidden when empty); budget is a user-entered
+           limit persisted in localStorage and drives the per-trade risk
+           color scale on the Quick Order bar. -->
+      <div class="session-strip" id="session-strip">
+        <div class="session-strip__label">Today</div>
+        <div class="session-strip__cells hidden" id="session-strip-cells"></div>
+        <div class="session-strip__budget">
+          <label class="budget-field">
+            <span>Daily risk budget</span>
+            <span class="budget-input-wrap">
+              <span class="budget-input-prefix">$</span>
+              <input type="number" id="daily-risk-budget" min="0" step="50" placeholder="e.g. 500" autocomplete="off" />
+            </span>
+          </label>
+        </div>
+      </div>
+
       <!-- Deck: symbol + timeframe + capture + chart meta + screenshot.
            One symbol field drives the live TradingView chart; pick from
            the combo or press Enter to apply + auto-capture. Timeframe
@@ -80,6 +99,8 @@
             </div>
           </label>
           <div class="tf-bar" id="trade-tf-bar" role="group" aria-label="Timeframe">
+            <button class="tf-pill" type="button" data-tf="30s">30s</button>
+            <button class="tf-pill" type="button" data-tf="45s">45s</button>
             <button class="tf-pill" type="button" data-tf="1m">1m</button>
             <button class="tf-pill" type="button" data-tf="5m">5m</button>
             <button class="tf-pill" type="button" data-tf="15m">15m</button>
@@ -88,7 +109,6 @@
             <button class="tf-pill" type="button" data-tf="4h">4h</button>
             <button class="tf-pill active" type="button" data-tf="1D">1D</button>
             <button class="tf-pill" type="button" data-tf="1W">1W</button>
-            <button class="tf-pill" type="button" data-tf="1M">1M</button>
           </div>
           <!-- Analyze provider + model — visible BEFORE clicking Analyze
                so the trader sees exactly how the next analysis will run.
@@ -99,6 +119,7 @@
               <select id="analyze-provider">
                 <option value="ollama" selected>ollama (local, $0)</option>
                 <option value="claude_web">claude.ai (browser, $0)</option>
+                <option value="chatgpt_web">chatgpt.com (browser, $0)</option>
               </select>
             </label>
             <label class="analyze-config__field">
@@ -109,12 +130,16 @@
                 <option value="opus">Opus 4.7 (most capable)</option>
                 <option value="haiku">Haiku 4.5 (fastest)</option>
               </select>
+              <select id="analyze-model-chatgpt" class="hidden">
+                <option value="instant" selected>Instant (fast routing)</option>
+                <option value="thinking">Thinking (deeper reasoning)</option>
+              </select>
             </label>
           </div>
           <div class="trade-bar__actions">
             <button class="primary" id="trade-capture">Capture</button>
             <button id="trade-analyze" title="Analyze the chart at the selected timeframe">Analyze</button>
-            <button id="trade-analyze-deep" title="Capture all 9 timeframes, pick the optimal one, produce a backtestable Pine strategy">Deep</button>
+            <button id="trade-analyze-deep" title="Capture all 10 timeframes, pick the optimal one, produce a backtestable Pine strategy">Deep</button>
           </div>
         </div>
         <div class="chart-meta-strip" id="trade-chart-meta">
@@ -148,6 +173,7 @@
             <span class="spinner"></span>
             <span id="analyze-progress-phase">Starting…</span>
             <span class="analyze-progress-elapsed" id="analyze-progress-elapsed">0s</span>
+            <button class="analyze-stop-btn" id="analyze-stop-btn" type="button" title="Stop this analysis">Stop</button>
           </div>
           <div class="analyze-progress-bar"><div id="analyze-progress-fill"></div></div>
           <div class="analyze-progress-detail mono muted" id="analyze-progress-detail"></div>
@@ -167,6 +193,11 @@
               <div class="analyze-confidence-label">
                 <span class="label">Confidence</span>
                 <span class="value" id="analyze-confidence-val">—%</span>
+                <!-- Inline calibration chip — historical track for THIS
+                     (provider, model, confidence-bucket). Populated from
+                     result.calibration in renderAnalysisResult. Empty by
+                     default; renders only when there's data. -->
+                <span class="analyze-cal-chip hidden" id="analyze-cal-chip"></span>
               </div>
               <div class="analyze-confidence-bar">
                 <div id="analyze-confidence-fill"></div>
@@ -181,10 +212,23 @@
             <div class="analyze-actions">
               <button class="primary" id="analyze-apply-order" title="Copy Entry / Stop / TP into the Quick Order bar">Apply to order</button>
               <button id="analyze-apply-pine" disabled title="Paste the generated Pine script into TradingView's Pine Editor">Apply pine to chart</button>
+              <button id="analyze-pressure-test" title="Second opinion — run this chart through Sonnet + Opus + Gemma for a consensus check. Takes ~1-2 min.">Pressure test</button>
             </div>
           </div>
 
           <div class="analyze-rationale" id="analyze-rationale"></div>
+
+          <!-- What could change my mind — unknowns flagged by the model
+               that would materially affect the signal or R:R. Hidden
+               when the array is empty (a clear setup shouldn't show a
+               "nothing uncertain" box — that'd be clutter). Each entry
+               is a "what" + optional "resolves_how" hint. -->
+          <div class="analyze-unknowns hidden" id="analyze-unknowns">
+            <div class="analyze-unknowns__head">
+              What could change my mind
+            </div>
+            <ul class="analyze-unknowns__list" id="analyze-unknowns-list"></ul>
+          </div>
 
           <!-- Per-TF breakdown — only rendered for deep analysis, hidden
                for single-TF runs. Populated by renderAnalysisResult when
@@ -193,6 +237,17 @@
             <summary>Per-timeframe breakdown</summary>
             <div class="analyze-pertf-body" id="analyze-pertf-body"></div>
           </details>
+
+          <!-- Multi-provider pressure test — per-provider results +
+               consensus badge. Hidden until the user clicks the
+               "Pressure test" button and the run completes. -->
+          <div class="analyze-pressure hidden" id="analyze-pressure">
+            <div class="analyze-pressure__head">
+              <span class="label">Pressure test</span>
+              <span class="analyze-pressure__badge" id="analyze-pressure-badge"></span>
+            </div>
+            <div class="analyze-pressure__body" id="analyze-pressure-body"></div>
+          </div>
 
           <div class="analyze-meta mono muted" id="analyze-meta"></div>
         </div>
@@ -238,6 +293,20 @@
             <button class="buy" id="trade-buy">BUY market</button>
             <button class="sell" id="trade-sell">SELL market</button>
           </div>
+        </div>
+        <!-- Risk bar — dollar risk for the current (qty, entry, stop)
+             combo + % of today's budget. Tints green/amber/red to
+             signal reversibility. Hidden when the inputs aren't
+             sufficient to compute (e.g., no stop set, unknown symbol). -->
+        <div class="risk-bar hidden" id="trade-risk-bar">
+          <div class="risk-bar__main">
+            <span class="label">Risk</span>
+            <span class="value mono" id="risk-dollars">—</span>
+            <span class="sep">·</span>
+            <span class="value mono" id="risk-pct">—</span>
+            <span class="muted" id="risk-math">—</span>
+          </div>
+          <div class="risk-bar__hint muted" id="risk-hint"></div>
         </div>
       </div>
 
@@ -398,6 +467,68 @@
     </section>
 
     <!-- AUDIT TAB ----------------------------------------------------- -->
+    <!-- Journal — decision log with inline outcome tagging. Surfaces
+         the decisions DB (`tradingview/decisions.db`). Phase 1 of the
+         calibration roadmap; complements the `.venv/bin/python -m
+         tv_automation.reconcile` CLI with a browser-based tagger. -->
+    <section class="tab hidden" id="tab-journal">
+      <h1>Journal</h1>
+      <div class="subtitle">Every Analyze / Deep run is recorded. Tag how each one resolved to build the calibration track.</div>
+
+      <!-- Weekly rollup — N-day P&L, win rate, per-provider
+           attribution + prior-period comparison so drift is visible.
+           Phase 5.2 of the thesis. Day toggle to change window. -->
+      <div class="card hidden" id="journal-rollup-card">
+        <div class="card-head">
+          <h2>Rollup</h2>
+          <div class="card-head__actions" id="rollup-head-actions">
+            <div class="rollup-range-toggle" id="rollup-range-toggle">
+              <button class="range-btn" data-days="7">7d</button>
+              <button class="range-btn active" data-days="30">30d</button>
+              <button class="range-btn" data-days="90">90d</button>
+            </div>
+          </div>
+        </div>
+        <div class="rollup-body" id="rollup-body">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+
+      <!-- Calibration summary — per (provider, model, confidence-bucket)
+           hit-rate and avg realized R, ranked by sample size. Hidden
+           when no reconciled decisions exist yet. The central discipline
+           of the product thesis made visible in one card. -->
+      <div class="card hidden" id="journal-calibration-card">
+        <div class="card-head">
+          <h2>Calibration</h2>
+          <div class="card-head__actions">
+            <span class="journal-stats mono muted" id="calibration-stats">—</span>
+            <span class="muted" style="font-size: var(--fs-xs);">hit-rate = fraction of directional signals with realized R &gt; 0</span>
+          </div>
+        </div>
+        <div class="calibration-body" id="calibration-body">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+
+      <!-- Summary strip — total / reconciled / unreconciled counts +
+           quick "show me what still needs tagging" toggle. -->
+      <div class="card">
+        <div class="card-head">
+          <h2>Decisions</h2>
+          <div class="card-head__actions" id="journal-head-actions">
+            <span class="journal-stats mono muted" id="journal-stats">—</span>
+            <label><input type="checkbox" id="journal-unreconciled-only" /> unreconciled only</label>
+            <button class="icon-btn" id="journal-export-csv" title="Download all decisions as CSV">Export CSV</button>
+            <button class="icon-btn" id="journal-refresh" title="Reload from DB">Refresh</button>
+          </div>
+        </div>
+        <div class="journal-list" id="journal-list">
+          <div class="empty">Loading…</div>
+        </div>
+      </div>
+    </section>
+
     <section class="tab hidden" id="tab-audit">
       <h1>Audit</h1>
       <div class="subtitle">Live tail of today's audit log (<span class="mono">tradingview/audit/YYYY-MM-DD.jsonl</span>).</div>

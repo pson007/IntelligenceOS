@@ -1,0 +1,3400 @@
+{
+  "taken_at": "2026-04-20T08:23:14-0400",
+  "url": "https://www.tradingview.com/chart/8hp50raV/",
+  "phases": {
+    "A_before_open": {
+      "select_date_button_text": "Select date"
+    },
+    "B_modal_open": {
+      "dialogs": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "cls": "dialog-qyCw0PaN dialog-b8SxMnzX dialogWrapper-z_4ncDYP dialog-aRAWUDhF rounded-aRAWUDhF shadowed-aRAWUDhF",
+          "text": "Select date\nClose menu\nApril 2026\nMo\nTu\nWe\nTh\nFr\nSa\nSu\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\nSelect the first available day\nCancel\nSelect",
+          "xy": {
+            "x": 987,
+            "y": 172,
+            "w": 302,
+            "h": 584
+          }
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataName": "select-date-dialog",
+          "ariaLabel": null,
+          "cls": "wrapper-b8SxMnzX",
+          "text": "Select date\nClose menu\nApril 2026\nMo\nTu\nWe\nTh\nFr\nSa\nSu\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\nSelect the first available day\nCancel\nSelect",
+          "xy": {
+            "x": 987,
+            "y": 172,
+            "w": 302,
+            "h": 584
+          }
+        }
+      ],
+      "inputs": [
+        {
+          "tag": "input",
+          "type": null,
+          "name": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "placeholder": "YYYY-MM-DD",
+          "value": "2026-04-20",
+          "cls": "input-RUSovanF size-small-RUSovanF with-end-slot-RUSovanF",
+          "xy": {
+            "x": 1010,
+            "y": 260,
+            "w": 114,
+            "h": 28
+          }
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "placeholder": null,
+          "value": "00:00",
+          "cls": "input-RUSovanF size-small-RUSovanF with-end-slot-RUSovanF",
+          "xy": {
+            "x": 1172,
+            "y": 260,
+            "w": 64,
+            "h": 28
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Cross",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isActive-GwQQdU8S isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 48,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Cursors",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 50,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Trendline",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 86,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Trend tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 88,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Fib retracement",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 124,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Gann and Fibonacci tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 126,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "XABCD pattern",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 162,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Patterns",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 164,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Long position",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 200,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Forecasting and measurement tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 202,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Brush",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 238,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Geometric shapes",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 240,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Text",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 276,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Annotation tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 278,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Icon",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 314,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Icons",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 316,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "measure",
+          "ariaLabel": "Measure",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 365,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "zoom",
+          "ariaLabel": "Zoom in",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 403,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Magnet mode snaps drawings placed near price bars to the closest OHLC value",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 454,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Magnets",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 456,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "drawginmode",
+          "ariaLabel": "Keep drawing",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 492,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "lockAllDrawings",
+          "ariaLabel": "Lock all drawings",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 530,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Hide all drawings",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 568,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Hide options",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 570,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "New drawings will not be synced",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 606,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Sync drawings options",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 608,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Remove objects",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 657,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Remove options",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 659,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Show Favorite Drawing Tools Toolbar",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 869,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Change symbol",
+          "title": null,
+          "text": "MNQ1!",
+          "cls": "title-l31H9iuA accessible-l31H9iuA",
+          "xy": {
+            "x": 87,
+            "y": 49,
+            "w": 52,
+            "h": 19
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Change symbol",
+          "title": null,
+          "text": "Micro E-mini Nasdaq-100 Index Futures",
+          "cls": "title-l31H9iuA accessible-l31H9iuA",
+          "xy": {
+            "x": 151,
+            "y": 49,
+            "w": 290,
+            "h": 19
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Change interval",
+          "title": null,
+          "text": "1",
+          "cls": "title-l31H9iuA accessible-l31H9iuA",
+          "xy": {
+            "x": 453,
+            "y": 49,
+            "w": 10,
+            "h": 19
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Unflag symbol",
+          "title": "Unflag symbol",
+          "text": "",
+          "cls": "button-l31H9iuA flag-l31H9iuA apply-common-tooltip accessible-l31H9iuA",
+          "xy": {
+            "x": 512,
+            "y": 46,
+            "w": 28,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "More",
+          "title": "More",
+          "text": "",
+          "cls": "button-l31H9iuA apply-common-tooltip accessible-l31H9iuA",
+          "xy": {
+            "x": 540,
+            "y": 46,
+            "w": 28,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": "Market open",
+          "text": "",
+          "cls": "apply-common-tooltip common-tooltip-wide small-Lgtz1OtS small-Lgtz1OtS",
+          "xy": {
+            "x": 544,
+            "y": 49,
+            "w": 18,
+            "h": 18
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Show indicators legend",
+          "title": "Show indicators legend",
+          "text": "5",
+          "cls": "toggler-l31H9iuA pane-button-e6PF69Df apply-common-tooltip accessible-l31H9iuA objectsTreeCanBeShown-l31H9iuA",
+          "xy": {
+            "x": 65,
+            "y": 115,
+            "w": 33,
+            "h": 21
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Toggle auto scale",
+          "title": null,
+          "text": "A",
+          "cls": "priceScaleModeButton-okRV4Kjm priceScaleModeButton_activated-okRV4Kjm priceScaleModeButtons__button-PEm49B2T apply-common-tooltip",
+          "xy": {
+            "x": 2164,
+            "y": 635,
+            "w": 20,
+            "h": 22
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Toggle log scale",
+          "title": null,
+          "text": "L",
+          "cls": "priceScaleModeButton-okRV4Kjm priceScaleModeButton_activated-okRV4Kjm priceScaleModeButtons__button-PEm49B2T apply-common-tooltip",
+          "xy": {
+            "x": 2188,
+            "y": 635,
+            "w": 20,
+            "h": 22
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-1D",
+          "ariaLabel": "1 day in 1 minute intervals",
+          "title": null,
+          "text": "1D",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 64,
+            "y": 739,
+            "w": 31,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-5D",
+          "ariaLabel": "5 days in 5 minutes intervals",
+          "title": null,
+          "text": "5D",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 95,
+            "y": 739,
+            "w": 31,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-1M",
+          "ariaLabel": "1 month in 30 minutes intervals",
+          "title": null,
+          "text": "1M",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 125,
+            "y": 739,
+            "w": 33,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-3M",
+          "ariaLabel": "3 months in 1 hour intervals",
+          "title": null,
+          "text": "3M",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 158,
+            "y": 739,
+            "w": 33,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-6M",
+          "ariaLabel": "6 months in 2 hours intervals",
+          "title": null,
+          "text": "6M",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 191,
+            "y": 739,
+            "w": 33,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-YTD",
+          "ariaLabel": "Year to day in 1 day intervals",
+          "title": null,
+          "text": "YTD",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 224,
+            "y": 739,
+            "w": 40,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-12M",
+          "ariaLabel": "1 year in 1 day intervals",
+          "title": null,
+          "text": "1Y",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 263,
+            "y": 739,
+            "w": 30,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-60M",
+          "ariaLabel": "5 years in 1 week intervals",
+          "title": null,
+          "text": "5Y",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 293,
+            "y": 739,
+            "w": 30,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-ALL",
+          "ariaLabel": "All data in 1 month intervals",
+          "title": null,
+          "text": "All",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 323,
+            "y": 739,
+            "w": 28,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "go-to-date",
+          "ariaLabel": "Go to",
+          "title": null,
+          "text": "",
+          "cls": "button-uToIfRbZ button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 360,
+            "y": 739,
+            "w": 38,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "time-zone-menu",
+          "ariaLabel": "Timezone",
+          "title": null,
+          "text": "08:23:15 AM UTC-4",
+          "cls": "item-BXXUwft2 button-GwQQdU8S button-x1dCOTP3 apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 1975,
+            "y": 739,
+            "w": 144,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "session-menu",
+          "ariaLabel": "Electronic trading hours",
+          "title": null,
+          "text": "ETH",
+          "cls": "item-BXXUwft2 button-merBkM5y apply-common-tooltip accessible-merBkM5y",
+          "xy": {
+            "x": 2120,
+            "y": 739,
+            "w": 39,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "backAdj",
+          "ariaLabel": "Adjust for contract changes",
+          "title": null,
+          "text": "B-ADJ",
+          "cls": "item-BXXUwft2 button-GwQQdU8S apply-common-tooltip isActive-GwQQdU8S isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2168,
+            "y": 739,
+            "w": 54,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "base",
+          "ariaLabel": "Watchlist, details, and news",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 44,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "alerts",
+          "ariaLabel": "Alerts",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 90,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "object_tree",
+          "ariaLabel": "Object tree and data window",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 136,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "union_chats",
+          "ariaLabel": "Chats",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 182,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "screener-dialog-button",
+          "ariaLabel": "Screeners",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 598,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "pine-dialog-button",
+          "ariaLabel": "Pine",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 642,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "calendar-dialog-button",
+          "ariaLabel": "Calendars",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 686,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "community-hub-button",
+          "ariaLabel": "Community",
+          "title": null,
+          "text": "99+",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 732,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "notifications-button",
+          "ariaLabel": "Notifications",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 778,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Products",
+          "title": null,
+          "text": "",
+          "cls": "button-pcFY_CU1 common-tooltip-vertical button-merBkM5y apply-common-tooltip accessible-merBkM5y",
+          "xy": {
+            "x": 2231,
+            "y": 824,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "help-button",
+          "ariaLabel": "Help Center",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 881,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Strategy Report",
+          "title": null,
+          "text": "Strategy Report",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 56,
+            "y": 781,
+            "w": 150,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Close Replay Trading",
+          "title": null,
+          "text": "Replay Trading",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 211,
+            "y": 781,
+            "w": 144,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": "Place an order via Order Panel or DOM",
+          "text": "Trade",
+          "cls": "actionButton-yt6RGAn_ apply-common-tooltip lightButton-bYDQcOkp secondary-PVWoXu5j gray-PVWoXu5j xsmall-bYDQcOkp typography-regular14px-bYDQcOkp",
+          "xy": {
+            "x": 359,
+            "y": 788,
+            "w": 63,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Account Manager",
+          "title": null,
+          "text": "Paper Trading",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 434,
+            "y": 781,
+            "w": 138,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Strategy Report",
+          "title": null,
+          "text": "",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 56,
+            "y": 781,
+            "w": 150,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Close Replay Trading",
+          "title": null,
+          "text": "",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 211,
+            "y": 781,
+            "w": 144,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": "Place an order via Order Panel or DOM",
+          "text": "",
+          "cls": "actionButton-yt6RGAn_ apply-common-tooltip lightButton-bYDQcOkp secondary-PVWoXu5j gray-PVWoXu5j xsmall-bYDQcOkp typography-regular14px-bYDQcOkp",
+          "xy": {
+            "x": 359,
+            "y": 788,
+            "w": 63,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Account Manager",
+          "title": null,
+          "text": "",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 434,
+            "y": 781,
+            "w": 138,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toggle-visibility-button",
+          "ariaLabel": "Collapse panel",
+          "title": null,
+          "text": "",
+          "cls": "button-dA6R3Y1X firstButton-dA6R3Y1X button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2152,
+            "y": 781,
+            "w": 38,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toggle-maximize-button",
+          "ariaLabel": "Maximize panel",
+          "title": null,
+          "text": "",
+          "cls": "button-dA6R3Y1X button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2188,
+            "y": 781,
+            "w": 38,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-orders",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-alerts",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-alertsFireControl",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-alertsWatchlistFireControl",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-trading-notifications",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-gift",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-force-password-change",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-chat-message",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-account-deletion-initiated",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-account-deletion-cancelled",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-support-portal",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-global-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-news-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-chart_warning",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-chart_info",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-x-share-group",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-bf-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-coupon-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-charting-ad",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": null,
+          "text": "Close menu",
+          "cls": "nav-button-znwuaSC1 size-medium-znwuaSC1 preserve-paddings-znwuaSC1 close-BZKENkhT",
+          "xy": {
+            "x": 1238,
+            "y": 189,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Previous month, March 2026",
+          "title": null,
+          "text": "",
+          "cls": "lightButton-bYDQcOkp noContent-bYDQcOkp withStartSlot-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1010,
+            "y": 308,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Switch to months, 2026",
+          "title": null,
+          "text": "April 2026",
+          "cls": "lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1086,
+            "y": 308,
+            "w": 104,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Next month, May 2026",
+          "title": null,
+          "text": "",
+          "cls": "flip-horizontal-N6r5jhbE lightButton-bYDQcOkp noContent-bYDQcOkp withStartSlot-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQc",
+          "xy": {
+            "x": 1232,
+            "y": 308,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Wednesday 1 April 2026",
+          "title": null,
+          "text": "1",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1083,
+            "y": 388,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Thursday 2 April 2026",
+          "title": null,
+          "text": "2",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1121,
+            "y": 388,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Friday 3 April 2026",
+          "title": null,
+          "text": "3",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1159,
+            "y": 388,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Saturday 4 April 2026",
+          "title": null,
+          "text": "4",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1197,
+            "y": 388,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Sunday 5 April 2026",
+          "title": null,
+          "text": "5",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1235,
+            "y": 388,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Monday 6 April 2026",
+          "title": null,
+          "text": "6",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1007,
+            "y": 426,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Tuesday 7 April 2026",
+          "title": null,
+          "text": "7",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1045,
+            "y": 426,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Wednesday 8 April 2026",
+          "title": null,
+          "text": "8",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1083,
+            "y": 426,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Thursday 9 April 2026",
+          "title": null,
+          "text": "9",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1121,
+            "y": 426,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Friday 10 April 2026",
+          "title": null,
+          "text": "10",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1159,
+            "y": 426,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Saturday 11 April 2026",
+          "title": null,
+          "text": "11",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1197,
+            "y": 426,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Sunday 12 April 2026",
+          "title": null,
+          "text": "12",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1235,
+            "y": 426,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Monday 13 April 2026",
+          "title": null,
+          "text": "13",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1007,
+            "y": 464,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Tuesday 14 April 2026",
+          "title": null,
+          "text": "14",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1045,
+            "y": 464,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Wednesday 15 April 2026",
+          "title": null,
+          "text": "15",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1083,
+            "y": 464,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Thursday 16 April 2026",
+          "title": null,
+          "text": "16",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1121,
+            "y": 464,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Friday 17 April 2026",
+          "title": null,
+          "text": "17",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1159,
+            "y": 464,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Saturday 18 April 2026",
+          "title": null,
+          "text": "18",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1197,
+            "y": 464,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Sunday 19 April 2026",
+          "title": null,
+          "text": "19",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1235,
+            "y": 464,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Monday 20 April 2026",
+          "title": null,
+          "text": "20",
+          "cls": "day-N6r5jhbE accent-color-N6r5jhbE current-day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp selected-PVWoXu5j ghost-PVWoXu5j gray-PVWoXu5j small-bYDQc",
+          "xy": {
+            "x": 1007,
+            "y": 502,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Tuesday 21 April 2026",
+          "title": null,
+          "text": "21",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1045,
+            "y": 502,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Wednesday 22 April 2026",
+          "title": null,
+          "text": "22",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1083,
+            "y": 502,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Thursday 23 April 2026",
+          "title": null,
+          "text": "23",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1121,
+            "y": 502,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Friday 24 April 2026",
+          "title": null,
+          "text": "24",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1159,
+            "y": 502,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Saturday 25 April 2026",
+          "title": null,
+          "text": "25",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1197,
+            "y": 502,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Sunday 26 April 2026",
+          "title": null,
+          "text": "26",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1235,
+            "y": 502,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Monday 27 April 2026",
+          "title": null,
+          "text": "27",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1007,
+            "y": 540,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Tuesday 28 April 2026",
+          "title": null,
+          "text": "28",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1045,
+            "y": 540,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Wednesday 29 April 2026",
+          "title": null,
+          "text": "29",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1083,
+            "y": 540,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": "cell",
+          "dataName": null,
+          "ariaLabel": "Thursday 30 April 2026",
+          "title": null,
+          "text": "30",
+          "cls": "day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1121,
+            "y": 540,
+            "w": 34,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": null,
+          "text": "Select the first available day",
+          "cls": "firstDate-z_4ncDYP lightButton-bYDQcOkp primary-PVWoXu5j gray-PVWoXu5j medium-bYDQcOkp typography-regular16px-bYDQcOkp",
+          "xy": {
+            "x": 1015,
+            "y": 639,
+            "w": 245,
+            "h": 40
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": null,
+          "text": "Cancel",
+          "cls": "button-D4RPB3ZC small-D4RPB3ZC black-D4RPB3ZC secondary-D4RPB3ZC apply-overflow-tooltip apply-overflow-tooltip--check-children-recursively apply-overflow-toolti",
+          "xy": {
+            "x": 1114,
+            "y": 706,
+            "w": 74,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "submit-button",
+          "ariaLabel": null,
+          "title": null,
+          "text": "Select",
+          "cls": "button-D4RPB3ZC small-D4RPB3ZC black-D4RPB3ZC primary-D4RPB3ZC apply-overflow-tooltip apply-overflow-tooltip--check-children-recursively apply-overflow-tooltip-",
+          "xy": {
+            "x": 1199,
+            "y": 706,
+            "w": 70,
+            "h": 34
+          }
+        }
+      ],
+      "calendars": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataName": null,
+          "cls": "calendar-N6r5jhbE calendar-PM3TZruR",
+          "outerSnippet": "<div class=\"calendar-N6r5jhbE calendar-PM3TZruR\" tabindex=\"-1\"><div class=\"header-N6r5jhbE\"><button aria-label=\"Previous month, March 2026\" class=\"lightButton-bYDQcOkp noContent-bYDQcOkp withStartSlot-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp\" style=\"--ui-lib-light-button-content-max-lines: 1;\"><span class=\"slot-bYDQcOkp\"><span role=\"img\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 28 28\" width=\"28\" height=\"28\"><path fill=\"cu",
+          "xy": {
+            "x": 995,
+            "y": 307,
+            "w": 286,
+            "h": 332
+          }
+        },
+        {
+          "tag": "div",
+          "role": "grid",
+          "dataName": null,
+          "cls": "weeks-N6r5jhbE",
+          "outerSnippet": "<div role=\"grid\" class=\"weeks-N6r5jhbE\"><div role=\"row\" class=\"week-N6r5jhbE\"><button tabindex=\"-1\" data-day=\"2026-04-01\" aria-label=\"Wednesday 1 April 2026\" aria-selected=\"false\" aria-colindex=\"3\" class=\"day-N6r5jhbE hide-focus-ring-N6r5jhbE lightButton-bYDQcOkp ghost-PVWoXu5j gray-PVWoXu5j small-bYDQcOkp typography-regular16px-bYDQcOkp\" role=\"cell\" style=\"--ui-lib-light-button-content-max-lines: 1;\"><span class=\"content-bYDQcOkp nowrap-bYDQcOkp apply-overflow-tooltip apply-overflow-tooltip--ch",
+          "xy": {
+            "x": 1007,
+            "y": 388,
+            "w": 262,
+            "h": 186
+          }
+        }
+      ]
+    },
+    "C_after_escape": {
+      "dialogs": [],
+      "inputs": [],
+      "buttons": [
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Cross",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isActive-GwQQdU8S isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 48,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Cursors",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 50,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Trendline",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 86,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Trend tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 88,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Fib retracement",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 124,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Gann and Fibonacci tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 126,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "XABCD pattern",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 162,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Patterns",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 164,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Long position",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 200,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Forecasting and measurement tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 202,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Brush",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 238,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Geometric shapes",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 240,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Text",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 276,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Annotation tools",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 278,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Icon",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 314,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Icons",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 316,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "measure",
+          "ariaLabel": "Measure",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 365,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "zoom",
+          "ariaLabel": "Zoom in",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 403,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Magnet mode snaps drawings placed near price bars to the closest OHLC value",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 454,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Magnets",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 456,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "drawginmode",
+          "ariaLabel": "Keep drawing",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 492,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "lockAllDrawings",
+          "ariaLabel": "Lock all drawings",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 530,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Hide all drawings",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 568,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Hide options",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 570,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "New drawings will not be synced",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 606,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Sync drawings options",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 608,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Remove objects",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 657,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Remove options",
+          "title": null,
+          "text": "",
+          "cls": "arrow-pbhJWNrt apply-common-tooltip common-tooltip-vertical accessible-pbhJWNrt",
+          "xy": {
+            "x": 41,
+            "y": 659,
+            "w": 11,
+            "h": 34
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Show Favorite Drawing Tools Toolbar",
+          "title": null,
+          "text": "",
+          "cls": "button-KTgbfaP5 button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 0,
+            "y": 869,
+            "w": 52,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Change symbol",
+          "title": null,
+          "text": "MNQ1!",
+          "cls": "title-l31H9iuA accessible-l31H9iuA",
+          "xy": {
+            "x": 87,
+            "y": 49,
+            "w": 52,
+            "h": 19
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Change symbol",
+          "title": null,
+          "text": "Micro E-mini Nasdaq-100 Index Futures",
+          "cls": "title-l31H9iuA accessible-l31H9iuA",
+          "xy": {
+            "x": 151,
+            "y": 49,
+            "w": 290,
+            "h": 19
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Change interval",
+          "title": null,
+          "text": "1",
+          "cls": "title-l31H9iuA accessible-l31H9iuA",
+          "xy": {
+            "x": 453,
+            "y": 49,
+            "w": 10,
+            "h": 19
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Unflag symbol",
+          "title": "Unflag symbol",
+          "text": "",
+          "cls": "button-l31H9iuA flag-l31H9iuA apply-common-tooltip accessible-l31H9iuA",
+          "xy": {
+            "x": 512,
+            "y": 46,
+            "w": 28,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "More",
+          "title": "More",
+          "text": "",
+          "cls": "button-l31H9iuA apply-common-tooltip accessible-l31H9iuA",
+          "xy": {
+            "x": 540,
+            "y": 46,
+            "w": 28,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": "Market open",
+          "text": "",
+          "cls": "apply-common-tooltip common-tooltip-wide small-Lgtz1OtS small-Lgtz1OtS",
+          "xy": {
+            "x": 544,
+            "y": 49,
+            "w": 18,
+            "h": 18
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Show indicators legend",
+          "title": "Show indicators legend",
+          "text": "5",
+          "cls": "toggler-l31H9iuA pane-button-e6PF69Df apply-common-tooltip accessible-l31H9iuA objectsTreeCanBeShown-l31H9iuA",
+          "xy": {
+            "x": 65,
+            "y": 115,
+            "w": 33,
+            "h": 21
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Toggle auto scale",
+          "title": null,
+          "text": "A",
+          "cls": "priceScaleModeButton-okRV4Kjm priceScaleModeButton_activated-okRV4Kjm priceScaleModeButtons__button-PEm49B2T apply-common-tooltip",
+          "xy": {
+            "x": 2164,
+            "y": 635,
+            "w": 20,
+            "h": 22
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Toggle log scale",
+          "title": null,
+          "text": "L",
+          "cls": "priceScaleModeButton-okRV4Kjm priceScaleModeButton_activated-okRV4Kjm priceScaleModeButtons__button-PEm49B2T apply-common-tooltip",
+          "xy": {
+            "x": 2188,
+            "y": 635,
+            "w": 20,
+            "h": 22
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-1D",
+          "ariaLabel": "1 day in 1 minute intervals",
+          "title": null,
+          "text": "1D",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 64,
+            "y": 739,
+            "w": 31,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-5D",
+          "ariaLabel": "5 days in 5 minutes intervals",
+          "title": null,
+          "text": "5D",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 95,
+            "y": 739,
+            "w": 31,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-1M",
+          "ariaLabel": "1 month in 30 minutes intervals",
+          "title": null,
+          "text": "1M",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 125,
+            "y": 739,
+            "w": 33,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-3M",
+          "ariaLabel": "3 months in 1 hour intervals",
+          "title": null,
+          "text": "3M",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 158,
+            "y": 739,
+            "w": 33,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-6M",
+          "ariaLabel": "6 months in 2 hours intervals",
+          "title": null,
+          "text": "6M",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 191,
+            "y": 739,
+            "w": 33,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-YTD",
+          "ariaLabel": "Year to day in 1 day intervals",
+          "title": null,
+          "text": "YTD",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 224,
+            "y": 739,
+            "w": 40,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-12M",
+          "ariaLabel": "1 year in 1 day intervals",
+          "title": null,
+          "text": "1Y",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 263,
+            "y": 739,
+            "w": 30,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-60M",
+          "ariaLabel": "5 years in 1 week intervals",
+          "title": null,
+          "text": "5Y",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 293,
+            "y": 739,
+            "w": 30,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "date-range-tab-ALL",
+          "ariaLabel": "All data in 1 month intervals",
+          "title": null,
+          "text": "All",
+          "cls": "item-k2h4OAz8 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 323,
+            "y": 739,
+            "w": 28,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "go-to-date",
+          "ariaLabel": "Go to",
+          "title": null,
+          "text": "",
+          "cls": "button-uToIfRbZ button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 360,
+            "y": 739,
+            "w": 38,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "time-zone-menu",
+          "ariaLabel": "Timezone",
+          "title": null,
+          "text": "08:23:15 AM UTC-4",
+          "cls": "item-BXXUwft2 button-GwQQdU8S button-x1dCOTP3 apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 1975,
+            "y": 739,
+            "w": 144,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "session-menu",
+          "ariaLabel": "Electronic trading hours",
+          "title": null,
+          "text": "ETH",
+          "cls": "item-BXXUwft2 button-merBkM5y apply-common-tooltip accessible-merBkM5y",
+          "xy": {
+            "x": 2120,
+            "y": 739,
+            "w": 39,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "backAdj",
+          "ariaLabel": "Adjust for contract changes",
+          "title": null,
+          "text": "B-ADJ",
+          "cls": "item-BXXUwft2 button-GwQQdU8S apply-common-tooltip isActive-GwQQdU8S isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2168,
+            "y": 739,
+            "w": 54,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "base",
+          "ariaLabel": "Watchlist, details, and news",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 44,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "alerts",
+          "ariaLabel": "Alerts",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 90,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "object_tree",
+          "ariaLabel": "Object tree and data window",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 136,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "union_chats",
+          "ariaLabel": "Chats",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 182,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "screener-dialog-button",
+          "ariaLabel": "Screeners",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 598,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "pine-dialog-button",
+          "ariaLabel": "Pine",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 642,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "calendar-dialog-button",
+          "ariaLabel": "Calendars",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 686,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "community-hub-button",
+          "ariaLabel": "Community",
+          "title": null,
+          "text": "99+",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 732,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "notifications-button",
+          "ariaLabel": "Notifications",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 778,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Products",
+          "title": null,
+          "text": "",
+          "cls": "button-pcFY_CU1 common-tooltip-vertical button-merBkM5y apply-common-tooltip accessible-merBkM5y",
+          "xy": {
+            "x": 2231,
+            "y": 824,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "help-button",
+          "ariaLabel": "Help Center",
+          "title": null,
+          "text": "",
+          "cls": "button-I_wb5FjE button-GwQQdU8S apply-common-tooltip common-tooltip-vertical isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2231,
+            "y": 881,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Strategy Report",
+          "title": null,
+          "text": "Strategy Report",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 56,
+            "y": 781,
+            "w": 150,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Close Replay Trading",
+          "title": null,
+          "text": "Replay Trading",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 211,
+            "y": 781,
+            "w": 144,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": "Place an order via Order Panel or DOM",
+          "text": "Trade",
+          "cls": "actionButton-yt6RGAn_ apply-common-tooltip lightButton-bYDQcOkp secondary-PVWoXu5j gray-PVWoXu5j xsmall-bYDQcOkp typography-regular14px-bYDQcOkp",
+          "xy": {
+            "x": 359,
+            "y": 788,
+            "w": 63,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Account Manager",
+          "title": null,
+          "text": "Paper Trading",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 434,
+            "y": 781,
+            "w": 138,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Strategy Report",
+          "title": null,
+          "text": "",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 56,
+            "y": 781,
+            "w": 150,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Close Replay Trading",
+          "title": null,
+          "text": "",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 211,
+            "y": 781,
+            "w": 144,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": null,
+          "title": "Place an order via Order Panel or DOM",
+          "text": "",
+          "cls": "actionButton-yt6RGAn_ apply-common-tooltip lightButton-bYDQcOkp secondary-PVWoXu5j gray-PVWoXu5j xsmall-bYDQcOkp typography-regular14px-bYDQcOkp",
+          "xy": {
+            "x": 359,
+            "y": 788,
+            "w": 63,
+            "h": 24
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": null,
+          "ariaLabel": "Open Account Manager",
+          "title": null,
+          "text": "",
+          "cls": "container-yt6RGAn_ button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 434,
+            "y": 781,
+            "w": 138,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toggle-visibility-button",
+          "ariaLabel": "Collapse panel",
+          "title": null,
+          "text": "",
+          "cls": "button-dA6R3Y1X firstButton-dA6R3Y1X button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2152,
+            "y": 781,
+            "w": 38,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toggle-maximize-button",
+          "ariaLabel": "Maximize panel",
+          "title": null,
+          "text": "",
+          "cls": "button-dA6R3Y1X button-xNqEcuN2 button-GwQQdU8S apply-common-tooltip isInteractive-GwQQdU8S accessible-GwQQdU8S",
+          "xy": {
+            "x": 2188,
+            "y": 781,
+            "w": 38,
+            "h": 38
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-orders",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-alerts",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-alertsFireControl",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-alertsWatchlistFireControl",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-trading-notifications",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-gift",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-force-password-change",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-chat-message",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-account-deletion-initiated",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-account-deletion-cancelled",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-support-portal",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-global-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-news-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-chart_warning",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-chart_info",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-x-share-group",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-bf-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-coupon-notification",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "dataName": "toast-group-close-button-charting-ad",
+          "ariaLabel": null,
+          "title": "Close all",
+          "text": "",
+          "cls": "roundButton-FujgyDpN roundButtonColor-xCeOT7of gray-xCeOT7of quiet-primary-xCeOT7of xsmall-FujgyDpN iconOnly-FujgyDpN withEndSlot-FujgyDpN apply-common-tooltip",
+          "xy": {
+            "x": 184,
+            "y": 927,
+            "w": 28,
+            "h": 28
+          }
+        }
+      ],
+      "calendars": []
+    }
+  },
+  "notes": [
+    "exited Replay mode (we activated it in this probe)"
+  ]
+}

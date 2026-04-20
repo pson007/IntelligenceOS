@@ -43,11 +43,12 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 # active pill.
 DEFAULT_TIMEFRAME = "1D"
 
-# 9-TF set for deep analysis. Order matters — the LLM references TFs
-# by position in prompts ("image 1 is 1m, image 9 is 1M"), and the UI
-# renders the per-TF breakdown in the same order.
+# 10-TF set for deep analysis. Order matters — the LLM references TFs
+# by position in prompts ("image 1 is 30s, image 10 is 1W"), and the UI
+# renders the per-TF breakdown in the same order. Mirrors the pill bar
+# in ui/index.html — keep in sync when TFs are added/removed there.
 DEFAULT_DEEP_TIMEFRAMES: list[str] = [
-    "1m", "5m", "15m", "30m", "1h", "4h", "1D", "1W", "1M",
+    "30s", "45s", "1m", "5m", "15m", "30m", "1h", "4h", "1D", "1W",
 ]
 
 _PINE_DIR = Path(__file__).resolve().parent.parent / "pine" / "generated"
@@ -74,8 +75,28 @@ markdown fences. Schema:
   "stop": number | null,
   "tp": number | null,
   "rationale": "2-4 sentences explaining WHY, naming the specific features in the chart that drove the call",
+  "unknowns": [
+    {"what": "the specific thing you're uncertain about", "resolves_how": "what would answer it"},
+    ... 0 to 3 entries. Empty array if nothing material is uncertain.
+  ],
   "pine_code": "Pine v6 indicator() script that draws: entry as a horizontal line, stop and tp as horizontal lines with label.new() annotations. Must compile on TradingView. Use indicator(overlay=true). Use input.float for entry/stop/tp defaults so users can tweak. Use color.green for Long, color.red for Short, color.gray for Skip."
 }
+
+CRITICAL JSON escaping: the `pine_code` value is a JSON string, so
+every double-quote *inside* the pine code MUST be escaped as \\"
+(backslash-quote). Pine strings look like "Title" in source — in the
+JSON output they must appear as \\"Title\\". Also escape newlines as
+\\n. Example of correct output: "pine_code": "indicator(\\"My Title\\", overlay=true)\\nplot(close)".
+Emitting unescaped quotes will break the downstream parser and drop
+your entire response.
+
+`unknowns` is required — include only *material* uncertainties that
+could genuinely flip the signal or meaningfully change R:R. Examples:
+upcoming economic events visible in session context, proximity to key
+levels that haven't been decisively broken, missing volume/flow data,
+news catalysts you can infer from time-of-day but not confirm. Do NOT
+pad this — 0 entries is a valid and honest answer when the setup is
+clear. Prefer quality over quantity.
 
 If the chart data is ambiguous, low-liquidity, or insufficient, signal
 should be "Skip", confidence should be low, and entry/stop/tp should be
@@ -90,20 +111,22 @@ def _user_text(symbol: str, timeframe: str) -> str:
     )
 
 
-# Deep analysis — 9 images, multi-TF integration, produces a backtestable
+# Deep analysis — 10 images, multi-TF integration, produces a backtestable
 # Pine v6 STRATEGY (not just an indicator) so the trader can validate the
 # setup on the optimal TF before committing. The "optimal_tf" field is
 # the key differentiator vs single-TF: the model picks *where* to trade,
 # not just *whether*.
 _DEEP_SYSTEM_PROMPT = """You are an elite multi-timeframe day-trading analyst.
 
-You will receive 9 chart screenshots for a single symbol across these
-timeframes in order: 1m, 5m, 15m, 30m, 1h, 4h, 1D, 1W, 1M.
+You will receive 10 chart screenshots for a single symbol across these
+timeframes in order: 30s, 45s, 1m, 5m, 15m, 30m, 1h, 4h, 1D, 1W.
 
 How to read the stack:
-- Higher TFs (1D/1W/1M) set regime and directional bias.
+- Higher TFs (1D/1W) set regime and directional bias.
 - Intermediate TFs (1h/4h) show setup structure and key levels.
 - Lower TFs (1m/5m/15m/30m) show trigger and entry precision.
+- Sub-minute TFs (30s/45s) show microstructure for scalp timing only —
+  do not use them to set directional bias.
 
 Your job:
 1. Briefly analyze each TF on its own terms.
@@ -120,7 +143,7 @@ Your job:
 Output STRICTLY a single JSON object, no commentary, no markdown fences:
 
 {
-  "optimal_tf": "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1D" | "1W" | "1M",
+  "optimal_tf": "30s" | "45s" | "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1D" | "1W",
   "signal": "Long" | "Short" | "Skip",
   "confidence": integer 0..100,
   "entry": number | null,
@@ -132,8 +155,26 @@ Output STRICTLY a single JSON object, no commentary, no markdown fences:
      "rationale": "one-line justification"},
     ... exactly one entry per timeframe, same order as the images ...
   ],
+  "unknowns": [
+    {"what": "the specific thing you're uncertain about", "resolves_how": "what would answer it"},
+    ... 0 to 3 entries. Empty array if nothing material is uncertain.
+  ],
   "pine_code": "Pine v6 strategy() script implementing the optimal-TF entry logic. Must compile on TradingView. Use strategy(title=\\"MTF Analysis\\", overlay=true, initial_capital=10000, default_qty_type=strategy.fixed, default_qty_value=1, commission_type=strategy.commission.percent, commission_value=0.05). Expose entry/stop/tp as input.float so they're tweakable. Use strategy.entry on the trigger condition, strategy.exit with stop= and limit= for the bracket. Add hline() or plot() horizontal reference lines for entry/stop/tp so the trader sees the setup overlay. Use color.green for Long, color.red for Short, color.gray for Skip (in which case the strategy should not fire)."
 }
+
+CRITICAL JSON escaping: the `pine_code` value is a JSON string, so
+every double-quote *inside* the pine code MUST be escaped as \\"
+(backslash-quote) and every newline as \\n. Pine strings look like
+"Title" in source — in the JSON they must appear as \\"Title\\".
+Emitting unescaped quotes will break the downstream parser and drop
+your entire response.
+
+`unknowns` is required — include only *material* uncertainties that
+could genuinely flip the signal or meaningfully change R:R. Examples:
+upcoming economic events, proximity to key cross-TF levels that
+haven't been decisively resolved, missing volume/flow data at the
+optimal TF, conflicts between higher-TF regime and lower-TF trigger.
+Do NOT pad — 0 entries is a valid and honest answer.
 
 If TF alignment is weak or conflicting, signal should be "Skip",
 confidence should be low, and entry/stop/tp should be null. Never
@@ -284,6 +325,22 @@ async def _call_claude_web(capture: dict, symbol: str, timeframe: str,
     )
 
 
+async def _call_chatgpt_web(capture: dict, symbol: str, timeframe: str,
+                            model: str | None,
+                            ) -> tuple[str, dict, float]:
+    """Drive chatgpt.com via the attached Chrome. Same shape as
+    _call_claude_web, different site. No API key required — uses the
+    user's existing ChatGPT subscription.
+
+    `model` is a ChatGPT display label ("Instant", "Thinking") resolved
+    by _resolve_model from any alias the UI sends."""
+    from .chatgpt_web import analyze_via_chatgpt_web
+    return await analyze_via_chatgpt_web(
+        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe),
+        model=model,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Deep (multi-image) LLM calls
 # ---------------------------------------------------------------------------
@@ -381,6 +438,18 @@ async def _call_claude_web_deep(captures: list[dict], symbol: str,
     )
 
 
+async def _call_chatgpt_web_deep(captures: list[dict], symbol: str,
+                                 timeframes: list[str], model: str | None,
+                                 ) -> tuple[str, dict, float]:
+    from .chatgpt_web import analyze_via_chatgpt_web_multi
+    return await analyze_via_chatgpt_web_multi(
+        [c["path"] for c in captures],
+        _DEEP_SYSTEM_PROMPT,
+        _deep_user_text(symbol, timeframes),
+        model=model,
+    )
+
+
 _MODEL_ALIASES = {
     "sonnet": "claude-sonnet-4-6",
     "opus":   "claude-opus-4-7",
@@ -401,6 +470,18 @@ _CLAUDE_WEB_DISPLAY_NAMES = {
     "claude-haiku-4-5":  "Haiku 4.5",
 }
 
+# ChatGPT's modern picker uses the simplified Instant / Thinking
+# routing (not a full model dropdown). Aliases cover variations the
+# UI or user might send.
+_CHATGPT_WEB_DISPLAY_NAMES = {
+    "instant":  "Instant",
+    "thinking": "Thinking",
+    "fast":     "Instant",
+    "deep":     "Thinking",
+    "gpt-instant":  "Instant",
+    "gpt-thinking": "Thinking",
+}
+
 
 def _resolve_model(provider: str, model: str | None) -> str:
     if provider == "claude_web":
@@ -410,6 +491,13 @@ def _resolve_model(provider: str, model: str | None) -> str:
         if not model:
             return "Sonnet 4.6"
         return _CLAUDE_WEB_DISPLAY_NAMES.get(model.lower(), model)
+    if provider == "chatgpt_web":
+        # Default to Instant — fast routing that handles structured JSON
+        # reliably. Thinking is slower but better-reasoned when the user
+        # explicitly wants it (pressure test, hard calls).
+        if not model:
+            return "Instant"
+        return _CHATGPT_WEB_DISPLAY_NAMES.get(model.lower(), model)
     if not model:
         if provider == "anthropic":
             return "claude-sonnet-4-6"
@@ -427,9 +515,79 @@ def _resolve_model(provider: str, model: str | None) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _sanitize_unknowns(raw) -> list[dict]:
+    """Normalize the LLM's `unknowns` output into a consistent shape.
+
+    Accepts what the model actually returns, not what it should return:
+      * list of objects with {what, resolves_how} — the canonical shape
+      * list of plain strings — coerce to {what: string, resolves_how: ""}
+      * None / non-list — return empty list
+    Also caps at 5 entries to prevent a runaway "every possible unknown"
+    response from burying the real signal. 0 entries is valid.
+    """
+    if not isinstance(raw, list):
+        return []
+    out: list[dict] = []
+    for item in raw[:5]:
+        if isinstance(item, dict):
+            what = str(item.get("what") or "").strip()
+            if not what:
+                continue
+            out.append({
+                "what": what,
+                "resolves_how": str(item.get("resolves_how") or "").strip(),
+            })
+        elif isinstance(item, str) and item.strip():
+            out.append({"what": item.strip(), "resolves_how": ""})
+    return out
+
+
+def _repair_pine_code_quotes(raw: str) -> str:
+    """Defensive repair for the most common LLM JSON failure mode:
+    unescaped double-quotes inside the `pine_code` string value.
+
+    Pine v6 uses `"..."` for string literals (titles, labels, color
+    names). When an LLM emits pine code as a JSON string value, it
+    must escape every internal `"` as `\\"` — but models often forget,
+    especially on mid-complexity scripts. The result: JSON parse fails
+    somewhere inside the pine body.
+
+    This repair is narrow: it only rewrites the `pine_code` value,
+    only when there's exactly one such key, and only when the value
+    extends to the final closing-quote-before-`}`. Anything else falls
+    through to the caller's error path unchanged.
+
+    Idempotent in the "already correct" case — if the pine_code is
+    already properly escaped, re-escaping is a no-op because we only
+    target `"` NOT preceded by `\\`.
+    """
+    # Locate the pine_code field. Tolerant of whitespace variations.
+    key_m = re.search(r'("pine_code"\s*:\s*)"', raw)
+    if not key_m:
+        return raw
+    value_start = key_m.end()
+
+    # The value runs to the LAST `"` before the object's closing `}`.
+    # We anchor on `"\s*}\s*$` so truncated responses don't get repaired
+    # into something subtly wrong.
+    tail_m = re.search(r'"\s*}\s*$', raw)
+    if not tail_m:
+        return raw
+    value_end = tail_m.start()
+
+    content = raw[value_start:value_end]
+    # Escape `"` that isn't already backslash-escaped. Doesn't handle
+    # the `\\"` edge case perfectly (that'd need counting consecutive
+    # backslashes), but pine code rarely contains literal backslashes.
+    fixed = re.sub(r'(?<!\\)"', r'\\"', content)
+    return raw[:value_start] + fixed + raw[value_end:]
+
+
 def _parse_json(raw: str) -> dict:
     """Extract the first balanced JSON object. The prompt forbids markdown
-    fences and leading commentary, but models still slip up sometimes."""
+    fences and leading commentary, but models still slip up sometimes.
+    A targeted repair pass handles the most common failure (unescaped
+    double-quotes inside pine_code) before giving up."""
     stripped = raw.strip()
     if stripped.startswith("```"):
         stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
@@ -438,11 +596,25 @@ def _parse_json(raw: str) -> dict:
         try:
             return json.loads(stripped)
         except json.JSONDecodeError:
-            pass
+            # Try the pine_code-quote repair. Only retry once to avoid
+            # infinite loops on genuinely malformed responses.
+            repaired = _repair_pine_code_quotes(stripped)
+            if repaired != stripped:
+                try:
+                    return json.loads(repaired)
+                except json.JSONDecodeError:
+                    pass
     m = re.search(r"\{[\s\S]*\}", stripped)
     if not m:
         raise ValueError(f"no JSON object found in response: {stripped[:300]!r}")
-    return json.loads(m.group(0))
+    try:
+        return json.loads(m.group(0))
+    except json.JSONDecodeError:
+        # Last chance: repair the regex-extracted block too.
+        repaired = _repair_pine_code_quotes(m.group(0))
+        if repaired != m.group(0):
+            return json.loads(repaired)
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +636,189 @@ def _save_pine(symbol: str, pine_code: str) -> Path:
 # ---------------------------------------------------------------------------
 
 
+async def pressure_test(
+    symbol: str,
+    *,
+    timeframe: str = DEFAULT_TIMEFRAME,
+    combos: list[dict] | None = None,
+    base_url: str | None = None,
+) -> dict:
+    """Run the same captured chart through multiple (provider, model)
+    combos and return a consensus summary.
+
+    Used when a trade is meaningful enough that a second (third) opinion
+    is worth the extra wait. Captures ONCE so all providers see the
+    exact same chart state — a 30-second market move between provider
+    calls would pollute the comparison.
+
+    Returns shape:
+        {
+          "symbol": str, "timeframe": str, "capture": {...},
+          "results": [
+              {"provider": ..., "model": ..., "signal": ..., "confidence": ...,
+               "entry": ..., "stop": ..., "tp": ..., "rationale": ..., "elapsed_s": ...},
+              ... one per combo (failed combos carry "error" instead)
+          ],
+          "consensus": {
+              "direction": "Long"|"Short"|"Skip"|None,
+              "agree": int,           # providers matching top_signal
+              "total": int,           # providers that returned a signal
+              "all_agree": bool,
+              "entry_spread": float|None,  # max-min across providers with same direction
+              "stop_spread": float|None,
+              "tp_spread": float|None,
+          },
+          "elapsed_s": float,
+        }
+    """
+    # Default combo: four distinct perspectives across three families.
+    # Sonnet + Opus share training data so they'll often agree; ChatGPT
+    # Instant is a cross-family OpenAI crosscheck; Gemma is the local
+    # out-of-distribution crosscheck. Agreement across >= 2 families is
+    # a stronger signal than within-family majority.
+    if combos is None:
+        combos = [
+            {"provider": "claude_web",  "model": "sonnet"},
+            {"provider": "claude_web",  "model": "opus"},
+            {"provider": "chatgpt_web", "model": "instant"},
+            {"provider": "ollama",      "model": "gemma4:31b"},
+        ]
+
+    audit.log(
+        "pressure_test.start", symbol=symbol, timeframe=timeframe,
+        combos=[{"provider": c["provider"], "model": c.get("model")} for c in combos],
+    )
+    t0 = time.time()
+
+    # Capture ONCE — all providers see the same PNG.
+    cap = await _capture(symbol, timeframe)
+
+    results: list[dict] = []
+    for idx, combo in enumerate(combos, 1):
+        provider = combo["provider"]
+        model_alias = combo.get("model")
+        resolved_model = _resolve_model(provider, model_alias)
+        c_t0 = time.time()
+        audit.log(
+            "pressure_test.provider_start",
+            index=idx, total=len(combos),
+            provider=provider, model=resolved_model,
+        )
+        try:
+            if provider == "anthropic":
+                raw, usage, cost = await _call_anthropic(
+                    cap, symbol, timeframe, resolved_model,
+                )
+            elif provider == "claude_web":
+                raw, usage, cost = await _call_claude_web(
+                    cap, symbol, timeframe, resolved_model,
+                )
+            elif provider == "chatgpt_web":
+                raw, usage, cost = await _call_chatgpt_web(
+                    cap, symbol, timeframe, resolved_model,
+                )
+            elif provider == "ollama":
+                raw, usage, cost = await _call_openai_compat(
+                    cap, symbol, timeframe, resolved_model, base_url,
+                )
+            else:
+                raise ValueError(f"unknown provider: {provider!r}")
+            parsed = _parse_json(raw)
+            results.append({
+                "provider":   provider,
+                "model":      resolved_model,
+                "signal":     parsed.get("signal"),
+                "confidence": parsed.get("confidence"),
+                "entry":      parsed.get("entry"),
+                "stop":       parsed.get("stop"),
+                "tp":         parsed.get("tp"),
+                "rationale":  parsed.get("rationale"),
+                "unknowns":   _sanitize_unknowns(parsed.get("unknowns")),
+                "cost_usd":   cost,
+                "elapsed_s":  round(time.time() - c_t0, 2),
+            })
+            audit.log(
+                "pressure_test.provider_done",
+                index=idx, provider=provider, model=resolved_model,
+                signal=parsed.get("signal"),
+                confidence=parsed.get("confidence"),
+                elapsed_s=round(time.time() - c_t0, 2),
+            )
+        except Exception as e:
+            results.append({
+                "provider":   provider,
+                "model":      resolved_model,
+                "error":      f"{type(e).__name__}: {e}",
+                "elapsed_s":  round(time.time() - c_t0, 2),
+            })
+            audit.log(
+                "pressure_test.provider_fail",
+                index=idx, provider=provider, model=resolved_model,
+                error=f"{type(e).__name__}: {e}",
+            )
+
+    consensus = _consensus_from_results(results)
+    elapsed = round(time.time() - t0, 2)
+    audit.log(
+        "pressure_test.done",
+        direction=consensus["direction"],
+        agree=consensus["agree"], total=consensus["total"],
+        all_agree=consensus["all_agree"], elapsed_s=elapsed,
+    )
+    return {
+        "symbol": symbol, "timeframe": timeframe,
+        "capture": {"tf": cap["tf"], "path": cap["path"]},
+        "results": results,
+        "consensus": consensus,
+        "elapsed_s": elapsed,
+    }
+
+
+def _consensus_from_results(results: list[dict]) -> dict:
+    """Aggregate per-provider results into a consensus shape.
+
+    `direction` is the most-voted signal among providers that returned
+    one (errored providers don't vote). `agree` is how many providers
+    voted with the majority. Spread fields are computed only across
+    providers that agreed on direction AND have numeric levels —
+    showing "entry range 26,800-26,842" is only meaningful when the
+    endpoints are the same direction."""
+    signals = [r.get("signal") for r in results if r.get("signal")]
+    if not signals:
+        return {
+            "direction": None, "agree": 0, "total": 0,
+            "all_agree": False,
+            "entry_spread": None, "stop_spread": None, "tp_spread": None,
+        }
+    # Pick the most common signal. Tie-break doesn't matter for UI
+    # ("split decision" is the story regardless of which way the tie
+    # falls).
+    from collections import Counter
+    counter = Counter(signals)
+    direction, agree = counter.most_common(1)[0]
+
+    agreeing = [
+        r for r in results
+        if r.get("signal") == direction
+        and isinstance(r.get("entry"), (int, float))
+        and isinstance(r.get("stop"), (int, float))
+        and isinstance(r.get("tp"), (int, float))
+    ]
+    def spread(key):
+        vals = [r[key] for r in agreeing]
+        return round(max(vals) - min(vals), 2) if len(vals) >= 2 else None
+
+    return {
+        "direction": direction,
+        "agree": agree,
+        "total": len(signals),
+        "all_agree": agree == len(signals),
+        "entry_spread": spread("entry"),
+        "stop_spread": spread("stop"),
+        "tp_spread": spread("tp"),
+    }
+
+
 async def analyze_chart(
     symbol: str,
     *,
@@ -482,12 +837,14 @@ async def analyze_chart(
       * ``ollama`` (default) — local, $0, ~85s on gemma4:31b
       * ``anthropic`` — Claude API, requires ANTHROPIC_API_KEY, ~10s
       * ``claude_web`` — drives claude.ai in the attached Chrome, uses
-        your web subscription (no API key), ~30-60s
+        your web subscription (no API key), ~20-30s
+      * ``chatgpt_web`` — drives chatgpt.com in the attached Chrome,
+        uses your ChatGPT subscription (no API key), ~15-40s
     """
-    if provider not in ("anthropic", "ollama", "claude_web"):
+    if provider not in ("anthropic", "ollama", "claude_web", "chatgpt_web"):
         raise ValueError(
             f"unknown provider {provider!r}; "
-            "valid: anthropic, ollama, claude_web"
+            "valid: anthropic, ollama, claude_web, chatgpt_web"
         )
     tf = timeframe or DEFAULT_TIMEFRAME
     resolved_model = _resolve_model(provider, model)
@@ -508,6 +865,8 @@ async def analyze_chart(
         raw, usage, cost = await _call_anthropic(cap, symbol, tf, resolved_model)
     elif provider == "claude_web":
         raw, usage, cost = await _call_claude_web(cap, symbol, tf, resolved_model)
+    elif provider == "chatgpt_web":
+        raw, usage, cost = await _call_chatgpt_web(cap, symbol, tf, resolved_model)
     else:
         raw, usage, cost = await _call_openai_compat(
             cap, symbol, tf, resolved_model, base_url,
@@ -551,6 +910,7 @@ async def analyze_chart(
         "stop": parsed.get("stop"),
         "tp": parsed.get("tp"),
         "rationale": parsed.get("rationale"),
+        "unknowns": _sanitize_unknowns(parsed.get("unknowns")),
         "pine_code": parsed.get("pine_code"),
         "pine_path": str(pine_path) if pine_path else None,
         "capture": {"tf": cap["tf"], "path": cap["path"]},
@@ -561,6 +921,24 @@ async def analyze_chart(
         "elapsed_s": round(time.time() - t0, 2),
         "llm_elapsed_s": round(llm_elapsed, 2),
     }
+    # Persist the decision for calibration (Phase 1 — see
+    # HumanOS Product thesis - Trading.md). Failure is logged via audit
+    # but never raised — a broken DB must not fail the analysis flow.
+    from . import decision_log
+    decision_log.log_decision(result, audit.current_request_id.get() or "")
+
+    # Embed this (provider, model, confidence_bucket)'s historical track
+    # so the UI can render the inline calibration chip beside the live
+    # confidence number. Silent-fail — a broken read shouldn't withhold
+    # the analysis result.
+    try:
+        result["calibration"] = decision_log.bucket_track(
+            provider, resolved_model, result.get("confidence"),
+        )
+    except Exception as e:
+        audit.log("decision_log.bucket_track_fail", error=f"{type(e).__name__}: {e}")
+        result["calibration"] = None
+
     audit.log(
         "analyze.done",
         signal=result["signal"], confidence=result["confidence"],
@@ -584,9 +962,9 @@ async def analyze_deep(
     model: str | None = None,
     base_url: str | None = None,
 ) -> dict:
-    """Run a 9-timeframe deep analysis and return the integrated result.
+    """Run a 10-timeframe deep analysis and return the integrated result.
 
-    Captures all 9 TFs (sequential CDP), then one multi-image LLM call
+    Captures all 10 TFs (sequential CDP), then one multi-image LLM call
     that produces: an *optimal_tf* recommendation, consolidated entry/
     stop/tp at that TF, a per-TF breakdown, and a Pine v6 *strategy*
     script (not just an indicator) so the setup can be backtested.
@@ -595,10 +973,10 @@ async def analyze_deep(
     Sonnet beats Gemma on multi-image reasoning by a wide margin; the
     accuracy delta matters more here since deep analysis is slower.
     """
-    if provider not in ("anthropic", "ollama", "claude_web"):
+    if provider not in ("anthropic", "ollama", "claude_web", "chatgpt_web"):
         raise ValueError(
             f"unknown provider {provider!r}; "
-            "valid: anthropic, ollama, claude_web"
+            "valid: anthropic, ollama, claude_web, chatgpt_web"
         )
     tfs = timeframes or DEFAULT_DEEP_TIMEFRAMES
     resolved_model = _resolve_model(provider, model)
@@ -638,6 +1016,10 @@ async def analyze_deep(
         )
     elif provider == "claude_web":
         raw, usage, cost = await _call_claude_web_deep(
+            captures, symbol, tfs, resolved_model,
+        )
+    elif provider == "chatgpt_web":
+        raw, usage, cost = await _call_chatgpt_web_deep(
             captures, symbol, tfs, resolved_model,
         )
     else:
@@ -687,6 +1069,7 @@ async def analyze_deep(
         "symbol": symbol,
         "timeframes": tfs,
         "optimal_tf": optimal_tf,
+        "unknowns": _sanitize_unknowns(parsed.get("unknowns")),
         "signal": parsed.get("signal"),
         "confidence": parsed.get("confidence"),
         "entry": parsed.get("entry"),
@@ -704,6 +1087,19 @@ async def analyze_deep(
         "elapsed_s": round(time.time() - t0, 2),
         "llm_elapsed_s": round(llm_elapsed, 2),
     }
+    # Same calibration hook as single-TF — mode="deep" lets the
+    # reconciler and calibration queries slice on the decision shape.
+    from . import decision_log
+    decision_log.log_decision(result, audit.current_request_id.get() or "")
+
+    try:
+        result["calibration"] = decision_log.bucket_track(
+            provider, resolved_model, result.get("confidence"),
+        )
+    except Exception as e:
+        audit.log("decision_log.bucket_track_fail", error=f"{type(e).__name__}: {e}")
+        result["calibration"] = None
+
     audit.log(
         "analyze.done", mode="deep",
         optimal_tf=result["optimal_tf"],

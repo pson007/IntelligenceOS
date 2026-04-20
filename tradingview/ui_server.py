@@ -42,7 +42,9 @@ from tv_automation import alerts as alerts_mod
 from tv_automation import act as act_mod
 from tv_automation import analyze_mtf as analyze_mtf_mod
 from tv_automation import chart as chart_mod
+from tv_automation import decision_log as decision_log_mod
 from tv_automation import orders as orders_mod
+from tv_automation import reconcile as reconcile_mod
 from tv_automation import trading as trading_mod
 from tv_automation import watchlist as watchlist_mod
 from tv_automation.lib import audit
@@ -69,16 +71,24 @@ _SCREENSHOT_ROOT = (Path.home() / "Desktop" / "TradingView").resolve()
 _UI_TOKEN = os.getenv("UI_TOKEN", "").strip()
 
 
+_LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
+
+
 @app.middleware("http")
 async def guard(request: Request, call_next):
-    """CSRF + optional shared-secret guard on /api/* routes.
+    """CSRF + shared-secret guard on /api/* routes.
 
     * Any non-GET request must carry `X-UI: 1`. A malicious site you
       visit in the same browser cannot set custom headers cross-origin
       without triggering a CORS preflight — which we never respond to
       with Access-Control-Allow-*, so the attack fails.
-    * If UI_TOKEN is set in .env, every /api/* request (GET and POST)
-      must also match `X-UI-Token`. Constant-time compare.
+    * If UI_TOKEN is set in .env, non-loopback /api/* requests (GET and
+      POST) must match `X-UI-Token`. Constant-time compare.
+    * Loopback requests (127.0.0.1 / ::1) are trusted — the socket is
+      already a trust boundary and requiring the token doubles the
+      friction on every local dev session for zero security gain.
+      Tailscale Serve preserves the original client IP (100.x.x.x) so
+      remote requests still fall through the strict path.
     * Non-/api/* (HTML, static assets) is unrestricted.
     """
     path = request.url.path
@@ -87,9 +97,11 @@ async def guard(request: Request, call_next):
             if request.headers.get("X-UI") != "1":
                 return JSONResponse({"detail": "CSRF: missing X-UI header"}, status_code=403)
         if _UI_TOKEN:
-            sent = request.headers.get("X-UI-Token") or ""
-            if not secrets.compare_digest(sent, _UI_TOKEN):
-                return JSONResponse({"detail": "auth: bad or missing X-UI-Token"}, status_code=401)
+            client_host = (request.client.host if request.client else "") or ""
+            if client_host not in _LOOPBACK_HOSTS:
+                sent = request.headers.get("X-UI-Token") or ""
+                if not secrets.compare_digest(sent, _UI_TOKEN):
+                    return JSONResponse({"detail": "auth: bad or missing X-UI-Token"}, status_code=401)
     return await call_next(request)
 
 # In-memory registry of background act() runs. Keyed by task_id; state
@@ -429,6 +441,9 @@ async def analyze_start(payload: dict) -> dict:
             result = await analyze_mtf_mod.analyze_chart(symbol, **kwargs)
             _analyze_tasks[task_id]["state"] = "done"
             _analyze_tasks[task_id]["result"] = result
+        except asyncio.CancelledError:
+            _analyze_tasks[task_id]["state"] = "cancelled"
+            raise
         except Exception as e:
             _analyze_tasks[task_id]["state"] = "failed"
             _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
@@ -438,11 +453,11 @@ async def analyze_start(payload: dict) -> dict:
                 _active_analyze_task = None
 
     _active_analyze_task = task_id
-    asyncio.create_task(runner())
+    _analyze_tasks[task_id]["_task"] = asyncio.create_task(runner())
     return {"task_id": task_id, "request_id": request_id}
 
 
-# Deep multi-TF analysis — captures 9 TFs and produces an integrated
+# Deep multi-TF analysis — captures 10 TFs and produces an integrated
 # signal + optimal-TF recommendation + Pine strategy script. Same task
 # shape as /api/analyze so the UI can use the same polling loop; the
 # result dict carries `mode: "deep"` + `optimal_tf` + `per_tf[]` for
@@ -488,6 +503,9 @@ async def analyze_deep_start(payload: dict) -> dict:
             )
             _analyze_tasks[task_id]["state"] = "done"
             _analyze_tasks[task_id]["result"] = result
+        except asyncio.CancelledError:
+            _analyze_tasks[task_id]["state"] = "cancelled"
+            raise
         except Exception as e:
             _analyze_tasks[task_id]["state"] = "failed"
             _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
@@ -497,7 +515,65 @@ async def analyze_deep_start(payload: dict) -> dict:
                 _active_analyze_task = None
 
     _active_analyze_task = task_id
-    asyncio.create_task(runner())
+    _analyze_tasks[task_id]["_task"] = asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+# Multi-provider pressure test — captures once, runs the same chart
+# through 2-3 providers, returns per-provider results + a consensus
+# summary. Task-based because 3 sequential LLM calls take 60-130s.
+@app.post("/api/analyze/pressure-test")
+async def pressure_test_start(payload: dict) -> dict:
+    global _active_analyze_task
+    p = payload or {}
+    symbol = (p.get("symbol") or "").strip()
+    if not symbol:
+        raise HTTPException(400, "symbol required")
+    timeframe = (p.get("timeframe") or "").strip() or None
+    combos = p.get("combos") or None
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _analyze_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "symbol": symbol,
+        "mode": "pressure_test",
+    }
+
+    async def runner():
+        global _active_analyze_task
+        try:
+            kwargs = {"combos": combos, "base_url": p.get("base_url") or None}
+            if timeframe:
+                kwargs["timeframe"] = timeframe
+            result = await analyze_mtf_mod.pressure_test(symbol, **kwargs)
+            result["mode"] = "pressure_test"  # UI uses this to branch render
+            _analyze_tasks[task_id]["state"] = "done"
+            _analyze_tasks[task_id]["result"] = result
+        except asyncio.CancelledError:
+            _analyze_tasks[task_id]["state"] = "cancelled"
+            raise
+        except Exception as e:
+            _analyze_tasks[task_id]["state"] = "failed"
+            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _analyze_tasks[task_id]["finished_at"] = time.time()
+            if _active_analyze_task == task_id:
+                _active_analyze_task = None
+
+    _active_analyze_task = task_id
+    _analyze_tasks[task_id]["_task"] = asyncio.create_task(runner())
     return {"task_id": task_id, "request_id": request_id}
 
 
@@ -506,7 +582,163 @@ async def analyze_status(task_id: str) -> dict:
     t = _analyze_tasks.get(task_id)
     if not t:
         raise HTTPException(404, "unknown task_id")
-    return {k: v for k, v in t.items() if not callable(v)}
+    # Filter private `_`-prefixed fields (e.g. the asyncio.Task handle we
+    # stash for cancellation) — they aren't JSON-serializable.
+    return {k: v for k, v in t.items() if not k.startswith("_")}
+
+
+# Cancel a running analyze task. Sets state="cancelled" via CancelledError
+# bubbling through the runner. Idempotent — calling on an already-finished
+# task is a no-op that returns the current state. The CDP session is
+# released by the runner's `finally:` block as part of the unwind.
+@app.post("/api/analyze/{task_id}/cancel")
+async def analyze_cancel(task_id: str) -> dict:
+    t = _analyze_tasks.get(task_id)
+    if not t:
+        raise HTTPException(404, "unknown task_id")
+    state = t.get("state")
+    if state != "running":
+        return {"task_id": task_id, "state": state, "cancelled": False}
+    task = t.get("_task")
+    if task is not None and not task.done():
+        task.cancel()
+    audit.log("analyze.cancel_requested",
+              task_id=task_id, request_id=t.get("request_id"),
+              symbol=t.get("symbol"), mode=t.get("mode"))
+    return {"task_id": task_id, "state": "cancelling", "cancelled": True}
+
+
+# Decision log endpoints — minimal surface for a future journal/
+# calibration UI. The CLI at `.venv/bin/python -m tv_automation.reconcile`
+# is the primary reconciliation tool for now; these endpoints exist so
+# the browser can do the same work when the journal UI ships.
+
+@app.get("/api/decisions/recent")
+async def decisions_recent(limit: int = 50) -> dict:
+    """Recent decisions — newest first. For a journal view."""
+    return {"decisions": decision_log_mod.recent(limit=max(1, min(limit, 500)))}
+
+
+@app.get("/api/decisions/unreconciled")
+async def decisions_unreconciled(limit: int = 50) -> dict:
+    """Decisions without an outcome tagged — oldest first (matches the
+    CLI's chronological walk)."""
+    return {"decisions": decision_log_mod.unreconciled(
+        limit=max(1, min(limit, 500)),
+    )}
+
+
+@app.post("/api/decisions/learning/{request_id}")
+async def decisions_learning(request_id: str, payload: dict) -> dict:
+    """Save/clear a learning note on a decision. Empty string clears.
+    Capped at 500 chars — a reflection over that is a journal entry,
+    not a one-line lesson; belongs in a separate doc."""
+    note = (payload or {}).get("note") or ""
+    if len(note) > 500:
+        raise HTTPException(400, "note too long (max 500 chars)")
+    ok = decision_log_mod.set_learning_note(request_id, note)
+    if not ok:
+        raise HTTPException(404, "unknown request_id")
+    return {"ok": True, "request_id": request_id, "note_len": len(note.strip())}
+
+
+@app.post("/api/decisions/reconcile/{request_id}")
+async def decisions_reconcile(request_id: str, payload: dict) -> dict:
+    """Tag an outcome on a specific decision. `payload` is
+    `{outcome: str, realized_r: number | null}`. Validates the outcome
+    string against the CLI's taxonomy so a typo can't corrupt the DB."""
+    p = payload or {}
+    outcome = (p.get("outcome") or "").strip()
+    valid = {"hit_tp", "hit_stop", "manual_close", "expired", "no_fill",
+             "skip_right", "skip_wrong"}
+    if outcome not in valid:
+        raise HTTPException(400, f"invalid outcome; valid: {sorted(valid)}")
+    realized_r = p.get("realized_r")
+    if realized_r is not None:
+        try:
+            realized_r = float(realized_r)
+        except (TypeError, ValueError):
+            raise HTTPException(400, "realized_r must be a number or null")
+    ok = decision_log_mod.set_outcome(request_id, outcome, realized_r)
+    if not ok:
+        raise HTTPException(404, "unknown request_id")
+    return {"ok": True, "request_id": request_id, "outcome": outcome,
+            "realized_r": realized_r}
+
+
+@app.get("/api/decisions/calibration")
+async def decisions_calibration() -> dict:
+    """Per-provider accuracy bucketed by confidence. The data that
+    backs the eventual inline "Opus track: 65% @ 70%+" chip."""
+    return {"summary": decision_log_mod.calibration_summary()}
+
+
+@app.get("/api/decisions/export.csv")
+async def decisions_export_csv():
+    """Full decision log as CSV — for taxes, external analysis, backup.
+    Single flat row-per-decision with all fields. RFC 4180 quoting via
+    the stdlib csv module, so rationales/notes containing commas or
+    quotes round-trip cleanly into Excel/Numbers/Sheets.
+
+    No filtering by design — if a user wants a subset, they can filter
+    in their spreadsheet tool. A single complete export is a cleaner
+    contract than N flavors of partial export.
+
+    NOTE: return-type annotation omitted on purpose — FastAPI evaluates
+    annotations at route-registration time (before any function-body
+    imports run), so `-> "Response"` triggers a `PydanticUndefinedAnnotation`
+    error if `Response` isn't in module scope at registration.
+    """
+    import csv
+    import io
+    from fastapi.responses import Response
+
+    rows = decision_log_mod.recent(limit=100_000)  # effectively all
+    buf = io.StringIO()
+    # Column order chosen for human readability when opened in a
+    # spreadsheet: identity → decision data → outcome → meta.
+    cols = [
+        "iso_ts", "request_id", "symbol", "mode", "tf", "optimal_tf",
+        "provider", "model", "signal", "confidence",
+        "entry", "stop", "tp", "rationale",
+        "outcome", "realized_r", "closed_at", "learning_note",
+        "pine_path", "cost_usd", "elapsed_s", "llm_elapsed_s",
+        "usage_in", "usage_out", "ts",
+    ]
+    writer = csv.DictWriter(buf, fieldnames=cols, extrasaction="ignore")
+    writer.writeheader()
+    for r in rows:
+        writer.writerow(r)
+
+    # Filename includes a date so repeated exports don't overwrite.
+    fname = f"intelligenceos-decisions-{time.strftime('%Y%m%d')}.csv"
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{fname}"',
+            # Small but real: some spreadsheet tools need this hint
+            # to respect UTF-8 without a BOM.
+            "Content-Type": "text/csv; charset=utf-8",
+        },
+    )
+
+
+@app.get("/api/decisions/rollup")
+async def decisions_rollup(days: int = 7) -> dict:
+    """N-day rollup for the Journal's weekly review panel. Includes a
+    prior-period comparison (e.g. last 7 days vs. the 7 days before
+    that) so drift is visible."""
+    return decision_log_mod.rollup_summary(days=max(1, min(days, 90)))
+
+
+@app.get("/api/decisions/session")
+async def decisions_session() -> dict:
+    """Today's rollup: total, reconciled, wins/losses, running R.
+    Default window is start-of-local-day so "today" matches how the
+    user thinks about their trading session. Polled by the Trade tab's
+    session strip on every tab-enter + after every reconcile."""
+    return decision_log_mod.session_summary()
 
 
 @app.post("/api/analyze/apply-pine")

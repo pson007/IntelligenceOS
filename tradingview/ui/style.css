@@ -137,6 +137,13 @@
   .main { flex: 1; overflow-y: auto; padding: 24px 32px; }
   .tab { max-width: 1200px; }
   .tab.hidden { display: none; }
+  /* Generic utility — covers any element that carries `class="hidden"`
+     where no compound selector handles it. !important so element-
+     specific display rules (`.analyze-config__field > select` sets
+     padding/min-width but not display) can't accidentally override.
+     Previously only per-component `.foo.hidden` rules existed; adding
+     this catches the model-dropdown case + all future uses. */
+  .hidden { display: none !important; }
   .tab h1 { font-size: 20px; margin: 0 0 4px; font-weight: 600; }
   .tab .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 13px; }
 
@@ -567,7 +574,7 @@
    * Multi-timeframe analysis card.
    * ---------------------------------------------------------------- */
 
-  /* Progress — visible during captures (9 TFs) and the LLM call. The
+  /* Progress — visible during captures (10 TFs) and the LLM call. The
      trader is looking at a ~60-120s pipeline; this component's job is
      to communicate "still moving, here's where we are, here's ETA" at
      a glance. Three rows: phase+elapsed, per-TF checklist, bar+detail. */
@@ -584,6 +591,22 @@
     margin-left: auto; color: var(--muted); font-size: var(--fs-xs);
     font-variant-numeric: tabular-nums;
   }
+
+  /* Stop button sits at the right edge of the progress head, red-tinted
+     so it reads as "bail out". Visible only while the progress strip is
+     visible (the strip is hidden once the run ends). */
+  .analyze-stop-btn {
+    padding: 3px 10px; border-radius: 4px;
+    border: 1px solid color-mix(in srgb, var(--danger, #d9534f) 50%, var(--border));
+    background: transparent;
+    color: color-mix(in srgb, var(--danger, #d9534f) 90%, var(--text));
+    font-size: var(--fs-xs); cursor: pointer;
+  }
+  .analyze-stop-btn:hover {
+    background: color-mix(in srgb, var(--danger, #d9534f) 15%, var(--bg-2));
+    color: var(--text);
+  }
+  .analyze-stop-btn:disabled { opacity: 0.5; cursor: default; }
 
   .analyze-progress-bar {
     height: 3px; background: var(--bg-3);
@@ -663,14 +686,50 @@
     display: flex; flex-direction: column; gap: 4px;
   }
   .analyze-confidence-label {
-    display: flex; justify-content: space-between;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: var(--s-2);
     font-size: var(--fs-xs);
+    flex-wrap: wrap;
   }
   .analyze-confidence-label .label {
     color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
   }
   .analyze-confidence-label .value {
     font-family: var(--mono); color: var(--text); font-weight: 600;
+  }
+
+  /* Calibration chip — small pill to the right of the confidence %.
+     Communicates whether THIS provider/model has earned trust at
+     THIS confidence bucket historically. Deliberately low-key: it's
+     context for the primary number, not the primary number itself. */
+  .analyze-cal-chip {
+    display: inline-block;
+    padding: 1px 8px;
+    font-family: var(--mono); font-size: var(--fs-xs);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-3); color: var(--muted);
+    margin-left: auto;  /* pushes to the far right */
+  }
+  .analyze-cal-chip.cal-good {
+    background: rgba(63, 185, 80, 0.10);
+    border-color: rgba(63, 185, 80, 0.35);
+    color: var(--green);
+  }
+  .analyze-cal-chip.cal-mid {
+    background: rgba(210, 153, 34, 0.10);
+    border-color: rgba(210, 153, 34, 0.35);
+    color: var(--amber, #d29922);
+  }
+  .analyze-cal-chip.cal-bad {
+    background: rgba(248, 81, 73, 0.10);
+    border-color: rgba(248, 81, 73, 0.35);
+    color: var(--red);
+  }
+  /* "pending (n=2)" — seen enough to exist, not enough to trust. */
+  .analyze-cal-chip.cal-pending {
+    color: var(--muted);
+    font-style: italic;
   }
   .analyze-confidence-bar {
     height: 6px; background: var(--bg-3); border-radius: 3px;
@@ -713,6 +772,53 @@
     padding: var(--s-2) 0 var(--s-3);
     font-size: var(--fs-md); line-height: 1.55;
     color: var(--text);
+  }
+
+  /* "What could change my mind" — unknowns the model flagged as
+     materially uncertain. Amber tint so it reads as a caution zone
+     distinct from the green/red verdict. Intentionally understated:
+     we want the user to notice it without being alarmed by it. */
+  .analyze-unknowns {
+    margin-top: var(--s-1);
+    padding: var(--s-2) var(--s-3);
+    background: rgba(210, 153, 34, 0.06);
+    border-left: 3px solid rgba(210, 153, 34, 0.45);
+    border-radius: 4px;
+  }
+  .analyze-unknowns__head {
+    color: var(--amber, #d29922);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: var(--s-1);
+  }
+  .analyze-unknowns__list {
+    margin: 0; padding: 0;
+    list-style: none;
+  }
+  .analyze-unknowns__list li {
+    padding: 3px 0;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--text);
+  }
+  .analyze-unknowns__list li::before {
+    content: '•';
+    color: var(--amber, #d29922);
+    margin-right: 8px;
+    font-weight: 600;
+  }
+  .analyze-unknowns__what { color: var(--text); }
+  .analyze-unknowns__how {
+    color: var(--muted);
+    font-style: italic;
+    font-size: var(--fs-xs);
+    margin-left: 8px;
+  }
+  .analyze-unknowns__how::before {
+    content: '→ ';
+    color: var(--muted);
   }
 
   /* Optimal-TF badge for deep analysis — a prominent strip above the
@@ -783,6 +889,477 @@
   .analyze-pertf-body .pill.long  { background: rgba(63,185,80,0.15); color: var(--green); }
   .analyze-pertf-body .pill.short { background: rgba(248,81,73,0.15); color: var(--red); }
   .analyze-pertf-body .pill.skip  { background: var(--bg-3); color: var(--muted); }
+
+  /* ----------------------------------------------------------------
+     Pressure test — multi-provider consensus card. Renders below the
+     single-TF verdict so the trader sees the primary call first, then
+     the second opinions. Badge state: ✓ all agree (green), ◐ majority
+     leans (amber), ✗ split (red).
+     ---------------------------------------------------------------- */
+  .analyze-pressure {
+    margin-top: var(--s-3);
+    padding: var(--s-3);
+    border-radius: 6px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+  }
+  .analyze-pressure__head {
+    display: flex; align-items: center; gap: var(--s-2);
+    margin-bottom: var(--s-2);
+  }
+  .analyze-pressure__head .label {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+  .analyze-pressure__badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    border: 1px solid transparent;
+  }
+  .analyze-pressure__badge.pressure-agree {
+    background: rgba(63, 185, 80, 0.15);
+    color: var(--green);
+    border-color: rgba(63, 185, 80, 0.4);
+  }
+  .analyze-pressure__badge.pressure-majority {
+    background: rgba(210, 153, 34, 0.15);
+    color: var(--amber, #d29922);
+    border-color: rgba(210, 153, 34, 0.4);
+  }
+  .analyze-pressure__badge.pressure-split {
+    background: rgba(248, 81, 73, 0.15);
+    color: var(--red);
+    border-color: rgba(248, 81, 73, 0.4);
+  }
+  .analyze-pressure__badge.pressure-empty {
+    background: var(--bg-3); color: var(--muted);
+  }
+  .analyze-pressure__body { overflow-x: auto; }
+  .pressure-table {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .pressure-table th, .pressure-table td {
+    text-align: left; padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .pressure-table th {
+    color: var(--muted); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px; font-size: var(--fs-xs);
+  }
+  .pressure-table th.num, .pressure-table td.num { text-align: right; }
+  .pressure-table .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: var(--fs-xs); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .pressure-table .pill.long  { background: rgba(63,185,80,0.15); color: var(--green); }
+  .pressure-table .pill.short { background: rgba(248,81,73,0.15); color: var(--red); }
+  .pressure-table .pill.skip  { background: var(--bg-3); color: var(--muted); }
+  .pressure-table tr.errored td { color: var(--muted); font-style: italic; }
+  .pressure-table tr.spread-row td {
+    font-size: var(--fs-xs);
+    border-bottom: none;
+  }
+
+  /* ----------------------------------------------------------------
+     Session scorecard — compact strip at the top of the Trade tab
+     showing today's decision count, realized R, W-L, unreconciled
+     reminder. Rendered inline under the subtitle so the trader's
+     first glance at the deck shows where they stand today.
+     ---------------------------------------------------------------- */
+  .session-strip {
+    display: flex; align-items: center; gap: var(--s-3);
+    padding: var(--s-2) var(--s-3);
+    margin-bottom: var(--s-3);
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 6px;
+    flex-wrap: wrap;
+  }
+  .session-strip__label {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    flex: 0 0 auto;
+  }
+  .session-strip__cells {
+    display: flex; gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .session-strip__cells .cell {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .session-strip__cells .cell .n {
+    font-family: var(--mono); font-size: var(--fs-md); font-weight: 600;
+    color: var(--text);
+  }
+  .session-strip__cells .cell .n.pos { color: var(--green); }
+  .session-strip__cells .cell .n.neg { color: var(--red); }
+  .session-strip__cells .cell .n.warn { color: var(--amber, #d29922); }
+  .session-strip__cells .cell .n.muted { color: var(--muted); }
+  .session-strip__cells .cell .label {
+    color: var(--muted);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* Daily risk budget input — lives in the session strip on the far
+     right. Small $-prefixed input; keyboard-friendly number field. */
+  .session-strip__budget {
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+  .budget-field {
+    display: flex; flex-direction: column; gap: 2px;
+    font-size: var(--fs-xs);
+  }
+  .budget-field > span {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .budget-input-wrap {
+    position: relative;
+    display: inline-flex; align-items: center;
+  }
+  .budget-input-prefix {
+    position: absolute; left: 8px;
+    color: var(--muted);
+    font-family: var(--mono); font-size: var(--fs-sm);
+    pointer-events: none;
+  }
+  .budget-input-wrap input {
+    padding: 4px 8px 4px 20px;
+    width: 110px;
+    font-family: var(--mono); font-size: var(--fs-sm);
+  }
+
+  /* ----------------------------------------------------------------
+     Risk bar — Quick Order's "how much is at stake" readout. Tinted
+     by % of daily budget: green (<10%) → amber (10-30%) → orange
+     (30-50%) → red (>50%). Friction scales with the trade's weight
+     without being a hard block.
+     ---------------------------------------------------------------- */
+  .risk-bar {
+    margin-top: var(--s-2);
+    padding: var(--s-2) var(--s-3);
+    border-radius: 6px;
+    background: var(--bg-2);
+    border-left: 3px solid var(--border);
+    display: flex; flex-direction: column; gap: 2px;
+    font-size: var(--fs-sm);
+  }
+  .risk-bar__main {
+    display: flex; gap: var(--s-2); align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .risk-bar__main .label {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+  .risk-bar__main .value {
+    font-family: var(--mono); font-weight: 600;
+    color: var(--text);
+  }
+  .risk-bar__main .sep { color: var(--muted); }
+  .risk-bar__main .muted {
+    color: var(--muted);
+    font-family: var(--mono); font-size: var(--fs-xs);
+    margin-left: auto;
+  }
+  .risk-bar__hint {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+
+  /* Tint levels — border-left color + subtle background shift. The
+     goal: at a glance you can tell "this is small" vs "this is large"
+     without reading the % number. */
+  .risk-bar.risk-ok {
+    border-left-color: var(--green);
+    background: rgba(63, 185, 80, 0.05);
+  }
+  .risk-bar.risk-warn {
+    border-left-color: var(--amber, #d29922);
+    background: rgba(210, 153, 34, 0.05);
+  }
+  .risk-bar.risk-high {
+    border-left-color: #f58a39;
+    background: rgba(245, 138, 57, 0.08);
+  }
+  .risk-bar.risk-over {
+    border-left-color: var(--red);
+    background: rgba(248, 81, 73, 0.10);
+  }
+  .risk-bar.risk-over .risk-bar__hint {
+    color: var(--red);
+    font-weight: 600;
+  }
+  .risk-bar.risk-high .risk-bar__hint {
+    color: #f58a39;
+  }
+
+  /* ----------------------------------------------------------------
+     Rollup — N-day performance summary with prior-period deltas
+     and per-provider attribution. Ships above the calibration card
+     in the Journal tab. Scales from 7d → 30d → 90d via the toggle.
+     ---------------------------------------------------------------- */
+  .rollup-range-toggle {
+    display: flex; gap: 2px;
+    background: var(--bg-3); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px;
+  }
+  .rollup-range-toggle .range-btn {
+    padding: 3px 10px;
+    font-size: var(--fs-xs);
+    font-family: var(--mono);
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    border-radius: 3px;
+  }
+  .rollup-range-toggle .range-btn:hover { color: var(--text); }
+  .rollup-range-toggle .range-btn.active {
+    background: var(--bg-1);
+    color: var(--text);
+  }
+
+  .rollup-period {
+    font-size: var(--fs-xs);
+    margin-bottom: var(--s-2);
+  }
+  .rollup-cells {
+    display: flex; gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .rollup-cells .cell {
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 100px;
+  }
+  .rollup-cells .cell .n {
+    font-family: var(--mono); font-size: var(--fs-lg); font-weight: 700;
+    color: var(--text);
+  }
+  .rollup-cells .cell .n.pos { color: var(--green); }
+  .rollup-cells .cell .n.neg { color: var(--red); }
+  .rollup-cells .cell .n.muted { color: var(--muted); }
+  .rollup-cells .cell .label {
+    color: var(--muted);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .rollup-cells .cell .row { display: flex; gap: 4px; align-items: baseline; }
+
+  /* Delta pill — "+4", "-2R", "new", "±0". Compact, tinted by
+     direction. Muted when there's no prior data to compare. */
+  .rollup-delta {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--bg-3);
+  }
+  .rollup-delta.pos { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .rollup-delta.neg { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .rollup-delta.muted { color: var(--muted); font-style: italic; }
+
+  .rollup-providers { margin-top: var(--s-3); }
+  .rollup-section-head {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    margin-bottom: var(--s-2);
+  }
+  .rollup-table {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .rollup-table th, .rollup-table td {
+    text-align: left; padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rollup-table th {
+    color: var(--muted); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px; font-size: var(--fs-xs);
+  }
+  .rollup-table th.num, .rollup-table td.num { text-align: right; }
+  .rollup-table td.pos { color: var(--green); }
+  .rollup-table td.neg { color: var(--red); }
+
+  /* ----------------------------------------------------------------
+     Calibration summary — how each (provider, model, bucket) has
+     actually performed. Rendered at the top of the Journal tab when
+     there's any reconciled directional data. This card is the whole
+     calibration discipline made visible.
+     ---------------------------------------------------------------- */
+  .calibration-body { overflow-x: auto; }
+  .calibration-table {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .calibration-table th, .calibration-table td {
+    text-align: left; padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .calibration-table th {
+    color: var(--muted); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px; font-size: var(--fs-xs);
+  }
+  .calibration-table th.num, .calibration-table td.num { text-align: right; }
+  .calibration-table .mono.pos { color: var(--green); }
+  .calibration-table .mono.neg { color: var(--red); }
+  .calibration-table .mono.warn { color: var(--amber, #d29922); }
+
+  /* Horizontal hit-rate bar — track full-width of its column; fill
+     tinted by rate bucket. Uses the same color scale as the inline
+     calibration chip so a user who sees "cal-good green" on one
+     doesn't have to re-learn it on the other. */
+  .cal-bar {
+    display: block; width: 100%; min-width: 100px;
+    height: 8px; background: var(--bg-3); border-radius: 4px;
+    overflow: hidden;
+  }
+  .cal-bar--empty { opacity: 0.4; }
+  .cal-bar-fill {
+    height: 100%;
+    transition: width 0.2s ease-out;
+  }
+  .cal-bar-fill.cal-good    { background: var(--green); }
+  .cal-bar-fill.cal-mid     { background: var(--amber, #d29922); }
+  .cal-bar-fill.cal-bad     { background: var(--red); }
+  .cal-bar-fill.cal-pending { background: var(--muted); opacity: 0.5; }
+
+  /* ----------------------------------------------------------------
+     Journal — decision log + inline reconciliation table.
+     ---------------------------------------------------------------- */
+  .journal-stats {
+    font-size: var(--fs-xs);
+  }
+  .journal-list { overflow-x: auto; }
+  .journal-table {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .journal-table th, .journal-table td {
+    text-align: left; padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .journal-table th {
+    color: var(--muted); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px; font-size: var(--fs-xs);
+  }
+  .journal-table tr.unreconciled td {
+    background: rgba(210, 153, 34, 0.04);
+  }
+  .journal-table tr.reconciled {
+    opacity: 0.85;
+  }
+  .journal-table .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: var(--fs-xs); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .journal-table .pill.long  { background: rgba(63,185,80,0.15); color: var(--green); }
+  .journal-table .pill.short { background: rgba(248,81,73,0.15); color: var(--red); }
+  .journal-table .pill.skip  { background: var(--bg-3); color: var(--muted); }
+
+  /* Small inline mode badge for deep-analysis rows */
+  .pill-mini {
+    display: inline-block; padding: 0 6px; border-radius: 8px;
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    background: rgba(88, 166, 255, 0.12); color: var(--accent);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+  }
+
+  /* Outcome tags — one color per taxonomy entry. hit_tp green, hit_stop
+     red, skip_right muted-green, skip_wrong amber, everything else
+     neutral. The color conveys "was this a good outcome?" at a glance. */
+  .outcome-tag {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: var(--fs-xs); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    background: var(--bg-3); color: var(--muted);
+    margin-right: var(--s-1);
+  }
+  .outcome-tag.out-hit_tp       { background: rgba(63,185,80,0.18); color: var(--green); }
+  .outcome-tag.out-hit_stop     { background: rgba(248,81,73,0.18); color: var(--red); }
+  .outcome-tag.out-manual_close { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .outcome-tag.out-expired      { background: var(--bg-3); color: var(--muted); }
+  .outcome-tag.out-no_fill      { background: var(--bg-3); color: var(--muted); }
+  .outcome-tag.out-skip_right   { background: rgba(63,185,80,0.12); color: var(--green); }
+  .outcome-tag.out-skip_wrong   { background: rgba(210,153,34,0.15); color: var(--amber, #d29922); }
+
+  /* Inline reconcile buttons — compact, flow like inline chips. */
+  .reconcile-btn {
+    padding: 3px 10px;
+    font-size: var(--fs-xs);
+    border-radius: 4px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    margin-right: 3px; margin-bottom: 3px;
+  }
+  .reconcile-btn:hover { background: var(--bg-4, var(--bg-2)); }
+  .journal-outcome { min-width: 280px; }
+
+  /* Learning note row — sub-row beneath each reconciled decision.
+     Subtle so the main row's data reads first; note is secondary
+     context. Input is full-width of the cell so traders have room to
+     type a sentence without a cramped feeling. */
+  .journal-table tr.note-row td {
+    padding: 4px 10px 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
+  }
+  .journal-table tr.note-row td:first-child {
+    padding-right: 12px;
+    font-style: italic;
+  }
+  .learning-note-input {
+    width: 100%;
+    padding: 4px 8px;
+    background: var(--bg);
+    border: 1px solid transparent;
+    border-radius: 3px;
+    color: var(--text);
+    font-size: var(--fs-sm);
+    font-style: italic;
+  }
+  .learning-note-input:hover {
+    border-color: var(--border);
+  }
+  .learning-note-input:focus {
+    border-color: var(--accent);
+    background: var(--bg-1);
+    outline: none;
+    font-style: normal;
+  }
+  .learning-note-input::placeholder {
+    color: var(--muted);
+    opacity: 0.7;
+  }
 
   .analyze-meta {
     padding-top: var(--s-2); font-size: var(--fs-xs);

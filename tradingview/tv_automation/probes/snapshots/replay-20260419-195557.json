@@ -1,0 +1,969 @@
+{
+  "taken_at": "2026-04-19T19:55:57-0400",
+  "url": "https://www.tradingview.com/chart/8hp50raV/?symbol=MNQ1%21",
+  "pre_activation": {
+    "replay_refs_bodywide": [
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Bar replay",
+        "title": null,
+        "text": "",
+        "visible": true,
+        "xy": {
+          "x": 774,
+          "y": 0,
+          "w": 90,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Bar replay",
+        "title": null,
+        "text": "",
+        "visible": true,
+        "xy": {
+          "x": 662,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "div",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Alert\nReplay",
+        "visible": true,
+        "xy": {
+          "x": 749,
+          "y": -1,
+          "w": 168,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Bar replay",
+        "title": null,
+        "text": "Replay",
+        "visible": true,
+        "xy": {
+          "x": 826,
+          "y": -1,
+          "w": 90,
+          "h": 38
+        }
+      },
+      {
+        "tag": "div",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Replay",
+        "visible": true,
+        "xy": {
+          "x": 863,
+          "y": 10,
+          "w": 43,
+          "h": 17
+        }
+      }
+    ],
+    "top_strip_buttons": [
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Cross",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 0,
+          "y": 47,
+          "w": 52,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Symbol search",
+        "text": "",
+        "xy": {
+          "x": 4,
+          "y": 5,
+          "w": 128,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Symbol search",
+        "text": "",
+        "xy": {
+          "x": 4,
+          "y": 5,
+          "w": 128,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Cursors",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 41,
+          "y": 49,
+          "w": 11,
+          "h": 34
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Symbol search",
+        "text": "MNQ1!",
+        "xy": {
+          "x": 56,
+          "y": 4,
+          "w": 128,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Change symbol",
+        "title": null,
+        "text": "MNQ1!",
+        "xy": {
+          "x": 87,
+          "y": 48,
+          "w": 52,
+          "h": 19
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Switch data type",
+        "text": "",
+        "xy": {
+          "x": 104,
+          "y": 5,
+          "w": 28,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Switch data type",
+        "text": "",
+        "xy": {
+          "x": 104,
+          "y": 5,
+          "w": 28,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Compare symbols",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 136,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Compare symbols",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 136,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Change symbol",
+        "title": null,
+        "text": "Micro E-mini Nasdaq-100 Index Futures",
+        "xy": {
+          "x": 151,
+          "y": 48,
+          "w": 290,
+          "h": 19
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Switch data type",
+        "text": "",
+        "xy": {
+          "x": 156,
+          "y": 4,
+          "w": 28,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "1 minute",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 183,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "1 minute",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 183,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "2 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 216,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "2 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 216,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "3 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 248,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "3 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 248,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "5 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 281,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "5 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 281,
+          "y": 0,
+          "w": 33,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "15 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 314,
+          "y": 0,
+          "w": 41,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "15 minutes",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 314,
+          "y": 0,
+          "w": 41,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "1 hour",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 355,
+          "y": 0,
+          "w": 29,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "1 hour",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 355,
+          "y": 0,
+          "w": 29,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "4 hours",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 384,
+          "y": 0,
+          "w": 29,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "4 hours",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 384,
+          "y": 0,
+          "w": 29,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "1 day",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 413,
+          "y": 0,
+          "w": 22,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "1 day",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 413,
+          "y": 0,
+          "w": 22,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Chart interval",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 435,
+          "y": 0,
+          "w": 24,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Chart interval",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 435,
+          "y": 0,
+          "w": 24,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Change interval",
+        "title": null,
+        "text": "1",
+        "xy": {
+          "x": 453,
+          "y": 48,
+          "w": 10,
+          "h": 19
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Candles",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 468,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Candles",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 468,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Unflag symbol",
+        "title": "Unflag symbol",
+        "text": "",
+        "xy": {
+          "x": 512,
+          "y": 45,
+          "w": 28,
+          "h": 24
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": "open-indicators-dialog",
+        "ariaLabel": "Indicators, metrics, and strategies",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 515,
+          "y": 0,
+          "w": 111,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": "open-indicators-dialog",
+        "ariaLabel": "Indicators, metrics, and strategies",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 515,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "More",
+        "title": "More",
+        "text": "",
+        "xy": {
+          "x": 540,
+          "y": 45,
+          "w": 28,
+          "h": 24
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": "Market open",
+        "text": "",
+        "xy": {
+          "x": 544,
+          "y": 48,
+          "w": 18,
+          "h": 18
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": "show-favorite-indicators",
+        "ariaLabel": "Favorite indicators",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 553,
+          "y": 0,
+          "w": 24,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Indicator templates",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 577,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Create alert",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 624,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": "show-favorite-indicators",
+        "ariaLabel": "Favorite indicators",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 626,
+          "y": 0,
+          "w": 24,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Indicator templates",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 650,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Bar replay",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 662,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Create alert",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 697,
+          "y": 0,
+          "w": 78,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 709,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 747,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Bar replay",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 774,
+          "y": 0,
+          "w": 90,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Layout setup",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 785,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "All changes saved",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 823,
+          "y": 0,
+          "w": 110,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 874,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 912,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Manage layouts",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 933,
+          "y": 0,
+          "w": 24,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Layout setup",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 950,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "All changes saved",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 988,
+          "y": 0,
+          "w": 110,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Quick search",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1057,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Settings",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1095,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Manage layouts",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1098,
+          "y": 0,
+          "w": 24,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Fullscreen mode",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1133,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Take a snapshot",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1171,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Quick search",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1222,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Settings",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1260,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Fullscreen mode",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1298,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": "Take a snapshot",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 1336,
+          "y": 0,
+          "w": 38,
+          "h": 38
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Trade",
+        "xy": {
+          "x": 1885,
+          "y": 4,
+          "w": 79,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": "base",
+        "ariaLabel": "Watchlist, details, and news",
+        "title": null,
+        "text": "",
+        "xy": {
+          "x": 2004,
+          "y": 43,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "Order",
+        "xy": {
+          "x": 2022,
+          "y": 44,
+          "w": 4,
+          "h": 28
+        }
+      },
+      {
+        "tag": "button",
+        "dataName": null,
+        "ariaLabel": null,
+        "title": null,
+        "text": "DOM",
+        "xy": {
+          "x": 2025,
+          "y": 44,
+          "w": 4,
+          "h": 28
+        }
+      }
+    ]
+  },
+  "post_activation": {},
+  "activation_selector": null,
+  "notes": [
+    "Could not find a Replay toggle button via the usual anchors \u2014 inspect pre_activation.replay_refs_bodywide and top_strip_buttons for candidates."
+  ]
+}

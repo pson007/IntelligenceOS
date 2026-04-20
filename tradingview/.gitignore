@@ -18,6 +18,17 @@ screenshots/
 # Action audit log — personal trade history, request IDs
 audit/
 
+# Decision log SQLite DB — per-decision rows for calibration /
+# outcome reconciliation. Same privacy class as audit/. Never commit.
+decisions.db
+decisions.db-journal
+decisions.db-wal
+decisions.db-shm
+
+# Parse-failure dumps — raw LLM output saved when JSON parsing fails.
+# Useful for debugging but can contain long model reasoning; keep local.
+pine/parse_failures/
+
 # Chart screenshots + metadata captured by capture_chart.py — ephemeral
 pine/captures/
 
@@ -28,3 +39,8 @@ pine/generated/
 
 # Probe snapshots at tv_automation/probes/snapshots/ ARE committed
 # (small JSON catalogs, useful for selector-drift diffing over time).
+
+# Replay bench per-run checkpoints — ephemeral, rebuildable from
+# decisions.db. `benchmarks/` itself IS tracked (live_bench_results.json
+# lives there); just the transient replay-run files are ignored.
+benchmarks/replay_bench_*.jsonl

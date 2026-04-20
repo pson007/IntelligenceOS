@@ -1,0 +1,46 @@
+{
+  "taken_at": "2026-04-19T19:54:44-0400",
+  "url": "https://www.tradingview.com/chart/8hp50raV/?symbol=MNQ1%21",
+  "pre_activation": {
+    "toolbar": {
+      "scope": "[class*=\"top-toolbar\"], [data-name*=\"toolbar\"]",
+      "found": true,
+      "buttons": [],
+      "inputs": [],
+      "other": []
+    },
+    "header_buttons": {
+      "scope": "header, [class*=\"header-\"]",
+      "found": true,
+      "buttons": [
+        {
+          "tag": "button",
+          "dataName": null,
+          "ariaLabel": null,
+          "title": null,
+          "text": "Public",
+          "role": "tab",
+          "visible": false,
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "dataName": null,
+          "ariaLabel": null,
+          "title": null,
+          "text": "Private",
+          "role": "tab",
+          "visible": false,
+          "disabled": false
+        }
+      ],
+      "inputs": [],
+      "other": []
+    }
+  },
+  "post_activation": {},
+  "activation_selector": null,
+  "notes": [
+    "Could not find a Replay toggle button via the usual anchors \u2014 inspect pre_activation.toolbar for candidates."
+  ]
+}

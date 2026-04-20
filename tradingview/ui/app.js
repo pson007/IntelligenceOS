@@ -164,9 +164,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     }
     // Tab-specific on-enter hooks
     if (tab === 'audit') startAuditPoll(); else stopAuditPoll();
-    if (tab === 'trade') { startPositionsPoll(); refreshChartMeta(); } else stopPositionsPoll();
+    if (tab === 'trade') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); } else stopPositionsPoll();
     if (tab === 'watchlist') loadWatchlist();
     if (tab === 'alerts') loadAlerts();
+    if (tab === 'journal') loadJournal();
   });
 });
 
@@ -356,6 +357,7 @@ let _currentChartSymbol = '';
 // intraday TF (pill data-tf="5m" vs meta.interval="5"), which in turn
 // makes Analyze run on whatever pill stayed stuck-active (usually 1D).
 const TV_INTERVAL_TO_PILL = {
+  '30S': '30s', '45S': '45s',
   '1': '1m', '2': '2m', '3': '3m', '5': '5m', '15': '15m', '30': '30m',
   '60': '1h', '120': '2h', '240': '4h',
   'D': '1D', 'W': '1W', 'M': '1M',
@@ -554,6 +556,8 @@ function hideAnalyzeProgress() {
   $('analyze-progress').classList.add('hidden');
   document.querySelector('.analyze-progress-bar')?.classList.remove('thinking');
   stopElapsedTicker();
+  const stop = $('analyze-stop-btn');
+  if (stop) { stop.disabled = false; stop.textContent = 'Stop'; }
 }
 
 function showAnalyzeError(msg) {
@@ -601,6 +605,9 @@ function renderAnalysisResult(r) {
   hideAnalyzeProgress();
   clearAnalyzeError();
   $('analyze-result').classList.remove('hidden');
+  // Hide any stale pressure-test section from a prior run — this
+  // result is for a regular Analyze/Deep, not a consensus check.
+  $('analyze-pressure').classList.add('hidden');
 
   const sig = String(r.signal || 'Skip');
   const sigCls = sig.toLowerCase();
@@ -611,6 +618,37 @@ function renderAnalysisResult(r) {
   const conf = Math.max(0, Math.min(100, +r.confidence || 0));
   $('analyze-confidence-val').textContent = `${conf}%`;
   $('analyze-confidence-fill').style.width = `${conf}%`;
+
+  // Calibration chip — renders the historical track for this exact
+  // (provider, model, confidence-bucket). Three display states:
+  //   • n >= 5 and hit_rate known → "Sonnet: 67% hit @ 70-79% (n=12)"
+  //   • 1 <= n < 5 → "Sonnet: pending (n=2)" — the model has a record
+  //     but too few samples to trust the number yet
+  //   • n == 0 or bucket missing → hidden entirely (don't clutter the
+  //     UI on a truly-cold-start for this bucket)
+  // This is the thesis's central discipline: no confidence number
+  // without its earnable track. When track is absent, we say so
+  // explicitly rather than hiding the question.
+  const chipEl = $('analyze-cal-chip');
+  const cal = r.calibration;
+  const modelShort = String(r.model || '').split(' ')[0] || r.model || '';
+  if (cal && cal.n >= 5 && cal.hit_rate !== null && cal.hit_rate !== undefined) {
+    const hit = Math.round(cal.hit_rate * 100);
+    chipEl.textContent = `${modelShort}: ${hit}% hit @ ${cal.bucket} (n=${cal.n})`;
+    chipEl.className = 'analyze-cal-chip';
+    // Tint tracks calibration quality: green when hit-rate >= 60%,
+    // amber 40-59%, red <40%. Not about the specific trade — about
+    // whether this provider/model/bucket has *earned* trust.
+    if (hit >= 60) chipEl.classList.add('cal-good');
+    else if (hit >= 40) chipEl.classList.add('cal-mid');
+    else chipEl.classList.add('cal-bad');
+  } else if (cal && cal.n > 0) {
+    chipEl.textContent = `${modelShort}: pending (n=${cal.n})`;
+    chipEl.className = 'analyze-cal-chip cal-pending';
+  } else {
+    chipEl.className = 'analyze-cal-chip hidden';
+    chipEl.textContent = '';
+  }
 
   // Thousand-separator commas on numeric values. Non-numeric → em-dash.
   // Up to 2 decimals so tick-sized instruments (ES 0.25, MNQ 0.25) read
@@ -683,6 +721,29 @@ function renderAnalysisResult(r) {
   }
 
   $('analyze-rationale').textContent = r.rationale || '';
+
+  // Unknowns — "What could change my mind." Rendered only when the
+  // model returned at least one material unknown. An empty array means
+  // "setup is clear" and we don't want to clutter the card with an
+  // empty section. Each entry has `what` (required) and an optional
+  // `resolves_how` hint which renders as faint supporting text.
+  // Future: wire up one-click resolvers (econ calendar, vol term
+  // curve, options flow) keyed off resolves_how patterns.
+  const unknowns = Array.isArray(r.unknowns) ? r.unknowns : [];
+  const unknownsEl = $('analyze-unknowns');
+  if (unknowns.length === 0) {
+    unknownsEl.classList.add('hidden');
+    $('analyze-unknowns-list').innerHTML = '';
+  } else {
+    unknownsEl.classList.remove('hidden');
+    $('analyze-unknowns-list').innerHTML = unknowns.map(u => {
+      const what = escapeHtml(u.what || '');
+      const how = u.resolves_how
+        ? `<span class="analyze-unknowns__how">${escapeHtml(u.resolves_how)}</span>`
+        : '';
+      return `<li><span class="analyze-unknowns__what">${what}</span>${how}</li>`;
+    }).join('');
+  }
 
   // Deep-mode extras: optimal-TF badge above the verdict + per-TF
   // breakdown table below the rationale. Both hidden for single-TF.
@@ -778,6 +839,8 @@ async function pollAnalyzeStatus() {
     let llmStarted = false, activeTf = null;
     let symbol = '', tf = '', model = '', total = 1;
     const doneTfs = new Set();
+    // Pressure-test state — counts providers done vs total expected.
+    let ptTotal = 0, ptDone = 0, ptActive = null, ptMode = false;
 
     for (const e of events) {
       const ev = e.event || '';
@@ -795,6 +858,20 @@ async function pollAnalyzeStatus() {
       } else if (ev === 'analyze.llm_request') {
         llmStarted = true;
         model = e.model || model;
+      } else if (ev === 'pressure_test.start') {
+        ptMode = true;
+        if (Array.isArray(e.combos)) ptTotal = e.combos.length;
+        symbol = e.symbol || symbol;
+        tf = e.timeframe || tf;
+      } else if (ev === 'pressure_test.provider_start') {
+        ptActive = `${e.provider}/${e.model}`;
+        if (e.total) ptTotal = e.total;
+      } else if (ev === 'pressure_test.provider_done'
+              || ev === 'pressure_test.provider_fail') {
+        ptDone += 1;
+        if (ptActive && ptActive === `${e.provider}/${e.model}`) ptActive = null;
+      } else if (ev === 'pressure_test.done') {
+        phase = 'done';
       } else if (ev === 'analyze.done') {
         phase = 'done';
       } else if (ev === 'analyze.fail' || ev === 'analyze.parse_fail') {
@@ -802,43 +879,87 @@ async function pollAnalyzeStatus() {
       }
     }
 
+    // Pressure-test progress overrides the single/deep progress path
+    // because the same `analyze.*` capture events fire early, then
+    // the pressure_test.provider_* events take over.
+    if (ptMode && phase !== 'done' && !phase.startsWith('failed')) {
+      if (ptActive) {
+        phase = `Pressure test — ${ptDone + 1} of ${ptTotal}`;
+        detail = `${ptActive} thinking…`;
+        pct = null;
+      } else if (ptDone > 0 && ptDone < ptTotal) {
+        phase = `Pressure test — ${ptDone} of ${ptTotal} done`;
+        detail = 'next provider…';
+        pct = Math.round((ptDone / ptTotal) * 100);
+      } else if (ptDone === 0) {
+        phase = 'Pressure test starting';
+        detail = `capturing ${symbol} ${tf || ''}…`;
+        pct = 10;
+      }
+    }
+
     const done = doneTfs.size;
     const isDeep = total > 1;
 
-    if (llmStarted) {
-      phase = isDeep ? `Integrating ${total} timeframes` : `Analyzing ${tf || 'chart'}`;
-      detail = model ? `${model} reading chart${isDeep ? 's' : ''}…` : 'model reading chart…';
-      pct = null;  // indeterminate shimmer
-    } else if (done >= total && total > 0) {
-      phase = isDeep ? `All ${total} timeframes captured` : 'Chart captured';
-      detail = 'handing off to model…';
-      pct = 50;
-    } else if (activeTf) {
-      phase = isDeep
-        ? `Capturing ${activeTf} (${done + 1} of ${total})`
-        : `Capturing ${activeTf}`;
-      detail = symbol ? `symbol: ${symbol}` : '';
-      pct = isDeep ? Math.round((done / total) * 50) : 10;
-    } else if (done > 0 && isDeep) {
-      phase = `Captured ${done} of ${total}`;
-      detail = 'next timeframe…';
-      pct = Math.round((done / total) * 50);
-    } else if (symbol) {
-      phase = `Starting — ${symbol} ${tf || ''}`.trim();
-      detail = isDeep ? `preparing ${total} captures…` : 'preparing capture…';
-      pct = 0;
+    // Only run the single/deep progress branching when NOT in pressure-
+    // test mode — the pressure-test block above has already set phase/
+    // detail/pct correctly for this path.
+    if (!ptMode) {
+      if (llmStarted) {
+        phase = isDeep ? `Integrating ${total} timeframes` : `Analyzing ${tf || 'chart'}`;
+        detail = model ? `${model} reading chart${isDeep ? 's' : ''}…` : 'model reading chart…';
+        pct = null;  // indeterminate shimmer
+      } else if (done >= total && total > 0) {
+        phase = isDeep ? `All ${total} timeframes captured` : 'Chart captured';
+        detail = 'handing off to model…';
+        pct = 50;
+      } else if (activeTf) {
+        phase = isDeep
+          ? `Capturing ${activeTf} (${done + 1} of ${total})`
+          : `Capturing ${activeTf}`;
+        detail = symbol ? `symbol: ${symbol}` : '';
+        pct = isDeep ? Math.round((done / total) * 50) : 10;
+      } else if (done > 0 && isDeep) {
+        phase = `Captured ${done} of ${total}`;
+        detail = 'next timeframe…';
+        pct = Math.round((done / total) * 50);
+      } else if (symbol) {
+        phase = `Starting — ${symbol} ${tf || ''}`.trim();
+        detail = isDeep ? `preparing ${total} captures…` : 'preparing capture…';
+        pct = 0;
+      }
     }
 
     if (status.state === 'running') {
       setAnalyzeProgress(phase, detail, pct);
     } else if (status.state === 'done') {
       stopAnalyzePoll();
-      renderAnalysisResult(status.result || {});
+      hideAnalyzeProgress();
+      const result = status.result || {};
+      // Branch render on mode: pressure test has a different shape
+      // (array of per-provider results, no single signal/entry/etc),
+      // so it rides the polling infra but gets its own renderer.
+      if (result.mode === 'pressure_test') {
+        renderPressureTest(result);
+      } else {
+        renderAnalysisResult(result);
+      }
       setAnalyzeBusy(null);
+      setBusy($('analyze-pressure-test'), false, 'Pressure test');
+      refreshSessionStrip();
     } else if (status.state === 'failed') {
       stopAnalyzePoll();
       showAnalyzeError(`${status.error || 'analysis failed'}`);
       setAnalyzeBusy(null);
+      setBusy($('analyze-pressure-test'), false, 'Pressure test');
+    } else if (status.state === 'cancelled') {
+      // User hit Stop. The server already flipped state; we just tidy up
+      // the UI — no error banner (not a failure), no result card.
+      stopAnalyzePoll();
+      hideAnalyzeProgress();
+      setAnalyzeBusy(null);
+      setBusy($('analyze-pressure-test'), false, 'Pressure test');
+      toast('analysis stopped', 'ok');
     }
   } catch (e) {
     // transient — keep polling
@@ -851,6 +972,23 @@ function stopAnalyzePoll() {
     analyzeCurrent.pollTimer = null;
   }
 }
+
+// User hit Stop while analysis was in flight. Fire-and-forget the cancel
+// request — the next poll tick will see state=cancelled and tidy the UI.
+// Disable the button immediately so double-click doesn't spam the server.
+async function cancelAnalysis() {
+  if (!analyzeCurrent) return;
+  const { task_id } = analyzeCurrent;
+  const btn = $('analyze-stop-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Stopping…'; }
+  try {
+    await api(`/api/analyze/${task_id}/cancel`, { method: 'POST' });
+  } catch (e) {
+    toast(`stop failed: ${e.message}`, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = 'Stop'; }
+  }
+}
+$('analyze-stop-btn').addEventListener('click', cancelAnalysis);
 
 async function startAnalysis() {
   const symbol = $('trade-symbol').value.trim();
@@ -897,7 +1035,219 @@ async function startAnalysis() {
 }
 $('trade-analyze').addEventListener('click', startAnalysis);
 
-// Deep analysis — captures all 9 timeframes and asks the LLM to pick
+// ----------------------------------------------------------------------
+// Reversibility-aware commitment — dollar risk per trade + daily
+// budget tracking. The Quick Order bar shows "$N risk · X% of budget"
+// tinted green/amber/red so the UX weight of clicking BUY scales with
+// how much money is actually at stake. A small scalp and a swing-size
+// position can't look the same in the UI.
+// ----------------------------------------------------------------------
+
+// Point values for common futures. When a symbol isn't in this map
+// (stocks, crypto, unknown futures), dollar-risk falls back to 1:1
+// price terms ($1 per point) and the display is labeled accordingly.
+// CME contract specs — values are USD per 1.00 price point.
+const POINT_VALUES = {
+  // Micro equity index futures
+  'MNQ1!': 2.0,   'MNQ': 2.0,        // Micro Nasdaq-100
+  'MES1!': 5.0,   'MES': 5.0,        // Micro S&P 500
+  'M2K1!': 5.0,   'M2K': 5.0,        // Micro Russell 2000
+  'MYM1!': 0.5,   'MYM': 0.5,        // Micro Dow
+  // Full-size equity index futures
+  'NQ1!':  20.0,  'NQ':  20.0,       // E-mini Nasdaq-100
+  'ES1!':  50.0,  'ES':  50.0,       // E-mini S&P 500
+  'RTY1!': 50.0,  'RTY': 50.0,       // E-mini Russell 2000
+  'YM1!':  5.0,   'YM':  5.0,        // E-mini Dow
+  // Micro metals / energy
+  'MCL1!': 100.0, 'MCL': 100.0,      // Micro crude ($1/bbl × 100bbl? TV conventions vary)
+  'MGC1!': 10.0,  'MGC': 10.0,       // Micro gold
+};
+
+// Return the point-value dollars/point for the currently-selected
+// symbol, or null if we don't know. Tries exact match, then strips
+// exchange prefix ("CME_MINI:MNQ1!" → "MNQ1!"), then strips the front-
+// month continuous marker ("MNQ1!" → "MNQ").
+function _pointValueFor(symbol) {
+  if (!symbol) return null;
+  const bare = symbol.includes(':') ? symbol.split(':').pop() : symbol;
+  if (POINT_VALUES[bare] != null) return POINT_VALUES[bare];
+  const root = bare.replace(/[!0-9]+$/, '');
+  if (POINT_VALUES[root] != null) return POINT_VALUES[root];
+  return null;
+}
+
+const BUDGET_STORAGE_KEY = 'ios-daily-risk-budget';
+
+function _getDailyBudget() {
+  try {
+    const v = localStorage.getItem(BUDGET_STORAGE_KEY);
+    const n = v ? Number(v) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function _setDailyBudget(v) {
+  try {
+    if (v && v > 0) localStorage.setItem(BUDGET_STORAGE_KEY, String(v));
+    else localStorage.removeItem(BUDGET_STORAGE_KEY);
+  } catch (e) { /* private mode / quota — non-fatal */ }
+}
+
+// Recompute and render the risk bar. Called on every change to qty,
+// stop, entry, or symbol. Hidden when we lack enough info to compute
+// (no stop, no qty, or unknown symbol AND no fallback). Uses entry
+// from either an explicit field or the latest analyze result.
+function refreshRiskBar() {
+  const bar = $('trade-risk-bar');
+  const qty = parseFloat($('trade-qty').value);
+  const sl = parseFloat($('trade-sl').value);
+  const symbol = $('trade-symbol').value.trim();
+
+  if (!Number.isFinite(qty) || qty <= 0 || !Number.isFinite(sl)) {
+    bar.classList.add('hidden');
+    return;
+  }
+
+  // Entry reference: use the last analysis's entry if present, else
+  // fall back to the last chart meta's price (from the capture). If
+  // neither, we can't compute a meaningful risk distance.
+  const lastEntry = parseFloat($('analyze-entry').textContent.replace(/,/g, ''));
+  const entry = Number.isFinite(lastEntry) ? lastEntry : null;
+  if (entry === null) {
+    bar.classList.add('hidden');
+    return;
+  }
+
+  const distance = Math.abs(entry - sl);
+  if (distance <= 0) {
+    bar.classList.add('hidden');
+    return;
+  }
+
+  const pv = _pointValueFor(symbol);
+  const dollarRisk = qty * distance * (pv != null ? pv : 1);
+  const symKnown = pv != null;
+
+  $('risk-dollars').textContent = symKnown
+    ? `$${dollarRisk.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+    : `${dollarRisk.toLocaleString('en-US', { maximumFractionDigits: 2 })} pts`;
+
+  // The small math breakdown makes the number auditable — "where did
+  // $310 come from?" answers itself. Hidden on mobile via CSS.
+  const pvLabel = symKnown ? `$${pv}/pt` : 'unknown pt value';
+  $('risk-math').textContent = `(${qty} × ${distance.toFixed(2)} × ${pvLabel})`;
+
+  const budget = _getDailyBudget();
+  let pctStr = '—';
+  let tint = '';
+  if (budget && symKnown) {
+    const pct = (dollarRisk / budget) * 100;
+    pctStr = `${pct.toFixed(1)}% of $${budget.toLocaleString()} budget`;
+    tint = pct < 10 ? 'risk-ok'
+         : pct < 30 ? 'risk-warn'
+         : pct < 50 ? 'risk-high'
+         : 'risk-over';
+  } else if (!symKnown) {
+    pctStr = 'pt value unknown — can\'t convert to $';
+  } else {
+    pctStr = 'set a daily budget above for % context';
+  }
+  $('risk-pct').textContent = pctStr;
+
+  bar.classList.remove('hidden', 'risk-ok', 'risk-warn', 'risk-high', 'risk-over');
+  if (tint) bar.classList.add(tint);
+
+  // Friction messaging: at risk-high flag it, at risk-over suggest
+  // shrinking. Traders can still click BUY/SELL — this is UI weight,
+  // not a hard block. Hard blocks belong on a settings toggle, not
+  // here where a single bad click costs keystrokes.
+  const hint = $('risk-hint');
+  if (tint === 'risk-over') {
+    hint.textContent = `⚠ This trade would risk >${Math.round(100 - (budget / dollarRisk) * 100)}% over your daily budget.`;
+  } else if (tint === 'risk-high') {
+    hint.textContent = 'Heavy size for this budget — consider half.';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function wireRiskBar() {
+  const recompute = () => refreshRiskBar();
+  ['trade-qty', 'trade-sl', 'trade-symbol'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener('input', recompute);
+    el.addEventListener('change', recompute);
+  });
+  // Re-run after analyze finishes (new entry/stop appear)
+  const obs = new MutationObserver(recompute);
+  obs.observe($('analyze-entry'), { childList: true, characterData: true, subtree: true });
+
+  // Budget field — load, persist, recompute
+  const budgetEl = $('daily-risk-budget');
+  const stored = _getDailyBudget();
+  if (stored) budgetEl.value = stored;
+  budgetEl.addEventListener('input', () => {
+    _setDailyBudget(parseFloat(budgetEl.value));
+    recompute();
+  });
+}
+wireRiskBar();
+
+// ----------------------------------------------------------------------
+// Session rollup — today's scorecard strip at the top of Trade.
+// ----------------------------------------------------------------------
+async function refreshSessionStrip() {
+  // Outer strip always visible (hosts the daily budget input); only the
+  // scorecard cells portion hides when there's no data yet today.
+  const cells = $('session-strip-cells');
+  try {
+    const s = await api('/api/decisions/session');
+    if (!s || !s.total) {
+      cells.classList.add('hidden');
+      cells.innerHTML = '';
+      return;
+    }
+    // Realized R formatting: explicit sign, 2 decimals. Red/green color
+    // by total direction — at a glance, "am I up or down today?"
+    const r = Number(s.realized_r_sum || 0);
+    const rStr = (r >= 0 ? '+' : '') + r.toFixed(2) + 'R';
+    const rCls = r > 0 ? 'pos' : r < 0 ? 'neg' : '';
+    // Win rate only meaningful if there were directional closes. Skip
+    // rendering when both wins and losses are 0 (all no_fill / expired).
+    const closes = (s.wins || 0) + (s.losses || 0);
+    const winRate = closes > 0 ? Math.round((s.wins / closes) * 100) : null;
+
+    const cellsHtml = [
+      `<div class="cell"><span class="n">${s.total}</span><span class="label">decisions</span></div>`,
+      `<div class="cell"><span class="n ${rCls}">${rStr}</span><span class="label">realized</span></div>`,
+    ];
+    if (winRate !== null) {
+      cellsHtml.push(`<div class="cell"><span class="n">${s.wins}–${s.losses}</span><span class="label">W–L (${winRate}%)</span></div>`);
+    }
+    if (s.unreconciled > 0) {
+      cellsHtml.push(`<div class="cell"><span class="n warn">${s.unreconciled}</span><span class="label">to tag</span></div>`);
+    }
+    if (s.skips > 0) {
+      cellsHtml.push(`<div class="cell"><span class="n muted">${s.skips}</span><span class="label">skipped</span></div>`);
+    }
+    if (s.overrides > 0) {
+      cellsHtml.push(`<div class="cell"><span class="n muted">${s.overrides}</span><span class="label">overrode AI</span></div>`);
+    }
+    cells.innerHTML = cellsHtml.join('');
+    cells.classList.remove('hidden');
+  } catch (e) {
+    // Silent — transient DB/network hiccup shouldn't drop a banner on
+    // the user. Cells stay in whatever state they were in.
+  }
+}
+
+// Initial load + on tab-enter is hooked in the tab switcher below.
+refreshSessionStrip();
+
+// Deep analysis — captures all 10 timeframes and asks the LLM to pick
 // the optimal one, then produces a backtestable Pine strategy. Same
 // task shape as single-TF, so we reuse pollAnalyzeStatus unchanged —
 // the only differences are the endpoint and a note in the phase label.
@@ -939,18 +1289,141 @@ async function startDeepAnalysis() {
 }
 $('trade-analyze-deep').addEventListener('click', startDeepAnalysis);
 
-// Provider → model control swap. Ollama has an open-ended model zoo
-// (text input) while claude.ai exposes a fixed three-tier dropdown. We
-// show exactly one at a time and read from the visible one at submit.
+// ----------------------------------------------------------------------
+// Pressure test — run the same chart through 2-3 providers for a
+// consensus check. Expensive in Claude quota + time, so it's a
+// user-initiated second-opinion flow, not automatic.
+// ----------------------------------------------------------------------
+async function startPressureTest() {
+  const symbol = $('trade-symbol').value.trim();
+  if (!symbol) return toast('symbol required', 'err');
+  const tf = document.querySelector('#trade-tf-bar .tf-pill.active')?.dataset.tf || null;
+
+  const btn = $('analyze-pressure-test');
+  setAnalyzeBusy('analyze');  // co-disable both Analyze buttons too
+  setBusy(btn, true);
+  $('analyze-card').classList.remove('hidden');
+  clearAnalyzeError();
+  startElapsedTicker();
+  setAnalyzeProgress(`Pressure test — ${symbol}`, 'capturing once + querying 3 providers…', 0);
+
+  try {
+    const r = await api('/api/analyze/pressure-test', {
+      method: 'POST',
+      body: { symbol, timeframe: tf },
+    });
+    stopAnalyzePoll();
+    analyzeCurrent = {
+      task_id: r.task_id,
+      request_id: r.request_id,
+      mode: 'pressure_test',
+      pollTimer: setInterval(pollAnalyzeStatus, 1500),
+    };
+    pollAnalyzeStatus();
+  } catch (e) {
+    hideAnalyzeProgress();
+    showAnalyzeError(e.message);
+    toast(`pressure test: ${e.message}`, 'err');
+    setAnalyzeBusy(null);
+    setBusy(btn, false, 'Pressure test');
+  }
+}
+$('analyze-pressure-test').addEventListener('click', startPressureTest);
+
+function renderPressureTest(r) {
+  const wrap = $('analyze-pressure');
+  const body = $('analyze-pressure-body');
+  const badge = $('analyze-pressure-badge');
+
+  wrap.classList.remove('hidden');
+  const c = r.consensus || {};
+  const agree = c.agree || 0;
+  const total = c.total || 0;
+  // Consensus badge: all-agree green, majority amber, split red. "0/0"
+  // means every provider errored — badge says so explicitly.
+  let badgeCls = 'split', badgeText = '';
+  if (total === 0) {
+    badgeCls = 'empty';
+    badgeText = 'all providers errored';
+  } else if (c.all_agree) {
+    badgeCls = 'agree';
+    badgeText = `✓ ${agree}/${total} agree: ${c.direction}`;
+  } else if (agree / total >= 0.67) {
+    badgeCls = 'majority';
+    badgeText = `◐ ${agree}/${total} lean ${c.direction}`;
+  } else {
+    badgeCls = 'split';
+    badgeText = `✗ split — ${agree}/${total} on ${c.direction}`;
+  }
+  badge.className = `analyze-pressure__badge pressure-${badgeCls}`;
+  badge.textContent = badgeText;
+
+  // Per-provider rows. Errored providers render in a muted row with
+  // the error message instead of signal/levels.
+  const rows = (r.results || []).map(p => {
+    if (p.error) {
+      return `<tr class="errored">
+        <td class="mono">${escapeHtml((p.provider || '').split('_')[0])}/${escapeHtml(String(p.model || '').split(' ')[0])}</td>
+        <td colspan="5" class="muted">error: ${escapeHtml(p.error)}</td>
+        <td class="mono muted num">${p.elapsed_s || 0}s</td>
+      </tr>`;
+    }
+    const sig = String(p.signal || 'Skip');
+    const cls = sig.toLowerCase();
+    const conf = p.confidence != null ? `${p.confidence}%` : '—';
+    const rr = _calcRR(p.signal, p.entry, p.stop, p.tp);
+    const rrStr = rr !== null ? `${rr.toFixed(2)}:1` : '—';
+    return `<tr>
+      <td class="mono">${escapeHtml((p.provider || '').split('_')[0])}/<strong>${escapeHtml(String(p.model || '').split(' ')[0])}</strong></td>
+      <td><span class="pill ${cls}">${escapeHtml(sig)}</span></td>
+      <td class="mono num">${conf}</td>
+      <td class="mono num">${p.entry != null ? (+p.entry).toLocaleString() : '—'}</td>
+      <td class="mono num">${p.stop != null ? (+p.stop).toLocaleString() : '—'}</td>
+      <td class="mono num">${p.tp != null ? (+p.tp).toLocaleString() : '—'}</td>
+      <td class="mono num">${rrStr}</td>
+      <td class="mono num muted">${p.elapsed_s || 0}s</td>
+    </tr>`;
+  }).join('');
+
+  // Spread row — shows max-min across agreeing providers for each
+  // level. Only rendered when at least one spread number exists.
+  let spreadRow = '';
+  if (c.entry_spread != null || c.stop_spread != null || c.tp_spread != null) {
+    const fmt = v => v == null ? '—' : `±${Number(v).toLocaleString()}`;
+    spreadRow = `<tr class="spread-row">
+      <td colspan="3" class="muted">agreeing-provider spread</td>
+      <td class="mono num muted">${fmt(c.entry_spread)}</td>
+      <td class="mono num muted">${fmt(c.stop_spread)}</td>
+      <td class="mono num muted">${fmt(c.tp_spread)}</td>
+      <td colspan="2"></td>
+    </tr>`;
+  }
+
+  body.innerHTML = `<table class="pressure-table">
+    <thead><tr>
+      <th>Model</th><th>Signal</th><th class="num">Conf</th>
+      <th class="num">Entry</th><th class="num">Stop</th><th class="num">TP</th>
+      <th class="num">R:R</th><th class="num">Time</th>
+    </tr></thead>
+    <tbody>${rows}${spreadRow}</tbody>
+  </table>`;
+}
+
+// Provider → model control swap. Each provider has its own model
+// affordance: Ollama uses an open-ended text input (many models,
+// custom names), claude.ai uses a fixed 3-tier dropdown, ChatGPT uses
+// a fixed 2-option dropdown (Instant / Thinking). Show exactly one
+// control at a time and read from whichever is visible at submit.
 function _syncAnalyzeModelControl() {
-  const isClaudeWeb = $('analyze-provider').value === 'claude_web';
-  $('analyze-model').classList.toggle('hidden', isClaudeWeb);
-  $('analyze-model-claude').classList.toggle('hidden', !isClaudeWeb);
+  const p = $('analyze-provider').value;
+  $('analyze-model').classList.toggle('hidden', p !== 'ollama');
+  $('analyze-model-claude').classList.toggle('hidden', p !== 'claude_web');
+  $('analyze-model-chatgpt').classList.toggle('hidden', p !== 'chatgpt_web');
 }
 function _analyzeModelValue() {
-  if ($('analyze-provider').value === 'claude_web') {
-    return $('analyze-model-claude').value || null;
-  }
+  const p = $('analyze-provider').value;
+  if (p === 'claude_web')  return $('analyze-model-claude').value || null;
+  if (p === 'chatgpt_web') return $('analyze-model-chatgpt').value || null;
   return $('analyze-model').value.trim() || null;
 }
 $('analyze-provider').addEventListener('change', _syncAnalyzeModelControl);
@@ -1589,6 +2062,520 @@ $('audit-autorefresh').addEventListener('change', () => {
   else stopAuditPoll();
 });
 $('audit-filter').addEventListener('input', () => fetchAudit());
+
+// ----------------------------------------------------------------------
+// Journal tab — decision log + inline reconciliation. Complement to the
+// CLI: users who prefer the browser can tag outcomes without leaving.
+// Shares the exact outcome taxonomy with tv_automation/reconcile.py —
+// if you add a new outcome, update both here and server-side valid set.
+// ----------------------------------------------------------------------
+let _journalCache = [];  // last loaded list, so refresh after reconcile doesn't need a full roundtrip for the unchanged rows
+
+function _calcRR(signal, entry, stop, tp) {
+  const e = Number(entry), s = Number(stop), t = Number(tp);
+  if (!Number.isFinite(e) || !Number.isFinite(s) || !Number.isFinite(t)) return null;
+  if (signal === 'Long' && e > s) return (t - e) / (e - s);
+  if (signal === 'Short' && s > e) return (e - t) / (s - e);
+  return null;
+}
+
+function _rAutoFromOutcome(outcome, signal, entry, stop, tp) {
+  if (outcome === 'hit_tp') return _calcRR(signal, entry, stop, tp);
+  if (outcome === 'hit_stop') return -1.0;
+  if (outcome === 'expired' || outcome === 'no_fill' || outcome === 'skip_right') return 0.0;
+  return null;  // manual_close / skip_wrong — user enters
+}
+
+function _fmtR(r) {
+  if (r === null || r === undefined) return '—';
+  const n = Number(r);
+  if (!Number.isFinite(n)) return '—';
+  return (n >= 0 ? '+' : '') + n.toFixed(2) + 'R';
+}
+
+function _fmtDateShort(iso_ts) {
+  // "2026-04-19T10:47:21-0400" → "04-19 10:47"
+  if (!iso_ts) return '—';
+  const m = iso_ts.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  return m ? `${m[2]}-${m[3]} ${m[4]}:${m[5]}` : iso_ts.slice(0, 16);
+}
+
+function _outcomeChoicesFor(signal) {
+  // Directional signals and Skip have semantically different choices.
+  // Mirrors the CLI's branch logic. Each entry: [code, label, takesR]
+  // where takesR is true if we need to prompt for a manual R number.
+  if (signal === 'Long' || signal === 'Short') {
+    return [
+      ['hit_tp',       'Hit TP',        false],
+      ['hit_stop',     'Hit stop',      false],
+      ['manual_close', 'Manual close',  true],
+      ['expired',      'Expired',       false],
+      ['no_fill',      'No fill',       false],
+    ];
+  }
+  return [
+    ['skip_right', 'Skip right',  false],
+    ['skip_wrong', 'Skip wrong',  true],
+  ];
+}
+
+function renderJournalRow(d) {
+  const rr = _calcRR(d.signal, d.entry, d.stop, d.tp);
+  const rrStr = rr !== null ? `R:R ${rr.toFixed(2)}:1` : '';
+  const tf = d.optimal_tf || d.tf || '?';
+  const modeTag = d.mode === 'deep' ? '<span class="pill-mini deep">deep</span>' : '';
+  const sigCls = String(d.signal || 'skip').toLowerCase();
+  const conf = d.confidence != null ? `${d.confidence}%` : '—';
+
+  const levels = (d.entry != null)
+    ? `<span class="mono">E ${(+d.entry).toLocaleString()} / S ${(+d.stop).toLocaleString()} / T ${(+d.tp).toLocaleString()}</span>  <span class="muted">${rrStr}</span>`
+    : '<span class="muted">no levels</span>';
+
+  const outcomeCell = d.outcome
+    ? `<span class="outcome-tag out-${d.outcome}">${d.outcome.replace('_', ' ')}</span> <span class="mono">${_fmtR(d.realized_r)}</span>`
+    : _reconcileButtonsHtml(d);
+
+  // Learning-note row — only for reconciled decisions. Click to edit,
+  // blur to save. Empty note shows a muted prompt; filled shows the
+  // text. No submit button — blur-save keeps the flow frictionless.
+  const noteRow = d.outcome ? `<tr class="note-row" data-request-id="${escapeHtml(d.request_id)}">
+    <td colspan="2" class="muted" style="text-align: right; vertical-align: middle; font-size: var(--fs-xs);">What I learned:</td>
+    <td colspan="5">
+      <input type="text" class="learning-note-input"
+             data-request-id="${escapeHtml(d.request_id)}"
+             value="${escapeHtml(d.learning_note || '')}"
+             placeholder="one-line takeaway for next time…"
+             maxlength="500" />
+    </td>
+  </tr>` : '';
+
+  return `<tr data-request-id="${escapeHtml(d.request_id)}" class="${d.outcome ? 'reconciled' : 'unreconciled'}">
+    <td class="mono muted">${_fmtDateShort(d.iso_ts)}</td>
+    <td class="mono">${escapeHtml(d.symbol || '—')}</td>
+    <td class="mono">${escapeHtml(tf)} ${modeTag}</td>
+    <td><span class="pill ${sigCls}">${escapeHtml(d.signal || 'Skip')}</span> <span class="mono muted">${conf}</span></td>
+    <td>${levels}</td>
+    <td class="mono muted">${escapeHtml((d.provider || '').split('_')[0])}/${escapeHtml(String(d.model || '').split(' ')[0])}</td>
+    <td class="journal-outcome">${outcomeCell}</td>
+  </tr>${noteRow}`;
+}
+
+function _reconcileButtonsHtml(d) {
+  const choices = _outcomeChoicesFor(d.signal);
+  return choices.map(([code, label, takesR]) => {
+    const title = takesR ? `${label} (enter R)` : label;
+    return `<button class="reconcile-btn" data-outcome="${code}" data-takes-r="${takesR ? 1 : 0}" title="${title}">${label}</button>`;
+  }).join('');
+}
+
+async function loadJournal() {
+  const unreconciledOnly = $('journal-unreconciled-only').checked;
+  const endpoint = unreconciledOnly ? '/api/decisions/unreconciled?limit=100' : '/api/decisions/recent?limit=100';
+  try {
+    const r = await api(endpoint);
+    _journalCache = r.decisions || [];
+    renderJournalList();
+  } catch (e) {
+    $('journal-list').innerHTML = `<div class="empty">Load failed: ${escapeHtml(e.message)}</div>`;
+  }
+  // Parallel, fire-and-forget — calibration + rollup reloads
+  // shouldn't block decision-list render. A failure in either just
+  // hides its card without affecting the decision list below.
+  loadCalibration();
+  loadRollup();
+}
+
+// Range toggle wiring — 7d / 30d / 90d. On click, swap active class
+// and reload the rollup. Defaulting to 30d because a week is too
+// short for meaningful per-provider attribution (~5-10 decisions per
+// provider) at typical usage.
+document.querySelectorAll('#rollup-range-toggle .range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#rollup-range-toggle .range-btn').forEach(b =>
+      b.classList.toggle('active', b === btn));
+    _rollupDays = parseInt(btn.dataset.days, 10) || 30;
+    loadRollup();
+  });
+});
+
+let _rollupDays = 30;  // default window; user toggles to 7/30/90
+
+async function loadRollup() {
+  const card = $('journal-rollup-card');
+  try {
+    const r = await api(`/api/decisions/rollup?days=${_rollupDays}`);
+    if (!r || !r.current || r.current.total === 0) {
+      // No decisions in the window — hide the card. The Journal's
+      // decision list below still renders; this is just the rollup.
+      card.classList.add('hidden');
+      return;
+    }
+    card.classList.remove('hidden');
+    renderRollup(r);
+  } catch (e) {
+    card.classList.add('hidden');
+  }
+}
+
+function _deltaPill(cur, prior) {
+  // Small ± pill showing week-over-week delta. Muted when either
+  // period has no data. Colored by direction only when both are
+  // non-zero — a new metric from 0 → 5 would mislead a % change.
+  if (!prior) return '<span class="rollup-delta muted">new</span>';
+  const d = cur - prior;
+  if (d === 0) return '<span class="rollup-delta muted">±0</span>';
+  const sign = d > 0 ? '+' : '';
+  const cls = d > 0 ? 'pos' : 'neg';
+  return `<span class="rollup-delta ${cls}">${sign}${d.toFixed(d % 1 === 0 ? 0 : 2)}</span>`;
+}
+
+function renderRollup(r) {
+  const c = r.current, p = r.prior;
+  const closes = (c.wins || 0) + (c.losses || 0);
+  const winRate = closes > 0 ? Math.round((c.wins / closes) * 100) : null;
+  const priorCloses = (p.wins || 0) + (p.losses || 0);
+  const priorWinRate = priorCloses > 0 ? Math.round((p.wins / priorCloses) * 100) : null;
+
+  const rSum = Number(c.realized_r_sum || 0);
+  const priorRSum = Number(p.realized_r_sum || 0);
+  const rCls = rSum > 0 ? 'pos' : rSum < 0 ? 'neg' : '';
+
+  // Top-row metrics — the summary cards. Each has current value +
+  // week-over-week delta so drift is immediately visible.
+  const topCells = `<div class="rollup-cells">
+    <div class="cell">
+      <div class="n">${c.total}</div>
+      <div class="label">decisions</div>
+      <div class="row">${_deltaPill(c.total, p.total)}</div>
+    </div>
+    <div class="cell">
+      <div class="n ${rCls}">${(rSum >= 0 ? '+' : '') + rSum.toFixed(2)}R</div>
+      <div class="label">realized</div>
+      <div class="row">${_deltaPill(rSum, priorRSum)}</div>
+    </div>
+    <div class="cell">
+      <div class="n">${c.wins}–${c.losses}${winRate !== null ? `  <span class="muted">(${winRate}%)</span>` : ''}</div>
+      <div class="label">W–L</div>
+      <div class="row">${priorWinRate !== null && winRate !== null ? _deltaPill(winRate, priorWinRate) + '<span class="muted" style="font-size:var(--fs-xs);"> pp</span>' : '<span class="rollup-delta muted">—</span>'}</div>
+    </div>
+    <div class="cell">
+      <div class="n pos">${c.best_r != null ? '+' + Number(c.best_r).toFixed(2) + 'R' : '—'}</div>
+      <div class="label">best trade</div>
+    </div>
+    <div class="cell">
+      <div class="n neg">${c.worst_r != null && c.worst_r < 0 ? Number(c.worst_r).toFixed(2) + 'R' : '—'}</div>
+      <div class="label">worst trade</div>
+    </div>
+    ${c.overrides > 0 ? `<div class="cell">
+      <div class="n muted">${c.overrides}</div>
+      <div class="label">overrode AI</div>
+    </div>` : ''}
+  </div>`;
+
+  // Per-provider attribution. Who made you money, who lost you money?
+  // Ordered by r_sum desc so the most profitable appears first. Skip
+  // rendering if only one provider was used (no attribution value).
+  let providerSection = '';
+  if (Array.isArray(r.per_provider) && r.per_provider.length > 1) {
+    const rows = r.per_provider.map(pp => {
+      const rSum = Number(pp.r_sum || 0);
+      const rAvg = Number(pp.r_avg || 0);
+      const rCls = rSum > 0 ? 'pos' : rSum < 0 ? 'neg' : '';
+      const closes = (pp.wins || 0) + (pp.losses || 0);
+      const winPct = closes > 0 ? Math.round((pp.wins / closes) * 100) : null;
+      return `<tr>
+        <td class="mono">${escapeHtml((pp.provider || '').split('_')[0])}/<strong>${escapeHtml(String(pp.model || '').split(' ')[0])}</strong></td>
+        <td class="mono num">${pp.total}</td>
+        <td class="mono num">${pp.closed}</td>
+        <td class="mono num">${winPct !== null ? `${pp.wins}–${pp.losses} (${winPct}%)` : '—'}</td>
+        <td class="mono num ${rCls}">${(rSum >= 0 ? '+' : '') + rSum.toFixed(2)}R</td>
+        <td class="mono num muted">${rAvg ? (rAvg >= 0 ? '+' : '') + rAvg.toFixed(2) + 'R' : '—'}</td>
+      </tr>`;
+    }).join('');
+    providerSection = `<div class="rollup-providers">
+      <div class="rollup-section-head">Per-provider attribution</div>
+      <table class="rollup-table">
+        <thead><tr>
+          <th>Model</th><th class="num">Decisions</th><th class="num">Closed</th>
+          <th class="num">W–L</th><th class="num">R sum</th><th class="num">R avg</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  // Period label so it's unambiguous what window the numbers cover.
+  const cur_date = new Date(r.cur_start_ts * 1000);
+  const periodLabel = `last ${r.days} day${r.days === 1 ? '' : 's'} — since ${cur_date.toISOString().slice(0, 10)}`;
+
+  $('rollup-body').innerHTML = `<div class="rollup-period muted">${periodLabel}</div>
+    ${topCells}
+    ${providerSection}`;
+}
+
+async function loadCalibration() {
+  const card = $('journal-calibration-card');
+  try {
+    const r = await api('/api/decisions/calibration');
+    const summary = r.summary || [];
+    if (!summary.length) {
+      // No reconciled directional decisions yet — hide the card entirely.
+      // The Decision list below will still show with its empty-state
+      // message; surfacing an empty calibration card would be noise.
+      card.classList.add('hidden');
+      return;
+    }
+    card.classList.remove('hidden');
+    renderCalibration(summary);
+  } catch (e) {
+    card.classList.add('hidden');
+  }
+}
+
+function renderCalibration(summary) {
+  // Sort: biggest sample sizes first — most-trusted rows float to top.
+  // Ties broken by avg_r so good performers outrank bad ones at same n.
+  const rows = summary.slice().sort((a, b) => {
+    if (b.n !== a.n) return b.n - a.n;
+    return (b.avg_r || 0) - (a.avg_r || 0);
+  });
+
+  const totalN = rows.reduce((s, r) => s + r.n, 0);
+  const distinctModels = new Set(rows.map(r => `${r.provider}/${r.model}`)).size;
+  $('calibration-stats').textContent =
+    `${totalN} reconciled · ${distinctModels} model${distinctModels === 1 ? '' : 's'}`;
+
+  // Confidence-bucket ordering for the visual bar position — not the
+  // row order. Higher buckets render at the right end of their
+  // per-model strip.
+  const bucketOrder = ['low (<50)', '50-59', '60-69', '70-79', '80+'];
+
+  const tbody = rows.map(r => {
+    const hitPct = r.hit_rate != null ? Math.round(r.hit_rate * 100) : null;
+    const trustable = r.n >= 5;
+    const hitCell = hitPct === null
+      ? '<span class="muted">—</span>'
+      : `<span class="mono ${_hitRateClass(hitPct, trustable)}">${hitPct}%</span>${!trustable ? ' <span class="muted" style="font-style:italic;">pending</span>' : ''}`;
+    const rStr = r.avg_r != null ? _fmtR(r.avg_r) : '—';
+    const bar = _calibrationBar(hitPct, trustable);
+
+    // Override cell — "how often I chose NOT to follow this AI's call."
+    // High override rate isn't inherently bad (the AI might be wrong
+    // about *this setup* even if it's generally right), but it's worth
+    // seeing. Color scale: >40% override = amber signal (are you
+    // actually trusting this AI?), >60% = red (consider switching).
+    // Rendered muted when sample is small, same convention as hit rate.
+    const overridePct = r.override_rate != null ? Math.round(r.override_rate * 100) : null;
+    const overrideTrustable = r.n_total >= 5;
+    const overrideCell = overridePct === null
+      ? '<span class="muted">—</span>'
+      : `<span class="mono ${_overrideRateClass(overridePct, overrideTrustable)}">${overridePct}%</span> <span class="muted">(${r.n_overrides}/${r.n_total})</span>`;
+
+    return `<tr>
+      <td class="mono">${escapeHtml(r.provider.split('_')[0])}/<strong>${escapeHtml(String(r.model).split(' ')[0])}</strong></td>
+      <td class="mono">${escapeHtml(r.bucket)}</td>
+      <td class="mono">n=${r.n}</td>
+      <td>${bar}</td>
+      <td class="num">${hitCell}</td>
+      <td class="num mono ${(r.avg_r || 0) >= 0 ? 'pos' : 'neg'}">${rStr}</td>
+      <td class="num">${overrideCell}</td>
+    </tr>`;
+  }).join('');
+
+  $('calibration-body').innerHTML = `<table class="calibration-table">
+    <thead><tr>
+      <th>Model</th><th>Bucket</th><th class="num">Sample</th>
+      <th>Hit rate</th><th class="num">Rate</th><th class="num">Avg R</th>
+      <th class="num" title="How often you skipped this AI's actionable Long/Short signal">Override</th>
+    </tr></thead>
+    <tbody>${tbody}</tbody>
+  </table>`;
+}
+
+function _overrideRateClass(overridePct, trustable) {
+  // Lower override rate = more trust in the AI = neutral/positive.
+  // Higher override rate = warning. Scale inverts the hit-rate scale
+  // because "high override" is what we're flagging, not rewarding.
+  if (!trustable) return 'muted';
+  if (overridePct <= 20) return '';       // default color — you trust it
+  if (overridePct <= 40) return 'muted';  // middle — mild flag
+  if (overridePct <= 60) return 'warn';   // amber — are you trusting this AI?
+  return 'neg';                            // red — why is it in the dropdown?
+}
+
+function _hitRateClass(hitPct, trustable) {
+  if (!trustable) return 'muted';
+  if (hitPct >= 60) return 'pos';
+  if (hitPct >= 40) return 'warn';
+  return 'neg';
+}
+
+// Horizontal progress-bar visual for hit rate. CSS handles the color
+// so this just emits the markup. Rendered as two overlaid divs so
+// the filled portion can tint independently from the track.
+function _calibrationBar(hitPct, trustable) {
+  if (hitPct === null) {
+    return '<div class="cal-bar cal-bar--empty"></div>';
+  }
+  const fillClass = !trustable
+    ? 'cal-bar-fill cal-pending'
+    : hitPct >= 60 ? 'cal-bar-fill cal-good'
+    : hitPct >= 40 ? 'cal-bar-fill cal-mid'
+    : 'cal-bar-fill cal-bad';
+  return `<div class="cal-bar">
+    <div class="${fillClass}" style="width: ${hitPct}%"></div>
+  </div>`;
+}
+
+function renderJournalList() {
+  const rows = _journalCache;
+  const total = rows.length;
+  const unreconciled = rows.filter(d => !d.outcome).length;
+  $('journal-stats').textContent = total
+    ? `${total} shown · ${unreconciled} unreconciled`
+    : '';
+
+  if (!total) {
+    $('journal-list').innerHTML = '<div class="empty">No decisions yet. Run an Analyze or Deep to start the log.</div>';
+    return;
+  }
+
+  $('journal-list').innerHTML = `<table class="journal-table">
+    <thead><tr>
+      <th>When</th><th>Sym</th><th>TF</th>
+      <th>Signal</th><th>Levels</th><th class="muted">Model</th>
+      <th>Outcome</th>
+    </tr></thead>
+    <tbody>${rows.map(renderJournalRow).join('')}</tbody>
+  </table>`;
+
+  // Learning-note inputs — blur to save. Only fires a PATCH when the
+  // value actually changed, so a user tabbing past an unchanged note
+  // doesn't trigger a roundtrip. Enter also blurs to save.
+  document.querySelectorAll('.learning-note-input').forEach(input => {
+    const original = input.value;
+    const commit = async () => {
+      const rid = input.dataset.requestId;
+      const val = input.value.trim();
+      if (val === (original || '').trim()) return;  // no-op on unchanged
+      try {
+        await api(`/api/decisions/learning/${encodeURIComponent(rid)}`, {
+          method: 'POST',
+          body: { note: val },
+        });
+        // Update the local cache so future re-renders keep the note.
+        const d = _journalCache.find(x => x.request_id === rid);
+        if (d) d.learning_note = val || null;
+        toast(val ? 'note saved' : 'note cleared', 'ok');
+      } catch (e) {
+        toast(`save failed: ${e.message}`, 'err');
+      }
+    };
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') input.blur();
+      if (e.key === 'Escape') { input.value = original; input.blur(); }
+    });
+  });
+
+  // Wire up reconcile buttons per row. Delegation would save event
+  // listeners but each button needs access to its row's request_id
+  // and its own data-takes-r — inline binding is clearer and the
+  // rowcount is bounded (≤100).
+  document.querySelectorAll('.reconcile-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const tr = btn.closest('tr');
+      const rid = tr.dataset.requestId;
+      const outcome = btn.dataset.outcome;
+      const takesR = btn.dataset.takesR === '1';
+      let realizedR = null;
+      if (takesR) {
+        const prompt_label = outcome === 'skip_wrong'
+          ? 'Missed opportunity in R (positive):'
+          : 'Realized R (e.g. 1.5 or -0.3):';
+        const raw = prompt(prompt_label);
+        if (raw === null) return;  // user cancelled
+        const parsed = parseFloat(raw);
+        if (!Number.isFinite(parsed)) {
+          toast(`not a number: ${raw}`, 'err');
+          return;
+        }
+        realizedR = parsed;
+      } else {
+        const d = _journalCache.find(x => x.request_id === rid);
+        realizedR = _rAutoFromOutcome(outcome, d?.signal, d?.entry, d?.stop, d?.tp);
+      }
+      setBusy(btn, true);
+      try {
+        await api(`/api/decisions/reconcile/${encodeURIComponent(rid)}`, {
+          method: 'POST',
+          body: { outcome, realized_r: realizedR },
+        });
+        // Optimistic local update — avoid a full re-fetch for one row.
+        const d = _journalCache.find(x => x.request_id === rid);
+        if (d) {
+          d.outcome = outcome;
+          d.realized_r = realizedR;
+        }
+        toast(`tagged: ${outcome} ${_fmtR(realizedR)}`, 'ok');
+        renderJournalList();
+        // Update the calibration card (new data point landed) + the
+        // session strip if the Trade tab peeks at it.
+        loadCalibration();
+        refreshSessionStrip();
+      } catch (e) {
+        toast(`reconcile failed: ${e.message}`, 'err');
+        setBusy(btn, false, btn.textContent);
+      }
+    });
+  });
+}
+
+$('journal-refresh').addEventListener('click', loadJournal);
+$('journal-unreconciled-only').addEventListener('change', loadJournal);
+
+// CSV export — bypass api() because we want the raw text response
+// (not JSON-parsed) and to trigger a file download. Reuses the
+// existing auth token from localStorage; same trust boundary as any
+// other authenticated request.
+$('journal-export-csv').addEventListener('click', async () => {
+  const btn = $('journal-export-csv');
+  setBusy(btn, true);
+  try {
+    const headers = { 'X-UI': '1' };
+    try {
+      const token = localStorage.getItem('ios-ui-token');
+      if (token) headers['X-UI-Token'] = token;
+    } catch (e) { /* private mode */ }
+    const r = await fetch('/api/decisions/export.csv', { headers });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const blob = await r.blob();
+
+    // Pull the server-suggested filename out of Content-Disposition
+    // so "repeated exports same day" gets the right date-stamped name.
+    // Falls back to a generic name if the header is missing or malformed.
+    const cd = r.headers.get('content-disposition') || '';
+    const match = cd.match(/filename="?([^";]+)"?/i);
+    const fname = match ? match[1] : 'intelligenceos-decisions.csv';
+
+    // Object-URL + <a download> is the canonical Blob-to-file pattern.
+    // Revoking the URL after the click releases the memory.
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast(`exported ${fname}`, 'ok');
+  } catch (e) {
+    toast(`export failed: ${e.message}`, 'err');
+  } finally {
+    setBusy(btn, false, 'Export CSV');
+  }
+});
 
 // ----------------------------------------------------------------------
 // Initial load

@@ -37,6 +37,7 @@ from .lib.urls import chart_url_for
 # while preserving the canonical casing for D/W/M (TV's URL param is
 # uppercase there).
 _TIMEFRAME_MAP = {
+    "30s": "30S", "45s": "45S",
     "1m": "1", "2m": "2", "3m": "3", "5m": "5", "15m": "15", "30m": "30",
     "1h": "60", "2h": "120", "4h": "240",
     "1d": "D", "1w": "W", "1mo": "M",
