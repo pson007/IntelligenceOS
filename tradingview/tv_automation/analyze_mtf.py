@@ -631,6 +631,88 @@ def _save_pine(symbol: str, pine_code: str) -> Path:
     return path
 
 
+def _build_levels_pine(
+    symbol: str, signal: str | None,
+    entry: float | None, stop: float | None, tp: float | None,
+) -> str | None:
+    """Deterministic pine template that draws Entry / Stop / TP as
+    horizontal lines with labels. Called instead of using LLM-generated
+    pine for single-TF analyses — the LLM tends to write top-level
+    `line.new` / `label.new` calls that fire every bar and get culled
+    by Pine's default `max_lines_count=50` / `max_labels_count=50`.
+
+    This version:
+      * uses `hline()` for the horizontal levels — declarative, one
+        line per level, extends both directions across the whole chart.
+      * creates labels ONCE on the last bar with `var` + `barstate.islast`,
+        so exactly three labels exist at any time (no bar-by-bar churn).
+      * colors Long setups green (TP)/red (Stop), Short the mirror,
+        Skip gray — same convention as the result card's signal pill.
+      * exposes entry/stop/tp as `input.float` so the trader can tweak
+        without re-running analyze.
+
+    Returns None if entry/stop/tp aren't all numeric — nothing sensible
+    to draw without all three levels.
+    """
+    if not all(isinstance(v, (int, float)) for v in (entry, stop, tp)):
+        return None
+
+    sig = (signal or "Skip").strip()
+    # Color semantics: TP is always the "good" direction, Stop the
+    # "bad" one. Skip draws gray for both — indicates "not a setup,
+    # just reference marks."
+    if sig == "Long":
+        tp_color, stop_color = "color.new(color.green, 0)", "color.new(color.red, 0)"
+    elif sig == "Short":
+        tp_color, stop_color = "color.new(color.green, 0)", "color.new(color.red, 0)"
+    else:
+        tp_color = stop_color = "color.new(color.gray, 0)"
+    entry_color = "color.new(color.yellow, 0)"
+
+    # Pine v6 script. `hline` takes a `simple float` — we pass the
+    # input.float values directly (input.float returns simple).
+    return f"""//@version=6
+indicator("Trade Levels — {symbol} {sig}", overlay=true,
+          max_labels_count=10)
+
+entryInput = input.float({entry}, "Entry", step=0.25)
+stopInput  = input.float({stop},  "Stop",  step=0.25)
+tpInput    = input.float({tp},    "Take Profit", step=0.25)
+
+// --- horizontal level lines (one per level, static across chart) ---
+hline(entryInput, "Entry", color={entry_color},
+      linestyle=hline.style_solid, linewidth=1)
+hline(stopInput,  "Stop",  color={stop_color},
+      linestyle=hline.style_dashed, linewidth=1)
+hline(tpInput,    "TP",    color={tp_color},
+      linestyle=hline.style_dashed, linewidth=1)
+
+// --- labels pinned to the most-recent bar, reused in-place ---
+// `var` keeps a single label across bar history; on each new last-bar
+// tick we delete-and-recreate so the label moves to the right edge.
+var label entryLbl = na
+var label stopLbl  = na
+var label tpLbl    = na
+
+if barstate.islast
+    label.delete(entryLbl)
+    label.delete(stopLbl)
+    label.delete(tpLbl)
+    entryLbl := label.new(bar_index, entryInput,
+        "Entry " + str.tostring(entryInput),
+        color={entry_color}, textcolor=color.black,
+        style=label.style_label_left, size=size.small)
+    stopLbl := label.new(bar_index, stopInput,
+        "Stop " + str.tostring(stopInput),
+        color={stop_color}, textcolor=color.white,
+        style=label.style_label_left, size=size.small)
+    tpLbl := label.new(bar_index, tpInput,
+        "TP " + str.tostring(tpInput),
+        color={tp_color}, textcolor=color.white,
+        style=label.style_label_left, size=size.small)
+"""
+
+
 # ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
@@ -897,9 +979,23 @@ async def analyze_chart(
         )
         raise RuntimeError(f"LLM returned invalid JSON: {e}") from e
 
+    # Replace the LLM's pine with a deterministic template built from
+    # the parsed numeric levels. The LLM tends to write top-level
+    # `line.new`/`label.new` that fire every bar and get culled by
+    # Pine's default max-lines/max-labels limits — `_build_levels_pine`
+    # uses `hline` + `var` + `barstate.islast` so the overlay is
+    # stable and actually visible on the chart.
+    pine_code = _build_levels_pine(
+        symbol,
+        parsed.get("signal"),
+        parsed.get("entry"),
+        parsed.get("stop"),
+        parsed.get("tp"),
+    ) or parsed.get("pine_code")  # fall back to LLM pine only if we
+                                   # couldn't build one (missing levels)
     pine_path: Path | None = None
-    if parsed.get("pine_code"):
-        pine_path = _save_pine(symbol, parsed["pine_code"])
+    if pine_code:
+        pine_path = _save_pine(symbol, pine_code)
 
     result = {
         "symbol": symbol,
@@ -911,7 +1007,10 @@ async def analyze_chart(
         "tp": parsed.get("tp"),
         "rationale": parsed.get("rationale"),
         "unknowns": _sanitize_unknowns(parsed.get("unknowns")),
-        "pine_code": parsed.get("pine_code"),
+        # `pine_code` in the result mirrors what was written to disk —
+        # so exports (JSON/MD/PDF) and the UI show the SAME script
+        # that apply-pine will paste into TradingView.
+        "pine_code": pine_code,
         "pine_path": str(pine_path) if pine_path else None,
         "capture": {"tf": cap["tf"], "path": cap["path"]},
         "provider": provider,
