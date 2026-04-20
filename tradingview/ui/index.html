@@ -84,72 +84,6 @@
         </div>
       </div>
 
-      <!-- Deck: symbol + timeframe + capture + chart meta + screenshot.
-           One symbol field drives the live TradingView chart; pick from
-           the combo or press Enter to apply + auto-capture. Timeframe
-           pills do the same. No stale screenshots. -->
-      <div class="card">
-        <div class="trade-bar">
-          <label class="field" style="min-width: 200px; flex: 0 0 auto;">
-            <span>Symbol <span class="muted field-hint">(watchlist)</span></span>
-            <div class="combo">
-              <input type="text" id="trade-symbol" value="MNQ1!" placeholder="MNQ1!, NVDA, BINANCE:BTCUSDT" autocomplete="off" />
-              <button class="combo-arrow" type="button" data-combo-target="trade-symbol" aria-label="Open symbol list">▾</button>
-              <div class="combo-menu hidden" data-combo-for="trade-symbol"></div>
-            </div>
-          </label>
-          <div class="tf-bar" id="trade-tf-bar" role="group" aria-label="Timeframe">
-            <button class="tf-pill" type="button" data-tf="30s">30s</button>
-            <button class="tf-pill" type="button" data-tf="45s">45s</button>
-            <button class="tf-pill" type="button" data-tf="1m">1m</button>
-            <button class="tf-pill" type="button" data-tf="5m">5m</button>
-            <button class="tf-pill" type="button" data-tf="15m">15m</button>
-            <button class="tf-pill" type="button" data-tf="30m">30m</button>
-            <button class="tf-pill" type="button" data-tf="1h">1h</button>
-            <button class="tf-pill" type="button" data-tf="4h">4h</button>
-            <button class="tf-pill active" type="button" data-tf="1D">1D</button>
-            <button class="tf-pill" type="button" data-tf="1W">1W</button>
-          </div>
-          <!-- Analyze provider + model — visible BEFORE clicking Analyze
-               so the trader sees exactly how the next analysis will run.
-               Hidden on narrow layouts to keep the action row tight. -->
-          <div class="analyze-config" id="analyze-config">
-            <label class="analyze-config__field">
-              <span>Provider</span>
-              <select id="analyze-provider">
-                <option value="chatgpt_web" selected>chatgpt.com (browser, $0)</option>
-                <option value="claude_web">claude.ai (browser, $0)</option>
-                <option value="ollama">ollama (local, $0)</option>
-              </select>
-            </label>
-            <label class="analyze-config__field">
-              <span>Model</span>
-              <input type="text" id="analyze-model" placeholder="auto (gemma4:31b)" />
-              <select id="analyze-model-claude" class="hidden">
-                <option value="sonnet" selected>Sonnet 4.6 (balanced)</option>
-                <option value="opus">Opus 4.7 (most capable)</option>
-                <option value="haiku">Haiku 4.5 (fastest)</option>
-              </select>
-              <select id="analyze-model-chatgpt" class="hidden">
-                <option value="instant" selected>Instant (fast routing)</option>
-                <option value="thinking">Thinking (deeper reasoning)</option>
-              </select>
-            </label>
-          </div>
-          <div class="trade-bar__actions">
-            <button class="primary" id="trade-capture">Capture</button>
-            <button id="trade-analyze" title="Analyze the chart at the selected timeframe">Analyze</button>
-            <button id="trade-analyze-deep" title="Capture all 10 timeframes, pick the optimal one, produce a backtestable Pine strategy">Deep</button>
-          </div>
-        </div>
-        <div class="chart-meta-strip" id="trade-chart-meta">
-          <span class="muted">—</span>
-        </div>
-        <div id="trade-chart-shot">
-          <div class="empty dashed">No screenshot yet. Pick a symbol or click Capture.</div>
-        </div>
-      </div>
-
       <!-- Single-timeframe analysis — captures the chart at the selected
            timeframe, feeds it to a vision LLM, and returns a Long/Short/Skip
            signal with entry/stop/tp plus a pine overlay script. -->
@@ -273,6 +207,72 @@
         <!-- Failure surface -->
         <div class="analyze-error hidden" id="analyze-error"></div>
       </div>
+      <!-- Deck: symbol + timeframe + capture + chart meta + screenshot.
+           One symbol field drives the live TradingView chart; pick from
+           the combo or press Enter to apply + auto-capture. Timeframe
+           pills do the same. No stale screenshots. -->
+      <div class="card">
+        <div class="trade-bar">
+          <label class="field" style="min-width: 200px; flex: 0 0 auto;">
+            <span>Symbol <span class="muted field-hint">(watchlist)</span></span>
+            <div class="combo">
+              <input type="text" id="trade-symbol" value="MNQ1!" placeholder="MNQ1!, NVDA, BINANCE:BTCUSDT" autocomplete="off" />
+              <button class="combo-arrow" type="button" data-combo-target="trade-symbol" aria-label="Open symbol list">▾</button>
+              <div class="combo-menu hidden" data-combo-for="trade-symbol"></div>
+            </div>
+          </label>
+          <div class="tf-bar" id="trade-tf-bar" role="group" aria-label="Timeframe">
+            <button class="tf-pill" type="button" data-tf="30s">30s</button>
+            <button class="tf-pill" type="button" data-tf="45s">45s</button>
+            <button class="tf-pill" type="button" data-tf="1m">1m</button>
+            <button class="tf-pill" type="button" data-tf="5m">5m</button>
+            <button class="tf-pill" type="button" data-tf="15m">15m</button>
+            <button class="tf-pill" type="button" data-tf="30m">30m</button>
+            <button class="tf-pill" type="button" data-tf="1h">1h</button>
+            <button class="tf-pill" type="button" data-tf="4h">4h</button>
+            <button class="tf-pill active" type="button" data-tf="1D">1D</button>
+            <button class="tf-pill" type="button" data-tf="1W">1W</button>
+          </div>
+          <!-- Analyze provider + model — visible BEFORE clicking Analyze
+               so the trader sees exactly how the next analysis will run.
+               Hidden on narrow layouts to keep the action row tight. -->
+          <div class="analyze-config" id="analyze-config">
+            <label class="analyze-config__field">
+              <span>Provider</span>
+              <select id="analyze-provider">
+                <option value="chatgpt_web" selected>chatgpt.com (browser, $0)</option>
+                <option value="claude_web">claude.ai (browser, $0)</option>
+                <option value="ollama">ollama (local, $0)</option>
+              </select>
+            </label>
+            <label class="analyze-config__field">
+              <span>Model</span>
+              <input type="text" id="analyze-model" placeholder="auto (gemma4:31b)" />
+              <select id="analyze-model-claude" class="hidden">
+                <option value="sonnet" selected>Sonnet 4.6 (balanced)</option>
+                <option value="opus">Opus 4.7 (most capable)</option>
+                <option value="haiku">Haiku 4.5 (fastest)</option>
+              </select>
+              <select id="analyze-model-chatgpt" class="hidden">
+                <option value="instant" selected>Instant (fast routing)</option>
+                <option value="thinking">Thinking (deeper reasoning)</option>
+              </select>
+            </label>
+          </div>
+          <div class="trade-bar__actions">
+            <button class="primary" id="trade-capture">Capture</button>
+            <button id="trade-analyze" title="Analyze the chart at the selected timeframe">Analyze</button>
+            <button id="trade-analyze-deep" title="Capture all 10 timeframes, pick the optimal one, produce a backtestable Pine strategy">Deep</button>
+          </div>
+        </div>
+        <div class="chart-meta-strip" id="trade-chart-meta">
+          <span class="muted">—</span>
+        </div>
+        <div id="trade-chart-shot">
+          <div class="empty dashed">No screenshot yet. Pick a symbol or click Capture.</div>
+        </div>
+      </div>
+
 
       <!-- Contextual current-symbol position — only rendered when the
            selected chart symbol matches an open position. This is the
