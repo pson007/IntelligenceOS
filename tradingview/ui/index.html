@@ -183,6 +183,24 @@
              For deep mode the optimal-TF badge renders above the verdict;
              the per-TF breakdown table is appended below the rationale. -->
         <div class="analyze-result hidden" id="analyze-result">
+          <!-- Analysis metadata — timestamp of the prediction + an
+               Export menu for archiving the result as JSON / MD / PDF
+               / PNG. Timestamp anchors accuracy comparisons over time
+               (you can see when a call was made vs how price actually
+               moved). -->
+          <div class="analyze-meta">
+            <div class="analyze-meta__ts" id="analyze-ts" title="When the analysis completed">—</div>
+            <div class="analyze-export">
+              <button class="analyze-export__btn" id="analyze-export-btn" type="button" title="Download this analysis">Export ▾</button>
+              <div class="analyze-export__menu hidden" id="analyze-export-menu">
+                <button data-fmt="pdf" type="button">PDF</button>
+                <button data-fmt="png" type="button">PNG</button>
+                <button data-fmt="json" type="button">JSON</button>
+                <button data-fmt="md" type="button">Markdown</button>
+              </div>
+            </div>
+          </div>
+
           <div class="analyze-optimal-tf hidden" id="analyze-optimal-tf">
             <span class="label">Optimal timeframe</span>
             <span class="value" id="analyze-optimal-tf-val">—</span>

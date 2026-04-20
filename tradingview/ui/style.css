@@ -645,6 +645,58 @@
 
   .analyze-result.hidden { display: none; }
 
+  /* Meta row — analysis timestamp + Export menu. Sits above the
+     verdict so accuracy-tracking context (when the call was made)
+     reads first; export is a secondary action on the right. */
+  .analyze-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s-2); padding-bottom: var(--s-2);
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: var(--s-2);
+  }
+  .analyze-meta__ts {
+    font-family: var(--mono);
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+  .analyze-export { position: relative; }
+  .analyze-export__btn {
+    font-size: var(--fs-xs);
+    padding: var(--s-1) var(--s-2);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .analyze-export__btn:hover {
+    background: var(--btn-hover-bg);
+    border-color: var(--btn-hover-border);
+  }
+  .analyze-export__menu {
+    position: absolute; top: 100%; right: 0;
+    margin-top: 4px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    z-index: 20;
+    min-width: 120px;
+    overflow: hidden;
+  }
+  .analyze-export__menu.hidden { display: none; }
+  .analyze-export__menu button {
+    display: block; width: 100%;
+    text-align: left;
+    padding: var(--s-2) var(--s-3);
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: var(--fs-xs);
+    cursor: pointer;
+  }
+  .analyze-export__menu button:hover { background: var(--btn-hover-bg); }
+
   /* Verdict row: big signal pill + confidence bar + entry/stop/tp +
      action buttons. Reads top-to-bottom: "what/how sure/at what prices/
      what to do". */

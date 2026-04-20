@@ -601,6 +601,73 @@ function dismissAnalysis() {
 }
 $('analyze-dismiss').addEventListener('click', dismissAnalysis);
 
+// Export menu — toggles visibility, click on format triggers download
+// via a hidden <a>. Using a link rather than fetch so the browser's
+// download dialog fires naturally with the server-sent filename.
+(() => {
+  const btn = $('analyze-export-btn');
+  const menu = $('analyze-export-menu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menu.classList.toggle('hidden');
+  });
+  document.addEventListener('click', (e) => {
+    if (!menu.classList.contains('hidden') &&
+        !menu.contains(e.target) && e.target !== btn) {
+      menu.classList.add('hidden');
+    }
+  });
+  menu.querySelectorAll('button[data-fmt]').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const fmt = opt.dataset.fmt;
+      const tid = btn.dataset.taskId || analyzeCurrent?.task_id;
+      if (!tid) {
+        showAnalyzeError('No analysis to export — run one first.');
+        return;
+      }
+      menu.classList.add('hidden');
+      // Show a transient loading state on the button for slow formats (PDF).
+      const prevText = btn.textContent;
+      if (fmt === 'pdf') {
+        btn.textContent = 'Rendering…';
+        btn.disabled = true;
+      }
+      const url = `/api/analyze/export/${encodeURIComponent(tid)}?fmt=${encodeURIComponent(fmt)}`;
+      // Use fetch so we can surface server errors inline rather than
+      // dropping the user onto a raw JSON error page.
+      fetch(url)
+        .then(r => {
+          if (!r.ok) return r.text().then(t => { throw new Error(t || r.statusText); });
+          const cd = r.headers.get('Content-Disposition') || '';
+          const m = cd.match(/filename="([^"]+)"/);
+          const fname = m ? m[1] : `analysis.${fmt}`;
+          return r.blob().then(blob => ({ blob, fname }));
+        })
+        .then(({ blob, fname }) => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = fname;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+          }, 1000);
+        })
+        .catch(err => {
+          showAnalyzeError(`Export failed: ${err.message || err}`);
+        })
+        .finally(() => {
+          if (fmt === 'pdf') {
+            btn.textContent = prevText;
+            btn.disabled = false;
+          }
+        });
+    });
+  });
+})();
+
 function renderAnalysisResult(r) {
   hideAnalyzeProgress();
   clearAnalyzeError();
@@ -608,6 +675,37 @@ function renderAnalysisResult(r) {
   // Hide any stale pressure-test section from a prior run — this
   // result is for a regular Analyze/Deep, not a consensus check.
   $('analyze-pressure').classList.add('hidden');
+
+  // Timestamp — anchors accuracy-over-time comparisons. Shows when the
+  // analysis completed so a later review can see "this call was made
+  // when price was X; here's what happened after." Falls back to
+  // "just now" if the result predates the iso_ts field.
+  const tsEl = $('analyze-ts');
+  if (r.iso_ts) {
+    try {
+      const dt = new Date(r.iso_ts);
+      // Local time, compact — e.g. "Apr 20, 10:14:32"
+      tsEl.textContent = dt.toLocaleString('en-US', {
+        month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false,
+      });
+      tsEl.title = r.iso_ts;
+    } catch (_) {
+      tsEl.textContent = r.iso_ts;
+    }
+  } else {
+    tsEl.textContent = 'just now';
+    tsEl.title = '';
+  }
+  // Stash the task_id on the Export button so the menu knows which
+  // analysis to export. The current running task_id lives in
+  // analyzeCurrent — when renderAnalysisResult is called from replay
+  // of a completed task, that's still the right task_id.
+  const exportBtn = $('analyze-export-btn');
+  if (exportBtn && analyzeCurrent?.task_id) {
+    exportBtn.dataset.taskId = analyzeCurrent.task_id;
+  }
 
   const sig = String(r.signal || 'Skip');
   const sigCls = sig.toLowerCase();

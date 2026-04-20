@@ -608,6 +608,68 @@ async def analyze_cancel(task_id: str) -> dict:
     return {"task_id": task_id, "state": "cancelling", "cancelled": True}
 
 
+# Export a finished analysis as JSON / Markdown / PDF / PNG. Source is
+# the live task's `result` dict (so screenshot paths, per-TF breakdown,
+# pine code, calibration all survive). Returns a download with a stable
+# filename pattern `analysis-{symbol}-{tf}-{YYYYMMDDTHHMMSS}.{ext}`.
+@app.get("/api/analyze/export/{task_id}")
+async def analyze_export(task_id: str, fmt: str = "json"):
+    from fastapi.responses import Response
+    from tv_automation import export_analysis as ex
+
+    t = _analyze_tasks.get(task_id)
+    if not t:
+        raise HTTPException(404, "unknown task_id (may have expired)")
+    result = t.get("result")
+    if not result:
+        raise HTTPException(
+            400, f"task has no result (state={t.get('state')})",
+        )
+
+    fmt = (fmt or "json").lower()
+    if fmt not in ("json", "md", "pdf", "png"):
+        raise HTTPException(400, "fmt must be one of: json, md, pdf, png")
+
+    base = ex.filename_base(result)
+
+    if fmt == "json":
+        body = ex.to_json(result)
+        media = "application/json"
+        fname = f"{base}.json"
+    elif fmt == "md":
+        body = ex.to_markdown(result)
+        media = "text/markdown; charset=utf-8"
+        fname = f"{base}.md"
+    elif fmt == "png":
+        body = ex.to_png(result)
+        if body is None:
+            raise HTTPException(
+                404, "screenshot file missing — can't export PNG",
+            )
+        media = "image/png"
+        fname = f"{base}.png"
+    else:  # pdf
+        try:
+            body = await ex.to_pdf(result)
+        except Exception as e:
+            audit.log("analyze.export_pdf_fail",
+                      task_id=task_id,
+                      error=f"{type(e).__name__}: {e}")
+            raise HTTPException(500, f"pdf render failed: {e}") from e
+        media = "application/pdf"
+        fname = f"{base}.pdf"
+
+    audit.log("analyze.export",
+              task_id=task_id, request_id=t.get("request_id"),
+              fmt=fmt, bytes=len(body))
+
+    return Response(
+        content=body,
+        media_type=media,
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
+
+
 # Decision log endpoints — minimal surface for a future journal/
 # calibration UI. The CLI at `.venv/bin/python -m tv_automation.reconcile`
 # is the primary reconciliation tool for now; these endpoints exist so

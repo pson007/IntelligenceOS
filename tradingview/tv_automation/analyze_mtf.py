@@ -920,6 +920,10 @@ async def analyze_chart(
         "cost_usd": cost,
         "elapsed_s": round(time.time() - t0, 2),
         "llm_elapsed_s": round(llm_elapsed, 2),
+        # Canonical local-time ISO timestamp of when the analysis
+        # completed. Used by the UI to show when the prediction was
+        # made and by the export endpoint to stamp filenames.
+        "iso_ts": time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
     }
     # Persist the decision for calibration (Phase 1 — see
     # HumanOS Product thesis - Trading.md). Failure is logged via audit
@@ -1086,6 +1090,7 @@ async def analyze_deep(
         "cost_usd": cost,
         "elapsed_s": round(time.time() - t0, 2),
         "llm_elapsed_s": round(llm_elapsed, 2),
+        "iso_ts": time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
     }
     # Same calibration hook as single-TF — mode="deep" lets the
     # reconciler and calibration queries slice on the decision shape.
