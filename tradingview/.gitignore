@@ -37,6 +37,12 @@ pine/captures/
 # broken_test.pine); only the generated/ subdir is ignored.
 pine/generated/
 
+# Post-apply chart screenshots — taken by apply_pine.py after the
+# overlay is drawn. User-local review material (feedback loop for
+# rating setup quality); paths are stored in decisions.db per
+# request_id, so they're rebuildable.
+pine/applied/
+
 # Probe snapshots at tv_automation/probes/snapshots/ ARE committed
 # (small JSON catalogs, useful for selector-drift diffing over time).
 

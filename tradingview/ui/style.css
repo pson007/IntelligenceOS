@@ -1327,6 +1327,17 @@
   .journal-table tr.reconciled {
     opacity: 0.85;
   }
+  /* Subtle chart-screenshot link shown when a decision had its pine
+     overlay applied. Clicking opens the post-apply PNG in a new tab
+     — muted so it doesn't compete with the outcome tag for attention. */
+  .journal-chart-link {
+    margin-left: var(--s-2);
+    color: var(--accent);
+    font-size: var(--fs-xs);
+    text-decoration: none;
+    opacity: 0.8;
+  }
+  .journal-chart-link:hover { opacity: 1; text-decoration: underline; }
   .journal-table .pill {
     display: inline-block; padding: 1px 8px; border-radius: 10px;
     font-size: var(--fs-xs); font-weight: 600;

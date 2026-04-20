@@ -905,7 +905,7 @@ async def analyze_chart(
     symbol: str,
     *,
     timeframe: str = DEFAULT_TIMEFRAME,
-    provider: str = "ollama",
+    provider: str = "chatgpt_web",
     model: str | None = None,
     base_url: str | None = None,
 ) -> dict:
@@ -916,12 +916,12 @@ async def analyze_chart(
     Applying the pine to the chart is a separate explicit action.
 
     Providers:
-      * ``ollama`` (default) — local, $0, ~85s on gemma4:31b
-      * ``anthropic`` — Claude API, requires ANTHROPIC_API_KEY, ~10s
+      * ``chatgpt_web`` (default) — drives chatgpt.com in the attached
+        Chrome, uses your ChatGPT subscription (no API key), ~15-40s
       * ``claude_web`` — drives claude.ai in the attached Chrome, uses
-        your web subscription (no API key), ~20-30s
-      * ``chatgpt_web`` — drives chatgpt.com in the attached Chrome,
-        uses your ChatGPT subscription (no API key), ~15-40s
+        your Max subscription (no API key), ~20-30s
+      * ``anthropic`` — Claude API, requires ANTHROPIC_API_KEY, ~10s
+      * ``ollama`` — local, $0, ~85s on gemma4:31b
     """
     if provider not in ("anthropic", "ollama", "claude_web", "chatgpt_web"):
         raise ValueError(
@@ -1061,7 +1061,7 @@ async def analyze_deep(
     symbol: str,
     *,
     timeframes: list[str] | None = None,
-    provider: str = "claude_web",
+    provider: str = "chatgpt_web",
     model: str | None = None,
     base_url: str | None = None,
 ) -> dict:
@@ -1072,9 +1072,9 @@ async def analyze_deep(
     stop/tp at that TF, a per-TF breakdown, and a Pine v6 *strategy*
     script (not just an indicator) so the setup can be backtested.
 
-    Defaults to claude_web because the 2026-04-19 live bench showed
-    Sonnet beats Gemma on multi-image reasoning by a wide margin; the
-    accuracy delta matters more here since deep analysis is slower.
+    Defaults to chatgpt_web — same provider as single-TF Analyze, so
+    the deck doesn't flip backends between the two modes. Override via
+    the UI's provider dropdown or by passing `provider=` explicitly.
     """
     if provider not in ("anthropic", "ollama", "claude_web", "chatgpt_web"):
         raise ValueError(
@@ -1150,9 +1150,24 @@ async def analyze_deep(
         )
         raise RuntimeError(f"LLM returned invalid JSON: {e}") from e
 
+    # Same pine-overlay treatment as single-TF: discard the LLM's
+    # strategy script (which suffers from the same per-bar
+    # line.new/label.new culling bug) and use the deterministic
+    # levels template. This unifies the apply-pine workflow across
+    # Analyze and Deep — both produce a clean Entry/Stop/TP overlay
+    # that survives Pine's max_lines/max_labels limits, and the
+    # post-apply screenshot attaches to the decision row identically
+    # for both modes. Falls back to LLM pine only if levels are missing.
+    pine_code = _build_levels_pine(
+        symbol,
+        parsed.get("signal"),
+        parsed.get("entry"),
+        parsed.get("stop"),
+        parsed.get("tp"),
+    ) or parsed.get("pine_code")
     pine_path: Path | None = None
-    if parsed.get("pine_code"):
-        pine_path = _save_pine(symbol, parsed["pine_code"])
+    if pine_code:
+        pine_path = _save_pine(symbol, pine_code)
 
     # Guard against LLM hallucinating a TF outside the 9-set. If the model
     # returns e.g. "2h" or "3m", we blank the field rather than surface
@@ -1180,7 +1195,10 @@ async def analyze_deep(
         "tp": parsed.get("tp"),
         "rationale": parsed.get("rationale"),
         "per_tf": parsed.get("per_tf") or [],
-        "pine_code": parsed.get("pine_code"),
+        # `pine_code` mirrors what's on disk (the deterministic levels
+        # template, NOT the LLM strategy) so the UI's apply-pine button
+        # and the JSON/MD/PDF exporters all see the same script.
+        "pine_code": pine_code,
         "pine_path": str(pine_path) if pine_path else None,
         "captures": [{"tf": c["tf"], "path": c["path"]} for c in captures],
         "provider": provider,

@@ -800,6 +800,10 @@ function renderAnalysisResult(r) {
   };
 
   // Apply-pine button — enabled only if the backend saved a pine script.
+  // We pass `request_id` so the server can tie the post-apply screenshot
+  // (chart with Entry/Stop/TP drawn on it) to this decision in
+  // decisions.db. The Journal tab can later show that image when
+  // reviewing accuracy.
   const pineBtn = $('analyze-apply-pine');
   if (r.pine_path) {
     pineBtn.disabled = false;
@@ -807,9 +811,23 @@ function renderAnalysisResult(r) {
       if (!confirm('Paste this analysis pine script into TradingView? Takes ~20s and takes over the chart view briefly.')) return;
       setBusy(pineBtn, true);
       try {
-        const ar = await api('/api/analyze/apply-pine', { method: 'POST', body: { path: r.pine_path } });
-        if (ar.ok) toast('pine applied to chart', 'ok');
-        else toast(`pine apply failed: ${(ar.stderr || 'see server log').slice(-200)}`, 'err');
+        const ar = await api('/api/analyze/apply-pine', {
+          method: 'POST',
+          body: {
+            path: r.pine_path,
+            request_id: analyzeCurrent?.request_id || null,
+          },
+        });
+        if (ar.ok) {
+          const shot = ar.applied_screenshot;
+          if (shot) {
+            toast(`pine applied · screenshot saved: ${shot.split('/').slice(-2).join('/')}`, 'ok');
+          } else {
+            toast('pine applied to chart', 'ok');
+          }
+        } else {
+          toast(`pine apply failed: ${(ar.stderr || 'see server log').slice(-200)}`, 'err');
+        }
       } catch (e) { toast(`apply-pine: ${e.message}`, 'err'); }
       finally { setBusy(pineBtn, false, 'Apply pine to chart'); }
     };
@@ -2225,9 +2243,19 @@ function renderJournalRow(d) {
   const sigCls = String(d.signal || 'skip').toLowerCase();
   const conf = d.confidence != null ? `${d.confidence}%` : '—';
 
+  // Link to the post-apply chart screenshot (pine overlay drawn on
+  // the chart) when the user applied this decision's pine script.
+  // Clicking opens the PNG in a new tab — the "what the trader saw
+  // after applying levels" image, useful for rating setups later.
+  const chartLink = d.applied_screenshot_path
+    ? ` <a class="journal-chart-link" target="_blank"
+           href="/api/chart/image?path=${encodeURIComponent(d.applied_screenshot_path)}"
+           title="Open chart screenshot (Entry/Stop/TP drawn)">chart ↗</a>`
+    : '';
+
   const levels = (d.entry != null)
-    ? `<span class="mono">E ${(+d.entry).toLocaleString()} / S ${(+d.stop).toLocaleString()} / T ${(+d.tp).toLocaleString()}</span>  <span class="muted">${rrStr}</span>`
-    : '<span class="muted">no levels</span>';
+    ? `<span class="mono">E ${(+d.entry).toLocaleString()} / S ${(+d.stop).toLocaleString()} / T ${(+d.tp).toLocaleString()}</span>  <span class="muted">${rrStr}</span>${chartLink}`
+    : `<span class="muted">no levels</span>${chartLink}`;
 
   const outcomeCell = d.outcome
     ? `<span class="outcome-tag out-${d.outcome}">${d.outcome.replace('_', ' ')}</span> <span class="mono">${_fmtR(d.realized_r)}</span>`
@@ -2631,6 +2659,34 @@ function renderJournalList() {
 
 $('journal-refresh').addEventListener('click', loadJournal);
 $('journal-unreconciled-only').addEventListener('change', loadJournal);
+
+// End-of-day reconciliation — grades all today's unreconciled
+// decisions against real OHLCV bars (yfinance) and writes outcomes
+// back to the DB. First-touch of stop vs TP; pessimistic tie-break.
+$('journal-reconcile-eod').addEventListener('click', async () => {
+  const btn = $('journal-reconcile-eod');
+  if (!confirm("Grade today's unreconciled decisions against real price bars? This will write outcomes + realized R to the journal.")) return;
+  setBusy(btn, true);
+  try {
+    const r = await api('/api/decisions/reconcile-eod', {
+      method: 'POST', body: {},
+    });
+    const c = r.counts || {};
+    const win = r.win_rate !== null && r.win_rate !== undefined
+        ? `${(r.win_rate * 100).toFixed(1)}%` : '—';
+    const totalR = r.total_r !== undefined ? r.total_r.toFixed(2) : '?';
+    const msg = `reconciled ${c.total} · ${c.hit_tp}W/${c.hit_stop}L · `
+              + `win ${win} · ${totalR > 0 ? '+' : ''}${totalR}R`
+              + (c.expired ? ` · ${c.expired} expired` : '')
+              + (c.ungraded ? ` · ${c.ungraded} ungraded` : '');
+    toast(msg, c.hit_tp + c.expired >= c.hit_stop ? 'ok' : 'warn');
+    loadJournal();
+  } catch (e) {
+    toast(`reconcile-eod: ${e.message}`, 'err');
+  } finally {
+    setBusy(btn, false, 'Reconcile today');
+  }
+});
 
 // CSV export — bypass api() because we want the raw text response
 // (not JSON-parsed) and to trigger a file download. Reuses the

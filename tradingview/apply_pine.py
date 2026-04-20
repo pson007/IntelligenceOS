@@ -348,8 +348,32 @@ async def main() -> int:
         print("Collapsing Pine Editor panel...", flush=True)
         await close_pine_editor(page)
 
-        await page.screenshot(path="/tmp/tv_pine_applied.png")
-        print("Screenshot → /tmp/tv_pine_applied.png", flush=True)
+        # Let TradingView finish its layout transition (panel collapse
+        # reflows the chart) before capturing. 800ms is enough on a
+        # warm chart; bump if observed short.
+        await page.wait_for_timeout(800)
+
+        # Save the post-apply screenshot to a DURABLE location next to
+        # the pine file, sharing its stem. Lets the operator review
+        # later (rate setups, build a training set), and lets the
+        # backend tie the image to the originating decision by
+        # scanning the filename. Machine-parseable marker
+        # `APPLIED_SCREENSHOT:` so the ui_server subprocess wrapper
+        # can extract the path without scraping the human prose.
+        applied_dir = GENERATED_DIR.parent / "applied"
+        applied_dir.mkdir(parents=True, exist_ok=True)
+        shot_path = applied_dir / f"{pine_path.stem}.png"
+        await page.screenshot(path=str(shot_path))
+        print(f"APPLIED_SCREENSHOT: {shot_path}", flush=True)
+        # Keep the /tmp copy too for quick local review (Finder, etc.)
+        # — symlink rather than duplicating bytes.
+        tmp_link = Path("/tmp/tv_pine_applied.png")
+        try:
+            if tmp_link.exists() or tmp_link.is_symlink():
+                tmp_link.unlink()
+            tmp_link.symlink_to(shot_path)
+        except Exception:
+            pass  # Non-fatal: the durable path is what matters.
 
     return 0
 

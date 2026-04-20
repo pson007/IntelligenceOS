@@ -293,16 +293,22 @@ async def chart_screenshot(payload: dict | None = None) -> dict:
     return result
 
 
+_PINE_APPLIED_ROOT = (Path(__file__).parent / "pine" / "applied").resolve()
+_IMAGE_ROOTS = (_SCREENSHOT_ROOT, _PINE_APPLIED_ROOT)
+
+
 @app.get("/api/chart/image")
 async def chart_image(path: str):
-    """Serve a screenshot PNG — restricted to the TradingView screenshot
-    root so path traversal can't expose arbitrary files."""
+    """Serve a screenshot PNG. Allowed roots are the TradingView
+    screenshot directory (~/Desktop/TradingView) and the post-apply
+    pine overlay directory (pine/applied). Path traversal is blocked —
+    the resolved path must start with one of the allowed roots."""
     try:
         resolved = Path(path).resolve()
     except Exception:
         raise HTTPException(400, "invalid path")
-    if not str(resolved).startswith(str(_SCREENSHOT_ROOT)):
-        raise HTTPException(403, "path outside allowed root")
+    if not any(str(resolved).startswith(str(root)) for root in _IMAGE_ROOTS):
+        raise HTTPException(403, "path outside allowed roots")
     if not resolved.exists():
         raise HTTPException(404, "not found")
     return FileResponse(str(resolved), media_type="image/png")
@@ -734,6 +740,43 @@ async def decisions_reconcile(request_id: str, payload: dict) -> dict:
             "realized_r": realized_r}
 
 
+@app.post("/api/decisions/reconcile-eod")
+async def decisions_reconcile_eod(payload: dict | None = None) -> dict:
+    """End-of-day batch reconciliation. Grades all unreconciled decisions
+    from a target date (default today) against real OHLCV bars from
+    yfinance. Same first-touch rules as the replay bench — hit_stop
+    tie-breaks over hit_tp when a bar tags both.
+
+    Payload (all optional):
+      * `date`: "YYYY-MM-DD" — defaults to today
+      * `symbols`: list[str] — filter to specific symbols
+      * `tf`: bar interval, default "5m"
+      * `dry_run`: bool — compute but don't write outcomes
+    """
+    from datetime import datetime as _dt
+    from tv_automation import reconcile_eod
+
+    p = payload or {}
+    target = None
+    if p.get("date"):
+        try:
+            target = _dt.strptime(p["date"], "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(400, "date must be YYYY-MM-DD")
+    syms = p.get("symbols")
+    symbols = set(syms) if isinstance(syms, list) and syms else None
+    tf = (p.get("tf") or "5m").strip()
+    dry_run = bool(p.get("dry_run", False))
+
+    # Runs in a worker thread — yfinance is sync and can stall the
+    # event loop for a few seconds when fetching a fresh symbol.
+    summary = await asyncio.to_thread(
+        reconcile_eod.reconcile_day,
+        target=target, symbols=symbols, tf=tf, dry_run=dry_run,
+    )
+    return summary
+
+
 @app.get("/api/decisions/calibration")
 async def decisions_calibration() -> dict:
     """Per-provider accuracy bucketed by confidence. The data that
@@ -770,7 +813,8 @@ async def decisions_export_csv():
         "provider", "model", "signal", "confidence",
         "entry", "stop", "tp", "rationale",
         "outcome", "realized_r", "closed_at", "learning_note",
-        "pine_path", "cost_usd", "elapsed_s", "llm_elapsed_s",
+        "pine_path", "applied_screenshot_path",
+        "cost_usd", "elapsed_s", "llm_elapsed_s",
         "usage_in", "usage_out", "ts",
     ]
     writer = csv.DictWriter(buf, fieldnames=cols, extrasaction="ignore")
@@ -847,10 +891,38 @@ async def analyze_apply_pine(payload: dict) -> dict:
         )
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
         ok = proc.returncode == 0
+        stdout_text = stdout.decode("utf-8", errors="replace")
+
+        # Extract the applied-screenshot path printed by apply_pine.py
+        # (marker `APPLIED_SCREENSHOT: /abs/path.png`). When present,
+        # tie it to the originating decision via request_id so the
+        # Journal tab can show the "levels-drawn" chart alongside the
+        # signal/levels/outcome — the image is the highest-signal
+        # feedback for rating setup quality.
+        applied_screenshot = None
+        for line in stdout_text.splitlines():
+            if line.startswith("APPLIED_SCREENSHOT:"):
+                applied_screenshot = line.split(":", 1)[1].strip()
+                break
+
+        request_id = (p.get("request_id") or "").strip()
+        linked = False
+        if ok and applied_screenshot and request_id:
+            try:
+                linked = decision_log_mod.set_applied_screenshot(
+                    request_id, applied_screenshot,
+                )
+            except Exception as e:
+                audit.log("analyze.apply_pine.link_fail",
+                          error=f"{type(e).__name__}: {e}",
+                          request_id=request_id)
+
         return {
             "ok": ok, "path": str(resolved),
             "returncode": proc.returncode,
-            "stdout": stdout.decode("utf-8", errors="replace")[-2000:],
+            "applied_screenshot": applied_screenshot,
+            "linked_to_decision": linked,
+            "stdout": stdout_text[-2000:],
             "stderr": stderr.decode("utf-8", errors="replace")[-2000:],
         }
     except asyncio.TimeoutError:

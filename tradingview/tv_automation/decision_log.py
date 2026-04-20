@@ -105,14 +105,25 @@ def init_db() -> None:
     con = _connect()
     try:
         con.executescript(_SCHEMA)
-        # Migration: `learning_note` — trader's one-line takeaway after
-        # reviewing the outcome. Added in Phase 5 of the calibration
-        # roadmap. SQLite raises on duplicate-column; catch and move on.
-        try:
-            con.execute("ALTER TABLE decisions ADD COLUMN learning_note TEXT")
-        except sqlite3.OperationalError as e:
-            if "duplicate column name" not in str(e).lower():
-                raise
+        # Migrations — each one is ALTER TABLE ADD COLUMN inside a
+        # best-effort catch. SQLite raises on duplicate-column; that's
+        # the expected signal that the migration already ran.
+        for sql in (
+            # Phase 5: trader's one-line takeaway after reviewing the
+            # outcome.
+            "ALTER TABLE decisions ADD COLUMN learning_note TEXT",
+            # Path to the TradingView screenshot taken right AFTER the
+            # pine overlay was applied — the "with levels drawn" image
+            # used to rate setup quality and build a feedback loop.
+            # Populated by ui_server's apply-pine endpoint; null until
+            # the user clicks Apply pine to chart.
+            "ALTER TABLE decisions ADD COLUMN applied_screenshot_path TEXT",
+        ):
+            try:
+                con.execute(sql)
+            except sqlite3.OperationalError as e:
+                if "duplicate column name" not in str(e).lower():
+                    raise
     finally:
         con.close()
 
@@ -284,6 +295,33 @@ def set_learning_note(request_id: str, note: str | None) -> bool:
             audit.log("decision_log.learning_note",
                       request_id=request_id,
                       note_len=len(clean) if clean else 0)
+            return True
+        return False
+    finally:
+        con.close()
+
+
+def set_applied_screenshot(request_id: str, path: str) -> bool:
+    """Save the path to the chart screenshot taken right AFTER the pine
+    overlay was applied (the "with levels drawn" image). Lets the
+    Journal tab / later review show the exact visual the trader saw
+    when making the call, which is the highest-signal data for rating
+    setup quality and building a feedback loop.
+
+    Returns True on match, False if the request_id isn't in the table
+    (e.g. an apply-pine that happened before the decision was logged —
+    shouldn't happen in normal flow but worth distinguishing)."""
+    init_db()
+    con = _connect()
+    try:
+        cur = con.execute(
+            "UPDATE decisions SET applied_screenshot_path = ? "
+            "WHERE request_id = ?",
+            (path, request_id),
+        )
+        if cur.rowcount > 0:
+            audit.log("decision_log.applied_screenshot",
+                      request_id=request_id, path=path)
             return True
         return False
     finally:
