@@ -1,0 +1,70 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-21",
+  "dow": "Tue",
+  "stage": "pre_session_forecast",
+  "based_on_priors": ["2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20"],
+  "lessons_injected": 9,
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-20T22:55:00-04:00",
+  "note": "First forecast benefiting from auto-injected lessons feedback loop.",
+
+  "regime_read": "Dominant regime still bullish, but 5-day green streak broke 2026-04-20 with first meaningful red/control-loss session. Trend continuation no longer clean; opening-strength fade and intraday reversal risk now matter more than automatic buy-the-dip continuation.",
+
+  "same_dow_references": [
+    {
+      "date": "2026-04-14",
+      "summary": "clean bullish gap-and-go staircase trend, shallow lunch hold, close near HOD"
+    }
+  ],
+
+  "predictions": {
+    "direction": "up",
+    "direction_confidence": "med",
+    "open_type": "open_dip_then_reclaim",
+    "structure": "trend_up_with_midday_pause_or_shakeout",
+    "expected_move_size": "med",
+    "predicted_net_pct_lo": 0.25,
+    "predicted_net_pct_hi": 0.85,
+    "predicted_intraday_span_lo_pts": 240,
+    "predicted_intraday_span_hi_pts": 360
+  },
+
+  "time_window_expectations": {
+    "10am": "early probe/fade resolving; bias improves only if price reclaims opening structure",
+    "12pm": "likely midday stall or flush; not ideal to chase highs",
+    "2pm": "key repair/continuation window if bullish forecast right",
+    "4pm": "finish in upper half, likely not extreme HOD close but stronger than noon"
+  },
+
+  "probable_goat": {
+    "direction": "long",
+    "time_window": "midday",
+    "rationale": "best long likely AFTER weakness, not opening impulse (lessons applied)"
+  },
+
+  "tactical_bias": {
+    "bias": "buy_failed_weakness_buy_reclaim_after_morning_test",
+    "invalidation": "immediate acceptance below opening test low OR failure of any 10:00 reclaim OR repeated failed rallies after noon with expanding lower lows"
+  },
+
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "trend_up_with_midday_pause_or_shakeout",
+    "open_type": "open_dip_then_reclaim",
+    "lunch_behavior": "midday_flush_then_stabilization",
+    "afternoon_drive": "resumed_higher_after_noon_reset",
+    "goat_direction": "up",
+    "close_near_extreme": "no_mid_upper_range"
+  },
+
+  "confidence_notes": "Biggest risk: Monday was not a one-day reset but start of broader exhaustion phase. If so, Tuesday could open weak, fail reclaim, turn into second-day downside continuation instead of rebound.",
+
+  "lessons_applied": [
+    "Prior 5-day green run reduces blind continuation confidence",
+    "Opening-fade risk weighted more heavily after streak break",
+    "Net close vs intraday path separated explicitly",
+    "GOAT placed AFTER morning weakness, not at opening impulse",
+    "Close forecast upper-range but NOT near-extreme"
+  ]
+}

@@ -2989,8 +2989,8 @@ async function selectForecastDay(symbol, date) {
   const main = document.getElementById('forecasts-main');
   main.innerHTML = '<div class="empty">Loading…</div>';
 
-  // Fetch each stage + reconciliation in parallel
-  const stages = ['1000', '1200', '1400', 'reconciliation'];
+  // Fetch all known stages + recon variants in parallel.
+  const stages = ['pre_session', '1000', '1200', '1400', 'reconciliation', 'pre_session_reconciliation'];
   const results = await Promise.all(stages.map(async s => {
     try {
       return { stage: s, ...(await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(s)}`)) };
@@ -2999,10 +2999,20 @@ async function selectForecastDay(symbol, date) {
     }
   }));
 
-  const sections = results.map(r => {
-    const title = r.stage === 'reconciliation'
-      ? 'Reconciliation @ 16:00'
-      : `F${['1000','1200','1400'].indexOf(r.stage)+1} @ ${r.stage.slice(0,2)}:${r.stage.slice(2)}`;
+  // Drop stages that 404'd (missing for this day) so we don't render empty cards.
+  const present = results.filter(r => !r.error || (r.error && !r.error.includes('404') && !r.error.includes('not found')));
+
+  const titleFor = stage => {
+    if (stage === 'pre_session') return 'Pre-Session Forecast';
+    if (stage === 'pre_session_reconciliation') return 'Pre-Session Reconciliation';
+    if (stage === 'reconciliation') return 'In-Session Reconciliation @ 16:00';
+    const idx = ['1000','1200','1400'].indexOf(stage);
+    if (idx >= 0) return `F${idx+1} @ ${stage.slice(0,2)}:${stage.slice(2)}`;
+    return stage;
+  };
+
+  const sections = present.map(r => {
+    const title = titleFor(r.stage);
     if (r.error) {
       return `<div class="card"><div class="card-head"><h2>${title}</h2></div><div class="empty muted">${r.error}</div></div>`;
     }
@@ -3011,15 +3021,26 @@ async function selectForecastDay(symbol, date) {
     if (j.made_at) metaBits.push(`made ${j.made_at}`);
     if (j.gate && j.gate.reason) metaBits.push(`gate: ${j.gate.reason}`);
     const imgUrl = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(r.stage)}/screenshot`;
+    // Pine + Apply buttons only on pre_session — that's the only stage
+    // whose forecast shape maps to the overlay template.
+    const pineBtns = r.stage === 'pre_session'
+      ? `
+        <button class="btn small forecast-pine-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">⬇ Generate Pine overlay</button>
+        <button class="btn small forecast-apply-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">▶ Apply to chart</button>
+      `
+      : '';
     return `
       <div class="card forecast-stage-card">
         <div class="card-head">
           <h2>${title}</h2>
-          <span class="card-head__actions mono small">${metaBits.join('  ')}</span>
+          <div class="card-head__actions">
+            ${pineBtns}
+            <span class="mono small">${metaBits.join('  ')}</span>
+          </div>
         </div>
         <div class="compare-pane">
           <div class="compare-img">
-            <img src="${imgUrl}" alt="stage screenshot" onerror="this.parentNode.innerHTML='<div class=empty>Screenshot not available</div>';" />
+            <img src="${imgUrl}" alt="stage screenshot" onerror="this.parentNode.innerHTML='<div class=empty>(no screenshot for this stage)</div>';" />
           </div>
         </div>
         <div class="profile-narrative">${renderProfileMarkdown(r.markdown || j.raw_response || '')}</div>
@@ -3028,6 +3049,66 @@ async function selectForecastDay(symbol, date) {
   });
 
   main.innerHTML = sections.join('');
+
+  // Wire Pine-download buttons.
+  main.querySelectorAll('.forecast-pine-btn').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      ev.preventDefault();
+      const { symbol, date, stage } = btn.dataset;
+      setBusy(btn, true, '⬇ Generate Pine overlay');
+      try {
+        const url = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/pine`;
+        const res = await fetch(url, { headers: { 'X-UI-Token': localStorage.getItem('ios-ui-token') || '' } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const cd = res.headers.get('content-disposition') || '';
+        const m = cd.match(/filename="?([^";]+)"?/i);
+        const fname = m ? m[1] : `forecast_overlay_${date}.pine`;
+        const objUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = objUrl;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objUrl);
+        toast(`downloaded ${fname}`, 'ok');
+      } catch (e) {
+        toast(`pine generate failed: ${e.message}`, 'err');
+      } finally {
+        setBusy(btn, false, '⬇ Generate Pine overlay');
+      }
+    });
+  });
+
+  // Wire Apply-to-chart buttons. ~30-60s round-trip — disable both pine
+  // buttons on the same card during apply to prevent double-fire.
+  main.querySelectorAll('.forecast-apply-btn').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      ev.preventDefault();
+      const { symbol, date, stage } = btn.dataset;
+      const card = btn.closest('.forecast-stage-card');
+      const pineBtn = card?.querySelector('.forecast-pine-btn');
+      setBusy(btn, true, '▶ Apply to chart');
+      if (pineBtn) pineBtn.disabled = true;
+      toast('Applying to chart… (~30-60s)', 'ok');
+      try {
+        const r = await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/apply`, { method: 'POST', body: {} });
+        if (r.ok) {
+          toast(`applied: ${r.pine_path?.split('/').pop() || 'pine'}`, 'ok');
+        } else {
+          toast(`apply returned not-ok: ${r.error || 'see stdout'}`, 'err');
+          console.warn('apply stdout tail:', r.stdout_tail);
+          console.warn('apply stderr tail:', r.stderr_tail);
+        }
+      } catch (e) {
+        toast(`apply failed: ${e.message}`, 'err');
+      } finally {
+        setBusy(btn, false, '▶ Apply to chart');
+        if (pineBtn) pineBtn.disabled = false;
+      }
+    });
+  });
 }
 
 // ----------------------------------------------------------------------

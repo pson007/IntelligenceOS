@@ -1251,9 +1251,15 @@ async def profile_screenshot(key: str):
 # ---------------------------------------------------------------------------
 
 _FORECASTS_ROOT = (Path(__file__).parent / "forecasts").resolve()
-# Forecast filenames match SYMBOL_YYYY-MM-DD_{HHMM|reconciliation}.{md,json}
+# Forecast filenames: SYMBOL_YYYY-MM-DD_STAGE.{md,json}
+# Stage may be HHMM (e.g. 1000), `reconciliation`, `pre_session`,
+# `pre_session_reconciliation`, etc. The stem-parser below pulls the date
+# explicitly via regex so it doesn't get confused by multi-word stages.
 _FORECAST_DATE_RX = __import__("re").compile(r"^\d{4}-\d{2}-\d{2}$")
-_FORECAST_STAGE_RX = __import__("re").compile(r"^(?:\d{4}|reconciliation)$")
+_FORECAST_STAGE_RX = __import__("re").compile(r"^[a-z0-9_]{2,40}$")
+_FORECAST_STEM_RX = __import__("re").compile(
+    r"^(?P<symbol>[A-Za-z0-9]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<stage>[a-z0-9_]+)$"
+)
 
 
 @app.get("/api/forecasts/lessons")
@@ -1279,14 +1285,10 @@ async def forecasts_list() -> dict:
         return {"days": []}
     by_date: dict[str, dict] = {}
     for jf in sorted(_FORECASTS_ROOT.glob("*.json")):
-        # Parse SYMBOL_YYYY-MM-DD_STAGE.json
-        stem = jf.stem
-        parts = stem.rsplit("_", 2)
-        if len(parts) != 3:
+        m = _FORECAST_STEM_RX.match(jf.stem)
+        if not m:
             continue
-        symbol, date, stage = parts
-        if not _FORECAST_DATE_RX.match(date):
-            continue
+        symbol, date, stage = m.group("symbol"), m.group("date"), m.group("stage")
         try:
             data = json.loads(jf.read_text())
         except Exception:
@@ -1297,19 +1299,23 @@ async def forecasts_list() -> dict:
                 "symbol": symbol, "date": date,
                 "stages": {}, "has_reconciliation": False,
             }
-        if stage == "reconciliation":
+        # Reconciliation stages: in-session is `reconciliation`; pre-session
+        # version is `pre_session_reconciliation`. Both flagged so the UI
+        # can show a single "recon ✓" badge per day.
+        if stage.endswith("reconciliation"):
             by_date[key]["has_reconciliation"] = True
-            by_date[key]["reconciliation"] = {
-                "made_at": data.get("made_at"),
-                "ground_truth_profile": data.get("ground_truth_profile"),
-            }
+            by_date[key].setdefault("reconciliation", {}).update({
+                stage: {
+                    "made_at": data.get("made_at"),
+                    "ground_truth_profile": data.get("ground_truth_profile"),
+                }
+            })
         else:
             by_date[key]["stages"][stage] = {
                 "cursor_time": data.get("cursor_time"),
                 "made_at": data.get("made_at"),
                 "gate_ok": (data.get("gate") or {}).get("ok"),
             }
-    # Sort newest-first
     days = sorted(by_date.values(), key=lambda d: d["date"], reverse=True)
     return {"days": days}
 
@@ -1329,6 +1335,92 @@ async def forecast_get(symbol: str, date: str, stage: str) -> dict:
         "json": json.loads(jf.read_text()),
         "markdown": mf.read_text() if mf.exists() else "",
     }
+
+
+@app.get("/api/forecasts/{symbol}/{date}/{stage}/pine")
+async def forecast_pine(symbol: str, date: str, stage: str):
+    """Render a Pine v6 forecast-overlay indicator from a saved forecast JSON.
+
+    Returns the .pine source as plain text. UI fetches this and offers a
+    download. Currently only meaningful for `pre_session` stage — intraday
+    F1/F2/F3 stages don't have a clear visual analog yet."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
+        raise HTTPException(400, "invalid params")
+    jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
+    if not jf.exists():
+        raise HTTPException(404, "forecast not found")
+    try:
+        data = json.loads(jf.read_text())
+    except Exception as e:
+        raise HTTPException(500, f"forecast json malformed: {e}")
+    from tv_automation.forecast_pine import render_pine
+    from fastapi.responses import PlainTextResponse
+    pine_text = render_pine(data)
+    filename = f"forecast_overlay_{date}.pine"
+    return PlainTextResponse(
+        content=pine_text,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.post("/api/forecasts/{symbol}/{date}/{stage}/apply")
+async def forecast_apply(symbol: str, date: str, stage: str) -> dict:
+    """Render Pine from the forecast JSON, write to pine/generated/, and
+    apply to the TradingView chart via the existing apply_pine.py subprocess.
+
+    Long-running (~30-60s for the browser-driving Playwright work). Blocks
+    until done with a 120s timeout — matches the pattern of
+    `/api/analyze/apply-pine`. UI should disable the button while waiting."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
+        raise HTTPException(400, "invalid params")
+    jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
+    if not jf.exists():
+        raise HTTPException(404, "forecast not found")
+    try:
+        data = json.loads(jf.read_text())
+    except Exception as e:
+        raise HTTPException(500, f"forecast json malformed: {e}")
+
+    from tv_automation.forecast_pine import render_pine
+    pine_text = render_pine(data)
+
+    # Write to pine/generated/ — that's the directory the apply_pine.py
+    # subprocess (and its security model in /api/analyze/apply-pine) trusts.
+    pine_dir = (Path(__file__).parent / "pine" / "generated").resolve()
+    pine_dir.mkdir(parents=True, exist_ok=True)
+    pine_path = pine_dir / f"forecast_overlay_{date}.pine"
+    pine_path.write_text(pine_text)
+
+    import subprocess
+    apply_script = Path(__file__).parent / "apply_pine.py"
+    venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
+    python_exe = str(venv_python) if venv_python.exists() else "python"
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            python_exe, str(apply_script), str(pine_path),
+            cwd=str(Path(__file__).parent),
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        ok = proc.returncode == 0
+        stdout_text = stdout.decode("utf-8", errors="replace")
+        applied_screenshot = None
+        for line in stdout_text.splitlines():
+            if line.startswith("APPLIED_SCREENSHOT:"):
+                applied_screenshot = line.split(":", 1)[1].strip()
+                break
+        return {
+            "ok": ok,
+            "pine_path": str(pine_path),
+            "returncode": proc.returncode,
+            "applied_screenshot": applied_screenshot,
+            "stdout_tail": stdout_text[-1500:],
+            "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
+        }
+    except asyncio.TimeoutError:
+        return {"ok": False, "pine_path": str(pine_path), "error": "apply_pine timeout (120s)"}
+    except Exception as e:
+        raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
 
 
 @app.get("/api/forecasts/{symbol}/{date}/{stage}/screenshot")

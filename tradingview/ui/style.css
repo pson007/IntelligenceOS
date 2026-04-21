@@ -1842,6 +1842,19 @@
   .forecasts-main { display: flex; flex-direction: column; gap: var(--s-3); }
   .forecast-stage-card .compare-img { max-height: 360px; }
   .forecast-stage-card .profile-narrative { font-size: 12px; }
+  .forecast-pine-btn,
+  .forecast-apply-btn {
+    background: var(--bg-3); border: 1px solid var(--border);
+    color: var(--accent, #58a6ff); padding: 4px 10px; border-radius: 6px;
+    font-size: 11px; cursor: pointer; font-family: var(--mono);
+    margin-right: 6px;
+  }
+  .forecast-pine-btn:hover,
+  .forecast-apply-btn:hover { border-color: var(--accent, #58a6ff); }
+  .forecast-apply-btn { color: var(--green); }
+  .forecast-apply-btn:hover { border-color: var(--green); }
+  .forecast-pine-btn:disabled,
+  .forecast-apply-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* Lessons card — top of Forecasts tab, aggregates from all reconciliations */
   .lessons-card { margin-bottom: var(--s-3); }
