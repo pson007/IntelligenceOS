@@ -1,0 +1,540 @@
+"""Replay Forecast Workflow — predict the rest of an RTH session from a
+partial-day cursor, then grade the prediction against the completed day.
+
+Pipeline (per day):
+    1. Navigate replay to 10:00 AM ET (compensated pick + step adjust)
+    2. F1 @ 10:00 — frame → screenshot → ChatGPT → save .md+.json
+    3. Step forward 120 bars → 12:00
+    4. F2 @ 12:00 — same
+    5. Step forward 120 bars → 14:00
+    6. F3 @ 14:00 — same
+    7. Step forward 120 bars → 16:00
+    8. Reconciliation — screenshot the completed day, load F1/F2/F3 + the
+       matching completed-day profile if available, grade each forecast,
+       save reconciliation.md+.json
+
+Output (in `tradingview/forecasts/`):
+    {SYMBOL}_{YYYY-MM-DD}_{HHMM}.{md,json}         — for F1/F2/F3
+    {SYMBOL}_{YYYY-MM-DD}_reconciliation.{md,json} — grading summary
+
+CLI:
+    python -m tv_automation.daily_forecast 2026-03-18
+    python -m tv_automation.daily_forecast 2026-03-18 --resume  # skip existing
+    python -m tv_automation.daily_forecast 2026-03-18 --symbol MNQ1
+
+Requires a TV tab at the Money Print layout (or similar with the same
+label semantics — see memory `project_money_print_layout.md`). The
+`chatgpt_web` driver requires a signed-in chatgpt.com in the attached Chrome.
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import re
+from datetime import datetime, time as dtime
+from pathlib import Path
+
+from playwright.async_api import Page
+
+from . import replay
+from .chatgpt_web import analyze_via_chatgpt_web
+from .lib import audit
+from .lib.context import chart_session
+from .profile_gate import verify_full_session
+
+
+_FORECASTS_ROOT = (Path(__file__).parent.parent / "forecasts").resolve()
+_PROFILES_ROOT = (Path(__file__).parent.parent / "profiles").resolve()
+_SCREENSHOT_ROOT = (Path.home() / "Desktop" / "TradingView").resolve()
+
+# Forecast stages — label, cursor target time, bars to step from F1.
+STAGES: list[tuple[str, dtime, int]] = [
+    ("F1", dtime(10, 0), 0),
+    ("F2", dtime(12, 0), 120),
+    ("F3", dtime(14, 0), 120),
+]
+# Step from F3 to session close for the reconciliation screenshot.
+BARS_TO_CLOSE_FROM_F3 = 120
+
+
+# ---------------------------------------------------------------------------
+# Prompts
+# ---------------------------------------------------------------------------
+
+_FORECAST_SYSTEM = """You are a day-trading forecast analyst for MNQ1! (Micro E-mini Nasdaq-100 futures, CME). Given a chart in Bar Replay mode with the cursor at a specific mid-session time, forecast how the REMAINDER of the trading day will unfold.
+
+VISUAL REFERENCE (labels on the chart):
+- ⭐ GOAT: standout move of the day
+- Red circle: bearish pivot / short signal
+- Green circle: bullish pivot / long signal
+- ORANGE bank/castle icons: supply/resistance ("stored orders" above)
+- BLUE bank/castle icons: demand/support ("stored orders" below)
+
+TIME MARKERS (vertical colored lines):
+- BLUE = 10:00 AM ET
+- RED = 12:00 PM ET
+- GREEN = 2:00 PM ET
+- YELLOW = 4:00 PM ET
+Session RECTANGLE: GREEN = bullish day so far, RED = bearish day so far.
+
+CRITICAL: The blue "BarDate" label shows the cursor's exact date/time. You MAY use bars BEFORE the cursor as evidence. You MUST NOT use bars AFTER the cursor — those are un-replayed future bars (shaded/masked). If you reference a bar time, explicitly state whether it's before or after the cursor.
+
+The chart may also show the PREVIOUS trading day on the left for context — that's historical and fully usable.
+
+On TREND days specifically: if you see persistent lower-highs / higher-lows that refuse to reclaim value, WIDEN your close and LOD/HOD ranges aggressively. Trend days often extend further than midday action suggests.
+
+REQUIRED OUTPUT (use exact headings):
+
+## CURSOR CONTEXT
+- Cursor date/time (from BarDate label)
+- Bars observed so far this session (count, time range)
+- What has happened so far in 1 sentence
+
+## RANKED SIMILAR ARCHETYPES
+3 ranked archetypes describing what KIND of session this most resembles — each with a 1-sentence rationale.
+
+## PROJECTED PATH
+- Between cursor and next time marker: expectation
+- Between next marker and 14:00: expectation
+- Between 14:00 and 16:00 (close): expectation
+- Projected close price (range): ...
+- Rest-of-day HOD (range): ...
+- Rest-of-day LOD (range): ...
+
+## TACTICAL BIAS
+- Primary bias (long/short/neutral) with confidence %
+- Key level to invalidate the bias
+- Preferred entry zone
+- R:R logic
+
+## KEY LEVELS
+- Overhead supply: ...
+- Underlying demand: ...
+- Pivot-to-watch: ...
+
+## PREDICTION TAGS
+Each tag on its own line with confidence %:
+direction, structure, lunch_behavior, afternoon_drive, goat_direction, close_near_extreme."""
+
+
+_RECONCILE_SYSTEM = """You are a forecast-accuracy adjudicator for day-trading predictions on MNQ1!. You will be given:
+- 3 forecasts made at 10:00, 12:00, and 14:00 ET (F1, F2, F3) as structured JSON
+- The actual full-day outcome (OHLC, pivots, structure tags) as structured JSON if available
+- A screenshot of the completed session
+
+Grade each forecast on:
+1. **Direction** (hit/miss)
+2. **Close price** — did actual close fall within the predicted range? If not, how far outside?
+3. **HOD** — did predicted rest-of-day HOD capture actual HOD?
+4. **LOD** — did predicted rest-of-day LOD capture actual LOD?
+5. **Structure tags** — how well did predicted tags match actual?
+6. **Tactical bias** — would the predicted bias (short/long) have been profitable?
+
+Output format (use exact headings):
+
+## ACTUAL OUTCOME
+Open / Close / HOD / LOD / Shape (1 sentence)
+
+## F1 GRADE (made at 10:00)
+- Direction: ✓/✗
+- Close range hit: ✓/✗ (actual vs predicted, miss in pts)
+- HOD captured: ✓/✗ (miss in pts)
+- LOD captured: ✓/✗ (miss in pts)
+- Tags correct: list
+- Tags wrong: list
+- Bias profitable if traded: ✓/✗
+- Overall score: X/6
+- Biggest miss: one sentence
+
+## F2 GRADE (made at 12:00)
+[same structure]
+
+## F3 GRADE (made at 14:00)
+[same structure]
+
+## FORECAST EVOLUTION
+Did the forecasts improve/narrow as the day progressed? Where did each catch/miss the key signal?
+
+## LESSONS
+What would make forecasts better next time? Specific, actionable."""
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _bardate_to_datetime(legend_text: str | None) -> datetime | None:
+    """Parse the BarDate plot-values string like 'BarDate2,026.003.0018.0010.000.00'
+    into a datetime. Returns None if unparseable. Known to drift in current TV
+    build — use as a hint, not ground truth."""
+    if not legend_text:
+        return None
+    m = re.match(r"BarDate\s*([\d.,]+)\s*([\d.,]+)\s*([\d.,]+)\s*([\d.,]+)\s*([\d.,]+)", legend_text)
+    if not m:
+        return None
+    try:
+        vals = [int(float(g.replace(",", ""))) for g in m.groups()]
+        return datetime(vals[0], vals[1], vals[2], vals[3], vals[4])
+    except (ValueError, TypeError):
+        return None
+
+
+async def _read_cursor(page: Page) -> datetime | None:
+    """Best-effort read of the cursor time from the BarDate plot in the legend."""
+    text = await page.evaluate(
+        r"""() => {
+            const items = Array.from(document.querySelectorAll('[data-qa-id="legend-source-item"]'));
+            const bar = items.find(i => (i.innerText||'').trim().startsWith('BarDate'));
+            return bar ? (bar.innerText||'').trim() : null;
+        }"""
+    )
+    return _bardate_to_datetime(text)
+
+
+async def _frame_session_view(page: Page) -> None:
+    """Frame the chart so roughly one full RTH session is visible, with the
+    cursor's day dominant in the view.
+
+    Reused from the Replay Analysis Daily Profile Workflow. The recipe is
+    pixel-position-dependent — tuned for a ~1728x996 viewport. Re-tune the
+    mouse.move coordinates if running on a different screen size."""
+    await page.bring_to_front()
+    # Zoom out anchored left so more of the session's morning bars come in
+    await page.mouse.move(200, 852)
+    await page.wait_for_timeout(150)
+    for _ in range(2):
+        await page.mouse.wheel(0, 120)
+        await page.wait_for_timeout(100)
+    # Slight zoom in at center to hide previous-day sliver
+    await page.mouse.move(828, 852)
+    await page.mouse.wheel(0, -120)
+    await page.wait_for_timeout(200)
+    await page.keyboard.press("End")
+    await page.wait_for_timeout(400)
+
+
+async def _frame_with_cursor_right(page: Page) -> None:
+    """Frame variant for forecast stages — zooms in on the right portion
+    so the cursor's partial day dominates the view and pushes prior-day
+    bars off the left edge."""
+    await page.bring_to_front()
+    await page.mouse.move(1300, 852)
+    await page.wait_for_timeout(150)
+    for _ in range(5):
+        await page.mouse.wheel(0, -120)
+        await page.wait_for_timeout(80)
+    await page.keyboard.press("End")
+    await page.wait_for_timeout(400)
+
+
+async def _capture(page: Page, symbol: str, stage_label: str) -> Path:
+    """Screenshot the chart, return the path."""
+    _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = _SCREENSHOT_ROOT / f"{symbol}_forecast_{stage_label}_{ts}.png"
+    await page.screenshot(path=str(path))
+    return path
+
+
+async def _navigate_to_10am(page: Page, date: datetime) -> datetime | None:
+    """Navigate replay to 10:00 AM ET on `date`.
+
+    Works around two quirks of TV's replay date picker:
+      * picker lands ~1 hour earlier than requested time → we pick 11:00 to aim for 10:00
+      * landing bar can drift further under unknown conditions → we read the
+        cursor via BarDate and step forward/backward as needed.
+
+    Returns the cursor datetime after adjustment (best-effort from BarDate —
+    known to drift in the current TV build; use as a hint, not ground truth)."""
+    if not await replay.is_active(page):
+        await replay.enter_replay(page)
+    target = date.replace(hour=11, minute=0, second=0, microsecond=0)
+    await replay.select_start_date(page, target)
+    await page.wait_for_timeout(800)
+
+    cursor = await _read_cursor(page)
+    ten_am = date.replace(hour=10, minute=0, second=0, microsecond=0)
+
+    if cursor is None:
+        audit.log("daily_forecast.navigate.no_bardate")
+        return None
+
+    # Adjust forward or backward to hit 10:00 exactly. Bound the adjustment
+    # so we don't loop forever if BarDate is wildly wrong.
+    delta_min = int((ten_am - cursor).total_seconds() // 60)
+    audit.log("daily_forecast.navigate.initial",
+              requested=str(target), landed=str(cursor), delta_min=delta_min)
+    MAX_ADJUST = 240
+    if delta_min > 0 and delta_min <= MAX_ADJUST:
+        await replay.step_forward(page, delta_min)
+    elif delta_min < 0 and -delta_min <= MAX_ADJUST:
+        await replay.step_backward(page, -delta_min)
+
+    return await _read_cursor(page)
+
+
+async def _step_forward_bars(page: Page, bars: int) -> None:
+    """Thin wrapper around replay.step_forward for consistency."""
+    await replay.step_forward(page, bars)
+
+
+def _forecast_file_paths(symbol: str, date_str: str, stage_label: str) -> tuple[Path, Path]:
+    """Return (md_path, json_path) for a forecast stage."""
+    _FORECASTS_ROOT.mkdir(parents=True, exist_ok=True)
+    base = _FORECASTS_ROOT / f"{symbol}_{date_str}_{stage_label}"
+    return base.with_suffix(".md"), base.with_suffix(".json")
+
+
+def _reconciliation_file_paths(symbol: str, date_str: str) -> tuple[Path, Path]:
+    _FORECASTS_ROOT.mkdir(parents=True, exist_ok=True)
+    base = _FORECASTS_ROOT / f"{symbol}_{date_str}_reconciliation"
+    return base.with_suffix(".md"), base.with_suffix(".json")
+
+
+# ---------------------------------------------------------------------------
+# Stage execution
+# ---------------------------------------------------------------------------
+
+async def _run_forecast_stage(
+    page: Page, *, symbol: str, date_str: str,
+    stage_label: str, cursor_time: dtime,
+) -> dict:
+    """Frame → gate → screenshot → ChatGPT → save. Returns the saved JSON dict."""
+    with audit.timed("daily_forecast.stage", stage=stage_label, cursor=str(cursor_time)) as ac:
+        await _frame_with_cursor_right(page)
+        screenshot = await _capture(page, symbol, stage_label.lower() + cursor_time.strftime("%H%M"))
+        ac["screenshot"] = str(screenshot)
+
+        # Gate — for forecast we accept partial frames, but verify minimum
+        # morning visibility.
+        gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)
+        ac["gate_ok"] = gate.ok
+        ac["gate_reason"] = gate.reason
+        if not gate.ok:
+            audit.log("daily_forecast.stage.gate_fail", stage=stage_label, reason=gate.reason)
+            # We proceed even on gate fail — forecast is best-effort on bad frames
+
+        user_prompt = (
+            f"Forecast remainder of {symbol}! {date_str} RTH session. "
+            f"Cursor at ~{cursor_time.strftime('%H:%M')} ET per the BarDate label. "
+            f"Bars before cursor = evidence; bars after = un-replayed future (do not use). "
+            f"Use VISUAL REFERENCE and TIME MARKERS from the system prompt."
+        )
+        text, _, _ = await analyze_via_chatgpt_web(
+            image_path=str(screenshot),
+            system_prompt=_FORECAST_SYSTEM,
+            user_text=user_prompt,
+            model="Thinking",
+            timeout_s=300,
+        )
+        ac["response_chars"] = len(text)
+
+        md_path, json_path = _forecast_file_paths(symbol, date_str, cursor_time.strftime("%H%M"))
+        md_body = _build_forecast_md(
+            symbol=symbol, date_str=date_str, stage_label=stage_label,
+            cursor_time=cursor_time, screenshot=screenshot,
+            gate_ok=gate.ok, gate_reason=gate.reason,
+            response_text=text,
+        )
+        md_path.write_text(md_body)
+        saved = {
+            "symbol": symbol,
+            "date": date_str,
+            "cursor_time": cursor_time.strftime("%H:%M"),
+            "stage": stage_label,
+            "screenshot_path": str(screenshot),
+            "gate": {"ok": gate.ok, "reason": gate.reason,
+                     "session_first": str(gate.session_first) if gate.session_first else None,
+                     "session_last": str(gate.session_last) if gate.session_last else None},
+            "model": "chatgpt_thinking",
+            "made_at": datetime.now().isoformat(timespec="seconds"),
+            "raw_response": text,
+        }
+        json_path.write_text(json.dumps(saved, indent=2))
+        ac["saved_to"] = str(json_path)
+        return saved
+
+
+def _build_forecast_md(*, symbol, date_str, stage_label, cursor_time,
+                       screenshot, gate_ok, gate_reason, response_text) -> str:
+    """Assemble the .md file with frontmatter + raw ChatGPT response."""
+    fm = "\n".join([
+        "---",
+        f"symbol: {symbol}",
+        f"date: {date_str}",
+        f"cursor_time: {cursor_time.strftime('%H:%M')} ET",
+        f"stage: {stage_label}",
+        f"screenshot: {screenshot}",
+        f"gate_ok: {gate_ok}",
+        f"gate_reason: {gate_reason}",
+        "model: chatgpt_thinking",
+        f"made_at: {datetime.now().isoformat(timespec='seconds')}",
+        "---",
+        "",
+    ])
+    return fm + response_text.strip() + "\n"
+
+
+# ---------------------------------------------------------------------------
+# Reconciliation
+# ---------------------------------------------------------------------------
+
+async def _run_reconciliation(
+    page: Page, *, symbol: str, date_str: str, stages_run: list[dict],
+) -> dict:
+    """Grade F1/F2/F3 against the actual day outcome."""
+    with audit.timed("daily_forecast.reconciliation", date=date_str) as ac:
+        await _frame_session_view(page)
+        screenshot = await _capture(page, symbol, "1600_close")
+        ac["screenshot"] = str(screenshot)
+
+        # Load completed-day profile if available — stronger ground truth than
+        # re-deriving from the screenshot alone.
+        profile_path = _PROFILES_ROOT / f"{symbol}_{date_str}.json"
+        actual_block: dict = {}
+        if profile_path.exists():
+            try:
+                prof = json.loads(profile_path.read_text())
+                actual_block = {
+                    "summary": prof.get("summary", {}),
+                    "pivots": (prof.get("pivots") or [])[:6],
+                    "tags": prof.get("tags", {}),
+                }
+            except Exception as e:
+                audit.log("daily_forecast.reconciliation.profile_load_fail", err=str(e))
+
+        # Compose user prompt — 3 forecasts + actual (if any)
+        parts = []
+        if actual_block:
+            parts.append("## ACTUAL OUTCOME (from completed-day profile)")
+            parts.append(json.dumps(actual_block, indent=2))
+            parts.append("")
+        else:
+            parts.append("(No matching completed-day profile in DB — grade from screenshot alone.)")
+            parts.append("")
+        for s in stages_run:
+            parts.append(f"## FORECAST {s['stage']} (made at {s['cursor_time']})")
+            parts.append(s.get("raw_response", "(raw response missing)"))
+            parts.append("")
+        parts.append("Grade each forecast against the actual outcome using the exact format in the system prompt. Be fair and specific.")
+        user_prompt = "\n".join(parts)
+
+        text, _, _ = await analyze_via_chatgpt_web(
+            image_path=str(screenshot),
+            system_prompt=_RECONCILE_SYSTEM,
+            user_text=user_prompt,
+            model="Thinking",
+            timeout_s=300,
+        )
+        ac["response_chars"] = len(text)
+
+        md_path, json_path = _reconciliation_file_paths(symbol, date_str)
+        fm = "\n".join([
+            "---",
+            f"symbol: {symbol}",
+            f"date: {date_str}",
+            "stage: reconciliation",
+            f"screenshot: {screenshot}",
+            f"forecasts_graded: {[s['stage'] for s in stages_run]}",
+            f"ground_truth_profile: {str(profile_path) if profile_path.exists() else 'none'}",
+            f"made_at: {datetime.now().isoformat(timespec='seconds')}",
+            "---",
+            "",
+        ])
+        md_path.write_text(fm + text.strip() + "\n")
+        saved = {
+            "symbol": symbol,
+            "date": date_str,
+            "stage": "reconciliation",
+            "screenshot_path": str(screenshot),
+            "forecasts_graded": [s["stage"] for s in stages_run],
+            "ground_truth_profile": str(profile_path) if profile_path.exists() else None,
+            "made_at": datetime.now().isoformat(timespec="seconds"),
+            "raw_response": text,
+        }
+        json_path.write_text(json.dumps(saved, indent=2))
+        ac["saved_to"] = str(json_path)
+        return saved
+
+
+# ---------------------------------------------------------------------------
+# Orchestration
+# ---------------------------------------------------------------------------
+
+async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
+                           resume: bool = False) -> dict:
+    """Run the full forecast workflow for one trading day.
+
+    Returns a dict summarizing the artifacts produced.
+
+    `resume=True` skips stages whose .json already exists on disk —
+    useful if an earlier run crashed partway and you want to pick up
+    without re-driving the browser or re-paying for prior stages."""
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError as e:
+        raise ValueError(f"date must be YYYY-MM-DD, got {date_str!r}") from e
+
+    saved_stages: list[dict] = []
+    async with chart_session() as (_ctx, page):
+        with audit.timed("daily_forecast.run_day", date=date_str, symbol=symbol):
+            # Navigate to 10:00 (F1 cursor)
+            cursor = await _navigate_to_10am(page, target_date)
+            audit.log("daily_forecast.navigated", cursor=str(cursor))
+
+            for (label, cursor_time, step_bars) in STAGES:
+                if step_bars > 0:
+                    await _step_forward_bars(page, step_bars)
+
+                _, json_path = _forecast_file_paths(symbol, date_str, cursor_time.strftime("%H%M"))
+                if resume and json_path.exists():
+                    audit.log("daily_forecast.stage.skip_existing", stage=label)
+                    saved_stages.append(json.loads(json_path.read_text()))
+                    continue
+
+                saved = await _run_forecast_stage(
+                    page, symbol=symbol, date_str=date_str,
+                    stage_label=label, cursor_time=cursor_time,
+                )
+                saved_stages.append(saved)
+
+            # Step to 16:00 for reconciliation screenshot
+            await _step_forward_bars(page, BARS_TO_CLOSE_FROM_F3)
+
+            _, recon_json = _reconciliation_file_paths(symbol, date_str)
+            if resume and recon_json.exists():
+                audit.log("daily_forecast.reconciliation.skip_existing")
+                reconciliation = json.loads(recon_json.read_text())
+            else:
+                reconciliation = await _run_reconciliation(
+                    page, symbol=symbol, date_str=date_str, stages_run=saved_stages,
+                )
+
+    return {
+        "symbol": symbol,
+        "date": date_str,
+        "stages": [{"stage": s["stage"], "cursor_time": s["cursor_time"]} for s in saved_stages],
+        "reconciliation_file": str(_reconciliation_file_paths(symbol, date_str)[1]),
+    }
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def _main() -> None:
+    p = argparse.ArgumentParser(prog="tv_automation.daily_forecast")
+    p.add_argument("date", help="Trading date in YYYY-MM-DD format")
+    p.add_argument("--symbol", default="MNQ1", help="Symbol prefix for filenames")
+    p.add_argument("--resume", action="store_true",
+                   help="Skip stages whose .json already exists on disk")
+    args = p.parse_args()
+
+    result = asyncio.run(run_forecast_day(args.date, symbol=args.symbol, resume=args.resume))
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    _main()

@@ -1,0 +1,58 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-18",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "session_elapsed_bars": 30,
+  "model": "chatgpt_thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_1000_20260420_204358.png",
+  "made_at": "2026-04-20T20:43:58-04:00",
+
+  "observed_so_far": {
+    "open_approx": 25020,
+    "first_hour_low_approx": 24820,
+    "summary": "Opened ~25,020, sold off hard, failed to reclaim overhead, washed into first-hour low ~24,820s, trying reflex bounce into 10:00."
+  },
+
+  "similar_archetypes": [
+    {"rank": 1, "name": "opening_drive_down_failed_first_reclaim", "rationale": "sharp early liquidation, lower highs, price under falling resistance"},
+    {"rank": 2, "name": "gap_and_trap_bounce_failure", "rationale": "24,980-25,000 unrecoverable, buyers reactive not in control"},
+    {"rank": 3, "name": "trend_down_then_midday_balance", "rationale": "if 24,820s holds, converts to noon range"}
+  ],
+
+  "predictions": {
+    "cursor_to_12": "relief bounce 24,920-24,970, stall under red resistance, choppy lower-highs not clean reversal",
+    "12_to_14": "rotational 24,840-24,960, downside pressure unless reclaim 24,980",
+    "14_to_16": "another downside leg or morning-low retest, presses to fresh lows if sellers hold",
+    "close_range_lo": 24780,
+    "close_range_hi": 24860,
+    "rest_of_day_hod_lo": 24950,
+    "rest_of_day_hod_hi": 25000,
+    "rest_of_day_lod_lo": 24760,
+    "rest_of_day_lod_hi": 24810
+  },
+
+  "tactical_bias": {
+    "bias": "short",
+    "confidence": "med",
+    "invalidation": "sustained_reclaim_above_25000_25020",
+    "entry_zone_lo": 24940,
+    "entry_zone_hi": 24980,
+    "rr_logic": "bearish structure + failed opening upside; sell reclaimed resistance for retest 24,820 then 24,780"
+  },
+
+  "key_levels": {
+    "overhead_supply": [[24950, 25000], [25020, 25045]],
+    "underlying_demand": [[24820, 24840], [24760, 24780]],
+    "pivot": [24900, 24920]
+  },
+
+  "prediction_tags": {
+    "direction": {"value": "down", "confidence": "med"},
+    "structure": {"value": "opening_selloff_bounce_failure_afternoon_retest_new_low", "confidence": "med"},
+    "lunch_behavior": {"value": "sideways_to_slightly_down", "confidence": "med"},
+    "afternoon_drive": {"value": "bearish", "confidence": "med"},
+    "goat_direction": {"value": "down", "confidence": "low_med"},
+    "close_near_extreme": {"value": "yes_near_low", "confidence": "med"}
+  }
+}

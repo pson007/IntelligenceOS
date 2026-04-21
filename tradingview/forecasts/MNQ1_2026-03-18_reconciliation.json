@@ -1,0 +1,73 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-18",
+  "stage": "reconciliation",
+  "made_at": "2026-04-20T21:02:28-04:00",
+  "forecasts_graded": ["F1@10:00", "F2@12:00", "F3@14:00"],
+  "ground_truth_source": "profiles/MNQ1_2026-03-18.json",
+
+  "actual": {
+    "open": 24980,
+    "close": 24623.5,
+    "hod": 25040,
+    "lod": 24605,
+    "shape": "failed_opening_push_trend_down_bear_flag_close_near_low"
+  },
+
+  "grades": {
+    "F1": {
+      "cursor_time": "10:00",
+      "score": 3,
+      "max": 6,
+      "direction_hit": true,
+      "close_in_range": false,
+      "close_miss_pts": 156.5,
+      "hod_captured": false,
+      "hod_miss_pts": 10,
+      "lod_captured": false,
+      "lod_miss_pts": 155,
+      "bias_profitable": true,
+      "biggest_miss": "underestimated magnitude of afternoon extension and closing flush"
+    },
+    "F2": {
+      "cursor_time": "12:00",
+      "score": 4,
+      "max": 6,
+      "direction_hit": true,
+      "close_in_range": false,
+      "close_miss_pts": 186.5,
+      "hod_captured": false,
+      "hod_miss_pts": 30,
+      "lod_captured": false,
+      "lod_miss_pts": 175,
+      "bias_profitable": true,
+      "biggest_miss": "structural call strong but downside targets too conservative for late-session liquidation"
+    },
+    "F3": {
+      "cursor_time": "14:00",
+      "score": 5,
+      "max": 6,
+      "direction_hit": true,
+      "close_in_range": false,
+      "close_miss_pts": 136.5,
+      "hod_captured": true,
+      "hod_miss_pts": 0,
+      "lod_captured": false,
+      "lod_miss_pts": 140,
+      "bias_profitable": true,
+      "biggest_miss": "nailed the ceiling but did not price in the true washout into close"
+    }
+  },
+
+  "evolution": "monotonic_improvement: F1 caught regime, F2 upgraded structure, F3 capped upside precisely",
+
+  "lessons": [
+    "On trend days, widen downside close/LOD bands after each failed rally",
+    "Use close_near_extreme tag more aggressively — include trend-day extreme in range",
+    "Separate regime accuracy from magnitude accuracy",
+    "After 14:00 on weak trend days, prioritize liquidation scenarios",
+    "Anchor HOD by time elapsed — cap upside odds earlier after opening failure"
+  ],
+
+  "summary": "All 3 forecasts got direction right (short bias profitable across all). F1 identified regime, F2 confirmed bear-flag structure, F3 delivered tactical map. Systematic weakness: underestimating trend-day downside magnitude. Direction/structure read was strong; range expansion was underpriced."
+}

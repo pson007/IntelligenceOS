@@ -1,0 +1,17 @@
+//@version=6
+indicator("IOS Bar Date", overlay=true, shorttitle="BarDate")
+
+pad(int n) => (n < 10 ? "0" : "") + str.tostring(n)
+
+plot(year,       title="Y",  display=display.status_line)
+plot(month,      title="Mo", display=display.status_line)
+plot(dayofmonth, title="D",  display=display.status_line)
+plot(hour,       title="H",  display=display.status_line)
+plot(minute,     title="Mi", display=display.status_line)
+
+if barstate.islast
+    var label lbl = na
+    label.delete(lbl)
+    txt = str.tostring(year) + "-" + pad(month) + "-" + pad(dayofmonth) + " " + pad(hour) + ":" + pad(minute)
+    lbl := label.new(bar_index, high, text=txt, style=label.style_label_down,
+         color=color.new(color.blue, 20), textcolor=color.white, size=size.large)

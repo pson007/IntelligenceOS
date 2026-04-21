@@ -168,6 +168,8 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     if (tab === 'watchlist') loadWatchlist();
     if (tab === 'alerts') loadAlerts();
     if (tab === 'journal') loadJournal();
+    if (tab === 'profiles') loadProfiles();
+    if (tab === 'forecasts') loadForecasts();
   });
 });
 
@@ -2730,6 +2732,277 @@ $('journal-export-csv').addEventListener('click', async () => {
     setBusy(btn, false, 'Export CSV');
   }
 });
+
+// ----------------------------------------------------------------------
+// Profiles tab — reference-day DB + live comparator
+// ----------------------------------------------------------------------
+let _profilesCache = null;
+let _profilesSelectedKey = null;
+
+async function loadProfiles() {
+  const list = document.getElementById('profiles-list');
+  try {
+    const r = await api('/api/profiles');
+    _profilesCache = r.profiles || [];
+    renderProfilesList();
+  } catch (e) {
+    list.innerHTML = `<div class="empty err">failed to load: ${e.message}</div>`;
+  }
+}
+
+function renderProfilesList() {
+  const list = document.getElementById('profiles-list');
+  if (!_profilesCache || _profilesCache.length === 0) {
+    list.innerHTML = '<div class="empty">No profiles yet. Run a profile flow first.</div>';
+    return;
+  }
+  const html = _profilesCache.map(p => {
+    const dir = (p.summary && p.summary.direction) || '?';
+    const box = (p.summary && p.summary.box_color) || '';
+    const pct = p.summary && p.summary.net_range_pct;
+    const pctStr = (pct != null) ? `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
+    const shape = (p.summary && p.summary.shape_sentence) || '';
+    const boxCls = box === 'green' ? 'badge-green' : (box === 'red' ? 'badge-red' : 'badge-neutral');
+    const sel = p.key === _profilesSelectedKey ? ' selected' : '';
+    return `
+      <div class="profile-card${sel}" data-key="${p.key}">
+        <div class="profile-card__row">
+          <span class="profile-card__date">${p.date || p.key}</span>
+          <span class="profile-card__dow">${p.dow || ''}</span>
+          <span class="badge ${boxCls}">${dir}</span>
+          <span class="profile-card__pct mono small">${pctStr}</span>
+        </div>
+        <div class="profile-card__shape small muted">${shape}</div>
+      </div>
+    `;
+  }).join('');
+  list.innerHTML = html;
+  list.querySelectorAll('.profile-card').forEach(el => {
+    el.addEventListener('click', () => selectProfile(el.dataset.key));
+  });
+}
+
+async function selectProfile(key) {
+  _profilesSelectedKey = key;
+  renderProfilesList();  // re-render to update selected styling
+  const title = document.getElementById('compare-profile-title');
+  const meta = document.getElementById('compare-profile-meta');
+  const img = document.getElementById('compare-profile-img');
+  const tags = document.getElementById('compare-profile-tags');
+  const nar = document.getElementById('compare-profile-narrative');
+  title.textContent = 'Loading…';
+  img.innerHTML = '<div class="empty">Loading…</div>';
+  tags.innerHTML = '';
+  nar.innerHTML = '';
+  try {
+    const r = await api(`/api/profiles/${encodeURIComponent(key)}`);
+    const j = r.json || {};
+    title.textContent = `${j.date || key} ${j.dow ? '· ' + j.dow : ''}`;
+    const sum = j.summary || {};
+    const metaBits = [];
+    if (sum.open_approx) metaBits.push(`O ${sum.open_approx}`);
+    if (sum.close_approx) metaBits.push(`C ${sum.close_approx}`);
+    if (sum.hod_approx) metaBits.push(`H ${sum.hod_approx}`);
+    if (sum.lod_approx) metaBits.push(`L ${sum.lod_approx}`);
+    meta.textContent = metaBits.join('  ');
+    img.innerHTML = `<img src="/api/profiles/${encodeURIComponent(key)}/screenshot" alt="profile screenshot" onerror="this.parentNode.innerHTML='<div class=empty>Screenshot not available</div>';" />`;
+    tags.innerHTML = renderProfileTags(j.tags || {});
+    nar.innerHTML = renderProfileMarkdown(r.markdown || '');
+  } catch (e) {
+    title.textContent = 'Error';
+    img.innerHTML = `<div class="empty err">${e.message}</div>`;
+  }
+}
+
+function renderProfileTags(tags) {
+  const entries = Object.entries(tags).filter(([_, v]) => v != null && v !== '');
+  if (!entries.length) return '';
+  return entries.map(([k, v]) =>
+    `<span class="tag-pill"><span class="tag-k">${k}</span><span class="tag-v">${String(v)}</span></span>`
+  ).join('');
+}
+
+// Minimal markdown-to-HTML. Handles headings (##, ###), **bold**, *italic*,
+// bullet lists (- item), pipe-tables, and fenced paragraphs. Good enough
+// for the profile narratives we generate — no external lib needed.
+function renderProfileMarkdown(md) {
+  if (!md) return '<div class="empty">No narrative.</div>';
+  // Strip frontmatter
+  md = md.replace(/^---[\s\S]*?---\s*/, '');
+  const lines = md.split('\n');
+  const out = [];
+  let i = 0;
+  let inList = false;
+  while (i < lines.length) {
+    const ln = lines[i];
+    // Table: a row that starts with | and the next row is | --- | ---
+    if (ln.trim().startsWith('|') && i + 1 < lines.length && /^\|[\s\-:|]+\|$/.test(lines[i+1].trim())) {
+      const header = ln.trim().split('|').slice(1, -1).map(c => c.trim());
+      i += 2;
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        rows.push(lines[i].trim().split('|').slice(1, -1).map(c => c.trim()));
+        i++;
+      }
+      let tbl = '<table class="profile-table"><thead><tr>';
+      header.forEach(h => tbl += `<th>${escapeHTML(h)}</th>`);
+      tbl += '</tr></thead><tbody>';
+      rows.forEach(r => {
+        tbl += '<tr>';
+        r.forEach(c => tbl += `<td>${renderInline(c)}</td>`);
+        tbl += '</tr>';
+      });
+      tbl += '</tbody></table>';
+      out.push(tbl);
+      continue;
+    }
+    if (/^#{1,6} /.test(ln)) {
+      if (inList) { out.push('</ul>'); inList = false; }
+      const m = ln.match(/^(#+) (.*)$/);
+      const level = Math.min(m[1].length + 1, 6);  // bump one level so our h1 stays the page title
+      out.push(`<h${level}>${renderInline(m[2])}</h${level}>`);
+    } else if (/^\s*-\s+/.test(ln)) {
+      if (!inList) { out.push('<ul>'); inList = true; }
+      out.push(`<li>${renderInline(ln.replace(/^\s*-\s+/, ''))}</li>`);
+    } else if (ln.trim() === '') {
+      if (inList) { out.push('</ul>'); inList = false; }
+      out.push('');
+    } else {
+      if (inList) { out.push('</ul>'); inList = false; }
+      out.push(`<p>${renderInline(ln)}</p>`);
+    }
+    i++;
+  }
+  if (inList) out.push('</ul>');
+  return out.join('\n');
+}
+
+function renderInline(s) {
+  s = escapeHTML(s);
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return s;
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+// "Capture" button — grabs a fresh chart screenshot and shows it in the top pane.
+document.getElementById('compare-capture')?.addEventListener('click', async (ev) => {
+  const btn = ev.currentTarget;
+  const img = document.getElementById('compare-today-img');
+  setBusy(btn, true, 'Capture');
+  img.innerHTML = '<div class="empty">Capturing…</div>';
+  try {
+    const r = await api('/api/chart/screenshot', { method: 'POST', body: {} });
+    const src = r.data_url || r.url;
+    if (src) {
+      img.innerHTML = `<img src="${src}" alt="today's chart" />`;
+    } else {
+      img.innerHTML = '<div class="empty err">Screenshot returned no image</div>';
+    }
+  } catch (e) {
+    img.innerHTML = `<div class="empty err">${e.message}</div>`;
+  } finally {
+    setBusy(btn, false, 'Capture');
+  }
+});
+
+// ----------------------------------------------------------------------
+// Forecasts tab — replay-forecast run browser
+// ----------------------------------------------------------------------
+let _forecastsCache = null;
+let _forecastsSelectedKey = null;  // `${symbol}|${date}`
+
+async function loadForecasts() {
+  const list = document.getElementById('forecasts-list');
+  try {
+    const r = await api('/api/forecasts');
+    _forecastsCache = r.days || [];
+    renderForecastsList();
+  } catch (e) {
+    list.innerHTML = `<div class="empty err">failed to load: ${e.message}</div>`;
+  }
+}
+
+function renderForecastsList() {
+  const list = document.getElementById('forecasts-list');
+  if (!_forecastsCache || _forecastsCache.length === 0) {
+    list.innerHTML = '<div class="empty">No forecast runs yet. Run <span class="mono">python -m tv_automation.daily_forecast YYYY-MM-DD</span> from the terminal.</div>';
+    return;
+  }
+  list.innerHTML = _forecastsCache.map(d => {
+    const key = `${d.symbol}|${d.date}`;
+    const sel = key === _forecastsSelectedKey ? ' selected' : '';
+    const stages = d.stages || {};
+    const stageBadges = ['1000', '1200', '1400'].map(s => {
+      const present = stages[s];
+      const cls = present ? (present.gate_ok === false ? 'badge-yellow' : 'badge-green') : 'badge-neutral';
+      return `<span class="badge ${cls}">${s.slice(0,2)}:${s.slice(2)}</span>`;
+    }).join(' ');
+    const recon = d.has_reconciliation ? '<span class="badge badge-green">recon ✓</span>' : '<span class="badge badge-neutral">recon —</span>';
+    return `
+      <div class="forecast-card${sel}" data-key="${key}" data-symbol="${d.symbol}" data-date="${d.date}">
+        <div class="forecast-card__row">
+          <span class="forecast-card__date">${d.date}</span>
+          <span class="forecast-card__symbol mono small">${d.symbol}</span>
+        </div>
+        <div class="forecast-card__badges">${stageBadges} ${recon}</div>
+      </div>
+    `;
+  }).join('');
+  list.querySelectorAll('.forecast-card').forEach(el => {
+    el.addEventListener('click', () => selectForecastDay(el.dataset.symbol, el.dataset.date));
+  });
+}
+
+async function selectForecastDay(symbol, date) {
+  _forecastsSelectedKey = `${symbol}|${date}`;
+  renderForecastsList();
+  const main = document.getElementById('forecasts-main');
+  main.innerHTML = '<div class="empty">Loading…</div>';
+
+  // Fetch each stage + reconciliation in parallel
+  const stages = ['1000', '1200', '1400', 'reconciliation'];
+  const results = await Promise.all(stages.map(async s => {
+    try {
+      return { stage: s, ...(await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(s)}`)) };
+    } catch (e) {
+      return { stage: s, error: e.message };
+    }
+  }));
+
+  const sections = results.map(r => {
+    const title = r.stage === 'reconciliation'
+      ? 'Reconciliation @ 16:00'
+      : `F${['1000','1200','1400'].indexOf(r.stage)+1} @ ${r.stage.slice(0,2)}:${r.stage.slice(2)}`;
+    if (r.error) {
+      return `<div class="card"><div class="card-head"><h2>${title}</h2></div><div class="empty muted">${r.error}</div></div>`;
+    }
+    const j = r.json || {};
+    const metaBits = [];
+    if (j.made_at) metaBits.push(`made ${j.made_at}`);
+    if (j.gate && j.gate.reason) metaBits.push(`gate: ${j.gate.reason}`);
+    const imgUrl = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(r.stage)}/screenshot`;
+    return `
+      <div class="card forecast-stage-card">
+        <div class="card-head">
+          <h2>${title}</h2>
+          <span class="card-head__actions mono small">${metaBits.join('  ')}</span>
+        </div>
+        <div class="compare-pane">
+          <div class="compare-img">
+            <img src="${imgUrl}" alt="stage screenshot" onerror="this.parentNode.innerHTML='<div class=empty>Screenshot not available</div>';" />
+          </div>
+        </div>
+        <div class="profile-narrative">${renderProfileMarkdown(r.markdown || j.raw_response || '')}</div>
+      </div>
+    `;
+  });
+
+  main.innerHTML = sections.join('');
+}
 
 // ----------------------------------------------------------------------
 // Initial load

@@ -1,0 +1,45 @@
+{
+  "symbol": "MNQ1!", "date": "2026-03-18", "cursor_time": "12:00", "stage": "F2",
+  "session_elapsed_bars": 150, "model": "chatgpt_thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_1200_20260420_204741.png",
+  "made_at": "2026-04-20T20:47:41-04:00",
+
+  "observed_so_far": {
+    "intraday_low_so_far": 24805,
+    "summary": "Early flush below 25,000, low ~24,805, reflex rebound stalled under supply, noon acceptance under 24,900-24,930. Bear flag / weak midday balance."
+  },
+
+  "similar_archetypes": [
+    {"rank": 1, "name": "opening_selloff_midday_bearflag_afternoon_continuation"},
+    {"rank": 2, "name": "trend_down_morning_afternoon_range_weak_close"},
+    {"rank": 3, "name": "capitulation_low_set_squeeze_into_close"}
+  ],
+
+  "predictions": {
+    "cursor_to_14": "range-to-down: 24,860-24,930 chop then probe 24,830/24,805 on break lower",
+    "14_to_16": "afternoon continuation or drift lower; retest morning weakness",
+    "close_range_lo": 24810, "close_range_hi": 24890,
+    "rest_of_day_hod_lo": 24950, "rest_of_day_hod_hi": 24980,
+    "rest_of_day_lod_lo": 24780, "rest_of_day_lod_hi": 24805
+  },
+
+  "tactical_bias": {
+    "bias": "short", "confidence_pct": 62,
+    "invalidation": "sustained_reclaim_above_24950_24980_with_higher_lows",
+    "entry_zone_lo": 24900, "entry_zone_hi": 24930
+  },
+
+  "key_levels": {
+    "supply": [[24900, 24930], [24950, 24980], [25000, 25000]],
+    "demand": [[24805, 24830], [24780, 24780]],
+    "pivot": [24860, 24900]
+  },
+
+  "prediction_tags": {
+    "direction": {"value": "down", "confidence_pct": 64},
+    "structure": {"value": "bear_flag_lower_high_continuation", "confidence_pct": 61},
+    "afternoon_drive": {"value": "moderate_down", "confidence_pct": 58},
+    "goat_direction": {"value": "down", "confidence_pct": 55},
+    "close_near_extreme": {"value": "yes_near_low", "confidence_pct": 57}
+  }
+}

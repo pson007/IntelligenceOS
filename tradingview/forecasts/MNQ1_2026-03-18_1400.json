@@ -1,0 +1,42 @@
+{
+  "symbol": "MNQ1!", "date": "2026-03-18", "cursor_time": "14:00", "stage": "F3",
+  "session_elapsed_bars": 270, "model": "chatgpt_thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_1400_20260420_205043.png",
+  "made_at": "2026-04-20T20:50:43-04:00",
+
+  "observed_so_far": {
+    "summary": "Bear trend day — lower highs/lows since morning breakdown. At 14:00 rallying into overhead supply / red trend cloud (not breaking trend). 12:50-14:00 bounce = countertrend retrace, not regime change."
+  },
+
+  "similar_archetypes": [
+    {"rank": 1, "name": "bear_trend_day_1400_lower_high_completion"},
+    {"rank": 2, "name": "failed_reversal_dead_cat_rally"},
+    {"rank": 3, "name": "late_day_compression_then_breakdown"}
+  ],
+
+  "predictions": {
+    "14_to_1430": "chop under 24,910-24,930",
+    "1430_to_1515": "rejection, drift/fade 24,880 → 24,845",
+    "1515_to_1600": "test 24,805-24,780. Break → 24,745-24,760 into close",
+    "close_range_lo": 24760, "close_range_hi": 24820,
+    "rest_of_day_hod_lo": 24915, "rest_of_day_hod_hi": 24935,
+    "rest_of_day_lod_lo": 24745, "rest_of_day_lod_hi": 24785
+  },
+
+  "tactical_bias": {
+    "bias": "short", "confidence_pct": 64,
+    "invalidation": "sustained_reclaim_hold_above_24935_24950",
+    "entry_zone_lo": 24905, "entry_zone_hi": 24930
+  },
+
+  "key_levels": {
+    "resistance": [[24905, 24930], [24950, 24965], [25000, 25000]],
+    "support": [[24875, 24875], [24840, 24845], [24795, 24805], [24745, 24760]]
+  },
+
+  "prediction_tags": {
+    "direction": {"value": "down", "confidence_pct": 66},
+    "structure": {"value": "lower_high_into_bearish_continuation", "confidence_pct": 63},
+    "close_near_extreme": {"value": "close_near_session_low_or_lower_quartile", "confidence_pct": 58}
+  }
+}

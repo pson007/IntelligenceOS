@@ -50,6 +50,8 @@
       <button class="nav-item" data-tab="watchlist"><span class="ico">☰</span> Watchlist</button>
       <button class="nav-item" data-tab="alerts"><span class="ico">⊙</span> Alerts</button>
       <button class="nav-item" data-tab="journal"><span class="ico">◐</span> Journal</button>
+      <button class="nav-item" data-tab="profiles"><span class="ico">▦</span> Profiles</button>
+      <button class="nav-item" data-tab="forecasts"><span class="ico">◆</span> Forecasts</button>
       <button class="nav-item" data-tab="audit"><span class="ico">⎙</span> Audit</button>
     </nav>
     <div class="status">
@@ -544,6 +546,67 @@
         </div>
         <div class="journal-list" id="journal-list">
           <div class="empty">Loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab hidden" id="tab-profiles">
+      <h1>Profiles</h1>
+      <div class="subtitle">Reference-day DB — compare today's setup against a profiled historical day.</div>
+
+      <div class="profiles-layout">
+        <aside class="profiles-list" id="profiles-list">
+          <div class="empty">Loading profiles…</div>
+        </aside>
+
+        <div class="profiles-main">
+          <div class="card">
+            <div class="card-head">
+              <h2 id="compare-today-title">Today's chart</h2>
+              <div class="card-head__actions">
+                <button class="btn" id="compare-capture">Capture</button>
+              </div>
+            </div>
+            <div class="compare-pane">
+              <div class="compare-img" id="compare-today-img">
+                <div class="empty">No capture yet. Click Capture to grab the current chart.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2 id="compare-profile-title">Select a profile to compare</h2>
+              <div class="card-head__actions">
+                <span class="mono small" id="compare-profile-meta"></span>
+              </div>
+            </div>
+            <div class="compare-pane">
+              <div class="compare-img" id="compare-profile-img">
+                <div class="empty">Pick a day on the left to load its chart + narrative.</div>
+              </div>
+            </div>
+            <div class="profile-tags" id="compare-profile-tags"></div>
+            <div class="profile-narrative" id="compare-profile-narrative"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab hidden" id="tab-forecasts">
+      <h1>Forecasts</h1>
+      <div class="subtitle">
+        Replay-forecast runs — F1 @ 10:00, F2 @ 12:00, F3 @ 14:00, reconciliation @ 16:00.
+        Produce via CLI: <span class="mono small">python -m tv_automation.daily_forecast YYYY-MM-DD</span>
+      </div>
+
+      <div class="forecasts-layout">
+        <aside class="forecasts-list" id="forecasts-list">
+          <div class="empty">Loading forecast runs…</div>
+        </aside>
+
+        <div class="forecasts-main" id="forecasts-main">
+          <div class="empty">Pick a day on the left to inspect its forecast chain.</div>
         </div>
       </div>
     </section>

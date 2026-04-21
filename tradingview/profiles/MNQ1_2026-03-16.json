@@ -1,0 +1,102 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-16",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-16T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_1_20260420_193003.png",
+  "gate": {"ok": true, "first": "10:00", "last": "15:55"},
+  "profiled_at": "2026-04-20T19:30:03-04:00",
+
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "opening_impulse_rotational_failed_late_breakout",
+    "open_approx": 24820,
+    "close_approx": 24895,
+    "hod_approx": 25020,
+    "lod_approx": 24810,
+    "net_range_pts_open_to_close": 75,
+    "net_range_pct_open_to_close": 0.30,
+    "intraday_span_pts": 210,
+    "intraday_span_pct": 0.85,
+    "shape_sentence": "Opening squeeze up, mid-day rotation above rising support, failed late breakout, close back in upper-middle."
+  },
+
+  "pivots": [
+    {"time_et": "09:32", "price_approx": 24820, "type": "opening_demand_hold_vertical_launch"},
+    {"time_et": "10:20", "price_approx": 24990, "type": "first_morning_HIGH"},
+    {"time_et": "10:42", "price_approx": 24820, "type": "pullback_low_blue_demand"},
+    {"time_et": "11:18", "type": "green_long_pivot_continuation"},
+    {"time_et": "12:25", "price_approx": 24840, "type": "noon_sell_leg_low"},
+    {"time_et": "13:30", "price_approx": 24945, "type": "red_short_pivot_lunch_recovery_high"},
+    {"time_et": "14:45", "type": "green_long_pivot_afternoon_grind"},
+    {"time_et": "15:08", "price_approx": 25020, "type": "session_HOD_spike_immediate_reject"},
+    {"time_et": "15:55", "price_approx": 24900, "type": "final_red_short_pivot_close"}
+  ],
+
+  "labels": {
+    "goat": {
+      "in_rth": false,
+      "note": "GOAT star is in pre-session, marks low preceding opening squeeze; RTH practical equivalent is opening bullish expansion"
+    },
+    "red_circles": {
+      "count": 3,
+      "locations": [
+        {"time_et": "13:30", "context": "decent lunch/early-PM fade"},
+        {"time_et": "15:00", "context": "near late spike, aligned with sharp reversal"},
+        {"time_et": "15:55", "context": "limited follow-through (session ending)"}
+      ]
+    },
+    "green_circles": {
+      "count": 3,
+      "locations": [
+        {"time_et": "09:30", "context": "strongest, launched session trend"},
+        {"time_et": "11:15", "context": "restored upside after first pullback"},
+        {"time_et": "14:45", "context": "supported afternoon lift, exhausted into 15:05 spike"}
+      ]
+    },
+    "orange_banks_supply": [
+      {"level_approx": 24985, "behavior": "respected"},
+      {"level_lo": 24955, "level_hi": 24970, "behavior": "respected"},
+      {"level_lo": 24975, "level_hi": 24985, "behavior": "respected"},
+      {"level_lo": 25005, "level_hi": 25015, "behavior": "briefly_broken_late_failed"}
+    ],
+    "blue_banks_demand": [
+      {"level_approx": 24820, "behavior": "respected"},
+      {"level_approx": 24845, "behavior": "respected"},
+      {"level_lo": 24875, "level_hi": 24890, "behavior": "partially_lost_post_spike"},
+      {"level_lo": 24830, "level_hi": 24840, "behavior": "respected_late_flush"}
+    ]
+  },
+
+  "time_markers": {
+    "10am_blue": "opening squeeze already in force; holding upper territory before first real retrace",
+    "12pm_red": "transition — rolled from late-morning strength into noon sell phase",
+    "2pm_green": "midday repair in place; base for afternoon grind higher",
+    "4pm_yellow": "close after failed breakout and retrace; above intraday support but far below late spike high"
+  },
+
+  "tags": {
+    "direction": "up",
+    "structure": "opening_impulse_rotational_failed_late_breakout",
+    "open_type": "drive_up_from_demand",
+    "lunch_behavior": "rotational_selloff_then_recovery",
+    "afternoon_drive": "grind_up_then_blow_off_reversal",
+    "goat_time": "pre_rth",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": null,
+    "banks_respected_count": 7,
+    "banks_broken_count": 1
+  },
+
+  "takeaway": "Bullish-but-incomplete trend reference day. Session held rising support through multiple pullbacks, keeping long setups viable until late blow-off. Tactical projection: when future session shows early directional expansion, midday support retention, repeated reaction at stored supply, and a late breakout that extends too far above afternoon value — expect failure. Transferable rule: when demand keeps stepping up underneath rotational tape, long bias remains valid until a late excess spike proves unsustained."
+}

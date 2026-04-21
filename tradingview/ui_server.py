@@ -1167,3 +1167,172 @@ async def audit_tail(
             continue
         entries.append(entry)
     return {"entries": entries[-n:]}
+
+
+# ---------------------------------------------------------------------------
+# Daily Profiles — comparison-day reference DB
+# ---------------------------------------------------------------------------
+
+_PROFILES_ROOT = (Path(__file__).parent / "profiles").resolve()
+_PROFILE_KEY_RX = __import__("re").compile(r"^[A-Za-z0-9_\-]+$")
+
+
+@app.get("/api/profiles")
+async def profiles_list() -> dict:
+    """List all saved daily profiles — summary fields only, sorted newest-first."""
+    if not _PROFILES_ROOT.exists():
+        return {"profiles": []}
+    results = []
+    for jf in sorted(_PROFILES_ROOT.glob("*.json"), reverse=True):
+        try:
+            data = json.loads(jf.read_text())
+        except Exception:
+            continue
+        results.append({
+            "key": jf.stem,
+            "date": data.get("date"),
+            "dow": data.get("dow"),
+            "symbol": data.get("symbol"),
+            "session_complete": data.get("session_complete"),
+            "summary": {
+                "direction": (data.get("summary") or {}).get("direction"),
+                "box_color": (data.get("summary") or {}).get("box_color"),
+                "open": (data.get("summary") or {}).get("open_approx"),
+                "close": (data.get("summary") or {}).get("close_approx"),
+                "net_range_pct": (data.get("summary") or {}).get("net_range_pct_open_to_close"),
+                "shape_sentence": (data.get("summary") or {}).get("shape_sentence"),
+            },
+            "tags": data.get("tags", {}),
+        })
+    return {"profiles": results}
+
+
+@app.get("/api/profiles/{key}")
+async def profile_get(key: str) -> dict:
+    """Full profile — JSON payload + raw markdown narrative."""
+    if not _PROFILE_KEY_RX.match(key):
+        raise HTTPException(400, "invalid key")
+    jf = _PROFILES_ROOT / f"{key}.json"
+    mf = _PROFILES_ROOT / f"{key}.md"
+    if not jf.exists():
+        raise HTTPException(404, "profile not found")
+    return {
+        "key": key,
+        "json": json.loads(jf.read_text()),
+        "markdown": mf.read_text() if mf.exists() else "",
+    }
+
+
+@app.get("/api/profiles/{key}/screenshot")
+async def profile_screenshot(key: str):
+    """Serve the reference-day screenshot PNG for a profile."""
+    if not _PROFILE_KEY_RX.match(key):
+        raise HTTPException(400, "invalid key")
+    jf = _PROFILES_ROOT / f"{key}.json"
+    if not jf.exists():
+        raise HTTPException(404, "profile not found")
+    data = json.loads(jf.read_text())
+    path = data.get("screenshot_path")
+    if not path:
+        raise HTTPException(404, "no screenshot_path in profile")
+    try:
+        resolved = Path(path).resolve()
+    except Exception:
+        raise HTTPException(400, "invalid screenshot path")
+    if not any(str(resolved).startswith(str(root)) for root in _IMAGE_ROOTS):
+        raise HTTPException(403, "screenshot path outside allowed roots")
+    if not resolved.exists():
+        raise HTTPException(404, "screenshot file missing")
+    return FileResponse(str(resolved), media_type="image/png")
+
+
+# ---------------------------------------------------------------------------
+# Daily Forecasts — replay forecast workflow artifacts
+# ---------------------------------------------------------------------------
+
+_FORECASTS_ROOT = (Path(__file__).parent / "forecasts").resolve()
+# Forecast filenames match SYMBOL_YYYY-MM-DD_{HHMM|reconciliation}.{md,json}
+_FORECAST_DATE_RX = __import__("re").compile(r"^\d{4}-\d{2}-\d{2}$")
+_FORECAST_STAGE_RX = __import__("re").compile(r"^(?:\d{4}|reconciliation)$")
+
+
+@app.get("/api/forecasts")
+async def forecasts_list() -> dict:
+    """Group forecasts by date. Each date returns its F1/F2/F3 + reconciliation presence."""
+    if not _FORECASTS_ROOT.exists():
+        return {"days": []}
+    by_date: dict[str, dict] = {}
+    for jf in sorted(_FORECASTS_ROOT.glob("*.json")):
+        # Parse SYMBOL_YYYY-MM-DD_STAGE.json
+        stem = jf.stem
+        parts = stem.rsplit("_", 2)
+        if len(parts) != 3:
+            continue
+        symbol, date, stage = parts
+        if not _FORECAST_DATE_RX.match(date):
+            continue
+        try:
+            data = json.loads(jf.read_text())
+        except Exception:
+            continue
+        key = f"{symbol}|{date}"
+        if key not in by_date:
+            by_date[key] = {
+                "symbol": symbol, "date": date,
+                "stages": {}, "has_reconciliation": False,
+            }
+        if stage == "reconciliation":
+            by_date[key]["has_reconciliation"] = True
+            by_date[key]["reconciliation"] = {
+                "made_at": data.get("made_at"),
+                "ground_truth_profile": data.get("ground_truth_profile"),
+            }
+        else:
+            by_date[key]["stages"][stage] = {
+                "cursor_time": data.get("cursor_time"),
+                "made_at": data.get("made_at"),
+                "gate_ok": (data.get("gate") or {}).get("ok"),
+            }
+    # Sort newest-first
+    days = sorted(by_date.values(), key=lambda d: d["date"], reverse=True)
+    return {"days": days}
+
+
+@app.get("/api/forecasts/{symbol}/{date}/{stage}")
+async def forecast_get(symbol: str, date: str, stage: str) -> dict:
+    """Return a single forecast stage (F1/F2/F3 at cursor HHMM, or reconciliation)."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
+        raise HTTPException(400, "invalid params")
+    stem = f"{symbol}_{date}_{stage}"
+    jf = _FORECASTS_ROOT / f"{stem}.json"
+    mf = _FORECASTS_ROOT / f"{stem}.md"
+    if not jf.exists():
+        raise HTTPException(404, "forecast not found")
+    return {
+        "symbol": symbol, "date": date, "stage": stage,
+        "json": json.loads(jf.read_text()),
+        "markdown": mf.read_text() if mf.exists() else "",
+    }
+
+
+@app.get("/api/forecasts/{symbol}/{date}/{stage}/screenshot")
+async def forecast_screenshot(symbol: str, date: str, stage: str):
+    """Serve the screenshot for a forecast stage."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
+        raise HTTPException(400, "invalid params")
+    jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
+    if not jf.exists():
+        raise HTTPException(404)
+    data = json.loads(jf.read_text())
+    path = data.get("screenshot_path")
+    if not path:
+        raise HTTPException(404, "no screenshot")
+    try:
+        resolved = Path(path).resolve()
+    except Exception:
+        raise HTTPException(400, "invalid path")
+    if not any(str(resolved).startswith(str(root)) for root in _IMAGE_ROOTS):
+        raise HTTPException(403, "path outside allowed roots")
+    if not resolved.exists():
+        raise HTTPException(404, "file missing")
+    return FileResponse(str(resolved), media_type="image/png")

@@ -242,50 +242,25 @@ async def select_start_date(page: Page, when: datetime) -> None:
 # ---------------------------------------------------------------------------
 
 
-_FORWARD_JS_CLICK = r"""() => {
-    // Forward is the button immediately after Play in the strip. Play's
-    // title is stable across TV UI states; Forward's is not (it drops
-    // when the Replay Trading panel is open). Walk up from Play to its
-    // containing `.controls__control` wrapper, then to the next sibling
-    // wrapper, and click its data-role=button descendant.
-    const play = document.querySelector('[data-role="button"][title="Play"]');
-    if (!play) return 'no_play';
-    let cur = play;
-    while (cur && cur.parentElement) {
-        cur = cur.parentElement;
-        if ((cur.className || '').includes && (cur.className || '').includes('controls__control')) break;
-    }
-    if (!cur) return 'no_control_wrapper';
-    const next = cur.nextElementSibling;
-    if (!next) return 'no_sibling';
-    const btn = next.querySelector('[data-role="button"]');
-    if (!btn) return 'no_btn';
-    btn.click();
-    return 'ok';
-}"""
-
-
 async def step_forward(page: Page, bars: int = 1) -> None:
-    """Advance the replay cursor by `bars` bars by clicking the Forward
-    button in the playback strip. `bars` must be ≥ 0; idempotent at 0.
+    """Advance the replay cursor by `bars` bars via Shift+ArrowRight. `bars` must be ≥ 0.
 
-    Clicking Forward (vs sending Shift+→) matches the manual workflow
-    and is more reliable — it advances the cursor AND re-centers the
-    chart view on the new cursor bar, so the legend readout reflects
-    the new bar's OHLC."""
+    TV's current replay build removed the `title="Play"` / `title="Forward"`
+    anchors and left the step-forward button without a stable DOM identifier
+    (only an SVG path signature, which rotates between TV releases). The
+    keyboard shortcut is the stable surface — verified 2026-04-20: 1 press =
+    1 bar, scales linearly up to at least 120 presses."""
     if bars < 0:
         raise ValueError("bars must be non-negative; use step_backward")
     if bars == 0:
         return
-    for i in range(bars):
-        result = await page.evaluate(_FORWARD_JS_CLICK)
-        if result != "ok":
-            raise SelectorDriftError(
-                f"forward_{result}", "replay", ["[title=Play]~sibling"],
-            )
-        # TV repaints the chart + legend after each step; 200ms is the
-        # minimum that keeps the legend readout reliable bar-to-bar.
-        await page.wait_for_timeout(200)
+    try:
+        await page.bring_to_front()
+    except Exception:
+        pass
+    for _ in range(bars):
+        await page.keyboard.press("Shift+ArrowRight")
+        await page.wait_for_timeout(40)
     audit.log("replay.step_forward", bars=bars)
 
 

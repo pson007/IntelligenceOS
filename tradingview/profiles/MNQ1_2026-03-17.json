@@ -1,0 +1,88 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-17",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-17T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_1_20260420_193513.png",
+  "gate": {"ok": true, "first": "10:00", "last": "15:30"},
+  "profiled_at": "2026-04-20T19:35:13-04:00",
+
+  "summary": {
+    "direction": "flat",
+    "box_color": "green",
+    "structure": "trend_up_then_balance",
+    "open_approx": 25055,
+    "close_approx": 25028,
+    "hod_approx": 25110,
+    "lod_approx": 24948,
+    "net_range_pts_open_to_close": -27,
+    "net_range_pct_open_to_close": -0.11,
+    "intraday_span_pts": 162,
+    "intraday_span_pct": 0.65,
+    "shape_sentence": "Opened strong, expanded up hard into morning high, then rotated lower and spent rest of RTH in broad balance-to-grind structure before modest late recovery."
+  },
+
+  "pivots": [
+    {"time_et": "09:45", "type": "opening_rally"},
+    {"time_et": "10:00", "price_approx": 25110, "type": "morning_HOD_upside_exhaustion"},
+    {"time_et": "11:45", "price_approx": 24950, "type": "liquidation_leg_LOD"},
+    {"time_et": "13:00", "type": "first_meaningful_recovery_pivot"},
+    {"time_et": "14:05", "type": "afternoon_local_high"},
+    {"time_et": "15:00", "type": "late_pullback_low"},
+    {"time_et": "15:50", "price_approx": 25028, "type": "close_back_above_balance"}
+  ],
+
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et_range": "09:35-10:00",
+      "price_approx": 25110,
+      "direction": "up",
+      "note": "post-open vertical expansion into 10am high; clearest impulse leg"
+    },
+    "red_circles": {
+      "contexts": ["morning reversal off HOD", "late-morning continuation lower", "afternoon rejection near 2pm push"]
+    },
+    "green_circles": {
+      "contexts": ["morning launch after open", "noon flush low / recovery", "responsive buys in afternoon balance"]
+    },
+    "orange_banks_supply": {
+      "behavior": "generally_respected",
+      "note": "capped local highs; afternoon tests stalled rather than broke cleanly"
+    },
+    "blue_banks_demand": {
+      "behavior": "useful_support_especially_post_noon"
+    }
+  },
+
+  "time_markers": {
+    "10am_blue": "MAJOR inflection — peak opening expansion, put in day HOD here; momentum shifted to retrace/rotation after",
+    "12pm_red": "near the low-making process; capitulation-to-stabilization zone",
+    "2pm_green": "afternoon re-expansion attempt; pushed higher into/just after but could not sustain breakout",
+    "4pm_yellow": "closed in upper half of afternoon range but not at extreme; constructive not impulsive"
+  },
+
+  "tags": {
+    "direction": "up_then_flat",
+    "structure": "trend_up_then_balance",
+    "open_type": "drive_up",
+    "lunch_behavior": "consolidation_after_flush",
+    "afternoon_drive": "weak_upward_grind_rotational",
+    "goat_time": "09:50",
+    "goat_direction": "up",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": null,
+    "banks_respected": "yes",
+    "banks_broken": "limited"
+  },
+
+  "takeaway": "Front-loaded bullish session — best opportunity was opening upside expansion, not later chop. Once 10am high failed, market shifted from trend to reversion then balance. Tactical reference: use for distinguishing A+ opening momentum from lower-quality afternoon rotations that follow completed morning move. After noon, the better trade is buying support and fading overstretched supply edges inside balance, NOT chasing breakout attempts."
+}
