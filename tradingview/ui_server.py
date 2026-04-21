@@ -1256,6 +1256,22 @@ _FORECAST_DATE_RX = __import__("re").compile(r"^\d{4}-\d{2}-\d{2}$")
 _FORECAST_STAGE_RX = __import__("re").compile(r"^(?:\d{4}|reconciliation)$")
 
 
+@app.get("/api/forecasts/lessons")
+async def forecasts_lessons(n: int = 20) -> dict:
+    """Aggregate `lessons[]` from all reconciliation JSONs, deduped + ranked.
+
+    Defined BEFORE the more general `/api/forecasts/{symbol}/{date}/{stage}`
+    route so FastAPI's path-matching doesn't try to interpret "lessons"
+    as a symbol value."""
+    from tv_automation.lessons import collect_lessons, to_dicts
+    lessons = collect_lessons()
+    return {
+        "count_unique": len(lessons),
+        "count_reconciliations": len(list(_FORECASTS_ROOT.glob("*_reconciliation.json"))) if _FORECASTS_ROOT.exists() else 0,
+        "lessons": to_dicts(lessons[:n]),
+    }
+
+
 @app.get("/api/forecasts")
 async def forecasts_list() -> dict:
     """Group forecasts by date. Each date returns its F1/F2/F3 + reconciliation presence."""

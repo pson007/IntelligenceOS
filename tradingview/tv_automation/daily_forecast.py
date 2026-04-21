@@ -39,6 +39,7 @@ from pathlib import Path
 from playwright.async_api import Page
 
 from . import replay
+from . import lessons as lessons_mod
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
 from .lib.context import chart_session
@@ -116,7 +117,9 @@ REQUIRED OUTPUT (use exact headings):
 
 ## PREDICTION TAGS
 Each tag on its own line with confidence %:
-direction, structure, lunch_behavior, afternoon_drive, goat_direction, close_near_extreme."""
+direction, structure, lunch_behavior, afternoon_drive, goat_direction, close_near_extreme.
+
+{ACCUMULATED_LESSONS}"""
 
 
 _RECONCILE_SYSTEM = """You are a forecast-accuracy adjudicator for day-trading predictions on MNQ1!. You will be given:
@@ -158,12 +161,29 @@ Open / Close / HOD / LOD / Shape (1 sentence)
 Did the forecasts improve/narrow as the day progressed? Where did each catch/miss the key signal?
 
 ## LESSONS
-What would make forecasts better next time? Specific, actionable."""
+What would make forecasts better next time? Specific, actionable.
+
+{ACCUMULATED_LESSONS}"""
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _render_lessons_block() -> str:
+    """Build the `## ACCUMULATED LESSONS` section for prompt injection.
+
+    Reads top-N lessons from disk via `lessons` module. Returns the section
+    header + bullet list, or empty string when no reconciliations exist
+    yet — the empty case keeps prompts clean for first-time runs."""
+    body = lessons_mod.format_for_prompt(n=10)
+    if not body:
+        return ""
+    return (
+        "## ACCUMULATED LESSONS (from prior reconciliations — apply these)\n"
+        + body
+    )
+
 
 def _bardate_to_datetime(legend_text: str | None) -> datetime | None:
     """Parse the BarDate plot-values string like 'BarDate2,026.003.0018.0010.000.00'
@@ -322,9 +342,10 @@ async def _run_forecast_stage(
             f"Bars before cursor = evidence; bars after = un-replayed future (do not use). "
             f"Use VISUAL REFERENCE and TIME MARKERS from the system prompt."
         )
+        system_prompt = _FORECAST_SYSTEM.replace("{ACCUMULATED_LESSONS}", _render_lessons_block())
         text, _, _ = await analyze_via_chatgpt_web(
             image_path=str(screenshot),
-            system_prompt=_FORECAST_SYSTEM,
+            system_prompt=system_prompt,
             user_text=user_prompt,
             model="Thinking",
             timeout_s=300,
@@ -421,9 +442,10 @@ async def _run_reconciliation(
         parts.append("Grade each forecast against the actual outcome using the exact format in the system prompt. Be fair and specific.")
         user_prompt = "\n".join(parts)
 
+        system_prompt = _RECONCILE_SYSTEM.replace("{ACCUMULATED_LESSONS}", _render_lessons_block())
         text, _, _ = await analyze_via_chatgpt_web(
             image_path=str(screenshot),
-            system_prompt=_RECONCILE_SYSTEM,
+            system_prompt=system_prompt,
             user_text=user_prompt,
             model="Thinking",
             timeout_s=300,

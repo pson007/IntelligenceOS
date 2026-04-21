@@ -2924,6 +2924,32 @@ async function loadForecasts() {
   } catch (e) {
     list.innerHTML = `<div class="empty err">failed to load: ${e.message}</div>`;
   }
+  // Lessons run independently — failure here shouldn't block the day list.
+  loadLessons();
+}
+
+async function loadLessons() {
+  const meta = document.getElementById('lessons-meta');
+  const body = document.getElementById('lessons-body');
+  try {
+    const r = await api('/api/forecasts/lessons');
+    const ls = r.lessons || [];
+    if (ls.length === 0) {
+      meta.textContent = '';
+      body.innerHTML = '<div class="empty">No lessons yet. Run a forecast + reconciliation to start accumulating.</div>';
+      return;
+    }
+    meta.textContent = `${r.count_unique} unique · ${r.count_reconciliations} reconciliations`;
+    body.innerHTML = '<ul class="lesson-list">' + ls.map(l => {
+      const badge = l.count > 1
+        ? `<span class="lesson-count">${l.count}× across ${l.sources.length} day${l.sources.length !== 1 ? 's' : ''}</span>`
+        : `<span class="lesson-source mono small">${l.sources.join(', ')}</span>`;
+      return `<li><span class="lesson-text">${escapeHTML(l.text)}</span> ${badge}</li>`;
+    }).join('') + '</ul>';
+  } catch (e) {
+    meta.textContent = '';
+    body.innerHTML = `<div class="empty err">${e.message}</div>`;
+  }
 }
 
 function renderForecastsList() {

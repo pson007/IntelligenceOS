@@ -1,0 +1,59 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-20",
+  "dow": "Mon",
+  "stage": "pre_session_forecast",
+  "based_on_priors": ["2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17"],
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-20T22:18:00-04:00",
+  "note": "Pure-prior forecast, no chart input. Filler image attached but instructed to ignore.",
+
+  "regime_read": "Persistent bullish expansion week — 5 straight green RTH sessions, repeated close-near-high, every meaningful pullback absorbed. Late week shifted slightly from pure trend to trend-then-balance, not bearish reversal.",
+
+  "same_dow_reference": {
+    "date": "2026-04-13",
+    "summary": "opening weakness failed, V-reversal led to all-day staircase trend up"
+  },
+
+  "predictions": {
+    "direction": "up",
+    "direction_confidence": "med",
+    "open_type": "open_dip_then_reclaim",
+    "structure": "open_dip_reclaim_bullish_staircase_then_balance",
+    "expected_move_size": "med",
+    "predicted_net_pct_lo": 0.4,
+    "predicted_net_pct_hi": 1.0,
+    "predicted_intraday_span_lo_pts": 260,
+    "predicted_intraday_span_hi_pts": 420
+  },
+
+  "time_window_expectations": {
+    "10am": "early direction test, likely reclaim/confirmation phase rather than final high if session opens soft",
+    "12pm": "constructive pullback or shelf, important support test",
+    "2pm": "resume higher if trend intact, otherwise balance not full reversal",
+    "4pm": "close in upper half, moderate chance of near-high settlement"
+  },
+
+  "probable_goat": {
+    "direction": "long",
+    "time_window": "midday",
+    "rationale": "noon pullback/reclaim continuation long — cleanest entries on prior Mon/Thu, consistent with buy-weakness regime"
+  },
+
+  "tactical_bias": {
+    "bias": "buy_dips_buy_reclaim",
+    "invalidation": "sustained acceptance below opening washout low OR failed reclaim after first pullback OR noon selloff that doesn't recover"
+  },
+
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "open_dip_reclaim_bullish_staircase_then_balance",
+    "open_type": "open_dip_then_reclaim",
+    "lunch_behavior": "constructive_consolidation_to_advance",
+    "afternoon_drive": "resumed_higher_after_midday_hold",
+    "goat_direction": "up",
+    "close_near_extreme": "yes_upper_range"
+  },
+
+  "confidence_notes": "Biggest risk: exhaustion after 5 straight up sessions. If Mon opens with failed continuation and sellers achieve acceptance below early support, forecast could be wrong — model is leaning on prior-week persistence and same-DOW reversal continuity rather than evidence of fresh downside control."
+}

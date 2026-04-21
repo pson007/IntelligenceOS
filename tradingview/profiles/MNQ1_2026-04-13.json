@@ -1,0 +1,63 @@
+{
+  "symbol": "MNQ1!", "date": "2026-04-13", "dow": "Mon",
+  "timeframe": "1m", "session": "RTH", "session_complete": true,
+  "cursor_ts_approx": "2026-04-13T16:00:00-04:00",
+  "layout": "Money Print", "provider": "chatgpt_web", "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_1_20260420_214948.png",
+  "gate": {"ok": true, "first": "10:00", "last": "15:45"},
+  "profiled_at": "2026-04-20T21:49:48-04:00",
+
+  "summary": {
+    "direction": "up", "box_color": "green",
+    "structure": "opening_washout_v_reversal_trend_up_staircase",
+    "open_approx": 25258.75, "close_approx": 25555.5,
+    "hod_approx": 25558.75, "lod_approx": 25160.75,
+    "net_range_pts_open_to_close": 296.75, "net_range_pct_open_to_close": 1.18,
+    "intraday_span_pts": 398,
+    "shape_sentence": "Opening liquidation break, sharp V-reversal, then steady stair-step trend up that finished at the high."
+  },
+
+  "pivots": [
+    {"time_et": "09:30", "price_approx": 25258.75, "type": "open_weak"},
+    {"time_et": "09:38", "price_approx": 25160.75, "type": "LOD_bullish_reversal"},
+    {"time_et": "10:00", "price_approx": 25270, "type": "reclaim_pivot"},
+    {"time_et": "10:45", "price_approx": 25280, "type": "higher_low"},
+    {"time_et": "12:05", "price_approx": 25295, "type": "noon_pullback_low"},
+    {"time_et": "12:15", "price_approx": 25310, "type": "GOAT_long_continuation"},
+    {"time_et": "13:15", "price_approx": 25437, "type": "bearish_pivot_fade"},
+    {"time_et": "14:20", "price_approx": 25410, "type": "higher_low"},
+    {"time_et": "15:42", "price_approx": 25500, "type": "breakout_leg"},
+    {"time_et": "16:00", "price_approx": 25555.5, "type": "close_near_HOD"}
+  ],
+
+  "labels": {
+    "goat": {"in_rth": true, "time_et": "12:15", "price_approx": 25310, "direction": "up", "note": "ribbon retest, best clean continuation long"},
+    "red_circles": {"behavior": "opening_flush_pivots_plus_early_PM_fade_no_trend_reversal_after_noon"},
+    "green_circles": {"behavior": "opening_reversal_higher_lows_morning_1420_buy_preserved_structure"},
+    "orange_banks_supply": {"behavior": "identified_but_not_defended_most_traded_through"},
+    "blue_banks_demand": {"behavior": "respected_better_than_supply_kept_stepping_up"}
+  },
+
+  "time_markers": {
+    "10am_blue": "active recovery after opening dump, reversal/reclaim phase",
+    "12pm_red": "noon pullback held trend support, transitioned to best continuation long",
+    "2pm_green": "bullish structure intact, controlled dip then buyers resumed staircase",
+    "4pm_yellow": "ended in expansion essentially on highs, no closing sell program"
+  },
+
+  "tags": {
+    "direction": "up",
+    "structure": "opening_washout_v_reversal_trend_up_staircase",
+    "open_type": "selloff_failed_downside_continuation",
+    "lunch_behavior": "constructive_consolidation_to_advance",
+    "afternoon_drive": "steady_upside_grind_with_late_breakout",
+    "goat_time": "12:15", "goat_direction": "up",
+    "peak_hour": 16,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_HOD",
+    "banks_respected": "blue_demand", "banks_broken": "most_orange_supply"
+  },
+
+  "takeaway": "Strong reference for failed-opening-weakness then all-day trend continuation. Once flush couldn't sustain below low and price reclaimed ribbon, short thesis degraded. Highest-quality trade: buying pullbacks into demand/ribbon support, especially noon GOAT. Tactical: on similar days treat early panic lows as fuel for reversal, treat afternoon red-circle fades as pauses unless structure breaks."
+}

@@ -1,0 +1,60 @@
+{
+  "symbol": "MNQ1!", "date": "2026-04-20", "dow": "Mon",
+  "timeframe": "1m", "session": "RTH", "session_complete": true,
+  "cursor_ts_approx": "2026-04-20T16:00:00-04:00",
+  "layout": "Money Print", "provider": "chatgpt_web", "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_1_20260420_222904.png",
+  "gate": {"ok": true, "first": "10:00", "last": "15:45"},
+  "profiled_at": "2026-04-20T22:29:04-04:00",
+
+  "summary": {
+    "direction": "down_then_partial_recovery", "box_color": "red",
+    "structure": "trend_down_v_reversal_grind_up",
+    "open_approx": 26880, "close_approx": 26743,
+    "hod_approx": 26890, "lod_approx": 26580,
+    "net_range_pts_open_to_close": -137, "net_range_pct_open_to_close": -0.51,
+    "intraday_span_pts": 310,
+    "shape_sentence": "Early range, late-morning breakdown, V-bottom, slow bullish grind into close."
+  },
+
+  "pivots": [
+    {"time_et": "09:45", "price_approx": 26890, "type": "high_opening_rejection"},
+    {"time_et": "10:15", "price_approx": 26840, "type": "lower_high_trend_shift_down"},
+    {"time_et": "11:00", "price_approx": 26580, "type": "LOD_capitulation_flush"},
+    {"time_et": "11:20", "price_approx": 26620, "type": "higher_low_reversal_base"},
+    {"time_et": "13:30", "price_approx": 26680, "type": "higher_low_trend_continuation"},
+    {"time_et": "15:30", "price_approx": 26760, "type": "lower_high_supply_cap"},
+    {"time_et": "16:00", "price_approx": 26743, "type": "close_under_supply"}
+  ],
+
+  "labels": {
+    "goat": {"in_rth": true, "time_et": "11:00", "direction": "down", "note": "selloff into LOD, fast high-range displacement"},
+    "red_circles": {"behavior": "clustered_during_breakdown_clean_lower_high_sequence_pre_LOD"},
+    "green_circles": {"behavior": "post_1115_consistent_higher_lows_confirming_regime_shift"},
+    "orange_banks_supply": {"behavior": "dense_above_26760_820_repeatedly_capped_rallies"},
+    "blue_banks_demand": {"behavior": "strong_at_26580_650_held_launched_reversal"}
+  },
+
+  "time_markers": {
+    "10am_blue": "transition from range to weakness, structure breaks",
+    "12pm_red": "near post-flush stabilization, shift from sell to balance",
+    "2pm_green": "trend continuation higher, steady grind within green band",
+    "4pm_yellow": "close below key supply, no breakout attempt"
+  },
+
+  "tags": {
+    "direction": "down_then_partial_recovery",
+    "structure": "trend_down_v_reversal_grind_up",
+    "open_type": "open_near_high_fade",
+    "lunch_behavior": "base_then_slow_bid",
+    "afternoon_drive": "controlled_bullish_drift",
+    "goat_time": "11:00", "goat_direction": "down",
+    "peak_hour": 9,
+    "late_reversal_attempt": true,
+    "session_completion": "partial_failed_to_reclaim_range_highs",
+    "close_near_extreme": "no_mid_upper_range",
+    "banks_respected": "supply_above_26760", "banks_broken": "demand_held_after_test"
+  },
+
+  "takeaway": "Primary edge: late-morning breakdown + immediate post-flush reversal. Afternoon bid orderly but constrained by overhead supply. Bearish control early, but inability to extend lower after LOD shifted session to mean-reversion rather than trend continuation."
+}

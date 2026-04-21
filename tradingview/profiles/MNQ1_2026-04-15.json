@@ -1,0 +1,63 @@
+{
+  "symbol": "MNQ1!", "date": "2026-04-15", "dow": "Wed",
+  "timeframe": "1m", "session": "RTH", "session_complete": true,
+  "cursor_ts_approx": "2026-04-15T16:00:00-04:00",
+  "layout": "Money Print", "provider": "chatgpt_web", "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_1_20260420_215856.png",
+  "gate": {"ok": true, "first": "10:00", "last": "15:45"},
+  "profiled_at": "2026-04-20T21:58:56-04:00",
+
+  "summary": {
+    "direction": "up", "box_color": "green",
+    "structure": "trend_up_with_midday_liquidation_break",
+    "open_approx": 26082, "close_approx": 26341,
+    "hod_approx": 26357, "lod_approx": 26031,
+    "net_range_pts_open_to_close": 259, "net_range_pct_open_to_close": 0.99,
+    "intraday_span_pts": 326,
+    "shape_sentence": "Gap-free open, early dip-and-reclaim, steady trend up, one midday liquidation flush, full recovery into strong close near high."
+  },
+
+  "pivots": [
+    {"time_et": "09:30", "price_approx": 26082, "type": "open"},
+    {"time_et": "09:38", "price_approx": 26031, "type": "LOD_opening_shakeout"},
+    {"time_et": "10:00", "price_approx": 26085, "type": "reclaim_trend_confirmation"},
+    {"time_et": "11:15", "price_approx": 26195, "type": "first_clean_expansion_leg"},
+    {"time_et": "12:18", "price_approx": 26238, "type": "pre_liquidation_pivot"},
+    {"time_et": "12:48", "price_approx": 26103, "type": "midday_flush_low_best_dip"},
+    {"time_et": "14:00", "price_approx": 26170, "type": "recovery_confirmed"},
+    {"time_et": "15:30", "price_approx": 26320, "type": "final_drive_leg"},
+    {"time_et": "15:54", "price_approx": 26357, "type": "HOD"},
+    {"time_et": "16:00", "price_approx": 26341, "type": "close_near_high"}
+  ],
+
+  "labels": {
+    "goat": {"in_rth": true, "time_et": "09:55", "direction": "up", "note": "post-open reclaim into 10:00 expansion + secondary midday flush reversal"},
+    "red_circles": {"behavior": "early_opening_shakeout_only_limited_follow_through_later"},
+    "green_circles": {"behavior": "repeated_higher_low_repairs_after_morning_climb_and_midday_washout"},
+    "orange_banks_supply": {"behavior": "appeared_overhead_most_absorbed_or_broken_upward_only_midday_cluster_worked"},
+    "blue_banks_demand": {"behavior": "respected_during_midday_recovery_and_1400_transition_continuation_shelves"}
+  },
+
+  "time_markers": {
+    "10am_blue": "already recovering, transitioning to trend-up, confirmation not reversal",
+    "12pm_red": "near local highs, shortly after noon supply mattered, deepest pullback",
+    "2pm_green": "important inflection - repaired noon damage, demand held, trend resumed",
+    "4pm_yellow": "closed near top, no late fade, buyers retained control"
+  },
+
+  "tags": {
+    "direction": "up",
+    "structure": "trend_up_with_midday_liquidation_break",
+    "open_type": "open_dip_then_reclaim",
+    "lunch_behavior": "sharp_noon_flush_then_stabilization",
+    "afternoon_drive": "persistent_upside_grind_into_close",
+    "goat_time": "09:55", "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_HOD",
+    "banks_respected": "blue_demand", "banks_broken": "most_orange_supply"
+  },
+
+  "takeaway": "Bull trend day with noon reset, NOT a reversal day. Every meaningful pullback including midday flush resolved into higher lows above session trend ribbon. Supply kept appearing, buyers kept absorbing. Defining feature: resilience after weakness, close near high rather than balanced settlement."
+}
