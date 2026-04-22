@@ -220,6 +220,10 @@ without asking.
 **Pine**: always `//@version=6`. `indicator(overlay=true)` for
 annotations; `strategy(..., initial_capital=10000, commission_type=...)`
 for backtests. Never write `//@version=5`.
+**Before editing any `.pine` or `forecast_pine.py`, read
+`tradingview/pine/pine.md`** — canonical reference for architecture, v6
+gotchas, layout conventions, recipes, and the session-history of
+structural edits.
 
 **UI**: dark theme, mono font for prices. Levels show with
 thousand-separator commas (`26,842`, not `26842`). R:R colored green ≥2,
