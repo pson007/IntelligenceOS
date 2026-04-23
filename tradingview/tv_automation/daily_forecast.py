@@ -35,6 +35,9 @@ import json
 import re
 from datetime import datetime, time as dtime
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+_ET = ZoneInfo("America/New_York")
 
 from playwright.async_api import Page
 
@@ -320,21 +323,28 @@ def _reconciliation_file_paths(symbol: str, date_str: str) -> tuple[Path, Path]:
 async def _run_forecast_stage(
     page: Page, *, symbol: str, date_str: str,
     stage_label: str, cursor_time: dtime,
-) -> dict:
-    """Frame → gate → screenshot → ChatGPT → save. Returns the saved JSON dict."""
+) -> dict | None:
+    """Frame → gate → screenshot → ChatGPT → save. Returns the saved JSON
+    dict, or None if the framing gate rejected the capture — in that case
+    we skip the ChatGPT call and do NOT write any files, so bad-frame
+    artifacts don't pollute the forecast store or confuse --resume."""
     with audit.timed("daily_forecast.stage", stage=stage_label, cursor=str(cursor_time)) as ac:
         await _frame_with_cursor_right(page)
         screenshot = await _capture(page, symbol, stage_label.lower() + cursor_time.strftime("%H%M"))
         ac["screenshot"] = str(screenshot)
 
         # Gate — for forecast we accept partial frames, but verify minimum
-        # morning visibility.
+        # morning visibility. A gate failure means the chart state can't be
+        # trusted (cursor misaligned, replay not ready, bars missing), so we
+        # abort this stage cleanly rather than forecast against a bad frame.
         gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)
         ac["gate_ok"] = gate.ok
         ac["gate_reason"] = gate.reason
         if not gate.ok:
-            audit.log("daily_forecast.stage.gate_fail", stage=stage_label, reason=gate.reason)
-            # We proceed even on gate fail — forecast is best-effort on bad frames
+            audit.log("daily_forecast.stage.gate_fail",
+                      stage=stage_label, reason=gate.reason)
+            ac["skipped"] = "gate_fail"
+            return None
 
         user_prompt = (
             f"Forecast remainder of {symbol}! {date_str} RTH session. "
@@ -485,28 +495,93 @@ async def _run_reconciliation(
 # Orchestration
 # ---------------------------------------------------------------------------
 
+def _adhoc_stage_blocked(date_str: str, cursor_time: dtime) -> str | None:
+    """Return a reason string if this stage should be skipped for ad-hoc
+    reasons — wall-clock hasn't reached the stage's cursor time yet, or the
+    target date is in the future. Returns None if the stage is free to run.
+
+    Only compares wall-clock against target cursor time when `date_str` is
+    today (ET). Historical replays always run (past data fully available)."""
+    try:
+        target = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+    now_et = datetime.now(_ET)
+    today_et = now_et.date()
+    if target < today_et:
+        return None  # historical — always run
+    if target > today_et:
+        return f"target date {date_str} is in the future"
+    # Same day — require wall clock to be at or past cursor time.
+    target_dt = datetime.combine(target, cursor_time, tzinfo=_ET)
+    if now_et < target_dt:
+        return (f"wall clock {now_et.strftime('%H:%M ET')} "
+                f"hasn't reached {cursor_time.strftime('%H:%M ET')}")
+    return None
+
+
+def _adhoc_reconciliation_blocked(date_str: str, profile_path: Path) -> str | None:
+    """Return a reason string if reconciliation should be skipped. Two
+    conditions: (1) no ground-truth profile on disk, (2) target day's RTH
+    hasn't closed yet. Either makes a meaningful grading impossible."""
+    if not profile_path.exists():
+        return f"no profile at {profile_path.name}"
+    try:
+        target = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+    now_et = datetime.now(_ET)
+    if target >= now_et.date():
+        close_dt = datetime.combine(target, dtime(16, 0), tzinfo=_ET)
+        if now_et < close_dt:
+            return f"RTH not closed yet ({now_et.strftime('%H:%M ET')} < 16:00 ET)"
+    return None
+
+
 async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
-                           resume: bool = False) -> dict:
+                           resume: bool = False,
+                           adhoc: bool = False) -> dict:
     """Run the full forecast workflow for one trading day.
 
     Returns a dict summarizing the artifacts produced.
 
     `resume=True` skips stages whose .json already exists on disk —
     useful if an earlier run crashed partway and you want to pick up
-    without re-driving the browser or re-paying for prior stages."""
+    without re-driving the browser or re-paying for prior stages.
+
+    `adhoc=True` is time-aware: for today's date, stages whose cursor
+    time hasn't arrived are skipped (no bars to capture yet), and
+    reconciliation is skipped if the completed-day profile doesn't
+    exist OR RTH hasn't closed yet. Use this when invoking the
+    pipeline intraday — unlike a scheduled eod run, adhoc won't
+    produce gate-failed stages or blind reconciliations."""
     try:
         target_date = datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError as e:
         raise ValueError(f"date must be YYYY-MM-DD, got {date_str!r}") from e
 
+    skipped_stages: list[dict] = []
     saved_stages: list[dict] = []
     async with chart_session() as (_ctx, page):
-        with audit.timed("daily_forecast.run_day", date=date_str, symbol=symbol):
+        with audit.timed("daily_forecast.run_day",
+                         date=date_str, symbol=symbol, adhoc=adhoc):
             # Navigate to 10:00 (F1 cursor)
             cursor = await _navigate_to_10am(page, target_date)
             audit.log("daily_forecast.navigated", cursor=str(cursor))
 
             for (label, cursor_time, step_bars) in STAGES:
+                # Ad-hoc time gate — bail the remainder of the pipeline once
+                # we hit a stage whose wall-clock time hasn't arrived yet.
+                # (Later stages can't possibly be past-cursor either, so we
+                # break rather than continue.)
+                if adhoc:
+                    reason = _adhoc_stage_blocked(date_str, cursor_time)
+                    if reason:
+                        audit.log("daily_forecast.stage.skip_adhoc_time",
+                                  stage=label, reason=reason)
+                        skipped_stages.append({"stage": label, "reason": reason})
+                        break
+
                 if step_bars > 0:
                     await _step_forward_bars(page, step_bars)
 
@@ -520,25 +595,54 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
                     page, symbol=symbol, date_str=date_str,
                     stage_label=label, cursor_time=cursor_time,
                 )
+                if saved is None:
+                    # Gate-fail — stage skipped, no artifact written.
+                    skipped_stages.append({"stage": label, "reason": "gate_fail"})
+                    continue
                 saved_stages.append(saved)
 
-            # Step to 16:00 for reconciliation screenshot
-            await _step_forward_bars(page, BARS_TO_CLOSE_FROM_F3)
-
+            # Step to 16:00 for reconciliation screenshot (only if we
+            # actually ran forecasts this session — otherwise no stepping
+            # needed and no reconcile either).
+            profile_path = _PROFILES_ROOT / f"{symbol}_{date_str}.json"
             _, recon_json = _reconciliation_file_paths(symbol, date_str)
-            if resume and recon_json.exists():
-                audit.log("daily_forecast.reconciliation.skip_existing")
-                reconciliation = json.loads(recon_json.read_text())
+            recon_blocked: str | None = None
+
+            if not saved_stages:
+                recon_blocked = "no forecast stages produced artifacts"
+            elif adhoc:
+                recon_blocked = _adhoc_reconciliation_blocked(date_str, profile_path)
+            elif not profile_path.exists():
+                # Fix #1 — always guard reconciliation behind profile existence,
+                # even outside adhoc mode. A reconcile without ground truth is
+                # worse than no reconcile (produces a bad file we then have to
+                # clean up; also misleads the lessons + calibration feedback
+                # loops).
+                recon_blocked = f"no profile at {profile_path.name}"
+
+            if recon_blocked:
+                audit.log("daily_forecast.reconciliation.skipped",
+                          reason=recon_blocked)
+                reconciliation = {"skipped": True, "reason": recon_blocked}
             else:
-                reconciliation = await _run_reconciliation(
-                    page, symbol=symbol, date_str=date_str, stages_run=saved_stages,
-                )
+                await _step_forward_bars(page, BARS_TO_CLOSE_FROM_F3)
+                if resume and recon_json.exists():
+                    audit.log("daily_forecast.reconciliation.skip_existing")
+                    reconciliation = json.loads(recon_json.read_text())
+                else:
+                    reconciliation = await _run_reconciliation(
+                        page, symbol=symbol, date_str=date_str, stages_run=saved_stages,
+                    )
 
     return {
         "symbol": symbol,
         "date": date_str,
+        "adhoc": adhoc,
         "stages": [{"stage": s["stage"], "cursor_time": s["cursor_time"]} for s in saved_stages],
+        "skipped": skipped_stages,
         "reconciliation_file": str(_reconciliation_file_paths(symbol, date_str)[1]),
+        "reconciliation_skipped_reason":
+            reconciliation.get("reason") if isinstance(reconciliation, dict) and reconciliation.get("skipped") else None,
     }
 
 
@@ -552,9 +656,17 @@ def _main() -> None:
     p.add_argument("--symbol", default="MNQ1", help="Symbol prefix for filenames")
     p.add_argument("--resume", action="store_true",
                    help="Skip stages whose .json already exists on disk")
+    p.add_argument("--adhoc", action="store_true",
+                   help="Time-aware intraday mode: skip stages whose cursor "
+                        "time hasn't arrived yet; skip reconciliation if RTH "
+                        "isn't closed or profile is missing. Use this when "
+                        "running the pipeline mid-day without leaving gate-"
+                        "failed artifacts behind.")
     args = p.parse_args()
 
-    result = asyncio.run(run_forecast_day(args.date, symbol=args.symbol, resume=args.resume))
+    result = asyncio.run(run_forecast_day(
+        args.date, symbol=args.symbol, resume=args.resume, adhoc=args.adhoc,
+    ))
     print(json.dumps(result, indent=2))
 
 

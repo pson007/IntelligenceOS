@@ -207,10 +207,31 @@ Generated from `forecast_pine.py::PINE_TEMPLATE`. Current ~635 lines. Structure:
 
 ### Multi-line expressions
 
-- Continuation works when the continuation line is *more deeply indented* than
-  the first line. No explicit `\\` needed.
-- Ternaries chained across 3+ lines are edge-case territory; use parens and
-  indent consistently.
+- Continuation works when the continuation line is **strictly more indented**
+  than the *first line of the expression* — NOT "more indented than the
+  surrounding block." Same-indent continuations compile-fail with
+  `"line without line continuation"`.
+- **Classic trap**: inside a function body, the body starts at indent 4.
+  Writing `_s == "a" ? X : \\n _s == "b" ? Y : Z` with both lines at indent 4
+  fails — continuation is at the same level as the first line.
+- **Fix A** — indent continuations more:
+  ```pine
+  _f(_s) =>
+      _s == "a" ? X :
+          _s == "b" ? Y : Z
+  ```
+- **Fix B (preferred for string-dispatch)** — use `switch`, which doesn't have
+  continuation rules at all:
+  ```pine
+  _f(_s) =>
+      switch _s
+          "a" => X
+          "b" => Y
+          => Z
+  ```
+- Ternaries chained across 3+ lines work when continuation is indented past the
+  first line (see `f_status()` / `f_action()`: first line at col 8, continuations
+  at col 13 → valid).
 
 ### `var` initialization timing
 
@@ -386,6 +407,18 @@ the git log captures *what*, but this captures *why*.
   `confirm_score` reset on invalidation, per-detector toggles, ATR follow-through
   floor, CVD-in-score, VWAP ±1σ bands, prior-day H/L/C, Initial Balance plots,
   7 `alertcondition()` declarations.
+- **2026-04-22** — caveman pass: all prices get thousand-separator commas
+  (`#,##0.00`), snake_case forecast tags render with spaces via `str.replace_all`,
+  trigger labels simplified to one-word action verbs (BUY / SELL / OUT / WIN /
+  TRAP / UP BREAK / DOWN BREAK / ABOVE VWAP / BELOW VWAP), all `size.large`
+  and `size.normal` labels demoted to `size.small`.
+- **2026-04-22** — status table is now user-configurable: visibility toggle,
+  9-option position dropdown, 3-option text-size dropdown. Position dropdown
+  works via recompile-on-change (Pine v6 `table.new()` requires const position).
+  Initial attempt used chained ternaries in helpers — failed Pine compile with
+  "line without line continuation" because continuation lines sat at the same
+  indent as the first line of the expression. Fixed by switching to `switch`
+  statements (no continuation rule). Gotcha recorded in v6 gotchas section.
 
 ---
 

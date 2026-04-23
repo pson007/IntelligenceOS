@@ -33,11 +33,12 @@ PINE_TEMPLATE = """//@version=6
 //   * RTH-anchored VWAP + ±1σ bands — orange, resets 09:30 each day
 //   * Prior-day H / L / C — classic intraday pivots
 //   * Initial Balance (09:30–10:30) H / L — first-hour range
-//   * Dynamic trigger labels — RECLAIM / FAIL / INVALIDATED / TARGET HIT / TARGET FAKE
-//   * Manipulation detectors — STOP HUNT (sweep + reclaim of stop), VOL climax bars
-//   * Confirmation signals — ✓/✗ follow-through (ATR-gated), MR BREAK ↑/↓, VWAP RECLAIM/REJECT
-//   * Status table top-right — bias, levels, current phase, ACTION hint,
-//                              → to stop / → to target / CVD / Confirmations ●●●●○
+//   * Dynamic trigger labels — BUY / SELL / OUT / WIN / TRAP (caveman-tier)
+//   * Manipulation detectors — BUY/SELL trap (stop sweep + reclaim), VOL climax bars
+//   * Confirmation signals — ✓/✗ follow-through (ATR-gated), UP/DOWN BREAK, ABOVE/BELOW VWAP
+//   * Status table top-right — Trade, levels, Phase, Do-hint, Bias, to-stop / to-target,
+//                              CVD, Confirm ●●●●○
+//   * All prices show thousand-separator commas; snake_case forecast tags render with spaces.
 //   * Alerts — STOP HUNT, MR BREAK, VWAP aligned, TARGET HIT, INVALIDATED, TARGET FAKE
 //
 // All time gates use explicit America/New_York anchors (via timestamp()) so the
@@ -57,7 +58,10 @@ direction       = input.string("{{DIRECTION}}",       "Direction",       options
 confidence      = input.string("{{CONFIDENCE}}",      "Confidence",      options=["low","med","high"], group="Forecast")
 net_pct_lo      = input.float({{NET_PCT_LO}},         "Net % lo (open→close)", step=0.05, group="Forecast")
 net_pct_hi      = input.float({{NET_PCT_HI}},         "Net % hi (open→close)", step=0.05, group="Forecast")
-goat_label      = input.string("{{GOAT_LABEL}}",      "GOAT window",     group="Forecast")
+goat_label      = input.string("{{GOAT_LABEL}}",      "GOAT label",      group="Forecast")
+goat_window     = input.string("{{GOAT_WINDOW}}",     "GOAT time window",
+     options=["opening","midday","afternoon"], group="Forecast",
+     tooltip="Which phase of the session the GOAT setup fires in. Drives the aqua background tint + the Phase/Do row labels in the status table.")
 open_type       = input.string("{{OPEN_TYPE}}",       "Open type",       group="Forecast")
 tactical_bias   = input.string("{{TACTICAL_BIAS}}",   "Tactical bias",   group="Forecast")
 afternoon_drive = input.string("{{AFTERNOON_DRIVE}}", "Afternoon drive", group="Forecast")
@@ -84,6 +88,18 @@ show_vol_climax    = input.bool(true, "Show VOL climax labels",  group="Detector
 show_followthrough = input.bool(true, "Show ✓/✗ follow-through", group="Detectors — toggles")
 show_mr_break      = input.bool(true, "Show MR BREAK label",     group="Detectors — toggles")
 show_vwap_event    = input.bool(true, "Show VWAP RECLAIM/REJECT label", group="Detectors — toggles")
+
+// Status table — visibility, position, text size.
+show_status_table = input.bool(true, "Show status table", group="Status table")
+table_pos_str     = input.string("top_right", "Position",
+     options=["top_left","top_center","top_right",
+              "middle_left","middle_center","middle_right",
+              "bottom_left","bottom_center","bottom_right"],
+     group="Status table")
+table_size_str    = input.string("small", "Text size",
+     options=["tiny","small","normal"],
+     group="Status table",
+     tooltip="tiny = compact dashboard, normal = chart-dominant. Small is usually right.")
 
 is_long = direction == "up"
 
@@ -168,8 +184,8 @@ prior_low   = request.security(syminfo.tickerid, "D", low[1],   lookahead=barmer
 
 invalidation_level = is_long ? morning_low : morning_high
 stop_side_text     = is_long ? "below" : "above"
-tp_hi_action       = is_long ? "trim longs" : "cover shorts"
-tp_lo_action       = is_long ? "long entry base" : "short entry base"
+tp_hi_action       = "take profit"
+tp_lo_action       = is_long ? "buy zone" : "sell zone"
 
 // Volume baseline + CVD (session-anchored approximated delta).
 // CVD approximates net buy/sell pressure using close-vs-open sign × bar volume.
@@ -179,15 +195,22 @@ if in_today_rth
     cvd := cvd + (close > open ? volume : close < open ? -volume : 0.0)
 
 // ---------------------------------------------------------------------------
-// Time-window background tints (opening window is 09:30–10:00)
+// Time-window background tints. `in_goat` tracks the phase the forecast
+// actually expects its standout trade in — opening / midday / afternoon —
+// not a hardcoded midday band. Aqua tint marks that phase specifically.
 // ---------------------------------------------------------------------------
 in_opening = in_today_rth and time < t_1000
-in_goat    = in_today_rth and time >= t_1200 and time < t_1400
+in_midday  = in_today_rth and time >= t_1200 and time < t_1400
 in_drive   = in_today_rth and time >= t_1400 and time < t_1600
+in_goat    = in_today_rth and (
+     (goat_window == "opening"   and time >= t_0930 and time < t_1000) or
+     (goat_window == "midday"    and time >= t_1200 and time < t_1400) or
+     (goat_window == "afternoon" and time >= t_1400 and time < t_1600))
 
 bgcolor(in_opening ? color.new(color.yellow, 92) : na, title="Opening")
-bgcolor(in_goat    ? color.new(color.aqua,   90) : na, title="GOAT midday")
+bgcolor(in_midday  ? color.new(color.gray,   94) : na, title="Midday")
 bgcolor(in_drive   ? color.new(color.green,  93) : na, title="Afternoon drive")
+bgcolor(in_goat    ? color.new(color.aqua,   85) : na, title="GOAT window")
 
 // RTH-anchored VWAP with ±1σ bands — resets at 09:30 each day. The tuple form
 // of ta.vwap returns the mean + both deviation bands in a single pass.
@@ -236,7 +259,7 @@ if barstate.islast and not na(open_price)
          color=color.gray, width=1, extend=extend.right)
     label.delete(lbl_open)
     lbl_open := label.new(bar_index + 5, open_price,
-         text="OPEN " + str.tostring(open_price, "#.##") + "  —  " + open_type,
+         text="OPEN " + str.tostring(open_price, "#,##0.00") + " · " + str.replace_all(open_type, "_", " "),
          color=color.new(color.gray, 40), textcolor=color.white,
          style=label.style_label_left, size=size.small)
 
@@ -247,7 +270,7 @@ if barstate.islast and not na(open_price)
          extend=extend.right)
     label.delete(lbl_target_lo)
     lbl_target_lo := label.new(bar_index + 5, close_target_lo,
-         text="TP1 " + str.tostring(close_target_lo, "#.##") + "  —  " + tp_lo_action,
+         text="TP1 " + str.tostring(close_target_lo, "#,##0.00") + " · " + tp_lo_action,
          color=color.new(color.green, 70), textcolor=color.white,
          style=label.style_label_left, size=size.small)
 
@@ -258,7 +281,7 @@ if barstate.islast and not na(open_price)
          extend=extend.right)
     label.delete(lbl_target_hi)
     lbl_target_hi := label.new(bar_index + 5, close_target_hi,
-         text="TP2 " + str.tostring(close_target_hi, "#.##") + "  —  " + tp_hi_action,
+         text="TP2 " + str.tostring(close_target_hi, "#,##0.00") + " · " + tp_hi_action,
          color=color.new(color.green, 40), textcolor=color.white,
          style=label.style_label_left, size=size.small)
 
@@ -271,8 +294,8 @@ if barstate.islast and not na(invalidation_level)
     label.delete(lbl_inval)
     lbl_inval := label.new(bar_index + 5, invalidation_level,
          text=(morning_lock ? "STOP " : "stop forming ")
-              + str.tostring(invalidation_level, "#.##")
-              + "  —  close " + stop_side_text + " = OUT",
+              + str.tostring(invalidation_level, "#,##0.00")
+              + " · close " + stop_side_text + " = OUT",
          color=color.new(color.red, 40), textcolor=color.white,
          style=label.style_label_left, size=size.small)
 
@@ -295,26 +318,36 @@ f_overhead_y() =>
 f_rail_label(_text, _col) =>
     label.new(bar_index, f_overhead_y(), text=_text,
          color=color.new(_col, 20), textcolor=color.white,
-         style=label.style_label_down, size=size.normal, yloc=yloc.price)
+         style=label.style_label_down, size=size.small, yloc=yloc.price)
 
 if in_target_day and time >= t_0930 and time < t_1000 and not phase_open_drawn and not na(close_target_hi)
     phase_open_drawn := true
-    f_rail_label("09:30 OPEN  ·  watch: " + open_type, color.yellow)
+    _open_prefix = (goat_window == "opening") ? "09:30 · GOAT " : "09:30 · watch "
+    _open_text   = (goat_window == "opening") ? str.replace_all(goat_label, "_", " ")
+                                              : str.replace_all(open_type, "_", " ")
+    f_rail_label(_open_prefix + _open_text,
+         (goat_window == "opening") ? color.aqua : color.yellow)
 
 if in_target_day and time >= t_1000 and not phase_lock_drawn and not na(invalidation_level)
     phase_lock_drawn := true
     label.new(bar_index, invalidation_level,
-         text="10:00 STOP LOCKED @ " + str.tostring(invalidation_level, "#.##"),
+         text="STOP " + str.tostring(invalidation_level, "#,##0.00") + " · out below",
          color=color.new(color.red, 20), textcolor=color.white,
          style=label.style_label_left, size=size.small, yloc=yloc.price)
 
-if in_target_day and time >= t_1200 and not phase_goat_drawn and not na(close_target_hi)
+// GOAT rail label anchors at the START of the GOAT's own window, not a
+// hardcoded 12:00. So an opening-GOAT labels at 09:30 above (handled in the
+// OPEN block), a midday-GOAT labels at 12:00, an afternoon-GOAT at 14:00.
+if in_target_day and goat_window == "midday" and time >= t_1200 and not phase_goat_drawn and not na(close_target_hi)
     phase_goat_drawn := true
-    f_rail_label("12:00 GOAT  ·  " + goat_label, color.aqua)
+    f_rail_label("12:00 · GOAT " + str.replace_all(goat_label, "_", " "), color.aqua)
+if in_target_day and goat_window == "afternoon" and time >= t_1400 and not phase_goat_drawn and not na(close_target_hi)
+    phase_goat_drawn := true
+    f_rail_label("14:00 · GOAT " + str.replace_all(goat_label, "_", " "), color.aqua)
 
 if in_target_day and time >= t_1400 and not phase_drive_drawn and not na(close_target_hi)
     phase_drive_drawn := true
-    f_rail_label("14:00 DRIVE  ·  " + afternoon_drive, color.green)
+    f_rail_label("14:00 · " + str.replace_all(afternoon_drive, "_", " "), color.green)
 
 // ---------------------------------------------------------------------------
 // Time-marker vertical lines (Money Print convention)
@@ -360,34 +393,34 @@ if barstate.islast and in_target_day
 if in_opening and is_long and opened_below_open and not reclaim_fired and not na(open_price) and close > open_price
     reclaim_fired := true
     pending_bar   := bar_index
-    pending_kind  := "RECLAIM"
+    pending_kind  := "BUY"
     pending_up    := true
     pending_ref   := close
     label.new(bar_index, high,
-         text="RECLAIM  ·  long trigger",
+         text="BUY",
          color=color.new(color.green, 10), textcolor=color.white,
-         style=label.style_label_down, size=size.normal)
+         style=label.style_label_down, size=size.small)
 
 if in_opening and not is_long and opened_above_open and not fail_fired and not na(open_price) and close < open_price
     fail_fired   := true
     pending_bar  := bar_index
-    pending_kind := "FAIL"
+    pending_kind := "SELL"
     pending_up   := false
     pending_ref  := close
     label.new(bar_index, low,
-         text="FAIL  ·  short trigger",
+         text="SELL",
          color=color.new(color.red, 10), textcolor=color.white,
-         style=label.style_label_up, size=size.normal)
+         style=label.style_label_up, size=size.small)
 
 stop_broken = morning_lock and not na(invalidation_level) and (is_long ? close < invalidation_level : close > invalidation_level)
 if in_today_rth and stop_broken and not inval_fired
     inval_fired   := true
     confirm_score := 0  // setup invalidated — zero the score rather than lie about the past
     label.new(bar_index, is_long ? low : high,
-         text="INVALIDATED  ·  exit",
+         text="OUT",
          color=color.new(color.red, 0), textcolor=color.white,
          style=is_long ? label.style_label_up : label.style_label_down,
-         size=size.normal)
+         size=size.small)
 
 // Target-fakeout: poke through target, close back inside. Classic "trap the
 // chase-buyer" pattern. Must be evaluated BEFORE target_hit so we can suppress
@@ -398,19 +431,19 @@ target_fake_now = not na(close_target_hi) and not na(close_target_lo) and
 if in_today_rth and target_fake_now and not target_fake_fired and barstate.isconfirmed and show_target_fake
     target_fake_fired := true
     label.new(bar_index, is_long ? high : low,
-         text="TARGET FAKE  ·  rejected " + str.tostring(is_long ? close_target_hi : close_target_lo, "#.##"),
+         text="TRAP " + str.tostring(is_long ? close_target_hi : close_target_lo, "#,##0.00"),
          color=color.new(color.orange, 10), textcolor=color.white,
          style=is_long ? label.style_label_down : label.style_label_up,
-         size=size.large)
+         size=size.small)
 
 target_hit = is_long ? (not na(close_target_hi) and high >= close_target_hi) : (not na(close_target_lo) and low <= close_target_lo)
 if in_today_rth and target_hit and not target_fired and not target_fake_now
     target_fired := true
     label.new(bar_index, is_long ? high : low,
-         text="TARGET HIT  ·  " + tp_hi_action,
+         text="WIN",
          color=color.new(color.green, 0), textcolor=color.white,
          style=is_long ? label.style_label_down : label.style_label_up,
-         size=size.normal)
+         size=size.small)
 
 // ---------------------------------------------------------------------------
 // Real-time detectors — manipulation / anomaly signals keyed on bar geometry
@@ -429,14 +462,14 @@ stop_hunt_now = morning_lock and not na(invalidation_level) and
 if in_today_rth and stop_hunt_now and not stop_hunt_fired and barstate.isconfirmed and show_stop_hunt
     stop_hunt_fired := true
     pending_bar     := bar_index
-    pending_kind    := "STOP HUNT"
+    pending_kind    := "TRAP"
     pending_up      := is_long
     pending_ref     := close
     label.new(bar_index, is_long ? low : high,
-         text="STOP HUNT  ·  reclaimed " + str.tostring(invalidation_level, "#.##"),
+         text=(is_long ? "BUY trap " : "SELL trap ") + str.tostring(invalidation_level, "#,##0.00"),
          color=color.new(color.yellow, 10), textcolor=color.black,
          style=is_long ? label.style_label_up : label.style_label_down,
-         size=size.large)
+         size=size.small)
 
 vol_climax = not na(vol_avg) and vol_avg > 0 and volume > vol_avg * vol_spike_mult
 if in_today_rth and vol_climax and barstate.isconfirmed and (bar_index - last_climax_bar) >= 3 and show_vol_climax
@@ -484,9 +517,9 @@ if in_today_rth and morning_lock and not na(morning_high) and not mr_break_up_fi
     mr_break_up_fired := true
     if show_mr_break
         label.new(bar_index, high,
-             text="MR BREAK ↑ " + str.tostring(morning_high, "#.##"),
+             text="UP BREAK " + str.tostring(morning_high, "#,##0.00"),
              color=color.new(color.green, 0), textcolor=color.white,
-             style=label.style_label_down, size=size.normal)
+             style=label.style_label_down, size=size.small)
     if is_long
         confirm_score := confirm_score + 1
 
@@ -494,9 +527,9 @@ if in_today_rth and morning_lock and not na(morning_low) and not mr_break_dn_fir
     mr_break_dn_fired := true
     if show_mr_break
         label.new(bar_index, low,
-             text="MR BREAK ↓ " + str.tostring(morning_low, "#.##"),
+             text="DOWN BREAK " + str.tostring(morning_low, "#,##0.00"),
              color=color.new(color.red, 0), textcolor=color.white,
-             style=label.style_label_up, size=size.normal)
+             style=label.style_label_up, size=size.small)
     if not is_long
         confirm_score := confirm_score + 1
 
@@ -509,7 +542,7 @@ if vwap_aligned and not vwap_event_fired and barstate.isconfirmed
     confirm_score    := confirm_score + 1
     if show_vwap_event
         label.new(bar_index, is_long ? low : high,
-             text="VWAP " + (is_long ? "RECLAIM ↑" : "REJECT ↓"),
+             text=is_long ? "ABOVE VWAP ↑" : "BELOW VWAP ↓",
              color=color.new(color.orange, 20), textcolor=color.white,
              style=is_long ? label.style_label_up : label.style_label_down,
              size=size.small)
@@ -517,9 +550,41 @@ if vwap_aligned and not vwap_event_fired and barstate.isconfirmed
 // ---------------------------------------------------------------------------
 // Status table (top-right) — levels, phase, current action hint
 // ---------------------------------------------------------------------------
-var table tbl = table.new(position.top_right, 2, 13,
-     bgcolor=color.new(color.black, 75), border_width=1,
-     border_color=color.new(color.gray, 50))
+// Status-table helpers.
+//
+//   _pos_from_str : string → const position (for table.new)
+//   _size_from_str: string → series size    (for cell text_size)
+//
+// Using `switch` rather than chained ternaries because Pine v6's line-
+// continuation rule requires continuation lines to be indented MORE than the
+// expression's first line. switch-arms sidestep that entirely.
+//
+// Pine v6 also requires a const position at table.new() time, so the table is
+// re-created when the user changes the position dropdown (Pine re-runs the
+// script, var tbl = na reinitializes, and the new position is applied).
+_pos_from_str(_s) =>
+    switch _s
+        "top_left"      => position.top_left
+        "top_center"    => position.top_center
+        "top_right"     => position.top_right
+        "middle_left"   => position.middle_left
+        "middle_center" => position.middle_center
+        "middle_right"  => position.middle_right
+        "bottom_left"   => position.bottom_left
+        "bottom_center" => position.bottom_center
+        => position.bottom_right
+
+_size_from_str(_s) =>
+    switch _s
+        "tiny"   => size.tiny
+        "normal" => size.normal
+        => size.small
+
+var table tbl = na
+if na(tbl) and show_status_table
+    tbl := table.new(_pos_from_str(table_pos_str), 2, 13,
+         bgcolor=color.new(color.black, 75), border_width=1,
+         border_color=color.new(color.gray, 50))
 
 // Confirmation-score dots — e.g. score=3 returns "●●●○"
 f_dots(_score, _max) =>
@@ -528,87 +593,92 @@ f_dots(_score, _max) =>
         s := s + (i < _score ? "●" : "○")
     s
 
+// Prefix each time window's phase label with "GOAT " when the forecast's
+// goat_window points at that window, so the status row reflects the actual
+// standout phase instead of a hardcoded midday assumption.
 f_status() =>
     string s = "PRE-OPEN"
     if in_today_rth
-        s := time < t_1000 ? "OPENING (09:30–10:00)" :
-             time < t_1200 ? "POST-OPEN WATCH (10:00–12:00)" :
-             time < t_1400 ? "MIDDAY GOAT (12:00–14:00)" :
-             time < t_1600 ? "AFTERNOON DRIVE (14:00–16:00)" :
+        s := time < t_1000 ? ((goat_window == "opening")   ? "GOAT OPEN (09:30–10:00)" : "OPEN (09:30–10:00)")  :
+             time < t_1200 ? "WATCH (10:00–12:00)" :
+             time < t_1400 ? ((goat_window == "midday")    ? "GOAT (12:00–14:00)"       : "MIDDAY (12:00–14:00)") :
+             time < t_1600 ? ((goat_window == "afternoon") ? "GOAT RIDE (14:00–16:00)"  : "RIDE (14:00–16:00)")   :
              "CLOSE"
     if stop_broken
-        s := "INVALIDATED — broke " + (is_long ? "morning low" : "morning high")
+        s := "OUT — broke " + (is_long ? "low" : "high")
     s
 
 f_action() =>
-    string a = "Wait for open"
+    string a = "WAIT for open"
+    string goat_action = "GOAT " + (is_long ? "BUY" : "SELL") + " · " + str.replace_all(goat_label, "_", " ")
     if in_today_rth
-        a := time < t_1000 ? ("Watch: " + open_type) :
-             time < t_1200 ? ("Stop @ " + str.tostring(invalidation_level, "#.##") + " · " + tactical_bias) :
-             time < t_1400 ? ("GOAT: primary " + direction + " entry — " + goat_label) :
-             time < t_1600 ? ("Drive: " + afternoon_drive) :
-             "Close positions"
+        a := time < t_1000 ? ((goat_window == "opening")   ? goat_action : ("WATCH " + str.replace_all(open_type, "_", " "))) :
+             time < t_1200 ? ("STOP " + str.tostring(invalidation_level, "#,##0.00") + " · " + str.replace_all(tactical_bias, "_", " ")) :
+             time < t_1400 ? ((goat_window == "midday")    ? goat_action : ("MIDDAY · " + str.replace_all(tactical_bias, "_", " "))) :
+             time < t_1600 ? ((goat_window == "afternoon") ? goat_action : ("RIDE · " + str.replace_all(afternoon_drive, "_", " "))) :
+             "CLOSE OUT"
     a
 
-if barstate.islast and in_target_day
+if barstate.islast and in_target_day and show_status_table and not na(tbl)
     bias_color = is_long ? color.green : color.red
     status     = f_status()
     status_col = str.contains(status, "INVALID") ? color.red :
                  str.contains(status, "GOAT")    ? color.aqua : color.yellow
+    _tsize     = _size_from_str(table_size_str)
 
     tbl.cell(0, 0, "Forecast — {{DOW}} {{DATE}}",
          text_color=color.white, bgcolor=color.new(color.navy, 20),
-         text_halign=text.align_center)
+         text_halign=text.align_center, text_size=_tsize)
     tbl.merge_cells(0, 0, 1, 0)
 
-    tbl.cell(0, 1, "Direction", text_color=color.white)
-    tbl.cell(1, 1, str.upper(direction) + " (" + confidence + ")",
-         text_color=bias_color)
+    tbl.cell(0, 1, "Trade", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 1, (is_long ? "BUY" : "SELL") + " (" + confidence + ")",
+         text_color=bias_color, text_size=_tsize)
 
-    tbl.cell(0, 2, "Open", text_color=color.white)
-    tbl.cell(1, 2, na(open_price) ? "—" : str.tostring(open_price, "#.##"),
-         text_color=color.white)
+    tbl.cell(0, 2, "Open", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 2, na(open_price) ? "—" : str.tostring(open_price, "#,##0.00"),
+         text_color=color.white, text_size=_tsize)
 
-    tbl.cell(0, 3, "Close target", text_color=color.white)
+    tbl.cell(0, 3, "Target", text_color=color.white, text_size=_tsize)
     tbl.cell(1, 3, na(close_target_lo) ? "—" :
-         str.tostring(close_target_lo, "#.##") + " — "
-         + str.tostring(close_target_hi, "#.##"),
-         text_color=color.green)
+         str.tostring(close_target_lo, "#,##0.00") + " — "
+         + str.tostring(close_target_hi, "#,##0.00"),
+         text_color=color.green, text_size=_tsize)
 
-    tbl.cell(0, 4, is_long ? "Morning low" : "Morning high", text_color=color.white)
-    tbl.cell(1, 4, na(invalidation_level) ? "—" : str.tostring(invalidation_level, "#.##"),
-         text_color=color.red)
+    tbl.cell(0, 4, is_long ? "Low" : "High", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 4, na(invalidation_level) ? "—" : str.tostring(invalidation_level, "#,##0.00"),
+         text_color=color.red, text_size=_tsize)
 
-    tbl.cell(0, 5, "GOAT", text_color=color.white)
-    tbl.cell(1, 5, goat_label, text_color=color.aqua)
+    tbl.cell(0, 5, "GOAT", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 5, str.replace_all(goat_label, "_", " "), text_color=color.aqua, text_size=_tsize)
 
-    tbl.cell(0, 6, "Status", text_color=color.white)
-    tbl.cell(1, 6, status, text_color=status_col)
+    tbl.cell(0, 6, "Phase", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 6, status, text_color=status_col, text_size=_tsize)
 
-    tbl.cell(0, 7, "Action", text_color=color.white)
-    tbl.cell(1, 7, f_action(), text_color=color.orange, text_halign=text.align_left)
+    tbl.cell(0, 7, "Do", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 7, f_action(), text_color=color.orange, text_halign=text.align_left, text_size=_tsize)
 
-    tbl.cell(0, 8, "Bias", text_color=color.white)
-    tbl.cell(1, 8, tactical_bias, text_color=color.white, text_halign=text.align_left)
+    tbl.cell(0, 8, "Bias", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 8, str.replace_all(tactical_bias, "_", " "), text_color=color.white, text_halign=text.align_left, text_size=_tsize)
 
     if not na(invalidation_level) and not na(close)
         d = is_long ? close - invalidation_level : invalidation_level - close
-        tbl.cell(0, 9, "→ to stop", text_color=color.white)
-        tbl.cell(1, 9, str.tostring(d, "+#.##;-#.##") + " pts",
-             text_color=d > 0 ? color.green : color.red)
+        tbl.cell(0, 9, "to stop", text_color=color.white, text_size=_tsize)
+        tbl.cell(1, 9, str.tostring(d, "+#,##0.##;-#,##0.##") + " pts",
+             text_color=d > 0 ? color.green : color.red, text_size=_tsize)
 
     if not na(close_target_hi) and not na(close_target_lo) and not na(close)
         t_tgt = is_long ? close_target_hi : close_target_lo
         d_tgt = is_long ? t_tgt - close : close - t_tgt
-        tbl.cell(0, 10, "→ to target", text_color=color.white)
-        tbl.cell(1, 10, str.tostring(d_tgt, "+#.##;-#.##") + " pts",
-             text_color=color.aqua, text_halign=text.align_right)
+        tbl.cell(0, 10, "to target", text_color=color.white, text_size=_tsize)
+        tbl.cell(1, 10, str.tostring(d_tgt, "+#,##0.##;-#,##0.##") + " pts",
+             text_color=color.aqua, text_halign=text.align_right, text_size=_tsize)
 
     // CVD — directionally-weighted cumulative volume. Proxy for tick delta.
     cvd_col = cvd > 0 ? color.green : cvd < 0 ? color.red : color.gray
-    tbl.cell(0, 11, "CVD", text_color=color.white)
-    tbl.cell(1, 11, str.tostring(cvd / 1000.0, "+#.#;-#.#") + "k",
-         text_color=cvd_col, text_halign=text.align_right)
+    tbl.cell(0, 11, "CVD", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 11, str.tostring(cvd / 1000.0, "+#,##0.#;-#,##0.#") + "k",
+         text_color=cvd_col, text_halign=text.align_right, text_size=_tsize)
 
     // Confirmations — 4 event-driven + 1 live (CVD aligned with bias).
     // Events (confirm_score): follow-through ✓, STOP HUNT follow-through, MR BREAK
@@ -621,10 +691,10 @@ if barstate.islast and in_target_day
                           live_score >= 3 ? color.yellow :
                           live_score >= 2 ? color.orange :
                           live_score >= 1 ? color.gray : color.new(color.gray, 50)
-    tbl.cell(0, 12, "Confirmations", text_color=color.white)
+    tbl.cell(0, 12, "Confirm", text_color=color.white, text_size=_tsize)
     tbl.cell(1, 12, f_dots(live_score, max_confirm)
          + "  " + str.tostring(live_score) + "/" + str.tostring(max_confirm),
-         text_color=dots_col, text_halign=text.align_right)
+         text_color=dots_col, text_halign=text.align_right, text_size=_tsize)
 
 // ---------------------------------------------------------------------------
 // Alerts — set these up in TV's Alert dialog (dropdown lists these conditions).
@@ -685,7 +755,17 @@ def render_pine(forecast: dict) -> str:
     net_pct_hi = pred.get("predicted_net_pct_hi", 0.85)
 
     goat_dir = (goat.get("direction") or "long").upper()
-    goat_window = goat.get("time_window") or "midday"
+    # Normalize the forecast's goat.time_window to one of the three Pine-
+    # recognized buckets. Forecasts sometimes emit "close" or other free-
+    # form strings; map those conservatively so the phase logic always has
+    # a known value.
+    raw_goat_window = (goat.get("time_window") or "").strip().lower()
+    if raw_goat_window in ("opening", "open", "am", "morning"):
+        goat_window = "opening"
+    elif raw_goat_window in ("afternoon", "pm", "late", "close"):
+        goat_window = "afternoon"
+    else:
+        goat_window = "midday"
     goat_label = f"{goat_window} {goat_dir}"
 
     open_type = pred.get("open_type") or tags.get("open_type") or "normal_open"
@@ -710,6 +790,7 @@ def render_pine(forecast: dict) -> str:
         .replace("{{NET_PCT_LO}}", f"{float(net_pct_lo):.2f}")
         .replace("{{NET_PCT_HI}}", f"{float(net_pct_hi):.2f}")
         .replace("{{GOAT_LABEL}}", _esc(goat_label))
+        .replace("{{GOAT_WINDOW}}", goat_window)
         .replace("{{OPEN_TYPE}}", _esc(open_type))
         .replace("{{TACTICAL_BIAS}}", _esc(tactical_bias))
         .replace("{{AFTERNOON_DRIVE}}", _esc(afternoon_drive))

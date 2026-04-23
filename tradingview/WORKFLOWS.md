@@ -6,7 +6,7 @@ UI at `http://127.0.0.1:8788`.
 
 | Workflow | Looks backward / forward? | Cursor | CLI | UI tab |
 |---|---|---|---|---|
-| **Replay Analysis Daily Profile** | Backward (describe completed day) | Session close | *(ad-hoc Python for now)* | Profiles |
+| **Replay Analysis Daily Profile** | Backward (describe completed day) | Session close | `python -m tv_automation.daily_profile YYYY-MM-DD [--through YYYY-MM-DD]` | Profiles |
 | **Replay Forecast** | Forward (predict rest of day, grade at close) | 10:00 → 12:00 → 14:00 → 16:00 | `python -m tv_automation.daily_forecast YYYY-MM-DD` | Forecasts |
 
 ---
@@ -39,9 +39,19 @@ tradingview/profiles/MNQ1_2026-03-16.md   ← narrative with frontmatter
 tradingview/profiles/MNQ1_2026-03-16.json ← tags, pivots, labels, time-markers
 ```
 
-**Run:** no dedicated CLI yet. Invoke the primitives from a Python shell
-or follow the pattern in `daily_forecast.py` when codifying. Per-day
-work ≈ 3-5 min.
+**CLI:**
+```bash
+cd tradingview
+.venv/bin/python -m tv_automation.daily_profile 2026-04-06
+.venv/bin/python -m tv_automation.daily_profile 2026-04-06 --through 2026-04-10  # profile a full week
+```
+Options:
+- `--symbol MNQ1` — filename prefix (default)
+- `--through YYYY-MM-DD` — profile each weekday in the inclusive range
+  (skips Sat/Sun; does NOT skip US market holidays)
+- `--resume` — skip dates whose `.json` already exists on disk
+
+Per-day work ≈ 3-5 min (framing + gate + Thinking call).
 
 ---
 
@@ -91,6 +101,7 @@ MNQ1_2026-03-18_reconciliation.{md,json}  ← grades
 | `tv_automation/profile_gate.py`    | Pre-dispatch framing gate (Instant-tier)   |
 | `tv_automation/replay.py`          | Replay primitives (enter, select_date, step_forward) |
 | `tv_automation/daily_forecast.py`  | Forecast orchestrator + CLI                |
+| `tv_automation/daily_profile.py`   | Profile orchestrator + CLI                 |
 | `pine/bar_date_readout.pine`       | Cursor-time indicator (legend-scrapable)   |
 
 **Key primitive**: `page.keyboard.press("Shift+ArrowRight")` advances the
@@ -163,7 +174,8 @@ tradingview/
 │   ├── chatgpt_web.py         # ChatGPT web driver (shared)
 │   ├── profile_gate.py        # pre-dispatch framing gate
 │   ├── replay.py              # replay primitives
-│   └── daily_forecast.py      # forecast orchestrator + CLI
+│   ├── daily_forecast.py      # forecast orchestrator + CLI
+│   └── daily_profile.py       # profile orchestrator + CLI
 ├── pine/
 │   └── bar_date_readout.pine  # cursor-time readout indicator
 ├── profiles/                  # profile artifacts (md + json)

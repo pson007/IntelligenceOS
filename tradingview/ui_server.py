@@ -33,7 +33,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
@@ -123,26 +123,36 @@ _active_act_task: str | None = None
 _analyze_tasks: dict[str, dict] = {}
 _active_analyze_task: str | None = None
 
+# Daily-profile range runs (see tv_automation/daily_profile.py). Each run
+# can span multiple trading days; it drives the same CDP session as act /
+# analyze, so all three are mutually exclusive via _cdp_busy().
+_profile_run_tasks: dict[str, dict] = {}
+_active_profile_run: str | None = None
+
+# Daily-forecast runs (see tv_automation/daily_forecast.py). Single day per
+# run (F1 → F2 → F3 → reconciliation); ~15-20 min wall clock. Same CDP
+# exclusivity as the other three.
+_forecast_run_tasks: dict[str, dict] = {}
+_active_forecast_run: str | None = None
+
 
 def _prune_act_tasks() -> None:
     """Remove finished tasks older than TTL. Called opportunistically on
     each new run rather than via a background sweeper — keeps footprint
     proportional to activity."""
     cutoff = time.time() - _ACT_TASK_TTL_S
-    stale = [tid for tid, t in _act_tasks.items()
-             if t.get("finished_at") and t["finished_at"] < cutoff]
-    for tid in stale:
-        _act_tasks.pop(tid, None)
-    stale_a = [tid for tid, t in _analyze_tasks.items()
-               if t.get("finished_at") and t["finished_at"] < cutoff]
-    for tid in stale_a:
-        _analyze_tasks.pop(tid, None)
+    for reg in (_act_tasks, _analyze_tasks, _profile_run_tasks, _forecast_run_tasks):
+        stale = [tid for tid, t in reg.items()
+                 if t.get("finished_at") and t["finished_at"] < cutoff]
+        for tid in stale:
+            reg.pop(tid, None)
 
 
 def _cdp_busy() -> dict | None:
-    """Return info about any in-flight act or analyze run, or None if idle.
-    Both hold the single CDP session exclusively; used to 409 concurrent
-    starts regardless of which endpoint the conflicting run came from."""
+    """Return info about any in-flight act / analyze / profile run, or None
+    if idle. All three hold the single CDP session exclusively; used to 409
+    concurrent starts regardless of which endpoint the conflicting run came
+    from."""
     if _active_act_task and _active_act_task in _act_tasks:
         t = _act_tasks[_active_act_task]
         if t.get("state") == "running":
@@ -154,6 +164,18 @@ def _cdp_busy() -> dict | None:
             return {"kind": "analyze", "task_id": _active_analyze_task,
                     "started_at": t.get("started_at"),
                     "symbol": t.get("symbol")}
+    if _active_profile_run and _active_profile_run in _profile_run_tasks:
+        t = _profile_run_tasks[_active_profile_run]
+        if t.get("state") == "running":
+            return {"kind": "profile_run", "task_id": _active_profile_run,
+                    "started_at": t.get("started_at"),
+                    "start": t.get("start"), "end": t.get("end")}
+    if _active_forecast_run and _active_forecast_run in _forecast_run_tasks:
+        t = _forecast_run_tasks[_active_forecast_run]
+        if t.get("state") == "running":
+            return {"kind": "forecast_run", "task_id": _active_forecast_run,
+                    "started_at": t.get("started_at"),
+                    "date": t.get("date"), "symbol": t.get("symbol")}
     return None
 
 
@@ -186,14 +208,33 @@ def _prune_old_screenshots() -> None:
 # Static UI
 # ---------------------------------------------------------------------------
 
+_NO_CACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+}
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index() -> HTMLResponse:
-    return HTMLResponse((_UI_DIR / "index.html").read_text())
+    return HTMLResponse((_UI_DIR / "index.html").read_text(), headers=_NO_CACHE_HEADERS)
 
 
 # Serve /ui/* static assets (style.css, app.js) directly from disk.
-# Files here are read fresh each request — no bundler / build step.
-app.mount("/ui", StaticFiles(directory=str(_UI_DIR)), name="ui")
+# Single-user dev console — any caching just gets in the way when we
+# iterate on app.js / style.css, so force revalidation on every hit.
+@app.get("/ui/{filename:path}")
+async def ui_static(filename: str):
+    path = (_UI_DIR / filename).resolve()
+    if not str(path).startswith(str(_UI_DIR)) or not path.is_file():
+        raise HTTPException(404, "not found")
+    mt = {
+        ".js": "text/javascript; charset=utf-8",
+        ".css": "text/css; charset=utf-8",
+        ".html": "text/html; charset=utf-8",
+        ".png": "image/png",
+        ".svg": "image/svg+xml",
+    }.get(path.suffix, "application/octet-stream")
+    return FileResponse(str(path), media_type=mt, headers=_NO_CACHE_HEADERS)
 
 
 # ---------------------------------------------------------------------------
@@ -853,6 +894,115 @@ async def decisions_session() -> dict:
     return decision_log_mod.session_summary()
 
 
+@app.get("/api/session/today")
+async def session_today(symbol: str = "MNQ1") -> dict:
+    """Aggregator for the persistent session bar. Combines:
+      - today's most-recent forecast (pre_session → 1000 → 1200 → 1400)
+        so the bar can show current bias + invalidation trigger
+      - open-positions snapshot for unrealized P&L glance
+      - decision_log session summary (wins/losses/realized R)
+
+    Polled by every tab — kept lightweight (no LLM, no CDP, just disk
+    reads + a positions API hit which itself caches)."""
+    from datetime import datetime as _dt
+    today = _dt.now().strftime("%Y-%m-%d")
+
+    # Bias + invalidation come from pre_session — that's the only stage
+    # with structured tactical_bias / predictions fields. Live stages
+    # (1000/1200/1400) carry only raw_response, so we use them just as
+    # a freshness indicator (which stage was last completed today).
+    today_forecast: dict = {"exists": False}
+    pre_path = _FORECASTS_ROOT / f"{symbol}_{today}_pre_session.json"
+    if pre_path.exists():
+        try:
+            pd = json.loads(pre_path.read_text())
+            tb = pd.get("tactical_bias") or {}
+            preds = pd.get("predictions") or {}
+            today_forecast = {
+                "exists": True,
+                "stage": "pre_session",
+                "bias": tb.get("bias"),
+                "invalidation": tb.get("invalidation"),
+                "direction": preds.get("direction"),
+                "direction_confidence": preds.get("direction_confidence"),
+                "made_at": pd.get("made_at"),
+            }
+        except Exception:
+            pass
+
+    # Last live-forecast stage that fired today — appended as a freshness
+    # chip on the session bar so the user knows whether the bias has been
+    # refreshed by an in-session check yet.
+    latest_live: str | None = None
+    for stage in ("1400", "1200", "1000"):
+        if (_FORECASTS_ROOT / f"{symbol}_{today}_{stage}.json").exists():
+            latest_live = stage
+            break
+    today_forecast["latest_live_stage"] = latest_live
+
+    # Pivot state — most-recent `invalidation_HHMM` stage fired today,
+    # if any. Presence here tells the session bar to show the pivoted
+    # bias overlaid on (or instead of) the pre-session bias.
+    pivot_info: dict | None = None
+    pivot_files = sorted(
+        _FORECASTS_ROOT.glob(f"{symbol}_{today}_invalidation_*.json"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    if pivot_files:
+        try:
+            pp = json.loads(pivot_files[0].read_text())
+            rb = pp.get("revised_tactical_bias") or {}
+            pivot_info = {
+                "stage": pp.get("stage"),
+                "called_at_et": pp.get("pivot_called_at_et"),
+                "classification": pp.get("pivot_classification"),
+                "revised_bias": rb.get("bias"),
+                "revised_invalidation": rb.get("invalidation"),
+                "confidence": pp.get("pivot_confidence"),
+                "made_at": pp.get("made_at"),
+                # Pine is renderable if we parsed structured output — the
+                # pivot_pine generator tolerates missing fields (it uses
+                # -1 sentinels) but parse_fail cases have no useful data
+                # to render.
+                "pine_available": bool(pp.get("parsed_structured")),
+            }
+        except Exception:
+            pass
+    today_forecast["pivot"] = pivot_info
+
+    # Open positions — best-effort. Don't block the bar if CDP is busy
+    # (e.g., during a profile-run); just report 0/unknown.
+    pos_summary = {"open_count": 0, "unrealized_pnl": None, "available": False}
+    try:
+        # Skip the positions hit if CDP is in use — avoids 409 noise on the bar.
+        if not _cdp_busy():
+            pos = await trading_mod.positions()
+            rows = pos.get("positions") or []
+            unreal = 0.0
+            for r in rows:
+                v = r.get("Unrealized P&L") or r.get("unrealized_pnl") or 0
+                try:
+                    unreal += float(str(v).replace("$", "").replace(",", ""))
+                except (ValueError, TypeError):
+                    pass
+            pos_summary = {
+                "open_count": len(rows),
+                "unrealized_pnl": unreal,
+                "available": True,
+            }
+    except Exception:
+        pass
+
+    return {
+        "date": today,
+        "symbol": symbol,
+        "today_forecast": today_forecast,
+        "positions": pos_summary,
+        "session": decision_log_mod.session_summary(),
+    }
+
+
 @app.post("/api/analyze/apply-pine")
 async def analyze_apply_pine(payload: dict) -> dict:
     """Apply a previously-generated pine script to the TradingView chart.
@@ -935,6 +1085,43 @@ async def analyze_apply_pine(payload: dict) -> dict:
 # Trade
 # ---------------------------------------------------------------------------
 
+_NOTES_ROOT = (Path(__file__).parent / "notes").resolve()
+
+
+def _append_trade_note(*, symbol: str, side: str, qty: int, note: str,
+                       result: dict, dry_run: bool) -> None:
+    """Persist a trader's entry-note alongside the order outcome.
+
+    One JSONL file per day at notes/YYYY-MM-DD.jsonl. Each line:
+      {ts, iso_ts, symbol, side, qty, dry_run, note, ok, final_status,
+       observed_delta}
+
+    Failures are logged + swallowed — we never want a notes-file write
+    error to mask a successful trade response."""
+    if not note:
+        return
+    try:
+        from datetime import datetime as _dt
+        _NOTES_ROOT.mkdir(parents=True, exist_ok=True)
+        now = _dt.now()
+        path = _NOTES_ROOT / f"{now.strftime('%Y-%m-%d')}.jsonl"
+        line = {
+            "ts": now.timestamp(),
+            "iso_ts": now.isoformat(timespec="seconds"),
+            "symbol": symbol, "side": side, "qty": qty,
+            "dry_run": dry_run,
+            "note": note,
+            "ok": bool(result.get("ok")),
+            "final_status": result.get("final_status"),
+            "observed_delta": result.get("observed_delta"),
+        }
+        with path.open("a") as fh:
+            fh.write(json.dumps(line) + "\n")
+        audit.log("trade.note", **{k: line[k] for k in ("symbol", "side", "qty", "ok")})
+    except Exception as e:
+        audit.log("trade.note_write_fail", err=f"{type(e).__name__}: {e}")
+
+
 @app.post("/api/trade/order")
 async def trade_order(payload: dict) -> dict:
     p = payload or {}
@@ -942,6 +1129,10 @@ async def trade_order(payload: dict) -> dict:
     side = p.get("side", "").strip().lower()
     qty = int(p.get("qty", 0))
     dry_run = bool(p.get("dry_run", False))
+    # Optional micro-journal entry — captured at order time so post-trade
+    # reconciliation has the trader's reasoning. Empty/missing skips the
+    # notes-file write entirely.
+    note = (p.get("note") or "").strip()[:200]
     # Optional bracket prices — when either is supplied we route through the
     # order panel (orders.place_market) which supports TP/SL. Plain markets
     # stay on the faster inline quick-trade bar (trading.place_order).
@@ -951,17 +1142,22 @@ async def trade_order(payload: dict) -> dict:
         raise HTTPException(400, "symbol, side=buy|sell, qty>0 required")
     try:
         if tp is not None or sl is not None:
-            return await orders_mod.place_market(
+            result = await orders_mod.place_market(
                 symbol=symbol, side=side, qty=qty,
                 take_profit=float(tp) if tp is not None else None,
                 stop_loss=float(sl) if sl is not None else None,
                 dry_run=dry_run,
             )
-        return await trading_mod.place_order(
-            symbol=symbol, side=side, qty=qty, dry_run=dry_run,
-        )
+        else:
+            result = await trading_mod.place_order(
+                symbol=symbol, side=side, qty=qty, dry_run=dry_run,
+            )
     except Exception as e:
         raise HTTPException(500, f"{type(e).__name__}: {e}")
+
+    _append_trade_note(symbol=symbol, side=side, qty=qty, note=note,
+                       result=result, dry_run=dry_run)
+    return result
 
 
 @app.post("/api/trade/close")
@@ -1247,6 +1443,86 @@ async def profile_screenshot(key: str):
 
 
 # ---------------------------------------------------------------------------
+# Daily Profile RUN — kick off tv_automation.daily_profile in-process
+# ---------------------------------------------------------------------------
+
+_PROFILE_DATE_RX = __import__("re").compile(r"^\d{4}-\d{2}-\d{2}$")
+_PROFILE_SYMBOL_RX = __import__("re").compile(r"^[A-Za-z0-9]{1,12}$")
+
+
+@app.post("/api/profiles/run")
+async def profile_run_start(payload: dict) -> dict:
+    """Kick off a daily-profile range run.
+
+    Body: {start: "YYYY-MM-DD", end?: "YYYY-MM-DD", symbol?: "MNQ1", resume?: bool}
+    Returns {task_id, request_id} — poll /api/profiles/runs/{task_id} for status
+    and /api/audit/tail?request_id=... for live events."""
+    global _active_profile_run
+    p = payload or {}
+    start = (p.get("start") or "").strip()
+    end = (p.get("end") or "").strip() or None
+    symbol = (p.get("symbol") or "MNQ1").strip()
+    resume = bool(p.get("resume", True))
+
+    if not _PROFILE_DATE_RX.match(start):
+        raise HTTPException(400, "start must be YYYY-MM-DD")
+    if end is not None and not _PROFILE_DATE_RX.match(end):
+        raise HTTPException(400, "end must be YYYY-MM-DD")
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+
+    # Contextvar: background runner inherits so all daily_profile.* audit
+    # events tag with this request_id for /api/audit/tail streaming.
+    audit.current_request_id.set(request_id)
+
+    _profile_run_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "start": start, "end": end, "symbol": symbol, "resume": resume,
+    }
+
+    async def runner():
+        global _active_profile_run
+        try:
+            from tv_automation.daily_profile import run_profile_range
+            results = await run_profile_range(
+                start, end, symbol=symbol, resume=resume,
+            )
+            _profile_run_tasks[task_id]["state"] = "done"
+            _profile_run_tasks[task_id]["results"] = results
+        except Exception as e:
+            _profile_run_tasks[task_id]["state"] = "failed"
+            _profile_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _profile_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_profile_run == task_id:
+                _active_profile_run = None
+
+    _active_profile_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.get("/api/profiles/runs/{task_id}")
+async def profile_run_status(task_id: str) -> dict:
+    t = _profile_run_tasks.get(task_id)
+    if not t:
+        raise HTTPException(404, "unknown task_id")
+    return {k: v for k, v in t.items() if not callable(v)}
+
+
+# ---------------------------------------------------------------------------
 # Daily Forecasts — replay forecast workflow artifacts
 # ---------------------------------------------------------------------------
 
@@ -1260,6 +1536,355 @@ _FORECAST_STAGE_RX = __import__("re").compile(r"^[a-z0-9_]{2,40}$")
 _FORECAST_STEM_RX = __import__("re").compile(
     r"^(?P<symbol>[A-Za-z0-9]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<stage>[a-z0-9_]+)$"
 )
+
+
+@app.post("/api/forecasts/run")
+async def forecast_run_start(payload: dict) -> dict:
+    """Kick off a daily-forecast run for one trading day.
+
+    Body: {date: "YYYY-MM-DD", symbol?: "MNQ1", resume?: bool, adhoc?: bool}
+    Returns {task_id, request_id}. Poll /api/forecasts/runs/{task_id} for
+    status and /api/audit/tail?request_id=... for live stage events.
+
+    `resume=true` skips stages whose .json already exists (F1/F2/F3/recon);
+    `resume=false` re-runs all stages, overwriting existing files.
+
+    `adhoc=true` makes the run time-aware: stages whose cursor time
+    hasn't arrived are skipped rather than gate-failing, and
+    reconciliation is skipped if RTH isn't closed or the profile is
+    missing. Recommended default when invoking from the UI mid-day."""
+    global _active_forecast_run
+    p = payload or {}
+    date = (p.get("date") or "").strip()
+    symbol = (p.get("symbol") or "MNQ1").strip()
+    resume = bool(p.get("resume", True))
+    adhoc = bool(p.get("adhoc", False))
+
+    if not _PROFILE_DATE_RX.match(date):
+        raise HTTPException(400, "date must be YYYY-MM-DD")
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _forecast_run_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "date": date, "symbol": symbol, "resume": resume, "adhoc": adhoc,
+    }
+
+    async def runner():
+        global _active_forecast_run
+        try:
+            from tv_automation.daily_forecast import run_forecast_day
+            result = await run_forecast_day(
+                date, symbol=symbol, resume=resume, adhoc=adhoc,
+            )
+            _forecast_run_tasks[task_id]["state"] = "done"
+            _forecast_run_tasks[task_id]["result"] = result
+        except Exception as e:
+            _forecast_run_tasks[task_id]["state"] = "failed"
+            _forecast_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _forecast_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_forecast_run == task_id:
+                _active_forecast_run = None
+
+    _active_forecast_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.get("/api/forecasts/runs/{task_id}")
+async def forecast_run_status(task_id: str) -> dict:
+    t = _forecast_run_tasks.get(task_id)
+    if not t:
+        raise HTTPException(404, "unknown task_id")
+    return {k: v for k, v in t.items() if not callable(v)}
+
+
+def _latest_pivot_path(symbol: str, date: str) -> Path | None:
+    """Return the most-recent `invalidation_HHMM.json` for this day, if any."""
+    files = sorted(
+        _FORECASTS_ROOT.glob(f"{symbol}_{date}_invalidation_*.json"),
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    return files[0] if files else None
+
+
+@app.delete("/api/forecasts/{symbol}/{date}/pivot")
+async def forecast_pivot_clear(symbol: str, date: str) -> dict:
+    """Soft-delete the most-recent pivot for this day by moving its JSON
+    + MD artifacts into `forecasts/cleared/`. Nothing is truly deleted —
+    you can inspect or restore the files from there later. The session
+    bar stops showing the pivoted bias as soon as the JSON is gone from
+    the canonical glob path."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+    latest = _latest_pivot_path(symbol, date)
+    if not latest:
+        raise HTTPException(404, "no pivot to clear")
+    cleared_dir = _FORECASTS_ROOT / "cleared"
+    cleared_dir.mkdir(parents=True, exist_ok=True)
+    moved: list[str] = []
+    stem = latest.stem
+    # Move both the .json and the matching .md file.
+    for suffix in (".json", ".md"):
+        src = _FORECASTS_ROOT / f"{stem}{suffix}"
+        if src.exists():
+            dst = cleared_dir / src.name
+            # If a same-named file already exists in cleared/, append a
+            # timestamp so we never silently clobber prior clears.
+            if dst.exists():
+                from datetime import datetime as _dt
+                ts = _dt.now().strftime("%Y%m%d_%H%M%S")
+                dst = cleared_dir / f"{src.stem}.cleared{ts}{src.suffix}"
+            src.rename(dst)
+            moved.append(str(dst))
+    audit.log("forecast_pivot.clear", stem=stem, moved=moved)
+    return {"ok": True, "moved": moved}
+
+
+@app.get("/api/forecasts/{symbol}/{date}/pivot/pine")
+async def forecast_pivot_pine(symbol: str, date: str) -> Response:
+    """Generate + return the Pine overlay for the latest pivot on this day.
+
+    Mirrors `/api/forecasts/{symbol}/{date}/{stage}/pine` — writes the .pine
+    into `pine/generated/` and returns it as a file attachment so the UI
+    can offer a Download button."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+    pivot_jf = _latest_pivot_path(symbol, date)
+    if not pivot_jf:
+        raise HTTPException(404, "no pivot forecast for this day")
+    try:
+        data = json.loads(pivot_jf.read_text())
+    except Exception as e:
+        raise HTTPException(500, f"pivot json malformed: {e}")
+
+    from tv_automation.pivot_pine import render_pivot_pine
+    pine_text = render_pivot_pine(data)
+
+    pine_dir = (Path(__file__).parent / "pine" / "generated").resolve()
+    pine_dir.mkdir(parents=True, exist_ok=True)
+    stage = data.get("stage", "pivot")
+    pine_path = pine_dir / f"pivot_overlay_{date}_{stage}.pine"
+    pine_path.write_text(pine_text)
+    return Response(
+        content=pine_text,
+        media_type="text/plain",
+        headers={"Content-Disposition": f'attachment; filename="{pine_path.name}"'},
+    )
+
+
+@app.post("/api/forecasts/{symbol}/{date}/pivot/apply")
+async def forecast_pivot_apply(symbol: str, date: str) -> dict:
+    """Render the pivot Pine + push it to the TradingView chart via the
+    apply_pine.py subprocess. Long-running (~30-60s). Adds as a SECOND
+    indicator on top of the existing pre-session overlay — the morning's
+    plan stays visible underneath."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+    pivot_jf = _latest_pivot_path(symbol, date)
+    if not pivot_jf:
+        raise HTTPException(404, "no pivot forecast for this day")
+    try:
+        data = json.loads(pivot_jf.read_text())
+    except Exception as e:
+        raise HTTPException(500, f"pivot json malformed: {e}")
+
+    from tv_automation.pivot_pine import render_pivot_pine
+    pine_text = render_pivot_pine(data)
+
+    pine_dir = (Path(__file__).parent / "pine" / "generated").resolve()
+    pine_dir.mkdir(parents=True, exist_ok=True)
+    stage = data.get("stage", "pivot")
+    pine_path = pine_dir / f"pivot_overlay_{date}_{stage}.pine"
+    pine_path.write_text(pine_text)
+
+    import subprocess
+    apply_script = Path(__file__).parent / "apply_pine.py"
+    venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
+    python_exe = str(venv_python) if venv_python.exists() else "python"
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            python_exe, str(apply_script), str(pine_path),
+            cwd=str(Path(__file__).parent),
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        ok = proc.returncode == 0
+        stdout_text = stdout.decode("utf-8", errors="replace")
+        applied_screenshot = None
+        for line in stdout_text.splitlines():
+            if line.startswith("APPLIED_SCREENSHOT:"):
+                applied_screenshot = line.split(":", 1)[1].strip()
+                break
+        return {
+            "ok": ok,
+            "pine_path": str(pine_path),
+            "returncode": proc.returncode,
+            "applied_screenshot": applied_screenshot,
+            "stdout_tail": stdout_text[-1500:],
+            "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
+        }
+    except asyncio.TimeoutError:
+        return {"ok": False, "pine_path": str(pine_path), "error": "apply_pine timeout (120s)"}
+    except Exception as e:
+        raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
+
+
+@app.post("/api/forecasts/pivot")
+async def forecast_pivot_start(payload: dict) -> dict:
+    """Run an intraday pivot re-forecast for today. Fires when the pre-
+    session's invalidation condition has broken — gives the trader a
+    fresh read (REVERSAL / FLAT / SHAKEOUT) from a state the original
+    thesis didn't anticipate.
+
+    Body: {symbol?: "MNQ1", reason?: "broke 26964 on 8.3x vol at 13:02"}
+    Returns {task_id, request_id}. Status polled via the same
+    /api/forecasts/runs/{task_id} endpoint as other forecast runs."""
+    global _active_forecast_run
+    p = payload or {}
+    symbol = (p.get("symbol") or "MNQ1").strip()
+    reason = (p.get("reason") or "").strip() or None
+
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _forecast_run_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "symbol": symbol, "reason": reason, "kind": "pivot",
+    }
+
+    async def runner():
+        global _active_forecast_run
+        try:
+            from tv_automation.pivot_forecast import run_pivot
+            result = await run_pivot(symbol=symbol, reason=reason)
+            _forecast_run_tasks[task_id]["state"] = "done"
+            _forecast_run_tasks[task_id]["result"] = result
+        except Exception as e:
+            _forecast_run_tasks[task_id]["state"] = "failed"
+            _forecast_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _forecast_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_forecast_run == task_id:
+                _active_forecast_run = None
+
+    _active_forecast_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.post("/api/forecasts/reconcile")
+async def forecast_reconcile_start(payload: dict) -> dict:
+    """Run standalone reconciliation for one day — grade saved forecast
+    stages against the completed-day profile. No Bar Replay needed.
+
+    Body: {date: "YYYY-MM-DD", symbol?: "MNQ1"}
+    Returns {task_id, request_id}; poll the same /api/forecasts/runs/{task_id}
+    + /api/audit/tail endpoints used by the full run."""
+    global _active_forecast_run
+    p = payload or {}
+    date = (p.get("date") or "").strip()
+    symbol = (p.get("symbol") or "MNQ1").strip()
+
+    if not _PROFILE_DATE_RX.match(date):
+        raise HTTPException(400, "date must be YYYY-MM-DD")
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _forecast_run_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "date": date, "symbol": symbol, "kind": "reconcile",
+    }
+
+    async def runner():
+        global _active_forecast_run
+        try:
+            from tv_automation.forecast_reconcile import run_reconciliation
+            result = await run_reconciliation(symbol=symbol, date_str=date)
+            _forecast_run_tasks[task_id]["state"] = "done"
+            _forecast_run_tasks[task_id]["result"] = result
+        except Exception as e:
+            _forecast_run_tasks[task_id]["state"] = "failed"
+            _forecast_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _forecast_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_forecast_run == task_id:
+                _active_forecast_run = None
+
+    _active_forecast_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.get("/api/forecasts/calibration")
+async def forecasts_calibration(min_n: int = 2) -> dict:
+    """Per-pattern accuracy across all reconciliations.
+
+    Returns the model's track record by predicted tag value (direction,
+    structure, open_type, etc.) so the user can see *which* prediction
+    patterns to weight more or less. Defaults to filtering out
+    one-off occurrences (min_n=2) to focus on patterns with signal."""
+    from tv_automation.lessons import collect_calibration
+    stats = collect_calibration(min_occurrences=max(1, min_n))
+    # Group by field for the UI's "by-dimension" rendering.
+    by_field: dict[str, list[dict]] = {}
+    for s in stats:
+        by_field.setdefault(s.field, []).append({
+            "value": s.value,
+            "correct": s.correct,
+            "wrong": s.wrong,
+            "total": s.total,
+            "pct": round(s.pct_correct * 100),
+            "sources": s.sources,
+        })
+    # Sort each field's list by total desc.
+    for fld in by_field:
+        by_field[fld].sort(key=lambda x: x["total"], reverse=True)
+    return {
+        "min_occurrences": max(1, min_n),
+        "by_field": by_field,
+        "total_patterns": len(stats),
+    }
 
 
 @app.get("/api/forecasts/lessons")
@@ -1310,6 +1935,22 @@ async def forecasts_list() -> dict:
                     "ground_truth_profile": data.get("ground_truth_profile"),
                 }
             })
+            # Surface accuracy at the day level so the UI can render scores on
+            # the calendar + list without an extra fetch. `reconciliation` wins
+            # over `pre_session_reconciliation` since the former grades all 4 stages.
+            if stage == "reconciliation" or "accuracy" not in by_date[key]:
+                grades = data.get("grades") or {}
+                scores = [g.get("overall_score") for g in grades.values()
+                          if isinstance(g, dict) and isinstance(g.get("overall_score"), (int, float))]
+                max_list = [g.get("overall_max") for g in grades.values()
+                            if isinstance(g, dict) and isinstance(g.get("overall_max"), (int, float))]
+                by_date[key]["accuracy"] = {
+                    "actual_summary": data.get("actual_summary"),
+                    "grades": grades,
+                    "best_score": max(scores) if scores else None,
+                    "avg_score": (sum(scores) / len(scores)) if scores else None,
+                    "overall_max": max(max_list) if max_list else 7,
+                }
         else:
             by_date[key]["stages"][stage] = {
                 "cursor_time": data.get("cursor_time"),
@@ -1361,6 +2002,32 @@ async def forecast_pine(symbol: str, date: str, stage: str):
         content=pine_text,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@app.post("/api/forecasts/{symbol}/{date}/{stage}/regenerate")
+async def forecast_regenerate(symbol: str, date: str, stage: str) -> dict:
+    """Render Pine from the forecast JSON and overwrite
+    pine/generated/forecast_overlay_{date}.pine, without applying to chart.
+
+    Use when the template has changed and you want the on-disk file synced
+    without paying the ~30-60s Apply subprocess cost."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
+        raise HTTPException(400, "invalid params")
+    jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
+    if not jf.exists():
+        raise HTTPException(404, "forecast not found")
+    try:
+        data = json.loads(jf.read_text())
+    except Exception as e:
+        raise HTTPException(500, f"forecast json malformed: {e}")
+
+    from tv_automation.forecast_pine import render_pine
+    pine_text = render_pine(data)
+    pine_dir = (Path(__file__).parent / "pine" / "generated").resolve()
+    pine_dir.mkdir(parents=True, exist_ok=True)
+    pine_path = pine_dir / f"forecast_overlay_{date}.pine"
+    pine_path.write_text(pine_text)
+    return {"ok": True, "pine_path": str(pine_path), "bytes": len(pine_text)}
 
 
 @app.post("/api/forecasts/{symbol}/{date}/{stage}/apply")

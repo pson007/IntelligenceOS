@@ -123,12 +123,65 @@ $('theme-toggle').addEventListener('click', () => {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 
 // ----------------------------------------------------------------------
+// Mobile detection — adds body.is-mobile when the viewport is ≤ 768px so
+// CSS and JS can both branch on a single source of truth. Updates live on
+// rotation/resize via matchMedia.
+// ----------------------------------------------------------------------
+const _mobileMQ = window.matchMedia('(max-width: 768px)');
+function _applyMobileClass(matches) {
+  document.body.classList.toggle('is-mobile', !!matches);
+}
+_applyMobileClass(_mobileMQ.matches);
+_mobileMQ.addEventListener('change', e => _applyMobileClass(e.matches));
+
+// ----------------------------------------------------------------------
+// Navigation icons — inline SVG (feather-style) replacing the old Unicode
+// glyph spans. Swapped at page-load into every [data-tab] button's icon
+// slot (both sidebar .nav-item and bottom tab bar .mtab).
+// ----------------------------------------------------------------------
+const _NAV_ICONS = {
+  trade: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  act: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  watchlist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></svg>',
+  alerts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  journal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+  profiles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
+  forecasts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
+  audit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/></svg>',
+};
+document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
+  const slot = btn.querySelector('.ico');
+  const svg = _NAV_ICONS[btn.dataset.tab];
+  if (slot && svg) slot.innerHTML = svg;
+});
+document.querySelectorAll('.mtab[data-tab], .mtab-row[data-tab]').forEach(btn => {
+  const slot = btn.querySelector('.mtab__ico');
+  const svg = _NAV_ICONS[btn.dataset.tab];
+  if (slot && svg) slot.innerHTML = svg;
+});
+// "More" button has no data-tab — inject its icon explicitly.
+const _moreIconSlot = document.querySelector('#mobile-more-btn .mtab__ico');
+if (_moreIconSlot) _moreIconSlot.innerHTML = _NAV_ICONS.more;
+
+// Delegated handler for mobile drill-in back buttons (Forecasts, Profiles).
+// Clicking removes the `mobile-view-detail` class from the named layout
+// container, returning the user to the list. Works after innerHTML
+// replacements because we re-emit the back button each render.
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.mobile-back-btn');
+  if (!btn) return;
+  const layoutId = btn.dataset.target;
+  const layout = layoutId ? document.getElementById(layoutId) : null;
+  if (layout) layout.classList.remove('mobile-view-detail');
+});
+
+// ----------------------------------------------------------------------
 // Sidebar collapse (mobile) — show/hide the tabs + status strip. Desktop
 // ignores the state via CSS, so stored "collapsed" never breaks desktop.
 // ----------------------------------------------------------------------
 const _sidebar = document.querySelector('.sidebar');
 const _sidebarToggle = $('sidebar-toggle');
-const _mobileMQ = window.matchMedia('(max-width: 768px)');
 
 function applySidebarCollapsed(collapsed) {
   _sidebar.classList.toggle('collapsed', collapsed);
@@ -137,41 +190,87 @@ function applySidebarCollapsed(collapsed) {
   _sidebarToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 }
 
-try {
-  applySidebarCollapsed(localStorage.getItem('ios-sidebar-collapsed') === '1');
-} catch (e) {
-  applySidebarCollapsed(false);
-}
+// Always start expanded so mobile users see the nav strip on every load.
+// Collapse is session-only (toggle button) — not persisted, so a refresh
+// always brings the side panel back into view.
+applySidebarCollapsed(false);
+try { localStorage.removeItem('ios-sidebar-collapsed'); } catch (e) {}
 
 _sidebarToggle.addEventListener('click', () => {
   const next = !_sidebar.classList.contains('collapsed');
   applySidebarCollapsed(next);
-  try { localStorage.setItem('ios-sidebar-collapsed', next ? '1' : '0'); } catch (e) {}
 });
 
 // ----------------------------------------------------------------------
 // Tab switching
 // ----------------------------------------------------------------------
+function _syncMobileTabbarActive(tab) {
+  document.querySelectorAll('.mtab').forEach(m => {
+    m.classList.toggle('active', m.dataset.tab === tab);
+  });
+  // "More" stays active when the current tab is one of the overflow items.
+  const overflow = ['act', 'watchlist', 'alerts', 'audit'];
+  const moreBtn = document.getElementById('mobile-more-btn');
+  if (moreBtn) moreBtn.classList.toggle('active', overflow.includes(tab));
+}
+
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     const tab = btn.dataset.tab;
     document.querySelectorAll('.nav-item').forEach(x => x.classList.toggle('active', x === btn));
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('hidden', t.id !== `tab-${tab}`));
-    // Mobile: auto-collapse so the user sees content after picking a tab.
-    if (_mobileMQ.matches) {
-      applySidebarCollapsed(true);
-      try { localStorage.setItem('ios-sidebar-collapsed', '1'); } catch (e) {}
+    // Tiny entrance animation on the newly-revealed tab — one-shot,
+    // removed after it finishes so it re-fires on the next switch.
+    const activeTab = document.getElementById(`tab-${tab}`);
+    if (activeTab) {
+      activeTab.classList.remove('tab-entering');
+      void activeTab.offsetWidth;  // force reflow so the re-add triggers animation
+      activeTab.classList.add('tab-entering');
+      setTimeout(() => activeTab.classList.remove('tab-entering'), 300);
     }
+    _syncMobileTabbarActive(tab);
+    // Reset any drill-in detail views when switching tabs (mobile only).
+    document.querySelectorAll('.mobile-view-detail').forEach(el => el.classList.remove('mobile-view-detail'));
     // Tab-specific on-enter hooks
     if (tab === 'audit') startAuditPoll(); else stopAuditPoll();
-    if (tab === 'trade') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); } else stopPositionsPoll();
+    if (tab === 'trade') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); } else stopPositionsPoll();
     if (tab === 'watchlist') loadWatchlist();
     if (tab === 'alerts') loadAlerts();
     if (tab === 'journal') loadJournal();
-    if (tab === 'profiles') loadProfiles();
-    if (tab === 'forecasts') loadForecasts();
+    if (tab === 'profiles') { loadProfiles(); initProfileRun(); }
+    if (tab === 'forecasts') { loadForecasts(); initForecastRun(); }
   });
 });
+
+// Mobile bottom tab bar — re-dispatches to the canonical .nav-item button
+// so all tab-switching logic flows through one path.
+document.querySelectorAll('.mtab[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    const navBtn = document.querySelector(`.nav-item[data-tab="${tab}"]`);
+    if (navBtn) navBtn.click();
+  });
+});
+
+// "More" sheet — overflow drawer for the 4 secondary tabs.
+const _moreBtn = document.getElementById('mobile-more-btn');
+const _moreSheet = document.getElementById('mobile-more-sheet');
+function _showMoreSheet(show) {
+  _moreSheet.classList.toggle('hidden', !show);
+  _moreSheet.setAttribute('aria-hidden', show ? 'false' : 'true');
+}
+if (_moreBtn) _moreBtn.addEventListener('click', () => _showMoreSheet(true));
+if (_moreSheet) {
+  _moreSheet.querySelector('.mobile-more-sheet__backdrop').addEventListener('click', () => _showMoreSheet(false));
+  _moreSheet.querySelectorAll('.mtab-row[data-tab]').forEach(row => {
+    row.addEventListener('click', () => {
+      const tab = row.dataset.tab;
+      const navBtn = document.querySelector(`.nav-item[data-tab="${tab}"]`);
+      if (navBtn) navBtn.click();
+      _showMoreSheet(false);
+    });
+  });
+}
 
 // ----------------------------------------------------------------------
 // Health
@@ -1745,19 +1844,23 @@ async function placeOrder(side) {
   if (!confirm(confirmMsg)) return;
 
   const btn = side === 'buy' ? $('trade-buy') : $('trade-sell');
+  const noteInput = $('trade-note');
+  const note = (noteInput?.value || '').trim();
   setBusy(btn, true);
   try {
     const body = { symbol, side, qty, dry_run };
     if (take_profit !== null) body.take_profit = take_profit;
     if (stop_loss !== null) body.stop_loss = stop_loss;
+    if (note) body.note = note;
     const r = await api('/api/trade/order', { method: 'POST', body });
     const tag = (take_profit !== null || stop_loss !== null) ? ' (bracket)' : '';
     toast(`${r.ok ? '✓' : '✗'} ${side.toUpperCase()} ${qty} ${symbol}${tag}${dry_run ? ' (dry-run)' : ''}`, r.ok ? 'ok' : 'err');
-    // Clear brackets after a successful fire — avoids the footgun of a
-    // subsequent market order carrying last trade's SL/TP unintentionally.
+    // Clear brackets + note after a successful fire — avoids stale state
+    // (e.g. last trade's SL/TP or yesterday's reasoning) carrying forward.
     if (r.ok) {
       $('trade-tp').value = '';
       $('trade-sl').value = '';
+      if (noteInput) noteInput.value = '';
       refreshBracketArmed();
     }
     loadPositions();
@@ -2750,6 +2853,327 @@ async function loadProfiles() {
   }
 }
 
+// ----------------------------------------------------------------------
+// Profile-run card — calendar + mode toggle + override modal + run stream
+// ----------------------------------------------------------------------
+let _profileRunInited = false;
+let _profileRunPollTimer = null;
+let _profileRunSeenEvents = 0;
+const _profileCal = {
+  viewYear: 0, viewMonth: 0,  // currently-displayed month
+  mode: 'week',               // 'day' | 'week'
+  selected: [],               // array of YYYY-MM-DD strings (sorted)
+};
+
+function initProfileRun() {
+  if (_profileRunInited) return;
+  _profileRunInited = true;
+  const today = new Date();
+  _profileCal.viewYear = today.getFullYear();
+  _profileCal.viewMonth = today.getMonth();
+
+  document.getElementById('profile-cal-prev').addEventListener('click', () => _gotoMonth(-1));
+  document.getElementById('profile-cal-next').addEventListener('click', () => _gotoMonth(+1));
+  document.querySelectorAll('.profile-run-mode .btn-mode').forEach(btn => {
+    btn.addEventListener('click', () => _setProfileMode(btn.dataset.mode));
+  });
+  document.getElementById('profile-run-go').addEventListener('click', onProfileRunClick);
+
+  // Modal wiring
+  document.getElementById('profile-run-modal-cancel').addEventListener('click', _hideProfileModal);
+  document.getElementById('profile-run-modal-skip').addEventListener('click', () => _confirmProfileModal('skip'));
+  document.getElementById('profile-run-modal-override').addEventListener('click', () => _confirmProfileModal('override'));
+
+  // Default selection = this week's Mon–Fri if in range.
+  _selectThisWeek();
+  renderProfileCalendar();
+  _refreshSelectionSummary();
+}
+
+function _fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function _profiledDates() {
+  // Set of YYYY-MM-DD strings from _profilesCache.
+  const out = new Set();
+  (_profilesCache || []).forEach(p => { if (p.date) out.add(p.date); });
+  return out;
+}
+
+function _gotoMonth(delta) {
+  let m = _profileCal.viewMonth + delta;
+  let y = _profileCal.viewYear;
+  while (m < 0) { m += 12; y -= 1; }
+  while (m > 11) { m -= 12; y += 1; }
+  _profileCal.viewYear = y;
+  _profileCal.viewMonth = m;
+  renderProfileCalendar();
+}
+
+function _setProfileMode(mode) {
+  if (mode !== 'day' && mode !== 'week') return;
+  _profileCal.mode = mode;
+  document.querySelectorAll('.profile-run-mode .btn-mode').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  // Collapse existing selection to a single representative day so the
+  // mode change doesn't leave a stale multi-day highlight.
+  if (_profileCal.selected.length > 0) {
+    const anchor = _profileCal.selected[0];
+    _profileCal.selected = [];
+    _selectDate(anchor);
+  }
+  renderProfileCalendar();
+  _refreshSelectionSummary();
+}
+
+function _selectThisWeek() {
+  const today = new Date();
+  _selectDate(_fmtDate(today));
+}
+
+function _weekdayRange(anchorStr) {
+  // Return Mon–Fri strings for the ISO week containing `anchorStr`.
+  const [y, m, d] = anchorStr.split('-').map(Number);
+  const anchor = new Date(y, m - 1, d);
+  const dow = (anchor.getDay() + 6) % 7;  // Mon=0..Sun=6
+  const mon = new Date(anchor);
+  mon.setDate(anchor.getDate() - dow);
+  const out = [];
+  for (let i = 0; i < 5; i++) {
+    const x = new Date(mon);
+    x.setDate(mon.getDate() + i);
+    out.push(_fmtDate(x));
+  }
+  return out;
+}
+
+function _selectDate(dateStr) {
+  if (!dateStr) return;
+  if (_profileCal.mode === 'day') {
+    _profileCal.selected = [dateStr];
+  } else {
+    _profileCal.selected = _weekdayRange(dateStr);
+  }
+}
+
+function renderProfileCalendar() {
+  const grid = document.getElementById('profile-cal-grid');
+  const title = document.getElementById('profile-cal-title');
+  const y = _profileCal.viewYear;
+  const m = _profileCal.viewMonth;
+  title.textContent = new Date(y, m, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+
+  const firstOfMonth = new Date(y, m, 1);
+  const firstDow = (firstOfMonth.getDay() + 6) % 7;  // Mon=0..Sun=6
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const gridStart = new Date(y, m, 1 - firstDow);
+
+  const profiledSet = _profiledDates();
+  const selectedSet = new Set(_profileCal.selected);
+  const todayStr = _fmtDate(new Date());
+
+  const cells = [];
+  for (let i = 0; i < 42; i++) {  // 6 weeks × 7 days
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + i);
+    const ds = _fmtDate(d);
+    const otherMonth = (d.getMonth() !== m);
+    const dow = (d.getDay() + 6) % 7;
+    const isWeekend = dow >= 5;
+    const isFuture = ds > todayStr;
+    const disabled = isFuture || (isWeekend && _profileCal.mode === 'day');
+
+    const classes = ['cal-day'];
+    if (otherMonth) classes.push('other-month');
+    if (disabled) classes.push('disabled');
+    if (isWeekend) classes.push('weekend');
+    if (ds === todayStr) classes.push('today');
+    if (profiledSet.has(ds)) classes.push('profiled');
+    if (selectedSet.has(ds)) classes.push('selected');
+
+    cells.push(`<div class="${classes.join(' ')}" data-date="${ds}">${d.getDate()}</div>`);
+  }
+  grid.innerHTML = cells.join('');
+  grid.querySelectorAll('.cal-day:not(.disabled)').forEach(el => {
+    el.addEventListener('click', () => {
+      _selectDate(el.dataset.date);
+      renderProfileCalendar();
+      _refreshSelectionSummary();
+    });
+  });
+}
+
+function _refreshSelectionSummary() {
+  const summary = document.getElementById('profile-run-summary');
+  const go = document.getElementById('profile-run-go');
+  const sel = _profileCal.selected;
+  if (!sel.length) {
+    summary.textContent = 'Pick a date to get started';
+    go.disabled = true;
+    return;
+  }
+  const profiledSet = _profiledDates();
+  const overlap = sel.filter(d => profiledSet.has(d));
+  const head = sel.length === 1
+    ? `${sel[0]}`
+    : `${sel[0]} → ${sel[sel.length - 1]}  (${sel.length} days)`;
+  let overlapLine = '';
+  if (overlap.length === sel.length) {
+    overlapLine = `<span class="overlap">All ${sel.length} day(s) already profiled — Run will ask: skip or override.</span>`;
+  } else if (overlap.length > 0) {
+    overlapLine = `<span class="overlap">${overlap.length} of ${sel.length} already profiled — Run will ask: skip or override.</span>`;
+  }
+  summary.innerHTML = `${head}${overlapLine}`;
+  if (!_profileRunPollTimer) go.disabled = false;
+}
+
+// ------- Override modal -------
+let _pendingRun = null;
+
+function _showProfileModal({ overlap, total }) {
+  const body = document.getElementById('profile-run-modal-body');
+  const modal = document.getElementById('profile-run-modal');
+  body.textContent = `${overlap} of ${total} selected day(s) are already profiled. `
+    + `Skip existing = profile only new days. Override all = re-profile existing days (each takes ~3–5 min and one ChatGPT Thinking call).`;
+  modal.classList.remove('hidden');
+}
+
+function _hideProfileModal() {
+  document.getElementById('profile-run-modal').classList.add('hidden');
+  _pendingRun = null;
+}
+
+function _confirmProfileModal(choice) {
+  if (!_pendingRun) { _hideProfileModal(); return; }
+  const pending = _pendingRun;
+  _pendingRun = null;
+  document.getElementById('profile-run-modal').classList.add('hidden');
+  // skip = resume:true (CLI's --resume skips existing); override = resume:false.
+  _dispatchProfileRun({ ...pending, resume: choice === 'skip' });
+}
+
+async function onProfileRunClick() {
+  const sel = _profileCal.selected;
+  if (!sel.length) return;
+  const start = sel[0];
+  const end = sel.length > 1 ? sel[sel.length - 1] : null;
+  const profiledSet = _profiledDates();
+  const overlap = sel.filter(d => profiledSet.has(d)).length;
+  const payload = { start, end, symbol: 'MNQ1', resume: true };
+  if (overlap > 0) {
+    _pendingRun = payload;
+    _showProfileModal({ overlap, total: sel.length });
+    return;
+  }
+  _dispatchProfileRun(payload);
+}
+
+async function _dispatchProfileRun(payload) {
+  const goEl = document.getElementById('profile-run-go');
+  const statusEl = document.getElementById('profile-run-status');
+  const progressEl = document.getElementById('profile-run-progress');
+  const phaseEl = document.getElementById('profile-run-phase');
+  const eventsEl = document.getElementById('profile-run-events');
+
+  goEl.disabled = true;
+  statusEl.textContent = 'starting…';
+  progressEl.classList.remove('hidden');
+  const label = payload.end ? `${payload.start} → ${payload.end}` : payload.start;
+  phaseEl.textContent = `Starting run for ${label} (resume=${payload.resume})`;
+  eventsEl.innerHTML = '';
+  _profileRunSeenEvents = 0;
+
+  let task_id, request_id;
+  try {
+    const r = await api('/api/profiles/run', { method: 'POST', body: payload });
+    task_id = r.task_id; request_id = r.request_id;
+  } catch (e) {
+    statusEl.textContent = 'failed to start';
+    phaseEl.textContent = `Error: ${e.message}`;
+    goEl.disabled = false;
+    return;
+  }
+
+  statusEl.textContent = `running (task ${task_id.slice(0, 6)})`;
+  _profileRunPollTimer = setInterval(() => _pollProfileRun(task_id, request_id), 1500);
+  _pollProfileRun(task_id, request_id);
+}
+
+async function _pollProfileRun(task_id, request_id) {
+  const statusEl = document.getElementById('profile-run-status');
+  const phaseEl = document.getElementById('profile-run-phase');
+  const eventsEl = document.getElementById('profile-run-events');
+  const goEl = document.getElementById('profile-run-go');
+
+  let status, entries = [];
+  try {
+    [status, entries] = await Promise.all([
+      api(`/api/profiles/runs/${task_id}`),
+      api(`/api/audit/tail?n=200&request_id=${encodeURIComponent(request_id)}`)
+        .then(r => r.entries || []).catch(() => []),
+    ]);
+  } catch (e) {
+    statusEl.textContent = `poll error: ${e.message}`;
+    return;
+  }
+
+  // Render any new events (entries come newest-last from the server).
+  const newEntries = entries.slice(_profileRunSeenEvents);
+  _profileRunSeenEvents = entries.length;
+  newEntries.forEach(ent => {
+    const li = document.createElement('li');
+    const t = (ent.ts || '').slice(11, 19);
+    const ev = ent.event || '';
+    let line = `${t}  ${ev}`;
+    let cls = '';
+    if (ev === 'daily_profile.gate') {
+      line += `  attempt=${ent.attempt} ${ent.ok ? 'ok' : 'fail'} ${ent.reason || ''}`.trimEnd();
+      cls = ent.ok ? 'ev-pass' : 'ev-fail';
+    } else if (ev === 'daily_profile.run_day.complete') {
+      line += `  ${ent.date} gate=${ent.gate_ok ? 'ok' : 'fail'}`;
+      cls = 'ev-done';
+    } else if (ev === 'daily_profile.parse_fail') {
+      cls = 'ev-fail';
+    } else if (ev === 'daily_profile.skip_existing') {
+      line += `  ${ent.date}`;
+      cls = 'ev-done';
+    } else if (ent.date) {
+      line += `  ${ent.date}`;
+    }
+    if (cls) li.className = cls;
+    li.textContent = line;
+    eventsEl.prepend(li);  // newest on top
+  });
+
+  // Derive a phase line from the latest event.
+  const latest = entries[entries.length - 1];
+  if (latest) {
+    const d = latest.date || '';
+    phaseEl.textContent = d ? `${d} · ${latest.event}` : latest.event;
+  }
+
+  if (status.state === 'done' || status.state === 'failed') {
+    clearInterval(_profileRunPollTimer);
+    _profileRunPollTimer = null;
+    if (status.state === 'done') {
+      const n = (status.results || []).length;
+      statusEl.textContent = `done — ${n} day(s)`;
+      phaseEl.textContent = `Complete: ${n} day(s) processed. Refreshing list…`;
+      // Refresh the sidebar list AND re-render the calendar so newly-
+      // profiled days flip to the profiled style.
+      await loadProfiles();
+      renderProfileCalendar();
+    } else {
+      statusEl.textContent = 'failed';
+      phaseEl.textContent = `Error: ${status.error || 'unknown'}`;
+    }
+    // Re-enable Run per current selection state (also re-renders overlap).
+    _refreshSelectionSummary();
+  }
+}
+
 function renderProfilesList() {
   const list = document.getElementById('profiles-list');
   if (!_profilesCache || _profilesCache.length === 0) {
@@ -2921,11 +3345,349 @@ async function loadForecasts() {
     const r = await api('/api/forecasts');
     _forecastsCache = r.days || [];
     renderForecastsList();
+    if (_forecastRunInited) {
+      renderForecastCalendar();
+      // Re-sync the summary + Run-button enabled state in case the
+      // initial render raced with the fetch or the user changed selection
+      // before the cache arrived.
+      _refreshForecastSummary();
+    }
   } catch (e) {
     list.innerHTML = `<div class="empty err">failed to load: ${e.message}</div>`;
   }
-  // Lessons run independently — failure here shouldn't block the day list.
+  // Lessons + calibration run independently — failures shouldn't block the day list.
   loadLessons();
+  loadCalibration();
+}
+
+// ----------------------------------------------------------------------
+// Forecast-run card — pick a day, kick off daily_forecast, stream events.
+// Mirrors the profile-run card but single-day (CLI runs one date at a time).
+// ----------------------------------------------------------------------
+let _forecastRunInited = false;
+let _forecastRunPollTimer = null;
+let _forecastRunSeenEvents = 0;
+const _forecastCal = {
+  viewYear: 0, viewMonth: 0,
+  selected: null,  // single YYYY-MM-DD or null
+};
+
+function initForecastRun() {
+  if (_forecastRunInited) return;
+  _forecastRunInited = true;
+  const today = new Date();
+  _forecastCal.viewYear = today.getFullYear();
+  _forecastCal.viewMonth = today.getMonth();
+
+  document.getElementById('forecast-cal-prev').addEventListener('click', () => _forecastGotoMonth(-1));
+  document.getElementById('forecast-cal-next').addEventListener('click', () => _forecastGotoMonth(+1));
+  document.getElementById('forecast-run-go').addEventListener('click', onForecastRunClick);
+
+  // Calendar collapse toggle — user preference persists in localStorage so
+  // the minimize state survives reloads. Defaults to expanded.
+  const toggleBtn = document.getElementById('forecast-cal-toggle');
+  const cal = document.getElementById('forecast-cal');
+  const applyCalCollapsed = (collapsed) => {
+    cal.classList.toggle('collapsed', collapsed);
+    toggleBtn.textContent = collapsed ? '▸' : '▾';
+    toggleBtn.setAttribute('aria-label', collapsed ? 'Expand calendar' : 'Minimize calendar');
+    toggleBtn.title = collapsed ? 'Expand calendar' : 'Minimize calendar';
+  };
+  applyCalCollapsed(localStorage.getItem('ios-forecast-cal-collapsed') === '1');
+  toggleBtn.addEventListener('click', () => {
+    const next = !cal.classList.contains('collapsed');
+    localStorage.setItem('ios-forecast-cal-collapsed', next ? '1' : '0');
+    applyCalCollapsed(next);
+  });
+
+  document.getElementById('forecast-run-modal-cancel').addEventListener('click', _hideForecastModal);
+  document.getElementById('forecast-run-modal-skip').addEventListener('click', () => _confirmForecastModal('skip'));
+  document.getElementById('forecast-run-modal-override').addEventListener('click', () => _confirmForecastModal('override'));
+
+  // Default: today if it's a weekday, else most-recent weekday.
+  const d = new Date();
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+  _forecastCal.selected = _fmtDate(d);
+
+  renderForecastCalendar();
+  _refreshForecastSummary();
+}
+
+function _forecastedDates() {
+  // Set of YYYY-MM-DD strings that already have ANY forecast stage on disk.
+  const out = new Set();
+  (_forecastsCache || []).forEach(d => { if (d.date) out.add(d.date); });
+  return out;
+}
+
+function _forecastAccuracyByDate() {
+  // Map YYYY-MM-DD → {best_score, avg_score, overall_max} for reconciled days.
+  const out = new Map();
+  (_forecastsCache || []).forEach(d => {
+    if (d.date && d.accuracy && d.accuracy.best_score != null) {
+      out.set(d.date, d.accuracy);
+    }
+  });
+  return out;
+}
+
+function _accuracyTier(score, max) {
+  // Semantic color tier for a /7 score. Tuned for the 7-point scale — if max
+  // changes, proportions stay the same (≥85% = strong, ≥57% = ok, else weak).
+  if (score == null || !max) return '';
+  const pct = score / max;
+  if (pct >= 0.85) return 'acc-strong';
+  if (pct >= 0.57) return 'acc-ok';
+  return 'acc-weak';
+}
+
+function _forecastGotoMonth(delta) {
+  let m = _forecastCal.viewMonth + delta;
+  let y = _forecastCal.viewYear;
+  while (m < 0) { m += 12; y -= 1; }
+  while (m > 11) { m -= 12; y += 1; }
+  _forecastCal.viewYear = y;
+  _forecastCal.viewMonth = m;
+  renderForecastCalendar();
+}
+
+function renderForecastCalendar() {
+  const grid = document.getElementById('forecast-cal-grid');
+  const title = document.getElementById('forecast-cal-title');
+  const y = _forecastCal.viewYear;
+  const m = _forecastCal.viewMonth;
+  title.textContent = new Date(y, m, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+
+  const firstOfMonth = new Date(y, m, 1);
+  const firstDow = (firstOfMonth.getDay() + 6) % 7;
+  const gridStart = new Date(y, m, 1 - firstDow);
+
+  const forecastedSet = _forecastedDates();
+  const accuracyMap = _forecastAccuracyByDate();
+  const todayStr = _fmtDate(new Date());
+  const sel = _forecastCal.selected;
+
+  const cells = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + i);
+    const ds = _fmtDate(d);
+    const otherMonth = (d.getMonth() !== m);
+    const dow = (d.getDay() + 6) % 7;
+    const isWeekend = dow >= 5;
+    const isFuture = ds > todayStr;
+    const disabled = isFuture || isWeekend;  // forecasts are single-day weekdays only
+
+    const acc = accuracyMap.get(ds);
+    const tier = acc ? _accuracyTier(acc.best_score, acc.overall_max) : '';
+
+    const classes = ['cal-day'];
+    if (otherMonth) classes.push('other-month');
+    if (disabled) classes.push('disabled');
+    if (isWeekend) classes.push('weekend');
+    if (ds === todayStr) classes.push('today');
+    if (forecastedSet.has(ds)) classes.push('profiled');  // reuse profiled styling
+    if (acc) classes.push('reconciled');
+    if (tier) classes.push(tier);
+    if (ds === sel) classes.push('selected');
+
+    const scoreChip = acc
+      ? `<span class="cal-score">${acc.best_score}/${acc.overall_max}</span>`
+      : '';
+    cells.push(`<div class="${classes.join(' ')}" data-date="${ds}"><span class="cal-day-num">${d.getDate()}</span>${scoreChip}</div>`);
+  }
+  grid.innerHTML = cells.join('');
+  grid.querySelectorAll('.cal-day:not(.disabled)').forEach(el => {
+    el.addEventListener('click', () => {
+      _forecastCal.selected = el.dataset.date;
+      renderForecastCalendar();
+      _refreshForecastSummary();
+    });
+  });
+}
+
+function _refreshForecastSummary() {
+  const summary = document.getElementById('forecast-run-summary');
+  const go = document.getElementById('forecast-run-go');
+  const sel = _forecastCal.selected;
+  if (!sel) {
+    summary.textContent = 'Pick a day to run F1 → F2 → F3 → reconciliation';
+    go.disabled = true;
+    return;
+  }
+  const existing = _forecastedDates().has(sel);
+  // Look up partial-stage detail so the summary tells the user what's already done.
+  let stageBits = '';
+  if (existing) {
+    const day = (_forecastsCache || []).find(d => d.date === sel);
+    const stages = (day && day.stages) || {};
+    const has = k => !!stages[k];
+    const parts = [];
+    if (has('1000')) parts.push('F1');
+    if (has('1200')) parts.push('F2');
+    if (has('1400')) parts.push('F3');
+    if (day && day.has_reconciliation) parts.push('recon');
+    stageBits = parts.length
+      ? `<span class="overlap">Existing stages: ${parts.join(', ')}. Run will ask: skip or override.</span>`
+      : '<span class="overlap">Forecast exists. Run will ask: skip or override.</span>';
+  }
+  const isToday = (sel === _fmtDate(new Date()));
+  const adhocBadge = isToday
+    ? ' <span class="session-bar__chip" title="Ad-hoc mode: stages whose cursor time hasn\'t arrived will be skipped; reconciliation waits for the profile + RTH close.">adhoc</span>'
+    : '';
+  summary.innerHTML = `${sel}${adhocBadge}${stageBits}`;
+  if (!_forecastRunPollTimer) go.disabled = false;
+}
+
+// ------- Forecast override modal -------
+let _pendingForecastRun = null;
+
+function _showForecastModal(date) {
+  const body = document.getElementById('forecast-run-modal-body');
+  const modal = document.getElementById('forecast-run-modal');
+  body.textContent = `${date} already has forecast stages on disk. `
+    + `Skip existing = continue from where the prior run left off (cheap). `
+    + `Override all = re-run every stage from scratch (~15–20 min + four ChatGPT Thinking calls).`;
+  modal.classList.remove('hidden');
+}
+
+function _hideForecastModal() {
+  document.getElementById('forecast-run-modal').classList.add('hidden');
+  _pendingForecastRun = null;
+}
+
+function _confirmForecastModal(choice) {
+  if (!_pendingForecastRun) { _hideForecastModal(); return; }
+  const pending = _pendingForecastRun;
+  _pendingForecastRun = null;
+  document.getElementById('forecast-run-modal').classList.add('hidden');
+  _dispatchForecastRun({ ...pending, resume: choice === 'skip' });
+}
+
+async function onForecastRunClick() {
+  const sel = _forecastCal.selected;
+  if (!sel) return;
+  const existing = _forecastedDates().has(sel);
+  // Auto-enable adhoc mode when the target date is today — makes the run
+  // time-aware so stages whose cursor time hasn't arrived get skipped
+  // cleanly instead of writing gate-failed artifacts, and reconciliation
+  // waits for the profile + RTH close. For historical dates adhoc is a
+  // no-op so it's safe to always leave it off there.
+  const adhoc = (sel === _fmtDate(new Date()));
+  const payload = { date: sel, symbol: 'MNQ1', resume: true, adhoc };
+  if (existing) {
+    _pendingForecastRun = payload;
+    _showForecastModal(sel);
+    return;
+  }
+  _dispatchForecastRun(payload);
+}
+
+async function _dispatchForecastRun(payload) {
+  const goEl = document.getElementById('forecast-run-go');
+  const statusEl = document.getElementById('forecast-run-status');
+  const progressEl = document.getElementById('forecast-run-progress');
+  const phaseEl = document.getElementById('forecast-run-phase');
+  const eventsEl = document.getElementById('forecast-run-events');
+
+  goEl.disabled = true;
+  statusEl.textContent = 'starting…';
+  progressEl.classList.remove('hidden');
+  phaseEl.textContent = `Starting forecast for ${payload.date} (resume=${payload.resume})`;
+  eventsEl.innerHTML = '';
+  _forecastRunSeenEvents = 0;
+
+  let task_id, request_id;
+  try {
+    const r = await api('/api/forecasts/run', { method: 'POST', body: payload });
+    task_id = r.task_id; request_id = r.request_id;
+  } catch (e) {
+    statusEl.textContent = 'failed to start';
+    phaseEl.textContent = `Error: ${e.message}`;
+    goEl.disabled = false;
+    return;
+  }
+
+  statusEl.textContent = `running (task ${task_id.slice(0, 6)})`;
+  _forecastRunPollTimer = setInterval(() => _pollForecastRun(task_id, request_id), 1500);
+  _pollForecastRun(task_id, request_id);
+}
+
+async function _pollForecastRun(task_id, request_id) {
+  const statusEl = document.getElementById('forecast-run-status');
+  const phaseEl = document.getElementById('forecast-run-phase');
+  const eventsEl = document.getElementById('forecast-run-events');
+  const goEl = document.getElementById('forecast-run-go');
+
+  let status, entries = [];
+  try {
+    [status, entries] = await Promise.all([
+      api(`/api/forecasts/runs/${task_id}`),
+      api(`/api/audit/tail?n=200&request_id=${encodeURIComponent(request_id)}`)
+        .then(r => r.entries || []).catch(() => []),
+    ]);
+  } catch (e) {
+    statusEl.textContent = `poll error: ${e.message}`;
+    return;
+  }
+
+  const newEntries = entries.slice(_forecastRunSeenEvents);
+  _forecastRunSeenEvents = entries.length;
+  newEntries.forEach(ent => {
+    const li = document.createElement('li');
+    const t = (ent.ts || '').slice(11, 19);
+    const ev = ent.event || '';
+    let line = `${t}  ${ev}`;
+    let cls = '';
+    if (ev === 'daily_forecast.stage.skip_existing') {
+      line += `  ${ent.stage || ''}`;
+      cls = 'ev-done';
+    } else if (ev === 'daily_forecast.stage.gate_fail') {
+      line += `  ${ent.stage || ''} ${ent.reason || ''}`;
+      cls = 'ev-fail';
+    } else if (ev.endsWith('.complete')) {
+      cls = 'ev-done';
+    } else if (ev.endsWith('.parse_fail') || ev.endsWith('.error')) {
+      cls = 'ev-fail';
+    }
+    if (cls) li.className = cls;
+    li.textContent = line;
+    eventsEl.prepend(li);
+  });
+
+  const latest = entries[entries.length - 1];
+  if (latest) phaseEl.textContent = latest.event;
+
+  if (status.state === 'done' || status.state === 'failed') {
+    clearInterval(_forecastRunPollTimer);
+    _forecastRunPollTimer = null;
+    if (status.state === 'done') {
+      statusEl.textContent = 'done';
+      phaseEl.textContent = `Complete. Refreshing list…`;
+      await loadForecasts();
+      renderForecastCalendar();
+    } else {
+      statusEl.textContent = 'failed';
+      phaseEl.textContent = `Error: ${status.error || 'unknown'}`;
+    }
+    _refreshForecastSummary();
+  }
+}
+
+function _renderLessonsInto(meta, body, r, { topN = null, emptyMsg = '' } = {}) {
+  const ls = (r.lessons || []).slice(0, topN || (r.lessons || []).length);
+  if (ls.length === 0) {
+    meta.textContent = '';
+    body.innerHTML = `<div class="empty muted">${emptyMsg || 'Lessons will appear here once you have reconciled a few forecasts.'}</div>`;
+    return;
+  }
+  meta.textContent = `${r.count_unique} unique · ${r.count_reconciliations} reconciliations`;
+  body.innerHTML = '<ul class="lesson-list">' + ls.map(l => {
+    const badge = l.count > 1
+      ? `<span class="lesson-count">${l.count}× across ${l.sources.length} day${l.sources.length !== 1 ? 's' : ''}</span>`
+      : `<span class="lesson-source mono small">${l.sources.join(', ')}</span>`;
+    return `<li><span class="lesson-text">${escapeHTML(l.text)}</span> ${badge}</li>`;
+  }).join('') + '</ul>';
 }
 
 async function loadLessons() {
@@ -2933,29 +3695,357 @@ async function loadLessons() {
   const body = document.getElementById('lessons-body');
   try {
     const r = await api('/api/forecasts/lessons');
-    const ls = r.lessons || [];
-    if (ls.length === 0) {
-      meta.textContent = '';
-      body.innerHTML = '<div class="empty">No lessons yet. Run a forecast + reconciliation to start accumulating.</div>';
-      return;
-    }
-    meta.textContent = `${r.count_unique} unique · ${r.count_reconciliations} reconciliations`;
-    body.innerHTML = '<ul class="lesson-list">' + ls.map(l => {
-      const badge = l.count > 1
-        ? `<span class="lesson-count">${l.count}× across ${l.sources.length} day${l.sources.length !== 1 ? 's' : ''}</span>`
-        : `<span class="lesson-source mono small">${l.sources.join(', ')}</span>`;
-      return `<li><span class="lesson-text">${escapeHTML(l.text)}</span> ${badge}</li>`;
-    }).join('') + '</ul>';
+    _renderLessonsInto(meta, body, r);
   } catch (e) {
     meta.textContent = '';
     body.innerHTML = `<div class="empty err">${e.message}</div>`;
   }
 }
 
+async function loadCalibration() {
+  // Note: `forecast-calibration-*` IDs (not bare `calibration-*`) because
+  // the Journal tab already owns `#calibration-body` for its trade-outcome
+  // calibration card — duplicate IDs would silently redirect updates.
+  const meta = document.getElementById('forecast-calibration-meta');
+  const body = document.getElementById('forecast-calibration-body');
+  if (!meta || !body) return;
+  try {
+    const r = await api('/api/forecasts/calibration?min_n=1');
+    const fields = r.by_field || {};
+    const fieldNames = Object.keys(fields);
+    if (fieldNames.length === 0) {
+      meta.textContent = '';
+      body.innerHTML = '<div class="empty muted">Not enough graded reconciliations yet — needs at least one with tags_correct/tags_wrong populated.</div>';
+      return;
+    }
+    meta.textContent = `${r.total_patterns} pattern${r.total_patterns === 1 ? '' : 's'} tracked`;
+
+    // Render one mini-table per field, in a fixed canonical order so the
+    // user's eye lands on the same dimensions in the same place each visit.
+    const order = ['direction', 'goat_direction', 'open_type', 'structure',
+                   'lunch_behavior', 'afternoon_drive', 'close_near_extreme'];
+    const labels = {
+      direction: 'Direction', goat_direction: 'GOAT direction',
+      open_type: 'Open type', structure: 'Structure',
+      lunch_behavior: 'Lunch behavior', afternoon_drive: 'Afternoon drive',
+      close_near_extreme: 'Close near extreme',
+    };
+    const sections = order.filter(k => fields[k]).map(k => {
+      const items = fields[k];
+      const rows = items.map(it => {
+        const tier = it.pct >= 70 ? 'acc-strong'
+                   : it.pct >= 40 ? 'acc-ok' : 'acc-weak';
+        return `<tr class="${tier}">
+          <td class="mono small">${escapeHTML(it.value)}</td>
+          <td class="mono small calib-pct">${it.pct}%</td>
+          <td class="mono small muted">${it.correct}/${it.total}</td>
+        </tr>`;
+      }).join('');
+      return `<div class="calib-field">
+        <div class="calib-field__name">${labels[k] || k}</div>
+        <table class="calib-table"><tbody>${rows}</tbody></table>
+      </div>`;
+    });
+    body.innerHTML = `<div class="calib-grid">${sections.join('')}</div>`;
+  } catch (e) {
+    meta.textContent = '';
+    body.innerHTML = `<div class="empty err">${escapeHTML(e.message)}</div>`;
+  }
+}
+
+// ----------------------------------------------------------------------
+// Persistent session status bar — bias, invalidation, P&L, running R.
+// Visible on every tab; polled every 30s.
+// ----------------------------------------------------------------------
+const _SESSION_BAR_POLL_MS = 30_000;
+let _sessionBarTimer = null;
+
+function _fmtMoney(n) {
+  if (n == null || isNaN(n)) return '—';
+  const sign = n < 0 ? '-' : (n > 0 ? '+' : '');
+  return `${sign}$${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+function _fmtBias(d) {
+  // Compact bias label: "long med" / "short low" / "flat"
+  const dir = d.direction;
+  const conf = d.direction_confidence;
+  if (!dir) return d.bias || '—';
+  const dirLabel = dir === 'up' ? 'long' : dir === 'down' ? 'short' : dir;
+  return conf ? `${dirLabel} · ${conf}` : dirLabel;
+}
+
+async function refreshSessionBar() {
+  const bar = document.getElementById('session-bar');
+  if (!bar) return;
+  let r;
+  try {
+    r = await api('/api/session/today');
+  } catch (e) {
+    bar.classList.add('empty');
+    document.getElementById('sb-bias-val').textContent = '—';
+    document.getElementById('sb-inval-val').textContent = `error: ${e.message}`;
+    return;
+  }
+  const tf = r.today_forecast || {};
+  const pos = r.positions || {};
+  _renderPivotState(tf);
+  const sess = r.session || {};
+
+  // Bias cell — direction + confidence; tints the whole bar
+  bar.classList.remove('dir-up', 'dir-down', 'dir-flat', 'pnl-up', 'pnl-down');
+  if (tf.exists) {
+    bar.classList.remove('empty');
+    const dir = tf.direction;
+    if (dir === 'up') bar.classList.add('dir-up');
+    else if (dir === 'down') bar.classList.add('dir-down');
+    else bar.classList.add('dir-flat');
+    const stageChip = tf.latest_live_stage
+      ? `<span class="session-bar__chip" title="last live forecast stage today">F@${tf.latest_live_stage.slice(0,2)}:${tf.latest_live_stage.slice(2)}</span>`
+      : `<span class="session-bar__chip" title="only pre-session, no live update yet">pre</span>`;
+    document.getElementById('sb-bias-val').innerHTML = `${escapeHTML(_fmtBias(tf))}${stageChip}`;
+    document.getElementById('sb-inval-val').textContent = tf.invalidation || '—';
+    document.getElementById('sb-inval-val').title = tf.invalidation || '';
+  } else {
+    bar.classList.add('empty');
+    document.getElementById('sb-bias-val').textContent = '— no forecast today';
+    document.getElementById('sb-inval-val').textContent = 'Run pre_session_forecast for today';
+    document.getElementById('sb-inval-val').title = '';
+  }
+
+  // P&L cell — open positions; null if CDP busy
+  if (pos.available) {
+    const upnl = pos.unrealized_pnl;
+    document.getElementById('sb-pnl-val').textContent =
+      `${_fmtMoney(upnl)} · ${pos.open_count} open`;
+    if (upnl > 0.01) bar.classList.add('pnl-up');
+    else if (upnl < -0.01) bar.classList.add('pnl-down');
+  } else {
+    document.getElementById('sb-pnl-val').textContent = '— (busy)';
+  }
+
+  // Session running-R cell
+  const r_sum = sess.realized_r_sum || 0;
+  const w = sess.wins || 0;
+  const l = sess.losses || 0;
+  const rTxt = r_sum >= 0 ? `+${r_sum.toFixed(2)}R` : `${r_sum.toFixed(2)}R`;
+  document.getElementById('sb-r-val').textContent =
+    sess.total > 0 ? `${rTxt} · ${w}W/${l}L` : '—';
+}
+
+function startSessionBarPoll() {
+  refreshSessionBar();
+  if (_sessionBarTimer) clearInterval(_sessionBarTimer);
+  _sessionBarTimer = setInterval(refreshSessionBar, _SESSION_BAR_POLL_MS);
+}
+
+// ----------------------------------------------------------------------
+// Pivot Forecast — intraday re-forecast fired when the pre-session's
+// invalidation condition has broken. Button is hidden until today has a
+// pre-session forecast to pivot from; turns amber once a pivot has fired.
+// ----------------------------------------------------------------------
+function _renderPivotState(tf) {
+  const btn = document.getElementById('sb-pivot-btn');
+  const applyBtn = document.getElementById('sb-pivot-apply-btn');
+  if (!btn) return;
+  const haveForecast = !!tf.exists;
+  btn.classList.toggle('hidden', !haveForecast);
+  const pivot = tf.pivot;
+  // Apply button visibility is strictly gated on having a pivot that
+  // produced structured output — otherwise there's nothing to render to Pine.
+  const canApply = !!(pivot && pivot.pine_available);
+  if (applyBtn) applyBtn.classList.toggle('hidden', !canApply);
+  if (pivot && pivot.revised_bias) {
+    btn.classList.add('fired');
+    btn.querySelector('.session-bar__pivot-lbl').textContent =
+      `Re-pivot (${pivot.classification || '—'} ${pivot.called_at_et || ''})`.trim();
+    btn.title = `Pivot fired at ${pivot.called_at_et}: ${pivot.classification}. `
+              + `Revised bias: ${pivot.revised_bias}. `
+              + `Tap to run another pivot if conditions changed again.`;
+    // Overlay the pivoted bias on the session bar so the eye sees the
+    // current working read, not the dead pre-session bias.
+    const biasVal = document.getElementById('sb-bias-val');
+    const invalVal = document.getElementById('sb-inval-val');
+    if (biasVal && invalVal && pivot.revised_bias) {
+      const cls = pivot.classification || '';
+      biasVal.innerHTML =
+        `${escapeHTML(pivot.revised_bias)} <span class="session-bar__chip" title="pivoted from pre-session">${escapeHTML(cls)}</span>`;
+      if (pivot.revised_invalidation) {
+        invalVal.textContent = pivot.revised_invalidation;
+        invalVal.title = pivot.revised_invalidation;
+      }
+    }
+  } else {
+    btn.classList.remove('fired');
+    btn.querySelector('.session-bar__pivot-lbl').textContent = 'Pivot';
+    btn.title = 'Invalidation fired? Run an intraday pivot re-forecast: '
+              + 'REVERSAL / FLAT / SHAKEOUT.';
+  }
+}
+
+function _openPivotModal() {
+  const modal = document.getElementById('pivot-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  const reason = document.getElementById('pivot-reason');
+  if (reason) { reason.value = ''; reason.focus(); }
+  // Clear-pivot button only visible when a pivot has already fired.
+  // Driven off the Pivot button's `.fired` state, which is set by
+  // _renderPivotState whenever the session endpoint reports a pivot.
+  const clearBtn = document.getElementById('pivot-modal-clear');
+  const pivotBtn = document.getElementById('sb-pivot-btn');
+  if (clearBtn) {
+    clearBtn.classList.toggle('hidden',
+      !(pivotBtn && pivotBtn.classList.contains('fired')));
+  }
+}
+
+function _closePivotModal() {
+  document.getElementById('pivot-modal')?.classList.add('hidden');
+}
+
+async function _dispatchPivot() {
+  const reasonEl = document.getElementById('pivot-reason');
+  const reason = (reasonEl?.value || '').trim();
+  const goBtn = document.getElementById('pivot-modal-go');
+  const sbBtn = document.getElementById('sb-pivot-btn');
+  setBusy(goBtn, true, 'Run pivot');
+  setBusy(sbBtn, true);
+  try {
+    const r = await api('/api/forecasts/pivot', {
+      method: 'POST',
+      body: reason ? { reason } : {},
+    });
+    _closePivotModal();
+    toast(`pivot running — ${r.task_id.slice(0,6)}`, 'ok');
+    _pollPivotTask(r.task_id);
+  } catch (e) {
+    toast(`pivot failed: ${e.message}`, 'err');
+    setBusy(goBtn, false, 'Run pivot');
+    setBusy(sbBtn, false);
+  }
+}
+
+async function _pollPivotTask(task_id) {
+  const sbBtn = document.getElementById('sb-pivot-btn');
+  const poll = async () => {
+    try {
+      const status = await api(`/api/forecasts/runs/${task_id}`);
+      if (status.state === 'done') {
+        await refreshSessionBar();
+        setBusy(sbBtn, false);
+        // Parse-fail warning — the pivot ran but the LLM didn't emit
+        // structured JSON, so no Pine can be rendered and the session
+        // bar won't show the revised bias overlay.
+        const result = status.result || {};
+        if (result.parsed_structured === false) {
+          toast('pivot ran but LLM output didn\'t parse — check pine/parse_failures/', 'err');
+          return;
+        }
+        // Auto-dispatch apply when Pine is available — saves the user
+        // a tap. Small delay lets the toast + session bar animate first.
+        toast('pivot complete — applying to chart…', 'ok');
+        setTimeout(() => _dispatchPivotApply(), 800);
+        return;
+      }
+      if (status.state === 'failed') {
+        toast(`pivot failed: ${status.error || 'unknown'}`, 'err');
+        setBusy(sbBtn, false);
+        return;
+      }
+      setTimeout(poll, 2000);
+    } catch (e) {
+      toast(`pivot poll error: ${e.message}`, 'err');
+      setBusy(sbBtn, false);
+    }
+  };
+  poll();
+}
+
+async function _dispatchPivotClear() {
+  if (!confirm('Clear the most-recent pivot? Session bar reverts to pre-session bias. Files move to forecasts/cleared/ and can be restored manually.')) {
+    return;
+  }
+  const today = _fmtDate(new Date());
+  try {
+    await api(
+      `/api/forecasts/MNQ1/${encodeURIComponent(today)}/pivot`,
+      { method: 'DELETE' }
+    );
+    toast('pivot cleared — session bar reverted', 'ok');
+    _closePivotModal();
+    await refreshSessionBar();
+  } catch (e) {
+    toast(`clear failed: ${e.message}`, 'err');
+  }
+}
+
+document.getElementById('sb-pivot-btn')?.addEventListener('click', _openPivotModal);
+document.getElementById('pivot-modal-cancel')?.addEventListener('click', _closePivotModal);
+document.getElementById('pivot-modal-clear')?.addEventListener('click', _dispatchPivotClear);
+document.getElementById('pivot-modal-go')?.addEventListener('click', _dispatchPivot);
+// Backdrop click (anywhere outside the box) closes the modal.
+document.getElementById('pivot-modal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'pivot-modal') _closePivotModal();
+});
+
+// Apply pivot to chart — pushes the generated pivot Pine to TradingView
+// as a second indicator (the morning's forecast overlay stays intact).
+// `_pivotApplyInFlight` guards against double-tapping: the subprocess
+// takes 30-60s and firing two concurrently would drive apply_pine twice.
+let _pivotApplyInFlight = false;
+async function _dispatchPivotApply() {
+  if (_pivotApplyInFlight) {
+    toast('apply already in progress — wait for it to finish', 'err');
+    return;
+  }
+  const btn = document.getElementById('sb-pivot-apply-btn');
+  if (!btn || btn.classList.contains('hidden')) return;
+  const today = _fmtDate(new Date());
+  _pivotApplyInFlight = true;
+  setBusy(btn, true);
+  try {
+    const r = await api(
+      `/api/forecasts/MNQ1/${encodeURIComponent(today)}/pivot/apply`,
+      { method: 'POST' }
+    );
+    if (r.ok) {
+      toast('pivot applied to chart', 'ok');
+    } else {
+      toast(`apply failed: ${r.error || 'check stderr'}`, 'err');
+    }
+  } catch (e) {
+    toast(`apply error: ${e.message}`, 'err');
+  } finally {
+    _pivotApplyInFlight = false;
+    setBusy(btn, false);
+  }
+}
+document.getElementById('sb-pivot-apply-btn')?.addEventListener('click', _dispatchPivotApply);
+
+// Trade-tab decision-time lessons — top 3 only, surfaced where the
+// human is about to commit a trade. Reuses the Forecasts-tab renderer
+// for consistent styling.
+async function loadTradeLessons() {
+  const meta = document.getElementById('trade-lessons-meta');
+  const body = document.getElementById('trade-lessons-body');
+  if (!meta || !body) return;
+  try {
+    const r = await api('/api/forecasts/lessons?n=3');
+    _renderLessonsInto(meta, body, r, {
+      topN: 3,
+      emptyMsg: 'No lessons accumulated yet — run a few reconciliations first.',
+    });
+  } catch (e) {
+    meta.textContent = '';
+    body.innerHTML = `<div class="empty err">${escapeHTML(e.message)}</div>`;
+  }
+}
+
 function renderForecastsList() {
   const list = document.getElementById('forecasts-list');
   if (!_forecastsCache || _forecastsCache.length === 0) {
-    list.innerHTML = '<div class="empty">No forecast runs yet. Run <span class="mono">python -m tv_automation.daily_forecast YYYY-MM-DD</span> from the terminal.</div>';
+    list.innerHTML = '<div class="empty">Pick a date in the calendar above to run your first forecast.</div>';
     return;
   }
   list.innerHTML = _forecastsCache.map(d => {
@@ -2968,26 +4058,188 @@ function renderForecastsList() {
       return `<span class="badge ${cls}">${s.slice(0,2)}:${s.slice(2)}</span>`;
     }).join(' ');
     const recon = d.has_reconciliation ? '<span class="badge badge-green">recon ✓</span>' : '<span class="badge badge-neutral">recon —</span>';
+    // Accuracy pill — shows best-of-stages score when reconciled. Colored by
+    // tier (strong/ok/weak) so the eye finds high-accuracy days at a glance.
+    let accPill = '';
+    if (d.accuracy && d.accuracy.best_score != null) {
+      const tier = _accuracyTier(d.accuracy.best_score, d.accuracy.overall_max);
+      const avg = d.accuracy.avg_score != null ? ` · avg ${d.accuracy.avg_score.toFixed(1)}` : '';
+      accPill = `<span class="forecast-card__acc acc-pill ${tier}" title="best stage score of the day${avg}">${d.accuracy.best_score}/${d.accuracy.overall_max}</span>`;
+    }
+    const reconLabel = d.has_reconciliation ? '↻ Re-reconcile' : 'Reconcile';
+    const reconTitle = d.has_reconciliation
+      ? 'Re-run reconciliation against the completed-day profile (overwrites existing reconciliation file)'
+      : 'Grade saved forecast stages against the completed-day profile';
     return `
       <div class="forecast-card${sel}" data-key="${key}" data-symbol="${d.symbol}" data-date="${d.date}">
         <div class="forecast-card__row">
           <span class="forecast-card__date">${d.date}</span>
           <span class="forecast-card__symbol mono small">${d.symbol}</span>
+          ${accPill}
         </div>
-        <div class="forecast-card__badges">${stageBadges} ${recon}</div>
+        <div class="forecast-card__badges">
+          ${stageBadges} ${recon}
+          <button type="button" class="forecast-card__recon-btn" data-symbol="${d.symbol}" data-date="${d.date}" data-existing="${d.has_reconciliation ? 1 : 0}" title="${reconTitle}">${reconLabel}</button>
+        </div>
       </div>
     `;
   }).join('');
   list.querySelectorAll('.forecast-card').forEach(el => {
     el.addEventListener('click', () => selectForecastDay(el.dataset.symbol, el.dataset.date));
   });
+  list.querySelectorAll('.forecast-card__recon-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onForecastReconcileClick(btn.dataset.symbol, btn.dataset.date, btn.dataset.existing === '1');
+    });
+  });
+}
+
+async function onForecastReconcileClick(symbol, date, existing) {
+  if (existing && !confirm(`Re-run reconciliation for ${date}? Existing reconciliation file will be overwritten.`)) {
+    return;
+  }
+  await _dispatchForecastReconcile({ date, symbol });
+}
+
+async function _dispatchForecastReconcile(payload) {
+  const goEl = document.getElementById('forecast-run-go');
+  const statusEl = document.getElementById('forecast-run-status');
+  const progressEl = document.getElementById('forecast-run-progress');
+  const phaseEl = document.getElementById('forecast-run-phase');
+  const eventsEl = document.getElementById('forecast-run-events');
+
+  goEl.disabled = true;
+  statusEl.textContent = 'starting reconcile…';
+  progressEl.classList.remove('hidden');
+  phaseEl.textContent = `Starting reconciliation for ${payload.date}`;
+  eventsEl.innerHTML = '';
+  _forecastRunSeenEvents = 0;
+
+  let task_id, request_id;
+  try {
+    const r = await api('/api/forecasts/reconcile', { method: 'POST', body: payload });
+    task_id = r.task_id; request_id = r.request_id;
+  } catch (e) {
+    statusEl.textContent = 'failed to start';
+    phaseEl.textContent = `Error: ${e.message}`;
+    toast(`reconcile failed: ${e.message}`, 'err');
+    goEl.disabled = false;
+    return;
+  }
+
+  statusEl.textContent = `reconciling (task ${task_id.slice(0, 6)})`;
+  _forecastRunPollTimer = setInterval(() => _pollForecastRun(task_id, request_id), 1500);
+  _pollForecastRun(task_id, request_id);
+}
+
+function _renderAccuracyCard(day) {
+  // Renders the reconciliation visual: actual summary + per-stage grade grid.
+  // day is the /api/forecasts entry for this date; returns '' if no accuracy.
+  if (!day || !day.accuracy || !day.accuracy.grades) return '';
+  const acc = day.accuracy;
+  const actual = acc.actual_summary || {};
+  const max = acc.overall_max || 7;
+
+  // Canonical stage order + display label. Reconciliation JSON uses
+  // "pre_session_forecast" key but we show it as "Pre-session".
+  const rows = [
+    { key: 'pre_session_forecast', label: 'Pre-session' },
+    { key: 'F1', label: 'F1 (10:00)' },
+    { key: 'F2', label: 'F2 (12:00)' },
+    { key: 'F3', label: 'F3 (14:00)' },
+  ];
+  const fmtNum = v => (v == null || isNaN(v)) ? '—' : Number(v).toLocaleString();
+  const pct = actual.net_range_pct_open_to_close;
+  const pctStr = (pct == null) ? '' : ` · ${pct >= 0 ? '↑' : '↓'}${Math.abs(pct).toFixed(2)}%`;
+  const spanStr = actual.intraday_span_pts != null ? ` · span ${fmtNum(actual.intraday_span_pts)}pts` : '';
+  const actualLine = `
+    <div class="acc-actual mono small">
+      O <b>${fmtNum(actual.open_approx)}</b>  ·  C <b>${fmtNum(actual.close_approx)}</b>  ·  HOD <b>${fmtNum(actual.hod_approx)}</b>  ·  LOD <b>${fmtNum(actual.lod_approx)}</b>${spanStr}${pctStr}
+    </div>`;
+
+  const tickOrCross = ok => ok === true ? '<span class="acc-tick">✓</span>' : ok === false ? '<span class="acc-cross">✗</span>' : '<span class="acc-none">—</span>';
+  const missCell = (ok, miss) => {
+    if (ok === true) return tickOrCross(true);
+    if (ok === false) return `${tickOrCross(false)}<span class="acc-miss">${miss != null ? `${miss>0?'':'-'}${Math.abs(miss)}` : ''}</span>`;
+    return tickOrCross(ok);
+  };
+  const dotScore = (score, maxS) => {
+    if (score == null) return '—';
+    const filled = Math.max(0, Math.min(maxS, score));
+    let s = '';
+    for (let i = 0; i < maxS; i++) s += i < filled ? '●' : '○';
+    return s;
+  };
+
+  const tbody = rows.map(r => {
+    const g = acc.grades[r.key];
+    if (!g) {
+      return `<tr class="acc-row acc-row-missing">
+        <td class="acc-stage">${r.label}</td>
+        <td colspan="5" class="acc-missing muted">no forecast on file</td>
+      </tr>`;
+    }
+    const tier = _accuracyTier(g.overall_score, g.overall_max || max);
+    return `<tr class="acc-row ${tier}">
+      <td class="acc-stage">${r.label}</td>
+      <td class="acc-cell">${tickOrCross(g.direction_hit)}</td>
+      <td class="acc-cell">${missCell(g.close_in_band, g.close_miss_pts)}</td>
+      <td class="acc-cell">${tickOrCross(g.hod_in_band)}</td>
+      <td class="acc-cell">${missCell(g.lod_in_band, g.lod_miss_pts)}</td>
+      <td class="acc-score">
+        <span class="acc-dots ${tier}">${dotScore(g.overall_score, g.overall_max || max)}</span>
+        <span class="acc-num">${g.overall_score}/${g.overall_max || max}</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const headerTier = _accuracyTier(acc.best_score, max);
+  return `
+    <div class="card acc-card">
+      <div class="card-head">
+        <h2>Accuracy — ${day.date}</h2>
+        <div class="card-head__actions">
+          <span class="acc-pill ${headerTier}" title="best stage score of the day">best ${acc.best_score}/${max}</span>
+          ${acc.avg_score != null ? `<span class="mono small muted">avg ${acc.avg_score.toFixed(1)}/${max}</span>` : ''}
+        </div>
+      </div>
+      ${actualLine}
+      <table class="acc-table">
+        <thead>
+          <tr>
+            <th class="acc-stage">Stage</th>
+            <th class="acc-cell">Dir</th>
+            <th class="acc-cell">Close</th>
+            <th class="acc-cell">HOD</th>
+            <th class="acc-cell">LOD</th>
+            <th class="acc-score">Score</th>
+          </tr>
+        </thead>
+        <tbody>${tbody}</tbody>
+      </table>
+    </div>
+  `;
 }
 
 async function selectForecastDay(symbol, date) {
   _forecastsSelectedKey = `${symbol}|${date}`;
   renderForecastsList();
+  // Mobile drill-in: switch the layout into detail-only view so the
+  // user sees the full forecast chain without a tiny side strip.
+  if (_mobileMQ.matches) {
+    document.getElementById('forecasts-layout').classList.add('mobile-view-detail');
+  }
   const main = document.getElementById('forecasts-main');
-  main.innerHTML = '<div class="empty">Loading…</div>';
+  // Preserve the back button — only replace the content after it.
+  const backBtn = main.querySelector('.mobile-back-btn');
+  main.innerHTML = '';
+  if (backBtn) main.appendChild(backBtn);
+  main.insertAdjacentHTML('beforeend', '<div class="empty">Loading…</div>');
+
+  // Accuracy visual uses the cached /api/forecasts day entry — no extra fetch.
+  const dayEntry = (_forecastsCache || []).find(d => d.symbol === symbol && d.date === date);
+  const accuracyHtml = _renderAccuracyCard(dayEntry);
 
   // Fetch all known stages + recon variants in parallel.
   const stages = ['pre_session', '1000', '1200', '1400', 'reconciliation', 'pre_session_reconciliation'];
@@ -3026,6 +4278,7 @@ async function selectForecastDay(symbol, date) {
     const pineBtns = r.stage === 'pre_session'
       ? `
         <button class="btn small forecast-pine-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">⬇ Generate Pine overlay</button>
+        <button class="btn small forecast-regen-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">↻ Regenerate</button>
         <button class="btn small forecast-apply-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">▶ Apply to chart</button>
       `
       : '';
@@ -3048,7 +4301,9 @@ async function selectForecastDay(symbol, date) {
     `;
   });
 
-  main.innerHTML = sections.join('');
+  main.innerHTML =
+    `<button type="button" class="mobile-back-btn" data-target="forecasts-layout">‹ Back to list</button>`
+    + accuracyHtml + sections.join('');
 
   // Wire Pine-download buttons.
   main.querySelectorAll('.forecast-pine-btn').forEach(btn => {
@@ -3077,6 +4332,25 @@ async function selectForecastDay(symbol, date) {
         toast(`pine generate failed: ${e.message}`, 'err');
       } finally {
         setBusy(btn, false, '⬇ Generate Pine overlay');
+      }
+    });
+  });
+
+  // Wire Regenerate buttons — re-render Pine from the saved forecast JSON
+  // and overwrite pine/generated/forecast_overlay_{date}.pine, without
+  // running the Apply subprocess. Sub-second round-trip, no sibling lock.
+  main.querySelectorAll('.forecast-regen-btn').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      ev.preventDefault();
+      const { symbol, date, stage } = btn.dataset;
+      setBusy(btn, true, '↻ Regenerate');
+      try {
+        const r = await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/regenerate`, { method: 'POST', body: {} });
+        toast(`regenerated: ${r.pine_path?.split('/').pop() || 'pine'} (${r.bytes} B)`, 'ok');
+      } catch (e) {
+        toast(`regenerate failed: ${e.message}`, 'err');
+      } finally {
+        setBusy(btn, false, '↻ Regenerate');
       }
     });
   });
@@ -3118,3 +4392,5 @@ refreshChartMeta();
 setupCombo('trade-symbol');
 setupCombo('alert-symbol');
 populateSymbolCombos();  // fire-and-forget — fills all three combos from watchlist
+loadTradeLessons();      // Trade is the default tab — surface lessons immediately
+startSessionBarPoll();   // persistent session-bar across all tabs

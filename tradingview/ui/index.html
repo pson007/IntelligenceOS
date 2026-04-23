@@ -63,6 +63,68 @@
 
   <main class="main">
 
+    <!-- Persistent session status bar — sticky at top of <main>, visible
+         on every tab. Aggregates today's bias + invalidation trigger,
+         open-position P&L, and the running session R. Polled every 30s. -->
+    <div class="session-bar empty" id="session-bar" aria-live="polite">
+      <div class="session-bar__cell session-bar__bias">
+        <span class="session-bar__lbl">Bias</span>
+        <span class="session-bar__val" id="sb-bias-val">—</span>
+      </div>
+      <div class="session-bar__cell session-bar__inval">
+        <span class="session-bar__lbl">Invalidates if</span>
+        <span class="session-bar__val" id="sb-inval-val">—</span>
+      </div>
+      <div class="session-bar__cell session-bar__pnl">
+        <span class="session-bar__lbl">Open P&amp;L</span>
+        <span class="session-bar__val mono" id="sb-pnl-val">—</span>
+      </div>
+      <div class="session-bar__cell session-bar__r">
+        <span class="session-bar__lbl">Session</span>
+        <span class="session-bar__val mono" id="sb-r-val">—</span>
+      </div>
+      <!-- Pivot button — manually fired when the pre-session's invalidation
+           condition has broken. Hidden until there's a pre-session forecast
+           for today to pivot FROM. Re-labeled "Re-pivot" after one fires. -->
+      <button type="button" class="session-bar__pivot hidden" id="sb-pivot-btn"
+              title="Invalidation fired? Run an intraday pivot re-forecast: REVERSAL / FLAT / SHAKEOUT.">
+        <span class="session-bar__pivot-ico">↺</span>
+        <span class="session-bar__pivot-lbl">Pivot</span>
+      </button>
+      <!-- Apply-to-chart button — only appears after a pivot has fired
+           and produced structured output. One tap pushes the pivot Pine
+           overlay to TradingView as a second indicator. -->
+      <button type="button" class="session-bar__pivot session-bar__pivot-apply hidden" id="sb-pivot-apply-btn"
+              title="Push the pivot's new levels + labels to TradingView as a second indicator.">
+        <span class="session-bar__pivot-ico">▶</span>
+        <span class="session-bar__pivot-lbl">Apply pivot</span>
+      </button>
+    </div>
+
+    <!-- Pivot confirmation modal — captures optional operator note before
+         firing the re-forecast. One pivot call is a 60-120s ChatGPT hit,
+         so we want a quick "describe what broke" prompt, not a silent fire. -->
+    <div class="forecast-run-modal hidden" id="pivot-modal">
+      <div class="profile-run-modal__box">
+        <h3 id="pivot-modal-title">Pivot the forecast?</h3>
+        <p class="small">
+          The pre-session thesis failed. The LLM will reassess from the current
+          chart state and classify as REVERSAL, FLAT, or SHAKEOUT. Add a short
+          note on what broke (optional) so the revised read is grounded.
+        </p>
+        <textarea id="pivot-reason" rows="2" maxlength="200"
+                  placeholder="e.g. broke 26964 on 8.3x volume at 13:02"
+                  style="width: 100%; margin-bottom: 12px;"></textarea>
+        <div class="profile-run-modal__actions">
+          <button type="button" id="pivot-modal-cancel">Cancel</button>
+          <button type="button" id="pivot-modal-clear" class="danger hidden"
+                  title="Move the most-recent pivot's artifacts to forecasts/cleared/. Session bar reverts to the pre-session bias.">Clear last pivot</button>
+          <button type="button" class="primary" id="pivot-modal-go">Run pivot</button>
+        </div>
+      </div>
+    </div>
+
+
     <!-- TRADE TAB (chart + order entry + positions, unified) --------- -->
     <section class="tab" id="tab-trade">
       <h1>Trade</h1>
@@ -271,7 +333,7 @@
           <span class="muted">—</span>
         </div>
         <div id="trade-chart-shot">
-          <div class="empty dashed">No screenshot yet. Pick a symbol or click Capture.</div>
+          <div class="empty dashed">Pick a symbol above or tap Capture to pull the live chart.</div>
         </div>
       </div>
 
@@ -281,6 +343,23 @@
            highest-value piece of info right before a buy/sell click. -->
       <div class="card hidden" id="position-context-card">
         <div class="position-context" id="position-context"></div>
+      </div>
+
+      <!-- Decision-time lessons — accumulated reconciliation lessons, ranked
+           by frequency. Shown right above the order entry so the human sees
+           prior-mistake context at the moment of the trade decision. -->
+      <div class="card lessons-card" id="trade-lessons-card">
+        <div class="card-head">
+          <h2>Lessons in mind</h2>
+          <span class="card-head__actions mono small" id="trade-lessons-meta"></span>
+        </div>
+        <div id="trade-lessons-body">
+          <div class="skeleton-group">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton skeleton--short"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Quick order — qty + optional TP/SL brackets + BUY/SELL.
@@ -313,6 +392,15 @@
             <button class="buy" id="trade-buy">BUY market</button>
             <button class="sell" id="trade-sell">SELL market</button>
           </div>
+        </div>
+        <!-- Micro-journal — captured at order entry, written to
+             notes/YYYY-MM-DD.jsonl alongside the order result so post-
+             trade reconciliation has the trader's reasoning, not just
+             the LLM's prediction. Optional; empty notes are skipped. -->
+        <div class="trade-note">
+          <input type="text" id="trade-note" maxlength="200"
+                 placeholder="Why this trade? (1 sentence — captured with the order)"
+                 autocomplete="off" />
         </div>
         <!-- Risk bar — dollar risk for the current (qty, entry, stop)
              combo + % of today's budget. Tints green/amber/red to
@@ -556,10 +644,66 @@
 
       <div class="profiles-layout">
         <aside class="profiles-list" id="profiles-list">
-          <div class="empty">Loading profiles…</div>
+          <div class="skeleton-group">
+            <div class="skeleton-card"><div class="skeleton skeleton--title"></div><div class="skeleton skeleton--short"></div></div>
+            <div class="skeleton-card"><div class="skeleton skeleton--title"></div><div class="skeleton skeleton--short"></div></div>
+            <div class="skeleton-card"><div class="skeleton skeleton--title"></div><div class="skeleton skeleton--short"></div></div>
+          </div>
         </aside>
 
         <div class="profiles-main">
+          <div class="card" id="profile-run-card">
+            <div class="card-head">
+              <h2>Run profile</h2>
+              <div class="card-head__actions">
+                <div class="profile-run-mode" role="tablist">
+                  <button type="button" class="btn-mode" data-mode="day">Day</button>
+                  <button type="button" class="btn-mode active" data-mode="week">Week</button>
+                </div>
+                <span class="mono small" id="profile-run-status"></span>
+              </div>
+            </div>
+
+            <div class="profile-cal">
+              <div class="profile-cal__head">
+                <button type="button" class="btn-ghost" id="profile-cal-prev">‹</button>
+                <div class="profile-cal__title" id="profile-cal-title">—</div>
+                <button type="button" class="btn-ghost" id="profile-cal-next">›</button>
+              </div>
+              <div class="profile-cal__dow mono small">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
+                <span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+              <div class="profile-cal__grid" id="profile-cal-grid"></div>
+              <div class="profile-cal__legend mono small">
+                <span><span class="dot dot-profiled"></span> already profiled</span>
+                <span><span class="dot dot-selected"></span> selected</span>
+              </div>
+            </div>
+
+            <div class="profile-run-footer">
+              <div class="profile-run-summary" id="profile-run-summary">Pick a date to get started</div>
+              <button class="btn btn-primary" id="profile-run-go" disabled>Run</button>
+            </div>
+
+            <div class="profile-run-progress hidden" id="profile-run-progress">
+              <div class="profile-run-phase" id="profile-run-phase">Starting…</div>
+              <ul class="profile-run-events mono small" id="profile-run-events"></ul>
+            </div>
+
+            <div class="profile-run-modal hidden" id="profile-run-modal">
+              <div class="profile-run-modal__box">
+                <h3 id="profile-run-modal-title">Override existing profile?</h3>
+                <p id="profile-run-modal-body" class="small"></p>
+                <div class="profile-run-modal__actions">
+                  <button type="button" class="btn" id="profile-run-modal-cancel">Cancel</button>
+                  <button type="button" class="btn" id="profile-run-modal-skip">Skip existing</button>
+                  <button type="button" class="btn btn-primary" id="profile-run-modal-override">Override all</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-head">
               <h2 id="compare-today-title">Today's chart</h2>
@@ -569,7 +713,7 @@
             </div>
             <div class="compare-pane">
               <div class="compare-img" id="compare-today-img">
-                <div class="empty">No capture yet. Click Capture to grab the current chart.</div>
+                <div class="empty">Tap Capture to pull today's chart.</div>
               </div>
             </div>
           </div>
@@ -596,8 +740,58 @@
     <section class="tab hidden" id="tab-forecasts">
       <h1>Forecasts</h1>
       <div class="subtitle">
-        Replay-forecast runs — F1 @ 10:00, F2 @ 12:00, F3 @ 14:00, reconciliation @ 16:00.
-        Produce via CLI: <span class="mono small">python -m tv_automation.daily_forecast YYYY-MM-DD</span>
+        Replay-forecast runs — F1 @ 10:00, F2 @ 12:00, F3 @ 14:00, reconciliation @ 16:00. Pick a day below to run; each takes ~15–20 min.
+      </div>
+
+      <div class="card" id="forecast-run-card">
+        <div class="card-head">
+          <h2>Run forecast</h2>
+          <div class="card-head__actions">
+            <span class="mono small" id="forecast-run-status"></span>
+            <button type="button" class="btn-ghost forecast-cal-toggle" id="forecast-cal-toggle"
+                    aria-label="Minimize calendar" title="Minimize calendar">▾</button>
+          </div>
+        </div>
+
+        <div class="profile-cal" id="forecast-cal">
+          <div class="profile-cal__head">
+            <button type="button" class="btn-ghost" id="forecast-cal-prev">‹</button>
+            <div class="profile-cal__title" id="forecast-cal-title">—</div>
+            <button type="button" class="btn-ghost" id="forecast-cal-next">›</button>
+          </div>
+          <div class="profile-cal__dow mono small">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
+            <span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="profile-cal__grid" id="forecast-cal-grid"></div>
+          <div class="profile-cal__legend mono small">
+            <span><span class="dot dot-profiled"></span> already forecasted</span>
+            <span><span class="dot dot-selected"></span> selected</span>
+            <span><span class="dot dot-reconciled"></span> reconciled (shows /7 score)</span>
+          </div>
+        </div>
+
+        <div class="profile-run-footer">
+          <div class="profile-run-summary" id="forecast-run-summary">Pick a day to run F1 → F2 → F3 → reconciliation</div>
+          <button class="btn btn-primary" id="forecast-run-go" disabled>Run</button>
+        </div>
+
+        <div class="profile-run-progress hidden" id="forecast-run-progress">
+          <div class="profile-run-phase" id="forecast-run-phase">Starting…</div>
+          <ul class="profile-run-events mono small" id="forecast-run-events"></ul>
+        </div>
+
+        <div class="profile-run-modal hidden" id="forecast-run-modal">
+          <div class="profile-run-modal__box">
+            <h3>Forecast already exists for this day</h3>
+            <p id="forecast-run-modal-body" class="small"></p>
+            <div class="profile-run-modal__actions">
+              <button type="button" class="btn" id="forecast-run-modal-cancel">Cancel</button>
+              <button type="button" class="btn" id="forecast-run-modal-skip">Skip existing stages</button>
+              <button type="button" class="btn btn-primary" id="forecast-run-modal-override">Override all</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="card lessons-card" id="lessons-card">
@@ -606,16 +800,43 @@
           <span class="card-head__actions mono small" id="lessons-meta">loading…</span>
         </div>
         <div id="lessons-body">
-          <div class="empty">Loading lessons…</div>
+          <div class="skeleton-group">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton skeleton--short"></div>
+          </div>
         </div>
       </div>
 
-      <div class="forecasts-layout">
+      <!-- Per-pattern calibration — aggregates the model's track record by
+           predicted tag value across all reconciliations. Tells you which
+           prediction patterns to trust vs fade. -->
+      <div class="card calibration-card" id="forecast-calibration-card">
+        <div class="card-head">
+          <h2>Pattern calibration</h2>
+          <span class="card-head__actions mono small" id="forecast-calibration-meta">loading…</span>
+        </div>
+        <div id="forecast-calibration-body">
+          <div class="skeleton-group">
+            <div class="skeleton skeleton--title"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton skeleton--short"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="forecasts-layout" id="forecasts-layout">
         <aside class="forecasts-list" id="forecasts-list">
-          <div class="empty">Loading forecast runs…</div>
+          <div class="skeleton-group">
+            <div class="skeleton-card"><div class="skeleton skeleton--title"></div><div class="skeleton skeleton--short"></div></div>
+            <div class="skeleton-card"><div class="skeleton skeleton--title"></div><div class="skeleton skeleton--short"></div></div>
+            <div class="skeleton-card"><div class="skeleton skeleton--title"></div><div class="skeleton skeleton--short"></div></div>
+          </div>
         </aside>
 
         <div class="forecasts-main" id="forecasts-main">
+          <button type="button" class="mobile-back-btn" data-target="forecasts-layout">‹ Back to list</button>
           <div class="empty">Pick a day on the left to inspect its forecast chain.</div>
         </div>
       </div>
@@ -640,6 +861,27 @@
     </section>
 
   </main>
+</div>
+
+<!-- Mobile bottom tab bar — iOS-native pattern, thumb-reachable. Shown
+     only when body.is-mobile is set; dispatches to the existing
+     .nav-item buttons so tab-switching logic stays single-source. -->
+<nav class="mobile-tabbar" aria-label="Primary navigation">
+  <button class="mtab active" data-tab="trade"><span class="mtab__ico">◉</span><span class="mtab__lbl">Trade</span></button>
+  <button class="mtab" data-tab="forecasts"><span class="mtab__ico">◆</span><span class="mtab__lbl">Forecasts</span></button>
+  <button class="mtab" data-tab="profiles"><span class="mtab__ico">▦</span><span class="mtab__lbl">Profiles</span></button>
+  <button class="mtab" data-tab="journal"><span class="mtab__ico">◐</span><span class="mtab__lbl">Journal</span></button>
+  <button class="mtab" id="mobile-more-btn"><span class="mtab__ico">⋯</span><span class="mtab__lbl">More</span></button>
+</nav>
+<div class="mobile-more-sheet hidden" id="mobile-more-sheet" aria-hidden="true">
+  <div class="mobile-more-sheet__backdrop"></div>
+  <div class="mobile-more-sheet__panel" role="dialog" aria-label="More tabs">
+    <div class="mobile-more-sheet__handle"></div>
+    <button class="mtab-row" data-tab="act"><span class="mtab__ico">◈</span> Act</button>
+    <button class="mtab-row" data-tab="watchlist"><span class="mtab__ico">☰</span> Watchlist</button>
+    <button class="mtab-row" data-tab="alerts"><span class="mtab__ico">⊙</span> Alerts</button>
+    <button class="mtab-row" data-tab="audit"><span class="mtab__ico">⎙</span> Audit</button>
+  </div>
 </div>
 
 <div class="toast hidden" id="toast"></div>
