@@ -28,6 +28,11 @@ from playwright.async_api import BrowserContext, Page, async_playwright
 
 load_dotenv()
 
+# Install the bring-to-front no-op patch early — before any Page is
+# created. This stops macOS Spaces from being yanked onto Chrome's
+# Space during captures. Opt out via `TV_QUIET=0` in env.
+from tv_automation.lib import focus_policy  # noqa: F401
+
 # Resolve session dir relative to this file so scripts work from any CWD.
 _DEFAULT_SESSION_DIR = Path(__file__).parent / "session"
 SESSION_DIR = Path(os.getenv("TV_SESSION_DIR", _DEFAULT_SESSION_DIR)).expanduser().resolve()
