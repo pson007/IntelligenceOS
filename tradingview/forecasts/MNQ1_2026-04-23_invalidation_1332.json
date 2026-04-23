@@ -1,0 +1,30 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-23",
+  "dow": "Thu",
+  "stage": "invalidation_1332",
+  "pivot_called_at_et": "13:32 ET",
+  "operator_reason": null,
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_pivot_20260423_133222.png",
+  "lessons_injected": true,
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-23T13:32:21-04:00",
+  "raw_response": "BREAK CONTEXT\n\nThe key failure was the loss of 26,964 with immediate follow-through, not a one-tick breach. Price flushed straight through the stop line, stayed pinned below the 27,015 open, and is now trading around 26,899, with only a weak bounce after the first extension leg down. On the chart, price is clearly below VWAP and back under the midday balance/value zone that had been supporting the long thesis, which means this looks like acceptance lower, not a clean reclaim attempt. \n\nPasted text\n\nPIVOT CLASSIFICATION\n\nREVERSAL \u2014 the regime has flipped. The long-side reclaim structure failed, and the market is now treating the prior support band as supply. The new short trigger is a failed bounce that cannot recover 26,964, ideally stalling in the 26,930\u201326,960 area; stop goes above 27,015, and the first target is 26,881, then extension lower if that low gives way.\n\nREVISED TACTICAL BIAS\n\nnew_bias: sell_failure\n\nnew_invalidation: This reversal read is wrong if price quickly reclaims 26,964 and then pushes back through the 27,015 open/VWAP area with hold, because that would convert the breakdown into a failed break rather than true acceptance lower.\n\nCONFIDENCE\n\npivot_confidence: med\n\nMain risk: this came after a long-base lunch structure, so the break can still turn into a late stop-run if buyers snap it back above 26,964 fast. The danger is misreading initial liquidation as a full regime transition before the reclaim test resolves.\n\nJSON\n{\n  \"break_context\": \"26,964 broke with immediate downside follow-through and no meaningful reclaim. Price is now trading near 26,899, below the 27,015 open, below VWAP, and back under the prior midday/value support zone, which indicates acceptance lower rather than a simple stop sweep.\",\n  \"pivot_classification\": \"REVERSAL\",\n  \"reversal\": {\n    \"direction\": \"short\",\n    \"entry_trigger\": \"Sell a failed bounce that cannot reclaim 26,964, ideally after a stall in the 26,930-26,960 area.\",\n    \"stop\": 27015,\n    \"first_target\": 26881\n  },\n  \"flat_conditions\": null,\n  \"shakeout_reclaim\": null,\n  \"revised_tactical_bias\": {\n    \"bias\": \"sell_failure\",\n    \"invalidation\": \"Invalid if price quickly reclaims 26,964 and then retakes/holds the 27,015 open-VWAP area. That would convert the break into a failed breakdown rather than true acceptance lower.\"\n  },\n  \"pivot_confidence\": \"med\",\n  \"confidence_notes\": \"The main risk is a late stop-hunt interpretation: lunch-base structures can produce sharp downside probes that reverse fast. A forceful reclaim back above 26,964 would undermine the reversal call.\"\n}",
+  "break_context": "26,964 broke with immediate downside follow-through and no meaningful reclaim. Price is now trading near 26,899, below the 27,015 open, below VWAP, and back under the prior midday/value support zone, which indicates acceptance lower rather than a simple stop sweep.",
+  "pivot_classification": "REVERSAL",
+  "reversal": {
+    "direction": "short",
+    "entry_trigger": "Sell a failed bounce that cannot reclaim 26,964, ideally after a stall in the 26,930-26,960 area.",
+    "stop": 27015,
+    "first_target": 26881
+  },
+  "flat_conditions": null,
+  "shakeout_reclaim": null,
+  "revised_tactical_bias": {
+    "bias": "sell_failure",
+    "invalidation": "Invalid if price quickly reclaims 26,964 and then retakes/holds the 27,015 open-VWAP area. That would convert the break into a failed breakdown rather than true acceptance lower."
+  },
+  "pivot_confidence": "med",
+  "confidence_notes": "The main risk is a late stop-hunt interpretation: lunch-base structures can produce sharp downside probes that reverse fast. A forceful reclaim back above 26,964 would undermine the reversal call.",
+  "parsed_structured": true
+}

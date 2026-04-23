@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-26",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-26T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260422_224014.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-22T22:42:30-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "opening_flush_trend_down_then_base",
+    "open_approx": 25580.0,
+    "close_approx": 25244.0,
+    "hod_approx": 25610.0,
+    "lod_approx": 25070.0,
+    "net_range_pts_open_to_close": -336,
+    "net_range_pct_open_to_close": -1.3,
+    "intraday_span_pts": 540,
+    "shape_sentence": "Opened near the upper session band, failed quickly, printed a hard opening flush, then spent the rest of RTH in a weak rebound/base that never repaired the morning damage."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25580.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:40",
+      "price_approx": 25610.0,
+      "type": "hod_opening_rejection"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 25470.0,
+      "type": "breakdown_acceleration"
+    },
+    {
+      "time_et": "10:18",
+      "price_approx": 25070.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "10:55",
+      "price_approx": 25300.0,
+      "type": "first_rebound_high"
+    },
+    {
+      "time_et": "12:10",
+      "price_approx": 25140.0,
+      "type": "midday_retest_low"
+    },
+    {
+      "time_et": "14:05",
+      "price_approx": 25315.0,
+      "type": "afternoon_rebound_peak"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25244.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:18",
+      "direction": "down",
+      "note": "Best standout move was the opening downside flush from the 25,580-25,600 area into the session low near 25,070."
+    },
+    "red_circles": {
+      "behavior": "Clustered near upper pivots before the break and again on rebound failures, marking repeated sell-the-pop behavior."
+    },
+    "green_circles": {
+      "behavior": "Expanded after the flush low, showing stair-step support during the recovery, but buyers stayed reactive rather than dominant."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 25,560-25,620 capped the opening area and later 25,300-25,360 capped rebound attempts; both zones were respected."
+    },
+    "blue_banks_demand": {
+      "behavior": "Initial support around 25,500 failed on the opening flush, while deeper demand around 25,080-25,150 helped stabilize the low and form a base."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Active opening breakdown; the market was accelerating lower through broken support.",
+    "12pm_red": "Midday rotation off the lows, but structure remained weak and corrective.",
+    "2pm_green": "Afternoon rebound was pushing into lower supply near 25,300+, without full structural repair.",
+    "4pm_yellow": "Closed red, off the low but still in the lower half of the session range."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "opening_flush_trend_down_then_base",
+    "open_type": "rotational_open",
+    "lunch_behavior": "dead_cat_bounce_then_base",
+    "afternoon_drive": "rebound_without_full_reclaim",
+    "goat_time": "10:18",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "upper_supply_held_rebound",
+    "banks_broken": "early_support_failed_on_opening_flush"
+  },
+  "takeaway": "Bearish opening-flush day with early upper-band failure, fast downside expansion, and only a corrective rebound/base into the close."
+}

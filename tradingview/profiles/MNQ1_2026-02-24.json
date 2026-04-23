@@ -1,0 +1,122 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-24",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-24T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260422_223414.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-22T22:37:03-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "opening_flush_reversal_then_high_range_balance",
+    "open_approx": 25060.0,
+    "close_approx": 25233.0,
+    "hod_approx": 25295.0,
+    "lod_approx": 24914.0,
+    "net_range_pts_open_to_close": 173,
+    "net_range_pct_open_to_close": 0.69,
+    "intraday_span_pts": 381,
+    "shape_sentence": "Opening flush-and-reclaim trend day that converted into an upper-range hold after the noon peak."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25060.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 24914.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "10:10",
+      "price_approx": 25115.0,
+      "type": "breakout_reclaim"
+    },
+    {
+      "time_et": "10:35",
+      "price_approx": 25220.0,
+      "type": "trend_continuation"
+    },
+    {
+      "time_et": "12:20",
+      "price_approx": 25295.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "12:55",
+      "price_approx": 25205.0,
+      "type": "pullback_support_hold"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 25225.0,
+      "type": "upper_range_balance"
+    },
+    {
+      "time_et": "15:10",
+      "price_approx": 25280.0,
+      "type": "late_reversal_attempt"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25233.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:45",
+      "direction": "up",
+      "note": "Opening flush reversed from roughly 24,914 and squeezed upward through multiple nearby supply markers, establishing the day's bullish control."
+    },
+    "red_circles": {
+      "behavior": "Mostly marked local fade points and pullbacks within an overall bullish session, especially after the morning rally and during upper-range afternoon chop."
+    },
+    "green_circles": {
+      "behavior": "Appeared on the opening reclaim and on repeated dip-buy defenses later in the day, showing higher-low support behavior."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply clustered near 25,095-25,115, 25,165-25,185, and 25,275-25,295; lower zones were broken after the reversal, while the top zone was later more respected than broken."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand clustered near 24,915-24,940 and again around 25,195-25,240; the opening extreme held and the low-25,200s shelf kept attracting buyers."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "At or just after the opening low/reversal zone; price was shifting from panic liquidation into strong reclaim.",
+    "12pm_red": "Near the strongest part of the session and close to the eventual high; momentum was still up but beginning to broaden into chop.",
+    "2pm_green": "Upper-range balance with demand continuing to hold; no major unwind of the morning advance.",
+    "4pm_yellow": "Closed firm near 25,233, much closer to the high than the low, preserving the bullish session structure."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "opening_flush_reversal_then_high_range_balance",
+    "open_type": "flush_reversal_open",
+    "lunch_behavior": "elevated_range_chop_after_noon_peak",
+    "afternoon_drive": "sideways_hold_with_shallow_dip_buys",
+    "goat_time": "09:45",
+    "goat_direction": "up",
+    "peak_hour": 12,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "afternoon_demand_held_top_supply_capped_retests",
+    "banks_broken": "early_morning_supply_layers"
+  },
+  "takeaway": "Bullish flush-reversal trend day with a powerful opening reclaim, then a stable high-range hold; a useful comparable for sessions where early panic selling fails and demand takes control above reclaimed supply."
+}

@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-12",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-12T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260422_231206.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-22T23:15:15-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "open_selloff_midday_retrace_afternoon_continuation",
+    "open_approx": 25115.0,
+    "close_approx": 24840.0,
+    "hod_approx": 25130.0,
+    "lod_approx": 24745.0,
+    "net_range_pts_open_to_close": -275,
+    "net_range_pct_open_to_close": -1.09,
+    "intraday_span_pts": 385,
+    "shape_sentence": "Early sell program from the open, midday rebound that failed below prior supply, then a second-leg afternoon bleed into a weak close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25115.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:38",
+      "price_approx": 25130.0,
+      "type": "early_high_hod"
+    },
+    {
+      "time_et": "10:42",
+      "price_approx": 24780.0,
+      "type": "morning_flush_low"
+    },
+    {
+      "time_et": "12:08",
+      "price_approx": 25110.0,
+      "type": "midday_rebound_high"
+    },
+    {
+      "time_et": "13:55",
+      "price_approx": 25000.0,
+      "type": "lower_high_failure"
+    },
+    {
+      "time_et": "14:32",
+      "price_approx": 24860.0,
+      "type": "pm_breakdown_pivot"
+    },
+    {
+      "time_et": "15:24",
+      "price_approx": 24745.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24840.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:45",
+      "direction": "down",
+      "note": "Best expansion leg was the early-session selloff from the open region into the first major morning low."
+    },
+    "red_circles": {
+      "behavior": "Appeared repeatedly at bounce failures and lower highs, reinforcing bearish continuation."
+    },
+    "green_circles": {
+      "behavior": "Marked reactive support bounces that stayed mostly countertrend and failed to reverse the day."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply clustered around 25060-25120 and later near 24980-25000; these zones were largely respected and capped rebounds."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand appeared around 24920-24940, 24860, and 24740-24780; several levels were tested, briefly defended, then broken."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Already rolling over from the open, with downside control taking hold.",
+    "12pm_red": "Midday rebound was pressing into supply but had not regained full bullish control.",
+    "2pm_green": "Rebound had failed and the market was transitioning into afternoon continuation lower.",
+    "4pm_yellow": "Closed weak after a late washout, with only a small bounce off the lows."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "open_selloff_midday_retrace_afternoon_continuation",
+    "open_type": "rotational_open_to_seller_control",
+    "lunch_behavior": "rebound_into_supply_then_fail",
+    "afternoon_drive": "second_leg_lower_into_close",
+    "goat_time": "10:45",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "overhead_supply_respected_on_rebounds",
+    "banks_broken": "multiple_demand_shelves_lost_downside"
+  },
+  "takeaway": "Bearish continuation day with early distribution, failed lunchtime reclaim, and a second-leg afternoon extension lower."
+}

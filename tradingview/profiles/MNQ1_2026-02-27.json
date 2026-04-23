@@ -1,0 +1,112 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-27",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-27T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame2_20260422_224310.png",
+  "gate": {
+    "ok": false,
+    "reason": "close_cut (session_last=15:00:00, required\u226515:30:00)",
+    "first": "03:00:00",
+    "last": "15:00:00"
+  },
+  "profiled_at": "2026-04-22T22:47:30-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "opening_flush_then_rotational_recovery",
+    "open_approx": 25225.0,
+    "close_approx": 25168.0,
+    "hod_approx": 25255.0,
+    "lod_approx": 24955.0,
+    "net_range_pts_open_to_close": -57,
+    "net_range_pct_open_to_close": -0.23,
+    "intraday_span_pts": 300,
+    "shape_sentence": "Gap-down liquidation at the bell, sharp opening washout, then a grinding two-way recovery that never fully repaired the early damage."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25225.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:46",
+      "price_approx": 24955.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "10:18",
+      "price_approx": 25110.0,
+      "type": "bullish_reclaim"
+    },
+    {
+      "time_et": "11:58",
+      "price_approx": 25235.0,
+      "type": "late_morning_push_high"
+    },
+    {
+      "time_et": "13:42",
+      "price_approx": 25085.0,
+      "type": "afternoon_failure"
+    },
+    {
+      "time_et": "15:34",
+      "price_approx": 25220.0,
+      "type": "late_reclaim_attempt"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25168.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "15:34",
+      "direction": "up",
+      "note": "Late-session reclaim burst off afternoon demand into the 25,215-25,225 area."
+    },
+    "red_circles": {
+      "behavior": "Appeared on failed rebounds and lower highs, especially where price ran back into the descending supply ribbon."
+    },
+    "green_circles": {
+      "behavior": "Clustered around defended lows and support retests, including the opening recovery base and later afternoon holds."
+    },
+    "orange_banks_supply": {
+      "behavior": "Primary supply sat around 25,210-25,260 with a higher shelf near 25,300; lower supply was tested but higher resistance held."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand formed first around 25,000-25,080, then rebuilt slightly higher; early demand broke, deeper afternoon demand held."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Opening washout had already occurred and price was attempting to stabilize and reclaim from the low.",
+    "12pm_red": "Session was in a noisy recovery rotation beneath overhead supply after rebounding off the open.",
+    "2pm_green": "Afternoon trade remained weak-to-neutral, testing whether lower demand could absorb another sell leg.",
+    "4pm_yellow": "Market closed during a late rebound, but still below the opening level and below the best recovery highs."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "opening_flush_then_rotational_recovery",
+    "open_type": "gap_down_drive",
+    "lunch_behavior": "choppy_rebalance_under_supply",
+    "afternoon_drive": "late_reclaim_after_pm_flush",
+    "goat_time": "15:34",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "upper_supply_repeatedly_respected",
+    "banks_broken": "opening_demand_broke_then_rebuilt_lower"
+  },
+  "takeaway": "Bearish opening-drive day that transitioned into a rotational recovery session, with early liquidation setting the key low and repeated supply caps preventing full reversal."
+}

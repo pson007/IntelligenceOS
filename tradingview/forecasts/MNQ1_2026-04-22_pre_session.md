@@ -1,0 +1,137 @@
+---
+symbol: MNQ1
+date: 2026-04-22
+dow: Wed
+stage: pre_session_forecast
+mode: live_prerth
+screenshot: /Users/pson/Desktop/TradingView/MNQ1_presession_20260422_133230.png
+based_on_priors: ['2026-04-21', '2026-04-20', '2026-04-17', '2026-04-16', '2026-04-15']
+same_dow_refs: ['2026-04-15', '2026-04-08', '2026-04-01']
+model: chatgpt_thinking
+made_at: 2026-04-22T13:34:03
+---
+REGIME READ
+
+The regime is post-break pullback after a short bullish streak, with overnight re-acceptance higher. The last three completed RTH sessions shifted from two clean up days (04-16, 04-17) into two red sessions (04-20, 04-21), but 04-21 ended as a trend-down liquidation day, which often creates next-day two-way trade rather than automatic continuation. Overnight, MNQ has recovered materially above yesterday's weak cash close and is trading back near the upper end of the visible Globex range, so the pre-open lean is against yesterday's late liquidation, but with only medium-to-low conviction because the first green response after a break in momentum is still vulnerable to becoming a gap-up fade. I am leaning more on 04-20's "down then partial recovery" and less on 04-21 pure continuation. 
+
+Pasted text
+
+SAME-DOW REFERENCES
+
+2026-04-15: Best analogue if today holds above the opening dip; that Wednesday showed early reclamation, one midday liquidation break, then a strong close near highs.
+
+2026-04-08: Best warning case; Wednesday gap-up strength failed quickly and turned into an opening reversal with lower-high chop, so today's bullish case is fragile if the first push cannot hold.
+
+2026-04-01: Tail-risk upside reference; if early weakness is bought and supply keeps breaking, Wednesday can become a sustained trend-up continuation session rather than a balanced rebound.
+
+PREDICTIONS
+
+Direction: up
+
+Confidence: med
+
+Open type: open_dip_then_reclaim
+
+Structure: early_reclaim_then_trend_up_with_midday_pause
+
+Expected move size: med
+
+Net pct range: +0.25% to +0.85%
+
+Intraday span range (pts): 220–380
+
+TIME WINDOW EXPECTATIONS
+
+10:00: Early dip/fade risk first, but expectation is reclaim above the open and rotation back toward the morning high.
+
+12:00: Midday should be a pause or shallow pullback, not a trend reversal, if the bullish scenario is intact.
+
+14:00: Best odds for renewed upside expansion after lunch if buyers defend VWAP/first pullback support.
+
+16:00 (close): Finish green, likely upper half of session range, but not necessarily at HOD.
+
+PROBABLE GOAT
+
+Direction: long
+
+Time window: morning
+
+Rationale: Yesterday's liquidation and overnight recovery favor a buyable early fade/reclaim setup more than immediate runaway breakout.
+
+TACTICAL BIAS
+
+Primary bias: buy_dips_on_reclaim
+
+Invalidation conditions:
+
+Opening rally fails and price is back below the open/VWAP by 10:00 with lower highs holding.
+
+First 30–45 minutes break the opening low and cannot reclaim it quickly.
+
+Lunch trades remain pinned under morning supply instead of basing above VWAP.
+
+PREDICTION TAGS
+
+direction: up
+
+structure: early_reclaim_then_trend_up_with_midday_pause
+
+open_type: open_dip_then_reclaim
+
+lunch_behavior: midday_balancing_above_vwap
+
+afternoon_drive: renewed_upside_grind
+
+goat_direction: up
+
+close_near_extreme: no_mid_upper_range
+
+CONFIDENCE NOTES
+
+What could go wrong is simple: the overnight recovery may just be a gap-up repair inside a still-bearish short-term regime, which would make 04-08 the better analogue than 04-15. I am least sure about the open type; this could easily flip from buy-the-dip into immediate gap-up fade. The most likely invalidation trigger is the first one: failure to hold above open/VWAP during the first hour.
+
+JSON
+{
+  "regime_read": "Post-break pullback after a short bullish streak, with overnight re-acceptance higher. The recent regime shifted from two clean up days into two red sessions, but 2026-04-21 was a liquidation-style trend-down day that often creates next-day two-way trade rather than automatic continuation. With Globex recovering well above yesterday's close and trading near the upper end of the overnight range, the initial lean is against yesterday's late liquidation, though confidence should stay capped until the first 30 minutes confirm.",
+  "same_dow_references": [
+    "2026-04-15: Bullish Wednesday template if an early dip is reclaimed and the session trends higher after a midday reset.",
+    "2026-04-08: Main warning analogue; gap-up strength reversed early and became a lower-high fade day.",
+    "2026-04-01: Upside expansion reference if early weakness is bought aggressively and supply keeps breaking."
+  ],
+  "predictions": {
+    "direction": "up",
+    "direction_confidence": "med",
+    "open_type": "open_dip_then_reclaim",
+    "structure": "early_reclaim_then_trend_up_with_midday_pause",
+    "expected_move_size": "med",
+    "predicted_net_pct_lo": 0.25,
+    "predicted_net_pct_hi": 0.85,
+    "predicted_intraday_span_lo_pts": 220,
+    "predicted_intraday_span_hi_pts": 380
+  },
+  "time_window_expectations": {
+    "10am": "Early fade risk first, then reclaim back above the open and toward the morning high if buyers are in control.",
+    "12pm": "Midday pause or shallow pullback above VWAP is more likely than a full bearish reversal.",
+    "2pm": "Renewed upside push should emerge if lunchtime balance holds above key support.",
+    "4pm": "Likely green close in the upper half of the day's range, though not necessarily on the exact high."
+  },
+  "probable_goat": {
+    "direction": "long",
+    "time_window": "morning",
+    "rationale": "Yesterday's liquidation plus overnight recovery favors a buyable early fade-and-reclaim more than immediate runaway continuation."
+  },
+  "tactical_bias": {
+    "bias": "buy_dips_on_reclaim",
+    "invalidation": "Bullish bias is invalidated if the opening rally fails and price is back below open/VWAP by 10:00 with lower highs holding; if the first 30-45 minutes break the opening low and fail to reclaim it quickly; or if lunch remains pinned under morning supply instead of basing above VWAP."
+  },
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "early_reclaim_then_trend_up_with_midday_pause",
+    "open_type": "open_dip_then_reclaim",
+    "lunch_behavior": "midday_balancing_above_vwap",
+    "afternoon_drive": "renewed_upside_grind",
+    "goat_direction": "up",
+    "close_near_extreme": "no_mid_upper_range"
+  },
+  "confidence_notes": "Main risk is that the overnight recovery is only a gap-up repair inside a still-bearish short-term regime, making the 2026-04-08 analogue more relevant than the bullish Wednesday references. I am least certain about the exact open type; this could become a gap-up fade if early strength cannot hold. The most likely invalidation trigger is failure to hold above open/VWAP during the first hour."
+}

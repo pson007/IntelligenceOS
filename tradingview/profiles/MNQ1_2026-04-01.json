@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-01",
+  "dow": "Wed",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-01T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_231935.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-21T23:20:47-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "early_flush_then_trend_up",
+    "open_approx": 23450.0,
+    "close_approx": 24188.0,
+    "hod_approx": 24350.0,
+    "lod_approx": 23300.0,
+    "net_range_pts_open_to_close": 738,
+    "net_range_pct_open_to_close": 3.1,
+    "intraday_span_pts": 1050,
+    "shape_sentence": "early flush followed by sustained trend up with higher highs into afternoon and slight late fade"
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 23450.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 23300.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 23450.0,
+      "type": "higher_low"
+    },
+    {
+      "time_et": "11:30",
+      "price_approx": 23700.0,
+      "type": "breakout"
+    },
+    {
+      "time_et": "13:30",
+      "price_approx": 23950.0,
+      "type": "trend_higher_low"
+    },
+    {
+      "time_et": "14:30",
+      "price_approx": 24150.0,
+      "type": "acceleration"
+    },
+    {
+      "time_et": "15:15",
+      "price_approx": 24350.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24188.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "14:30",
+      "direction": "up",
+      "note": "strong upside expansion into session highs"
+    },
+    "red_circles": {
+      "behavior": "shallow pullbacks within uptrend, no sustained reversals"
+    },
+    "green_circles": {
+      "behavior": "frequent continuation signals aligning with higher lows"
+    },
+    "orange_banks_supply": {
+      "behavior": "repeatedly broken as price trended higher"
+    },
+    "blue_banks_demand": {
+      "behavior": "stepping higher and consistently defended"
+    }
+  },
+  "time_markers": {
+    "10am_blue": "transition from early selloff into stabilization",
+    "12pm_red": "trend continuation holding highs",
+    "2pm_green": "acceleration into breakout phase",
+    "4pm_yellow": "minor pullback, close near highs"
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "early_flush_then_trend_up",
+    "open_type": "rotational_open",
+    "lunch_behavior": "steady_grind_up",
+    "afternoon_drive": "continuation_to_new_highs_then_pause",
+    "goat_time": "14:30",
+    "goat_direction": "up",
+    "peak_hour": 14,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "demand_zones_step_up_and_hold",
+    "banks_broken": "multiple_supply_layers_taken_out"
+  },
+  "takeaway": "Bullish trend day with early flush reversal and persistent higher-low structure, breaking supply and closing near highs."
+}

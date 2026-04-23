@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-21",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260421_112827.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "05:30:00",
+    "session_last": "11:30:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-21T11:30:57",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-21 ~10:00 AM ET\n\nBars observed so far this session: 6 completed 5-minute RTH bars, 09:30-09:55 ET; anything after 10:00 ET is not used\n\nWhat has happened so far in 1 sentence: Before the cursor, MNQ sold hard off the 09:30 open into a washout low near 26,725, then snapped back sharply into 10:00 but only back toward overhead resistance, not back into clear strength.\n\nRANKED SIMILAR ARCHETYPES\n\nOpening flush -> reflex bounce -> trend-day fade \u2014 the pre-cursor sequence is a classic impulse down followed by a sharp but suspect retrace into resistance.\n\nBearish open-drive with trapped late longs \u2014 the rebound before the cursor looks more like short-covering than durable value acceptance.\n\nWeak bear trend / liquidation day \u2014 lower-value behavior and inability to reclaim prior structure make a later downside extension plausible.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: expectation\nLikely one more push/retest into 26,845-26,875 or immediate stall beneath it, then rotation back under 26,800 and pressure toward the opening washout zone.\n\nBetween next marker and 14:00: expectation\nLunch likely shifts from choppy to heavy; expect failed bounces, lower highs, and a retest of 26,745-26,725, with risk of extension below if that floor breaks.\n\nBetween 14:00 and 16:00 (close): expectation\nWeak-trend liquidation is favored; unless price has reclaimed 26,850+ before 14:00, the afternoon should bias to fresh lows or close near the lower end of the day.\n\nProjected close price (range): 26,695-26,745\n\nRest-of-day HOD (range): 26,850-26,890\n\nRest-of-day LOD (range): 26,665-26,725\n\nTACTICAL BIAS\n\nPrimary bias (long/short/neutral) with confidence %\nShort, 67%\n\nKey level to invalidate the bias\nSustained reclaim and hold above 26,885-26,900\n\nPreferred entry zone\n26,845-26,875 on rejection, or a failed bounce back into 26,815-26,830 after a drop\n\nR:R logic\nRisk is tight above the bounce/supply shelf; reward is a retest of 26,725 first, then trend-day extension into 26,690s, giving roughly 1:2.5 to 1:4 if the lower-high thesis is right.\n\nKEY LEVELS\n\nOverhead supply: 26,845-26,875, then 26,890-26,905\n\nUnderlying demand: 26,745-26,725, then 26,690-26,665\n\nPivot-to-watch: 26,815-26,830\n\nPREDICTION TAGS\n\ndirection: down 67%\n\nstructure: opening flush -> reflex bounce -> lower-high fade 72%\n\nlunch_behavior: heavy chop drifting lower 69%\n\nafternoon_drive: liquidation extension 62%\n\ngoat_direction: bearish primary impulse / bullish best reversal trade after the flush 74%\n\nclose_near_extreme: near low 64%"
+}

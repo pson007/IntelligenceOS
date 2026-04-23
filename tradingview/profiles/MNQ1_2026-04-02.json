@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-02",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-02T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_232051.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-21T23:25:03-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "open_flush_reversal_then_pm_grind_higher",
+    "open_approx": 23760.0,
+    "close_approx": 24220.0,
+    "hod_approx": 24255.0,
+    "lod_approx": 23665.0,
+    "net_range_pts_open_to_close": 460,
+    "net_range_pct_open_to_close": 1.94,
+    "intraday_span_pts": 590,
+    "shape_sentence": "Opened weak, reversed hard off the early low, then spent the rest of RTH holding higher and grinding back toward the upper band into the close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 23760.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:38",
+      "price_approx": 23665.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "10:06",
+      "price_approx": 23980.0,
+      "type": "breakout"
+    },
+    {
+      "time_et": "10:28",
+      "price_approx": 24255.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 24165.0,
+      "type": "midday_rotation"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 24105.0,
+      "type": "higher_low"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 24190.0,
+      "type": "late_reclaim"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24220.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:05",
+      "direction": "up",
+      "note": "Opening flush reversed sharply and expanded into the main upside repricing of the session."
+    },
+    "red_circles": {
+      "behavior": "Clustered mainly from late morning into midday, marking repeated fade attempts under overhead resistance without breaking the day's bullish structure."
+    },
+    "green_circles": {
+      "behavior": "Appeared at the opening washout and again on later pullbacks, acting as continuation supports on an up session."
+    },
+    "orange_banks_supply": {
+      "behavior": "Early supply near 23900-24000 was broken; upper supply near 24180-24255 was tested repeatedly and mostly respected into the close."
+    },
+    "blue_banks_demand": {
+      "behavior": "Opening demand near 23660-23720 held decisively; later demand around 24000-24120 was repeatedly defended."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Strong upside expansion out of the open reversal, with early supply being reclaimed and cleared.",
+    "12pm_red": "Midday rotation below the morning peak; price held gains but stalled under upper resistance.",
+    "2pm_green": "Higher-low support held and the afternoon reclaim sequence started to rebuild.",
+    "4pm_yellow": "Session ended near the upper end of range after a steady late grind higher."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "open_flush_reversal_then_pm_grind_higher",
+    "open_type": "rotational_open",
+    "lunch_behavior": "midday_range_under_supply",
+    "afternoon_drive": "steady_reclaim_into_close",
+    "goat_time": "10:05",
+    "goat_direction": "up",
+    "peak_hour": 10,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "upper_supply_repeatedly_capped_extensions",
+    "banks_broken": "early_supply_was_cleared_after_open_reversal"
+  },
+  "takeaway": "Bullish open-reversal trend day with defended demand after the early flush and a steady afternoon reclaim into the close."
+}

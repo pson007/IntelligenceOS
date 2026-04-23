@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-06",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-06T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame2_20260422_225906.png",
+  "gate": {
+    "ok": false,
+    "reason": "close_cut (session_last=15:00:00, required\u226515:30:00)",
+    "first": "03:00:00",
+    "last": "15:00:00"
+  },
+  "profiled_at": "2026-04-22T23:02:21-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "midday_peak_then_late_breakdown",
+    "open_approx": 24980.0,
+    "close_approx": 24876.25,
+    "hod_approx": 25145.0,
+    "lod_approx": 24835.0,
+    "net_range_pts_open_to_close": -104,
+    "net_range_pct_open_to_close": -0.42,
+    "intraday_span_pts": 310,
+    "shape_sentence": "Sharp post-open rebound and squeeze into midday, then rotational fade that broke lower late and finished near the session low."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24980.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:37",
+      "price_approx": 24900.0,
+      "type": "bullish_pivot"
+    },
+    {
+      "time_et": "11:35",
+      "price_approx": 25145.0,
+      "type": "hod_bearish_pivot"
+    },
+    {
+      "time_et": "12:55",
+      "price_approx": 25070.0,
+      "type": "failed_reclaim_bearish_pivot"
+    },
+    {
+      "time_et": "14:05",
+      "price_approx": 25040.0,
+      "type": "lower_high_pivot"
+    },
+    {
+      "time_et": "15:34",
+      "price_approx": 24860.0,
+      "type": "breakdown"
+    },
+    {
+      "time_et": "15:46",
+      "price_approx": 24835.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24876.25,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:45",
+      "direction": "up",
+      "note": "Best RTH expansion was the opening recovery leg that carried from the post-open low area into the midday high near 25,145."
+    },
+    "red_circles": {
+      "behavior": "Appeared near lower highs and failed squeezes, especially around the midday crest and later afternoon rollover points."
+    },
+    "green_circles": {
+      "behavior": "Marked early support and reclaim points after the open, but later bullish pivots had weaker follow-through."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply clustered around 25,080-25,150 and above; these zones repeatedly capped upside and were respected during RTH."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand first held near 24,900-24,940, then lower support formed near 24,840-24,880; upper demand broke later while lower demand produced the final bounce."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Rebound phase was active, with price climbing away from the opening low structure and regaining ground.",
+    "12pm_red": "Market was testing or just backing off from the session high area; upside momentum was beginning to stall.",
+    "2pm_green": "Afternoon trade was rotational and weaker, holding below the noon high and preparing for the later downside break.",
+    "4pm_yellow": "Close came after a late selloff into fresh RTH lows, with only a modest rebound into the bell."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "midday_peak_then_late_breakdown",
+    "open_type": "reversal_open_after_preopen_flush",
+    "lunch_behavior": "choppy_distribution_under_supply",
+    "afternoon_drive": "late_selloff_to_new_lows",
+    "goat_time": "09:45",
+    "goat_direction": "up",
+    "peak_hour": 11,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "midday_supply_held",
+    "banks_broken": "afternoon_upper_demand_failed"
+  },
+  "takeaway": "Bearish reversal/distribution day with a strong opening recovery into midday supply, followed by failed continuation and a late-session breakdown."
+}

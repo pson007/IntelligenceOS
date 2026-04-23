@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-25",
+  "dow": "Wed",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-25T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_230003.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "21:00:00"
+  },
+  "profiled_at": "2026-04-21T23:04:47-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "opening_rejection_midday_flush_rebound_fail",
+    "open_approx": 24500.0,
+    "close_approx": 24368.0,
+    "hod_approx": 24540.0,
+    "lod_approx": 24290.0,
+    "net_range_pts_open_to_close": -132,
+    "net_range_pct_open_to_close": -0.54,
+    "intraday_span_pts": 250,
+    "shape_sentence": "Early push into upper supply failed, price flushed into midday demand, bounced hard off the low, then faded and closed in the lower half."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24500.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:40",
+      "price_approx": 24540.0,
+      "type": "opening_hod"
+    },
+    {
+      "time_et": "10:05",
+      "price_approx": 24380.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "10:40",
+      "price_approx": 24510.0,
+      "type": "rebound_lower_high"
+    },
+    {
+      "time_et": "11:40",
+      "price_approx": 24290.0,
+      "type": "lod_flush"
+    },
+    {
+      "time_et": "13:05",
+      "price_approx": 24500.0,
+      "type": "lunch_rebound_high"
+    },
+    {
+      "time_et": "14:35",
+      "price_approx": 24445.0,
+      "type": "afternoon_lower_high"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24368.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "13:00",
+      "direction": "up",
+      "note": "Bullish rebound from the noon demand flush near 24340-24360 back into the 24480-24500 area."
+    },
+    "red_circles": {
+      "behavior": "Clustered on rebound failures and lower highs, repeatedly confirming short pivots beneath overhead resistance."
+    },
+    "green_circles": {
+      "behavior": "Concentrated near washout lows and reclaim spots, most effective around the noon reversal attempt."
+    },
+    "orange_banks_supply": {
+      "behavior": "Primary supply sat around 24490-24540 with secondary resistance near 24430-24460; rallies into those zones were respected and rejected."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand first appeared near 24380-24400 and more strongly at 24290-24340; the deeper pocket held, while the mid-band gave way intraday."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Opening strength had already rolled over; price was trading heavy near lower-half demand and trying to stabilize.",
+    "12pm_red": "Market was in its weakest phase, flushing into the session low zone and beginning a bullish reversal attempt.",
+    "2pm_green": "The lunch rebound had pushed back upward, but price was stalling near mid/upper resistance and setting up another fade.",
+    "4pm_yellow": "Session ended near 24368 after late stabilization, below the open and in the lower half of the day's range."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "opening_rejection_midday_flush_rebound_fail",
+    "open_type": "rotational_open",
+    "lunch_behavior": "midday_flush_then_sharp_reclaim",
+    "afternoon_drive": "rebound_failure_then_sideways_down",
+    "goat_time": "13:00",
+    "goat_direction": "up",
+    "peak_hour": 13,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "upper_supply_24490_24540_respected",
+    "banks_broken": "mid_band_demand_24380_24400_broken"
+  },
+  "takeaway": "Bearish rotational day with opening rejection, noon demand flush, and a failed lunch rebound that never converted into a true afternoon trend reversal."
+}

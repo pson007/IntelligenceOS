@@ -1,0 +1,112 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-11",
+  "dow": "Wed",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-11T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260422_230842.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-22T23:11:59-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "morning_spike_then_midday_flush_late_base",
+    "open_approx": 25195.0,
+    "close_approx": 25163.0,
+    "hod_approx": 25392.0,
+    "lod_approx": 25096.0,
+    "net_range_pts_open_to_close": -32,
+    "net_range_pct_open_to_close": -0.13,
+    "intraday_span_pts": 296,
+    "shape_sentence": "Early upside expansion into a sharp morning peak, then full reversal into midday liquidation, followed by a weak late-day base that never repaired the damage."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25195.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:08",
+      "price_approx": 25392.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "11:05",
+      "price_approx": 25210.0,
+      "type": "bearish_reversal_pivot"
+    },
+    {
+      "time_et": "12:48",
+      "price_approx": 25096.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "13:36",
+      "price_approx": 25248.0,
+      "type": "rebound_pivot_high"
+    },
+    {
+      "time_et": "14:24",
+      "price_approx": 25105.0,
+      "type": "late_retest_low_area"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25163.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:08",
+      "direction": "up",
+      "note": "Opening upside expansion broke through early supply and printed the session high near 25,392."
+    },
+    "red_circles": {
+      "behavior": "They clustered after the morning peak and on later rebound failures, marking continuation shorts within the bearish reversal."
+    },
+    "green_circles": {
+      "behavior": "They worked best in the opening push and on the first bounce from the midday low; later signals were mostly rotational and weaker."
+    },
+    "orange_banks_supply": {
+      "behavior": "Early supply around 25,300-25,390 was broken during the morning squeeze, but afternoon supply near 25,220-25,260 was respected and capped rebounds."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 25,100-25,160 repeatedly attracted support and prevented a close at the lows, while higher demand shelves gave way during the midday flush."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Strong upside expansion through early supply, transitioning into the GOAT push toward the session high.",
+    "12pm_red": "Bearish reversal was underway and price was pressing lower toward the lunch-session sell climax.",
+    "2pm_green": "A rebound was fading under supply; price was rotating rather than reclaiming trend control.",
+    "4pm_yellow": "Session ended in a weak lower-half base, above the low but without a strong late recovery."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "morning_spike_then_midday_flush_late_base",
+    "open_type": "rotational_open",
+    "lunch_behavior": "sharp_liquidation_into_new_low",
+    "afternoon_drive": "failed_rebound_then_lower_half_chop",
+    "goat_time": "10:08",
+    "goat_direction": "up",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "afternoon_supply_capped_bounces_midday_demand_held_final_breakdown",
+    "banks_broken": "early_supply_broken_on_morning_squeeze_intermediate_demand_lost_on_reversal"
+  },
+  "takeaway": "Bearish reversal day with an early breakout squeeze that failed, followed by midday liquidation and only a partial late-day stabilization."
+}

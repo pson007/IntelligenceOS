@@ -1,0 +1,112 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-10",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-10T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260422_230445.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-22T23:08:35-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "early_flush_then_trend_up_then_late_selloff",
+    "open_approx": 25205.0,
+    "close_approx": 25224.0,
+    "hod_approx": 25410.0,
+    "lod_approx": 25105.0,
+    "net_range_pts_open_to_close": 19,
+    "net_range_pct_open_to_close": 0.08,
+    "intraday_span_pts": 305,
+    "shape_sentence": "Early flush into demand, strong morning recovery, midday grind higher to a PM high, then sharp late selloff and partial rebound into the close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25205.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:48",
+      "price_approx": 25130.0,
+      "type": "bullish_pivot"
+    },
+    {
+      "time_et": "10:28",
+      "price_approx": 25375.0,
+      "type": "morning_high"
+    },
+    {
+      "time_et": "12:12",
+      "price_approx": 25205.0,
+      "type": "midday_pullback_low"
+    },
+    {
+      "time_et": "13:36",
+      "price_approx": 25410.0,
+      "type": "hod_bearish_pivot"
+    },
+    {
+      "time_et": "15:09",
+      "price_approx": 25115.0,
+      "type": "late_flush_low"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25224.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:50",
+      "direction": "up",
+      "note": "Opening flush reversed from lower blue-bank demand and launched the main morning recovery."
+    },
+    "red_circles": {
+      "behavior": "Clustered near failed retests into upper supply and expanded during the late-afternoon rollover."
+    },
+    "green_circles": {
+      "behavior": "Appeared at demand reactions and reclaim points, especially after the opening washout and midday dips."
+    },
+    "orange_banks_supply": {
+      "behavior": "Lower supply bands were broken during the recovery, but the top supply zone around 25390-25420 capped the session and was respected."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 25110-25150 and 25190-25230 repeatedly attracted buyers; lower demand held on the late flush."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Bullish reversal phase; price was reclaiming from the opening dip and pushing higher.",
+    "12pm_red": "Midday pullback/rotation; upside structure intact but momentum slower.",
+    "2pm_green": "Near the upper extreme / post-peak area; price was tiring under stacked supply.",
+    "4pm_yellow": "Closed after a late selloff and bounce, above the open but well below the HOD."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "early_flush_then_trend_up_then_late_selloff",
+    "open_type": "rotational_open",
+    "lunch_behavior": "sideways_to_up_grind",
+    "afternoon_drive": "push_to_new_high_then_reversal",
+    "goat_time": "09:50",
+    "goat_direction": "up",
+    "peak_hour": 13,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "upper_supply_respected_late_lower_demand_held",
+    "banks_broken": "early_upper_supply_layers_broken_on_recovery"
+  },
+  "takeaway": "Bullish recovery day with an opening flush, steady trend higher through midday, and a late failure at upper supply that turned into a liquidation-style selloff before a partial rebound."
+}

@@ -1,0 +1,122 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-21",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-21T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_210414.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "06:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-21T21:06:26-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "failed_opening_push_trend_down",
+    "open_approx": 26810.0,
+    "close_approx": 26610.0,
+    "hod_approx": 26890.0,
+    "lod_approx": 26545.0,
+    "net_range_pts_open_to_close": -200,
+    "net_range_pct_open_to_close": -0.75,
+    "intraday_span_pts": 345,
+    "shape_sentence": "Early push to a post-open high failed, then the session turned into a trend-down / sell-the-bounce day with a late panic flush and small rebound into the close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 26810.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:10",
+      "price_approx": 26890.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "10:48",
+      "price_approx": 26720.0,
+      "type": "bearish_pivot"
+    },
+    {
+      "time_et": "11:03",
+      "price_approx": 26670.0,
+      "type": "acceleration_low"
+    },
+    {
+      "time_et": "11:56",
+      "price_approx": 26780.0,
+      "type": "rebound_high"
+    },
+    {
+      "time_et": "13:36",
+      "price_approx": 26600.0,
+      "type": "midday_low"
+    },
+    {
+      "time_et": "15:28",
+      "price_approx": 26790.0,
+      "type": "afternoon_rebound_high"
+    },
+    {
+      "time_et": "15:50",
+      "price_approx": 26545.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26610.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "15:50",
+      "direction": "down",
+      "note": "Late-session flush into the day's low near 26,545 produced the standout expansion move before a sharp rebound."
+    },
+    "red_circles": {
+      "behavior": "Mostly marked failed bounce highs and bearish rejections after the opening peak, reinforcing lower-high structure through the day."
+    },
+    "green_circles": {
+      "behavior": "Mostly appeared on oversold bounces from demand pockets; several worked tactically but were largely countertrend until the final rebound."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply zones around 26,860-26,890 early and then 26,760-26,800 / 26,730-26,750 later were mostly respected and capped rebounds."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand zones around 26,710-26,730, then 26,640-26,670 and near 26,600 were repeatedly tested; several broke before the final late-session bounce held the lower edge."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Opening strength was peaking around this marker; price was near the morning high and close to rolling over.",
+    "12pm_red": "By noon the market was bearish, trading below dominant supply with rebound attempts failing under the red cloud.",
+    "2pm_green": "Around 14:00 price was stabilizing after midday weakness but still rotating below resistance rather than trending up.",
+    "4pm_yellow": "The session ended after a late downside flush and rebound; close was off the lows but still decisively red."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "failed_opening_push_trend_down",
+    "open_type": "rotational_open",
+    "lunch_behavior": "weak_bearish_rotation_under_supply",
+    "afternoon_drive": "late_flush_then_partial_rebound",
+    "goat_time": "15:50",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "descending_supply_zones_mostly_held",
+    "banks_broken": "multiple_demand_pockets_failed_on_the_way_down"
+  },
+  "takeaway": "Bearish RTH trend day that began with an opening push failure and spent the rest of the session selling rallies beneath descending supply. Useful as a reference for sessions where early strength exhausts fast, lunch stays weak, and the real expansion comes in a late downside flush before only a partial recovery."
+}

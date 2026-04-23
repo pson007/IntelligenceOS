@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-23",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260423_092941.png",
+  "gate": {
+    "ok": false,
+    "reason": "close_cut (session_last=09:00:00, required\u226512:00:00)",
+    "session_first": "03:00:00",
+    "session_last": "09:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-23T09:30:33",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: ~12:00 PM ET (BarDate)\n\nBars observed so far this session: ~9:30\u201312:00 (\u224830 five-min bars)\n\nWhat has happened so far: Strong morning trend up into a spike high, followed by a sharp pullback and partial stabilization above prior breakout area.\n\nRANKED SIMILAR ARCHETYPES\n\nTrend-up \u2192 midday pullback \u2192 continuation\nStrong impulsive leg up, pullback fails to fully unwind structure.\n\nStop-hunt spike \u2192 range compression \u2192 late expansion\nViolent rejection wick suggests liquidity grab before consolidation.\n\nDouble distribution trend day\nMorning value higher, midday builds second base before another push.\n\nPROJECTED PATH\n\nBetween cursor and next time marker (12:00\u219214:00):\nChoppy consolidation / higher-low formation; likely holds above ~26,900\u201326,950 and reattempts upside.\n\nBetween next marker and 14:00:\nBreakout attempt toward prior high; grind higher with shallow pullbacks.\n\nBetween 14:00 and 16:00 (close):\nExpansion phase; trend continuation into close with potential acceleration.\n\nProjected close price (range): 27,080 \u2013 27,180\n\nRest-of-day HOD (range): 27,150 \u2013 27,260\n\nRest-of-day LOD (range): 26,880 \u2013 26,940\n\nTACTICAL BIAS\n\nPrimary bias: Long (62%)\n\nKey level to invalidate: 26,880 (loss of higher-low structure)\n\nPreferred entry zone: 26,930 \u2013 26,980 pullbacks\n\nR:R logic: Buying higher-lows within uptrend; risk ~40\u201360 pts for 120\u2013200 pt continuation\n\nKEY LEVELS\n\nOverhead supply: 27,100 \u2013 27,150 (prior spike high zone)\n\nUnderlying demand: 26,900 \u2013 26,950 (midday base)\n\nPivot-to-watch: 27,000 (round number + intraday balance)\n\nPREDICTION TAGS\n\ndirection: up 62%\nstructure: trend-continuation 58%\nlunch_behavior: sideways-to-higher-low 65%\nafternoon_drive: upside expansion 60%\ngoat_direction: up 57%\nclose_near_extreme: near_high 55%\n\nACCUMULATED LESSONS (from prior reconciliations \u2014 apply these)\n\nStructure fits stop-hunt-reclaim variant: sharp pullback did not break trend \u2192 favor continuation.\n\nMidday holding above round number (27k vicinity) \u2192 expand upside close range early.\n\nIf 14:00 breakout confirms \u2192 bias close toward HOD, not midrange.\n\nMagnitude risk: afternoon extension can exceed conservative HOD band; upside skew remains."
+}

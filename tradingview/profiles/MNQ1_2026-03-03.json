@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-03",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-03T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260422_225039.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-22T22:51:44-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "trend_down_with_late_bounce",
+    "open_approx": 25100.0,
+    "close_approx": 24930.0,
+    "hod_approx": 25200.0,
+    "lod_approx": 24560.0,
+    "net_range_pts_open_to_close": -170,
+    "net_range_pct_open_to_close": -0.7,
+    "intraday_span_pts": 640,
+    "shape_sentence": "early push up then failure into sustained downtrend with late bounce"
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25100.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 25150.0,
+      "type": "lower_high"
+    },
+    {
+      "time_et": "10:45",
+      "price_approx": 25000.0,
+      "type": "breakdown"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 24900.0,
+      "type": "continuation"
+    },
+    {
+      "time_et": "13:30",
+      "price_approx": 24560.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "14:30",
+      "price_approx": 25050.0,
+      "type": "bounce_high"
+    },
+    {
+      "time_et": "15:30",
+      "price_approx": 24980.0,
+      "type": "lower_high"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24930.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "13:30",
+      "direction": "down",
+      "note": "strong capitulation move into session low"
+    },
+    "red_circles": {
+      "behavior": "consistent lower-high continuation signals aligned with downtrend"
+    },
+    "green_circles": {
+      "behavior": "mostly countertrend; strongest cluster during afternoon bounce"
+    },
+    "orange_banks_supply": {
+      "behavior": "stacked overhead zones repeatedly capped price; no breakout"
+    },
+    "blue_banks_demand": {
+      "behavior": "early demand broken; only late session demand held near lows"
+    }
+  },
+  "time_markers": {
+    "10am_blue": "early topping and shift to bearish structure",
+    "12pm_red": "active continuation selling",
+    "2pm_green": "exhaustion low and start of bounce",
+    "4pm_yellow": "weak close below supply"
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "trend_down_with_late_bounce",
+    "open_type": "push_then_fail",
+    "lunch_behavior": "steady_selloff",
+    "afternoon_drive": "capitulation_then_bounce",
+    "goat_time": "13:30",
+    "goat_direction": "down",
+    "peak_hour": 13,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "upper_supply_repeatedly_held",
+    "banks_broken": "early_demand_zones_lost"
+  },
+  "takeaway": "Bearish trend day controlled by supply with late bounce failing to reverse structure."
+}

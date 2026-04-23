@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-22",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260422_093022.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "04:30:00",
+    "session_last": "10:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-22T09:31:02",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-22 ~09:30 ET\n\nBars observed: ~60 bars (04:30\u201309:30 ET, 5-min)\n\nSummary: Early range \u2192 higher-low structure \u2192 impulsive breakout into 09:30 with expanding volume.\n\nRANKED SIMILAR ARCHETYPES\n\nTrend Day Up (early expansion) \u2014 Clean higher lows and strong push into open with no major rejection.\n\nOpen Drive \u2192 Continuation \u2014 08:00\u201309:30 impulse suggests institutional participation.\n\nTrend Up with Midday Flag \u2014 Momentum present but likely pauses into lunch.\n\nPROJECTED PATH\n\nNow \u2192 10:00: Continuation push with minor pullbacks; likely tests just above current highs.\n\n10:00 \u2192 14:00: Consolidation / bull flag; shallow pullbacks holding above VWAP region.\n\n14:00 \u2192 16:00: Second leg higher; potential trend extension into close.\n\nProjected close: 26,920 \u2013 26,980\n\nRest-of-day HOD: 26,980 \u2013 27,080\n\nRest-of-day LOD: 26,780 \u2013 26,830\n\nTACTICAL BIAS\n\nBias: Long (68%)\n\nInvalidation: Sustained break below ~26,780 (loss of higher-low structure)\n\nEntry zone: Pullbacks into 26,830\u201326,860 (prior breakout + MA cluster)\n\nR:R logic: Buy retrace into support targeting expansion leg; downside limited to structure break vs upside trend continuation.\n\nKEY LEVELS\n\nOverhead supply: 26,900 \u2192 26,950\n\nUnderlying demand: 26,800 \u2192 26,830\n\nPivot-to-watch: ~26,860 (intraday acceptance level)\n\nPREDICTION TAGS\n\ndirection: up 68%\nstructure: trend_up 72%\nlunch_behavior: consolidation 64%\nafternoon_drive: continuation_push 66%\ngoat_direction: long 70%\nclose_near_extreme: near_high 62%\n\nACCUMULATED LESSONS (applied)\n\nTrend structure present \u2192 widened HOD/close bands\n\nPath vs close separated: midday stall likely despite bullish close\n\nClose_near_extreme considered due to persistent higher-low behavior"
+}

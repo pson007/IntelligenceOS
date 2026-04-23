@@ -1,0 +1,112 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-30",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-30T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_231156.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-21T23:15:44-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "opening_failure_then_afternoon_trend_down",
+    "open_approx": 23510.0,
+    "close_approx": 23106.0,
+    "hod_approx": 23580.0,
+    "lod_approx": 23015.0,
+    "net_range_pts_open_to_close": -404,
+    "net_range_pct_open_to_close": -1.72,
+    "intraday_span_pts": 565,
+    "shape_sentence": "Early pop and lower-high fade, brief midday reclaim attempt, then steady afternoon trend-down into a near-LOD close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 23510.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:38",
+      "price_approx": 23580.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "10:06",
+      "price_approx": 23285.0,
+      "type": "morning_sell_low"
+    },
+    {
+      "time_et": "11:08",
+      "price_approx": 23430.0,
+      "type": "rebound_lower_high"
+    },
+    {
+      "time_et": "12:18",
+      "price_approx": 23335.0,
+      "type": "goat"
+    },
+    {
+      "time_et": "14:52",
+      "price_approx": 23015.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 23106.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "12:18",
+      "direction": "down",
+      "note": "Downside continuation after the failed late-morning rebound."
+    },
+    "red_circles": {
+      "behavior": "Clustered near rally peaks and on the afternoon downslope, confirming repeated lower highs and short entries."
+    },
+    "green_circles": {
+      "behavior": "Mostly appeared during the mid-morning bounce; they generated only temporary lifts and failed to reverse control."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply was stacked roughly in the 23420-23580 zone and was respected repeatedly; bounce attempts stalled there."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand first appeared around 23260-23320, then lower around 23080-23150; upper demand failed while the final lower band only slowed the decline."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Opening strength had failed and price was rotating lower out of upper supply into the first meaningful sell impulse.",
+    "12pm_red": "The rebound was stalling into resistance; structure was weakening ahead of the next leg down.",
+    "2pm_green": "A defined afternoon downtrend was underway with shallow bounces and continued seller control.",
+    "4pm_yellow": "The session closed near its lows after a late flush, with only a minor bounce from the final demand pocket."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "opening_failure_then_afternoon_trend_down",
+    "open_type": "rotational_open",
+    "lunch_behavior": "failed_rebound_then_rollover",
+    "afternoon_drive": "steady_selloff_to_new_lows",
+    "goat_time": "12:18",
+    "goat_direction": "down",
+    "peak_hour": 9,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "upper_supply_respected_repeatedly",
+    "banks_broken": "mid_and_lower_demand_broken_in_sequence"
+  },
+  "takeaway": "Bearish distribution day with an opening failure, a rejected mid-session rebound, and a persistent afternoon lower-high decline into a near-low close."
+}

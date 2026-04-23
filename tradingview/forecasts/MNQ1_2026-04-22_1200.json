@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-22",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260422_093109.png",
+  "gate": {
+    "ok": false,
+    "reason": "close_cut (session_last=10:15:00, required\u226512:00:00)",
+    "session_first": "06:45:00",
+    "session_last": "10:15:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-22T09:31:49",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-22 ~12:00 ET\n\nBars observed: ~65 bars (06:45\u201312:00 ET, 5-min)\n\nSummary: Early push up \u2192 pullback into ~09:00 \u2192 strong reclaim and higher-low structure into midday.\n\nRANKED SIMILAR ARCHETYPES\n\nTrend Day Up (pullback + continuation) \u2014 Higher lows after 09:00 and reclaim of intraday MAs suggest continuation bias.\n\nVWAP Reclaim Expansion \u2014 Price dipped below value then reclaimed and held above, typical for second-leg continuation.\n\nLate Morning Reversal \u2192 Grind Up \u2014 Weak open structure repaired, now transitioning into slow trend.\n\nPROJECTED PATH\n\nNow \u2192 14:00: Consolidation above VWAP/MA cluster, shallow pullbacks bought; slow grind higher toward prior highs.\n\n14:00 \u2192 16:00: Likely afternoon continuation leg; expansion if highs break cleanly, otherwise drift with late push.\n\nProjected close: 26,900 \u2013 27,020\n\nRest-of-day HOD: 26,980 \u2013 27,120\n\nRest-of-day LOD: 26,780 \u2013 26,820\n\nTACTICAL BIAS\n\nBias: Long (62%)\n\nInvalidation: Sustained break below 26,780\n\nEntry zone: Pullbacks into 26,820 \u2013 26,850 (VWAP/MA confluence)\n\nR:R: Target retest \u2192 extension (\u2248100\u2013200 pts upside) vs ~60\u201380 pts risk below structure.\n\nKEY LEVELS\n\nOverhead supply: 26,920 \u2013 26,980\n\nUnderlying demand: 26,780 \u2013 26,820\n\nPivot: 26,860 (mid-range / intraday balance)\n\nPREDICTION TAGS\n\ndirection: up 62%\nstructure: grind_trend 58%\nlunch_behavior: sideways_to_up 60%\nafternoon_drive: continuation_up 57%\ngoat_direction: long 55%\nclose_near_extreme: near_high 52%"
+}

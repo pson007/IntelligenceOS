@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-22",
+  "cursor_time": "14:00",
+  "stage": "F3",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f31400_20260422_093156.png",
+  "gate": {
+    "ok": false,
+    "reason": "close_cut (session_last=10:15:00, required\u226514:00:00)",
+    "session_first": "08:15:00",
+    "session_last": "10:15:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-22T09:32:35",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-22 ~14:00 ET\n\nBars observed: ~54 bars (09:30\u201314:00 ET, 5m)\n\nSummary: Opening selloff into ~10:30, base, then steady higher-lows grind reclaiming VWAP/short MAs into midday.\n\nRANKED SIMILAR ARCHETYPES\n\nTrend Day Up (late confirmation) \u2014 initial weakness failed to continue; persistent higher lows since ~11:00 show accumulation.\n\nReversal Day (AM flush \u2192 PM trend) \u2014 early liquidation reversed, buyers in control post-lunch.\n\nBalanced \u2192 Trend Transition \u2014 mid-morning range resolved upward with acceptance above value.\n\nPROJECTED PATH\n\n14:00 \u2192 14:00 marker (now): Continuation push; minor pullbacks bought above ~26,830\u201326,845.\n\n14:00 \u2192 16:00: Grind higher with one consolidation; potential acceleration after 14:30 if highs break cleanly.\n\nInto close: Hold highs or slight extension; trend persistence > reversal probability.\n\nProjected close price: 26,900 \u2013 26,980\n\nRest-of-day HOD: 26,980 \u2013 27,050\n\nRest-of-day LOD: 26,820 \u2013 26,850\n\nTACTICAL BIAS\n\nPrimary bias: Long (68%)\n\nInvalidation: Sustained loss below ~26,820 (break of higher-low structure)\n\nEntry zone: Pullbacks into 26,840\u201326,860 (VWAP/short MA confluence)\n\nR:R logic: Risk ~20\u201330 pts for 80\u2013150 pt continuation into trend extension\n\nKEY LEVELS\n\nOverhead supply: 26,900 \u2192 26,950 (recent highs / breakout zone)\n\nUnderlying demand: 26,830 \u2192 26,850 (trend support band)\n\nPivot-to-watch: ~26,870 (acceptance above = continuation)\n\nPREDICTION TAGS\n\ndirection: up 68%\nstructure: trend_up 64%\nlunch_behavior: grind_up 70%\nafternoon_drive: continuation 66%\ngoat_direction: up 60%\nclose_near_extreme: near_high 62%\n\nACCUMULATED LESSONS\n\nTrend confirmation occurred late; extension risk remains into close.\n\nHigher-low persistence post-11:00 outweighs weak open signal.\n\nExpect shallow pullbacks; failed breakdowns reinforce long bias."
+}

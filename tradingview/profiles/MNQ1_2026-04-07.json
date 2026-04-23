@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-07",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-07T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_080424.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-21T08:09:30-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "morning_flush_then_afternoon_short_squeeze",
+    "open_approx": 24185.0,
+    "close_approx": 24398.0,
+    "hod_approx": 24455.0,
+    "lod_approx": 23950.0,
+    "net_range_pts_open_to_close": 213,
+    "net_range_pct_open_to_close": 0.88,
+    "intraday_span_pts": 505,
+    "shape_sentence": "Opened weak, flushed hard into late morning, then reversed in stages and finished with a late-day squeeze back to the upper end of the session."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24185.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 24150.0,
+      "type": "bearish_pivot"
+    },
+    {
+      "time_et": "11:10",
+      "price_approx": 23950.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 24080.0,
+      "type": "reversal_pivot"
+    },
+    {
+      "time_et": "13:50",
+      "price_approx": 24175.0,
+      "type": "bullish_higher_low"
+    },
+    {
+      "time_et": "14:45",
+      "price_approx": 24095.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "15:50",
+      "price_approx": 24455.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24398.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "15:05",
+      "direction": "up",
+      "note": "Late-session squeeze from the low-24,100s through stacked supply into the 24,450 area."
+    },
+    "red_circles": {
+      "behavior": "Clustered in the late-morning sell program and on failed bounce attempts, marking lower highs and continuation shorts before the reversal."
+    },
+    "green_circles": {
+      "behavior": "Appeared around the post-flush reversal and then stacked through the afternoon as higher lows formed and the squeeze matured."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply was layered around 24,200-24,320 and again around 24,360-24,450; early zones were respected, then broken one by one into the close."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand appeared near 24,160-24,200 and at 23,950-24,020; the lower shelf reversed the flush and higher shelves held the afternoon retests."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Weak opening rotation with price already slipping below the open area and failing to stabilize.",
+    "12pm_red": "Price was in rebound mode off the flush low, trying to repair around the low-24,000s.",
+    "2pm_green": "Constructive higher-low state near 24,180-24,220, transitioning from repair to squeeze.",
+    "4pm_yellow": "Bullish close near 24,398 after a sharp late push, finishing much nearer HOD than LOD."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "morning_flush_then_afternoon_short_squeeze",
+    "open_type": "rotational_open",
+    "lunch_behavior": "noon_repair_after_capitulation_low",
+    "afternoon_drive": "late_breakout_squeeze",
+    "goat_time": "15:05",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "early_supply_then_afternoon_demand",
+    "banks_broken": "late_day_overhead_supply_stack"
+  },
+  "takeaway": "Bullish reversal day with a late-morning capitulation low, lunch-hour stabilization, and a strong afternoon squeeze reclaim into the close."
+}

@@ -1,0 +1,117 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-06",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-06T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_075259.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-21T07:56:40-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "early_squeeze_midday_flush_afternoon_recovery",
+    "open_approx": 24310.0,
+    "close_approx": 24350.0,
+    "hod_approx": 24455.0,
+    "lod_approx": 24195.0,
+    "net_range_pts_open_to_close": 40,
+    "net_range_pct_open_to_close": 0.16,
+    "intraday_span_pts": 260,
+    "shape_sentence": "Early squeeze to a morning high, midday liquidation, then a choppy afternoon recovery that finished above the open but below the session peak."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24310.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:05",
+      "price_approx": 24455.0,
+      "type": "morning_hod_pivot"
+    },
+    {
+      "time_et": "11:25",
+      "price_approx": 24285.0,
+      "type": "late_morning_fade_pivot"
+    },
+    {
+      "time_et": "12:40",
+      "price_approx": 24195.0,
+      "type": "lod_flush"
+    },
+    {
+      "time_et": "13:10",
+      "price_approx": 24360.0,
+      "type": "reclaim_pivot"
+    },
+    {
+      "time_et": "14:15",
+      "price_approx": 24235.0,
+      "type": "afternoon_pullback"
+    },
+    {
+      "time_et": "15:20",
+      "price_approx": 24360.0,
+      "type": "late_recovery_pivot"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24350.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "12:40",
+      "direction": "up",
+      "note": "Standout bullish reversal from the deepest lunch-hour flush near 24,200."
+    },
+    "red_circles": {
+      "behavior": "Clustered around upper retests after the morning high and during afternoon chop, marking failed pushes and shortable stalls."
+    },
+    "green_circles": {
+      "behavior": "Appeared near pullback lows and were most effective after the midday flush, supporting the rebound."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply sat mainly in the 24,340-24,455 zone; repeatedly tested, briefly pierced, but mostly respected after the early high."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand sat mainly in the 24,190-24,280 zone; probed during the lunch flush, then held and supported recovery."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Opening upside expansion was still active and price was near the session high zone.",
+    "12pm_red": "Market was rotating lower and setting up the lunch-hour flush.",
+    "2pm_green": "Rebound was in progress but already degrading into chop after the initial reclaim.",
+    "4pm_yellow": "Session ended near 24,350 after late stabilization, above the open and below the morning high."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "early_squeeze_midday_flush_afternoon_recovery",
+    "open_type": "rotational_open",
+    "lunch_behavior": "liquidation_flush_then_reclaim",
+    "afternoon_drive": "choppy_recovery",
+    "goat_time": "12:40",
+    "goat_direction": "up",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "upper_supply_capped_retests",
+    "banks_broken": "midday_demand_probe_then_recovered"
+  },
+  "takeaway": "Bullish-close rotational day with an early squeeze, lunch flush into demand, and afternoon reclaim that recovered well but did not fully break overhead supply."
+}

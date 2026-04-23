@@ -1,0 +1,112 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-03-31",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-03-31T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260421_231548.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "03:00:00",
+    "last": "18:00:00"
+  },
+  "profiled_at": "2026-04-21T23:19:30-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "open_dip_then_afternoon_trend_up",
+    "open_approx": 23430.0,
+    "close_approx": 23905.0,
+    "hod_approx": 23985.0,
+    "lod_approx": 23310.0,
+    "net_range_pts_open_to_close": 475,
+    "net_range_pct_open_to_close": 2.03,
+    "intraday_span_pts": 675,
+    "shape_sentence": "Early dip and shakeout, then a multi-leg trend-up session that accelerated after lunch and closed near the high after a small late fade."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 23430.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:15",
+      "price_approx": 23310.0,
+      "type": "lod_bullish_pivot"
+    },
+    {
+      "time_et": "11:55",
+      "price_approx": 23580.0,
+      "type": "morning_high"
+    },
+    {
+      "time_et": "12:35",
+      "price_approx": 23470.0,
+      "type": "midday_pullback_low"
+    },
+    {
+      "time_et": "14:05",
+      "price_approx": 23660.0,
+      "type": "trend_continuation_pivot"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 23985.0,
+      "type": "hod_late_breakout"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 23905.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "14:15",
+      "direction": "up",
+      "note": "Early-PM expansion leg that turned the noon reclaim into a persistent staircase rally."
+    },
+    "red_circles": {
+      "behavior": "Mostly marked shallow countertrend pauses and failed fade attempts once the afternoon uptrend matured."
+    },
+    "green_circles": {
+      "behavior": "Appeared near pullback lows and reclaim points, tracking the higher-low structure from late morning through the close."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply clustered first near 23500-23580 and later near 23820-23980; lower zones were broken and upper zones were largely absorbed before the final fade."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand held the opening flush around 23310-23380 and then stepped upward repeatedly through 23430-23500 and 23720-23820."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Opening weakness was still active and price was near the process of forming the session low.",
+    "12pm_red": "Late-morning strength had reached a rotation high and began stalling into a modest midday pullback.",
+    "2pm_green": "Key reclaim/continuation marker where balance shifted into upside acceleration.",
+    "4pm_yellow": "Closed near the upper extreme after a late breakout and slight pullback from the high."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "open_dip_then_afternoon_trend_up",
+    "open_type": "rotational_open",
+    "lunch_behavior": "midday_pullback_then_reclaim",
+    "afternoon_drive": "persistent_stair_step_rally",
+    "goat_time": "14:15",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "early_demand_held_and_higher_demands_kept_lifting",
+    "banks_broken": "morning_supply_and_most_late_day_supply"
+  },
+  "takeaway": "Bullish trend day with an early shakeout, noon reset, and strong afternoon continuation."
+}
