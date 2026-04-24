@@ -1792,196 +1792,196 @@
   /* ----------------------------------------------------------------
    * Mobile bottom tab bar — iOS-native pattern. Hidden on desktop;
    * the in-document `<nav class="mobile-tabbar">` is brought into view
-   * only when body.is-mobile is set (or the @media block fires below).
+   * only when html.is-mobile is set (or the @media block fires below).
    * Buttons are 44pt+ tall and respect the home-indicator safe area.
    * ---------------------------------------------------------------- */
   .mobile-tabbar { display: none; }
   .mobile-more-sheet { display: none; }
 
-  @media (max-width: 768px) {
-    .app { flex-direction: column; height: auto; min-height: 100vh; }
+      html.is-mobile .app { flex-direction: column; height: auto; min-height: 100vh; }
 
     /* On mobile we surface tabs via the bottom tab bar — the top sidebar
      * collapses to just the brand row + status (no nav strip, no toggle). */
-    .sidebar .nav { display: none; }
-    .sidebar-toggle { display: none !important; }
+      html.is-mobile .sidebar .nav { display: none; }
+      html.is-mobile .sidebar-toggle { display: none !important; }
 
     /* Sidebar collapses to a thin top bar */
-    .sidebar {
-      width: 100%; flex-shrink: 0;
-      border-right: 0; border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 50;
-      background: var(--bg-1);
-    }
-    .brand {
-      padding: 8px 14px; border-bottom: 0;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .logo { width: 26px; height: 26px; font-size: 10px; }
-    .brand-name { font-size: 13px; }
-    .brand-sub { display: none; }
+      html.is-mobile .sidebar {
+  width: 100%; flex-shrink: 0;
+  border-right: 0; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg-1);
+}
+      html.is-mobile .brand {
+  padding: 8px 14px; border-bottom: 0;
+  display: flex; align-items: center; gap: 10px;
+}
+      html.is-mobile .logo { width: 26px; height: 26px; font-size: 10px; }
+      html.is-mobile .brand-name { font-size: 13px; }
+      html.is-mobile .brand-sub { display: none; }
 
     /* Toggle button shown in the brand row; collapses nav + status. */
-    .sidebar-toggle {
-      display: inline-flex; align-items: center; justify-content: center;
-      margin-left: auto;
-      width: 34px; height: 34px; padding: 0;
-      background: transparent; border: 1px solid var(--border);
-      color: var(--muted); border-radius: 6px;
-      font-family: inherit; font-size: 15px; line-height: 1;
-      cursor: pointer;
-    }
-    .sidebar-toggle:hover { color: var(--text); background: var(--hover); }
-    .sidebar.collapsed .nav,
-    .sidebar.collapsed .status { display: none; }
+      html.is-mobile .sidebar-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: auto;
+  width: 34px; height: 34px; padding: 0;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 6px;
+  font-family: inherit; font-size: 15px; line-height: 1;
+  cursor: pointer;
+}
+      html.is-mobile .sidebar-toggle:hover { color: var(--text); background: var(--hover); }
+      html.is-mobile .sidebar.collapsed .nav,
+  html.is-mobile .sidebar.collapsed .status { display: none; }
 
     /* Tabs become a horizontal scrollable strip */
-    .nav {
-      display: flex; flex-wrap: nowrap; overflow-x: auto;
-      padding: 0 8px 6px; gap: 2px;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .nav::-webkit-scrollbar { display: none; }
-    .nav-item {
-      white-space: nowrap; padding: 5px 12px;
-      margin-bottom: 0; flex-shrink: 0;
-      font-size: 12px;
-    }
-    .nav-item .ico { display: none; }  /* labels alone — saves ~15px each */
+      html.is-mobile .nav {
+  display: flex; flex-wrap: nowrap; overflow-x: auto;
+  padding: 0 8px 6px; gap: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+      html.is-mobile .nav::-webkit-scrollbar { display: none; }
+      html.is-mobile .nav-item {
+  white-space: nowrap; padding: 5px 12px;
+  margin-bottom: 0; flex-shrink: 0;
+  font-size: 12px;
+}
+      html.is-mobile .nav-item .ico { display: none; }  /* labels alone — saves ~15px each */
 
-    .status {
-      padding: 6px 14px; font-size: 11px;
-      border-top: 1px solid var(--border);
-    }
+      html.is-mobile .status {
+  padding: 6px 14px; font-size: 11px;
+  border-top: 1px solid var(--border);
+}
 
     /* Main content — tighter padding, smaller type */
-    .main { padding: 14px; }
-    .tab h1 { font-size: 17px; }
-    .tab .subtitle { font-size: 12px; margin-bottom: 14px; line-height: 1.35; }
+      html.is-mobile .main { padding: 14px; }
+      html.is-mobile .tab h1 { font-size: 17px; }
+      html.is-mobile .tab .subtitle { font-size: 12px; margin-bottom: 14px; line-height: 1.35; }
 
-    .card { padding: 12px 14px; margin-bottom: 12px; }
-    .card h2 { font-size: 11px; margin-bottom: 10px; }
+      html.is-mobile .card { padding: 12px 14px; margin-bottom: 12px; }
+      html.is-mobile .card h2 { font-size: 11px; margin-bottom: 10px; }
 
     /* Field rows wrap cleanly; every label goes full-width */
-    .row { gap: 8px; }
-    .row > label.field { width: 100%; min-width: 0; }
-    .row > label.field[style*="min-width"] { min-width: 0 !important; }
+      html.is-mobile .row { gap: 8px; }
+      html.is-mobile .row > label.field { width: 100%; min-width: 0; }
+      html.is-mobile .row > label.field[style*="min-width"] { min-width: 0 !important; }
 
     /* Summary strips: allow individual items to shrink and wrap */
-    .summary-strip {
-      gap: 10px 18px; padding: 0 0 10px;
-    }
-    .summary-strip > div {
-      min-width: 0; max-width: 100%;
-      display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
-    }
+      html.is-mobile .summary-strip {
+  gap: 10px 18px; padding: 0 0 10px;
+}
+      html.is-mobile .summary-strip > div {
+  min-width: 0; max-width: 100%;
+  display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+}
     /* The key fix for the vertical-letter title bug: use overflow-wrap
        which breaks at word boundaries when possible and only falls back
        to character breaks when a single token is too long. */
-    .summary-strip .value,
-    .summary-strip .value.small {
-      overflow-wrap: anywhere; word-break: normal;
-    }
+      html.is-mobile .summary-strip .value,
+  html.is-mobile .summary-strip .value.small {
+  overflow-wrap: anywhere; word-break: normal;
+}
 
     /* Tables — tighter, allow horizontal scroll when columns won't fit */
-    .card > table,
-    .card > div > table { font-size: 12px; }
-    table th, table td { padding: 6px 8px; }
-    tr.pos-row td { padding: 9px 8px; }
-    .sym-primary { font-size: 12px; }
-    .sym-exchange { font-size: 10px; }
+      html.is-mobile .card > table,
+  html.is-mobile .card > div > table { font-size: 12px; }
+      html.is-mobile table th,
+  html.is-mobile table td { padding: 6px 8px; }
+      html.is-mobile tr.pos-row td { padding: 9px 8px; }
+      html.is-mobile .sym-primary { font-size: 12px; }
+      html.is-mobile .sym-exchange { font-size: 10px; }
 
     /* Combobox dropdowns fit the viewport */
-    .combo-menu { max-height: 220px; }
-    .combo-option { padding: 8px 12px; }  /* bigger tap target */
+      html.is-mobile .combo-menu { max-height: 220px; }
+      html.is-mobile .combo-option { padding: 8px 12px; }  /* bigger tap target */
 
     /* Buttons — larger tap area on mobile */
-    button { padding: 8px 14px; font-size: 13px; }
-    .icon-btn { padding: 5px 10px; font-size: 11px; }
+      html.is-mobile button { padding: 8px 14px; font-size: 13px; }
+      html.is-mobile .icon-btn { padding: 5px 10px; font-size: 11px; }
 
     /* Audit log — shrink timestamps a touch */
-    .audit-entry { padding: 7px 8px; }
-    .audit-entry .t { min-width: 50px; font-size: 10px; }
-    .audit-entry .fields { font-size: 10px; }
+      html.is-mobile .audit-entry { padding: 7px 8px; }
+      html.is-mobile .audit-entry .t { min-width: 50px; font-size: 10px; }
+      html.is-mobile .audit-entry .fields { font-size: 10px; }
 
     /* Act steps */
-    .step { padding: 10px; }
-    .step .step-num { min-width: 18px; font-size: 10px; }
-    .step .step-reason { font-size: 11px; }
+      html.is-mobile .step { padding: 10px; }
+      html.is-mobile .step .step-num { min-width: 18px; font-size: 10px; }
+      html.is-mobile .step .step-reason { font-size: 11px; }
 
     /* Session bar — compact on mobile. The invalidation text wraps full-width
        on its own row below the top line so the long sentence stays readable. */
-    .session-bar {
-      padding: 10px 14px 9px;
-      gap: var(--s-3) var(--s-4);
-      font-size: var(--fs-sm);
-    }
-    .session-bar__cell {
-      flex: 0 1 auto;
-      gap: 6px;
-    }
-    .session-bar__inval {
-      flex: 1 1 100%;
-      padding-top: 2px;
-    }
-    .session-bar__inval .session-bar__val {
-      white-space: normal; line-height: 1.4;
-    }
-    .session-bar__lbl { font-size: 9px; }
+      html.is-mobile .session-bar {
+  padding: 10px 14px 9px;
+  gap: var(--s-3) var(--s-4);
+  font-size: var(--fs-sm);
+}
+      html.is-mobile .session-bar__cell {
+  flex: 0 1 auto;
+  gap: 6px;
+}
+      html.is-mobile .session-bar__inval {
+  flex: 1 1 100%;
+  padding-top: 2px;
+}
+      html.is-mobile .session-bar__inval .session-bar__val {
+  white-space: normal; line-height: 1.4;
+}
+      html.is-mobile .session-bar__lbl { font-size: 9px; }
 
     /* Toast — full-width on mobile, above the bottom tab bar */
-    .toast {
-      left: 10px; right: 10px;
-      bottom: calc(72px + env(safe-area-inset-bottom));
-      max-width: none;
-    }
+      html.is-mobile .toast {
+  left: 10px; right: 10px;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  max-width: none;
+}
 
     /* Dashed empty state — tighter on mobile */
-    .empty.dashed { padding: 24px var(--s-4); font-size: 12px; }
+      html.is-mobile .empty.dashed { padding: 24px var(--s-4); font-size: 12px; }
 
     /* Trade deck mobile — symbol input takes full width; TF pill bar
        scrolls horizontally so the row never wraps to 2 rows of pills
        (jarring when flipping fast); capture + BUY/SELL go full-width. */
-    .trade-bar { gap: var(--s-2); }
-    .trade-bar > label.field { width: 100%; }
-    .tf-bar {
-      width: 100%; overflow-x: auto; flex-wrap: nowrap;
-      scrollbar-width: none;
-    }
-    .tf-bar::-webkit-scrollbar { display: none; }
-    .tf-pill { flex: 0 0 auto; padding: 7px 12px; }
-    .trade-bar__actions { width: 100%; }
-    .trade-bar__actions button { width: 100%; }
+      html.is-mobile .trade-bar { gap: var(--s-2); }
+      html.is-mobile .trade-bar > label.field { width: 100%; }
+      html.is-mobile .tf-bar {
+  width: 100%; overflow-x: auto; flex-wrap: nowrap;
+  scrollbar-width: none;
+}
+      html.is-mobile .tf-bar::-webkit-scrollbar { display: none; }
+      html.is-mobile .tf-pill { flex: 0 0 auto; padding: 7px 12px; }
+      html.is-mobile .trade-bar__actions { width: 100%; }
+      html.is-mobile .trade-bar__actions button { width: 100%; }
     /* Mobile: analyze config goes full-width on its own row so the
        Provider/Model fields don't squash against the trade actions. */
-    .analyze-config { width: 100%; }
-    .analyze-config__field { flex: 1 1 0; }
-    .analyze-config__field > select,
-    .analyze-config__field > input { max-width: none; width: 100%; }
+      html.is-mobile .analyze-config { width: 100%; }
+      html.is-mobile .analyze-config__field { flex: 1 1 0; }
+      html.is-mobile .analyze-config__field > select,
+  html.is-mobile .analyze-config__field > input { max-width: none; width: 100%; }
 
-    .position-context { gap: var(--s-2) var(--s-3); }
+      html.is-mobile .position-context { gap: var(--s-2) var(--s-3); }
 
-    .quick-trade__actions { width: 100%; }
-    .quick-trade__actions button { flex: 1; }
+      html.is-mobile .quick-trade__actions { width: 100%; }
+      html.is-mobile .quick-trade__actions button { flex: 1; }
 
     /* Analysis card — signal/confidence/levels stack on narrow viewports.
        Action buttons push onto their own row full-width. */
-    .analyze-verdict { gap: var(--s-3); }
-    .analyze-signal { min-width: 0; width: 100%; font-size: var(--fs-md); padding: 10px; }
-    .analyze-confidence { flex: 1 1 100%; }
-    .analyze-levels { width: 100%; justify-content: space-between; gap: var(--s-3); }
-    .analyze-actions { width: 100%; }
-    .analyze-actions button { flex: 1; }
-    #analyze-head-actions { flex-wrap: wrap; gap: var(--s-2) var(--s-3); }
+      html.is-mobile .analyze-verdict { gap: var(--s-3); }
+      html.is-mobile .analyze-signal { min-width: 0; width: 100%; font-size: var(--fs-md); padding: 10px; }
+      html.is-mobile .analyze-confidence { flex: 1 1 100%; }
+      html.is-mobile .analyze-levels { width: 100%; justify-content: space-between; gap: var(--s-3); }
+      html.is-mobile .analyze-actions { width: 100%; }
+      html.is-mobile .analyze-actions button { flex: 1; }
+      html.is-mobile #analyze-head-actions { flex-wrap: wrap; gap: var(--s-2) var(--s-3); }
     /* Per-TF table (deep mode) — 4 columns with a free-text Rationale
        can't fit on a phone. Scroll horizontally, preserve a reasonable
        minimum so columns stay readable. */
-    .analyze-pertf-body { overflow-x: auto; }
-    .analyze-pertf-body table { min-width: 480px; }
-    .analyze-optimal-tf { padding: var(--s-2); }
-    .analyze-optimal-tf .value { font-size: var(--fs-md); }
-  }
+      html.is-mobile .analyze-pertf-body { overflow-x: auto; }
+      html.is-mobile .analyze-pertf-body table { min-width: 480px; }
+      html.is-mobile .analyze-optimal-tf { padding: var(--s-2); }
+      html.is-mobile .analyze-optimal-tf .value { font-size: var(--fs-md); }
+  
 
   /* Very narrow (≤ 380px, e.g. iPhone SE portrait) — one more pass */
   @media (max-width: 380px) {
@@ -2002,201 +2002,205 @@
    * padding is bumped so rendered height meets that threshold.
    * ---------------------------------------------------------------- */
   @supports (padding: max(0px)) {
-    @media (max-width: 768px) {
-      .sidebar {
-        padding-top: env(safe-area-inset-top);
-      }
-      .main {
-        padding-left: max(14px, env(safe-area-inset-left));
-        padding-right: max(14px, env(safe-area-inset-right));
-        padding-bottom: max(14px, env(safe-area-inset-bottom));
-      }
-      .toast {
-        bottom: calc(72px + env(safe-area-inset-bottom));
-        left: max(10px, env(safe-area-inset-left));
-        right: max(10px, env(safe-area-inset-right));
-      }
+    html.is-mobile .sidebar {
+      padding-top: env(safe-area-inset-top);
+    }
+    html.is-mobile .main {
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right));
+      padding-bottom: max(14px, env(safe-area-inset-bottom));
+    }
+    html.is-mobile .toast {
+      bottom: calc(72px + env(safe-area-inset-bottom));
+      left: max(10px, env(safe-area-inset-left));
+      right: max(10px, env(safe-area-inset-right));
     }
   }
 
-  @media (max-width: 768px) {
     /* Larger tap targets everywhere — Apple HIG minimum 44×44pt */
-    .nav-item { min-height: 36px; padding: 8px 14px; }
-    button { min-height: 40px; padding: 10px 16px; font-size: 14px; }
-    button.icon-btn { min-height: 32px; padding: 6px 12px; font-size: 11px; }
-    .sidebar-toggle { min-height: 36px; min-width: 36px; }
-    .theme-toggle { min-height: 36px; min-width: 36px; padding: 6px 10px; }
-    .combo input,
-    input[type="text"], input[type="number"], select, textarea {
-      padding: 10px 12px; font-size: 14px;
-    }
+      html.is-mobile .nav-item { min-height: 36px; padding: 8px 14px; }
+      html.is-mobile button { min-height: 40px; padding: 10px 16px; font-size: 14px; }
+      html.is-mobile button.icon-btn { min-height: 32px; padding: 6px 12px; font-size: 11px; }
+      html.is-mobile .sidebar-toggle { min-height: 36px; min-width: 36px; }
+      html.is-mobile .theme-toggle { min-height: 36px; min-width: 36px; padding: 6px 10px; }
+      html.is-mobile .combo input,
+  html.is-mobile input[type="text"],
+  html.is-mobile input[type="number"],
+  html.is-mobile select,
+  html.is-mobile textarea {
+  padding: 10px 12px; font-size: 14px;
+}
     /* 16px font on form fields stops iOS from auto-zooming on focus */
-    input[type="number"] { font-size: 16px; }
-    .checkbox-row { gap: 14px 20px; }
-    .checkbox-row label { min-height: 28px; align-items: center; }
-    .combo-option { min-height: 40px; padding: 10px 12px; }
+      html.is-mobile input[type="number"] { font-size: 16px; }
+      html.is-mobile .checkbox-row { gap: 14px 20px; }
+      html.is-mobile .checkbox-row label { min-height: 28px; align-items: center; }
+      html.is-mobile .combo-option { min-height: 40px; padding: 10px 12px; }
 
     /* Main content scrolls with iOS momentum; prevent rubber-banding
        of the whole page when scrolling a nested list. */
-    .main { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-    .audit-log, .steps, .combo-menu {
-      -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-    }
+      html.is-mobile .main { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+      html.is-mobile .audit-log,
+  html.is-mobile .steps,
+  html.is-mobile .combo-menu {
+  -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+}
 
     /* Tables shouldn't force horizontal page scroll — wrap in auto-x
        scroll so wide tables scroll inside their card. */
-    .card { overflow-x: hidden; }
-    #positions-body table,
-    #alerts-body table,
-    #watchlist-body table { display: block; overflow-x: auto; white-space: nowrap; }
+      html.is-mobile .card { overflow-x: hidden; }
+      html.is-mobile #positions-body table,
+  html.is-mobile #alerts-body table,
+  html.is-mobile #watchlist-body table { display: block; overflow-x: auto; white-space: nowrap; }
 
     /* ============================================================
      * BOTTOM TAB BAR — primary navigation on mobile
      * ============================================================ */
-    .mobile-tabbar {
-      display: flex;
-      position: fixed; left: 0; right: 0; bottom: 0;
-      z-index: 100;
-      background: color-mix(in srgb, var(--bg-1) 88%, transparent);
-      -webkit-backdrop-filter: saturate(180%) blur(20px);
-      backdrop-filter: saturate(180%) blur(20px);
-      border-top: 1px solid var(--border);
-      padding: 4px 4px 0;
-      padding-bottom: max(4px, env(safe-area-inset-bottom));
-    }
-    .mtab {
-      flex: 1; min-height: 54px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3px;
-      background: transparent; border: 0; color: var(--muted);
-      font-family: inherit; font-size: 10px; cursor: pointer;
-      padding: 8px 4px 6px;
-      border-radius: var(--radius-sm);
-      position: relative;
-    }
-    .mtab__ico {
-      width: 22px; height: 22px; line-height: 1; opacity: 0.85;
-      display: inline-flex; align-items: center; justify-content: center;
-    }
-    .mtab__ico svg { width: 22px; height: 22px; display: block; }
-    .mtab__lbl {
-      font-size: 10px; line-height: 1;
-      font-weight: 500; letter-spacing: 0.01em;
-    }
-    .mtab.active {
-      color: var(--accent); font-weight: 600;
-    }
-    .mtab.active .mtab__ico { opacity: 1; }
-    .mtab:active { background: var(--hover); }
+      html.is-mobile .mobile-tabbar {
+  display: flex;
+  position: fixed; left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--bg-1) 88%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 4px 4px 0;
+  padding-bottom: max(4px, env(safe-area-inset-bottom));
+}
+      html.is-mobile .mtab {
+  flex: 1; min-height: 54px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px;
+  background: transparent; border: 0; color: var(--muted);
+  font-family: inherit; font-size: 10px; cursor: pointer;
+  padding: 8px 4px 6px;
+  border-radius: var(--radius-sm);
+  position: relative;
+}
+      html.is-mobile .mtab__ico {
+  width: 22px; height: 22px; line-height: 1; opacity: 0.85;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+      html.is-mobile .mtab__ico svg { width: 22px; height: 22px; display: block; }
+      html.is-mobile .mtab__lbl {
+  font-size: 10px; line-height: 1;
+  font-weight: 500; letter-spacing: 0.01em;
+}
+      html.is-mobile .mtab.active {
+  color: var(--accent); font-weight: 600;
+}
+      html.is-mobile .mtab.active .mtab__ico { opacity: 1; }
+      html.is-mobile .mtab:active { background: var(--hover); }
 
     /* Push main content above the fixed tab bar so the last card
      * isn't covered by it. ~52 (button) + 8 padding + safe area. */
-    .main {
-      padding-bottom: calc(72px + env(safe-area-inset-bottom));
-    }
+      html.is-mobile .main {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
 
     /* "More" overflow sheet — bottom-anchored drawer */
-    .mobile-more-sheet {
-      display: block;
-      position: fixed; inset: 0; z-index: 110;
-    }
-    .mobile-more-sheet.hidden { display: none; }
-    .mobile-more-sheet__backdrop {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.5);
-    }
-    .mobile-more-sheet__panel {
-      position: absolute; left: 0; right: 0; bottom: 0;
-      background: var(--bg-1); border-top: 1px solid var(--border);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      padding: 12px 12px;
-      padding-bottom: max(16px, env(safe-area-inset-bottom));
-      display: flex; flex-direction: column; gap: 2px;
-      box-shadow: var(--shadow);
-    }
-    .mobile-more-sheet__handle {
-      width: 40px; height: 4px; border-radius: 2px;
-      background: var(--border-strong); margin: 2px auto 12px;
-    }
-    .mtab-row {
-      display: flex; align-items: center; gap: 14px;
-      min-height: 48px; padding: 12px 16px;
-      background: transparent; border: 0; color: var(--text);
-      font-family: inherit; font-size: 15px; text-align: left;
-      border-radius: var(--radius-sm); cursor: pointer;
-      letter-spacing: -0.01em;
-    }
-    .mtab-row:active { background: var(--hover); }
-    .mtab-row .mtab__ico { width: 20px; height: 20px; opacity: 0.8; }
-    .mtab-row .mtab__ico svg { width: 20px; height: 20px; display: block; }
+      html.is-mobile .mobile-more-sheet {
+  display: block;
+  position: fixed; inset: 0; z-index: 110;
+}
+      html.is-mobile .mobile-more-sheet.hidden { display: none; }
+      html.is-mobile .mobile-more-sheet__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+      html.is-mobile .mobile-more-sheet__panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--bg-1); border-top: 1px solid var(--border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 12px 12px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 2px;
+  box-shadow: var(--shadow);
+}
+      html.is-mobile .mobile-more-sheet__handle {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: var(--border-strong); margin: 2px auto 12px;
+}
+      html.is-mobile .mtab-row {
+  display: flex; align-items: center; gap: 14px;
+  min-height: 48px; padding: 12px 16px;
+  background: transparent; border: 0; color: var(--text);
+  font-family: inherit; font-size: 15px; text-align: left;
+  border-radius: var(--radius-sm); cursor: pointer;
+  letter-spacing: -0.01em;
+}
+      html.is-mobile .mtab-row:active { background: var(--hover); }
+      html.is-mobile .mtab-row .mtab__ico { width: 20px; height: 20px; opacity: 0.8; }
+      html.is-mobile .mtab-row .mtab__ico svg { width: 20px; height: 20px; display: block; }
 
     /* ============================================================
      * DRILL-IN PATTERN — Forecasts/Profiles list ↔ detail toggle
      * ============================================================ */
     /* Hide the back button by default (only visible in detail view) */
-    .mobile-back-btn { display: none; }
+      html.is-mobile .mobile-back-btn { display: none; }
 
     /* Drill-in scoped to Forecasts only — Profiles' `main` contains the
      * Run-profile card so we keep its existing stacked-on-mobile layout. */
-    .forecasts-layout.mobile-view-detail .forecasts-list { display: none; }
-    .forecasts-layout.mobile-view-detail .mobile-back-btn {
-      display: inline-flex; align-items: center;
-      min-height: 40px; padding: 8px 14px;
-      margin-bottom: 8px;
-      background: var(--bg-2); border: 1px solid var(--border);
-      color: var(--accent, #58a6ff);
-      border-radius: 8px; cursor: pointer;
-      font-family: inherit; font-size: 14px; font-weight: 500;
-    }
-    .forecasts-layout.mobile-view-detail .mobile-back-btn:active {
-      background: var(--bg-3);
-    }
+      html.is-mobile .forecasts-layout.mobile-view-detail .forecasts-list { display: none; }
+      html.is-mobile .forecasts-layout.mobile-view-detail .mobile-back-btn {
+  display: inline-flex; align-items: center;
+  min-height: 40px; padding: 8px 14px;
+  margin-bottom: 8px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  color: var(--accent, #58a6ff);
+  border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 500;
+}
+      html.is-mobile .forecasts-layout.mobile-view-detail .mobile-back-btn:active {
+  background: var(--bg-3);
+}
     /* On mobile, default Forecasts view shows just the list — detail pane
      * waits for a drill-in tap. Run-forecast card is outside this layout
      * so it stays visible at the top of the tab. */
-    .forecasts-layout:not(.mobile-view-detail) .forecasts-main {
-      display: none;
-    }
+      html.is-mobile .forecasts-layout:not(.mobile-view-detail) .forecasts-main {
+  display: none;
+}
 
     /* ============================================================
      * TOUCH TARGETS — Apple HIG min 44pt for primary controls
      * ============================================================ */
-    .reconcile-btn,
-    .forecast-card__recon-btn,
-    .btn-ghost,
-    .profile-cal__title ~ button,
-    .tf-pill {
-      min-height: 38px;
-      padding: 8px 12px;
-      font-size: 12px;
-    }
+      html.is-mobile .reconcile-btn,
+  html.is-mobile .forecast-card__recon-btn,
+  html.is-mobile .btn-ghost,
+  html.is-mobile .profile-cal__title ~ button,
+  html.is-mobile .tf-pill {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
     /* Calendar prev/next arrows — bigger tap area */
-    #profile-cal-prev, #profile-cal-next,
-    #forecast-cal-prev, #forecast-cal-next {
-      min-width: 40px; min-height: 40px;
-    }
+      html.is-mobile #profile-cal-prev,
+  html.is-mobile #profile-cal-next,
+  html.is-mobile #forecast-cal-prev,
+  html.is-mobile #forecast-cal-next {
+  min-width: 40px; min-height: 40px;
+}
     /* Calendar day cells — bigger tap area, easier to hit */
-    .cal-day {
-      min-height: 40px;
-    }
+      html.is-mobile .cal-day {
+  min-height: 40px;
+}
 
     /* ============================================================
      * MODALS — full-bleed bottom sheets on mobile
      * ============================================================ */
-    .profile-run-modal,
-    .forecast-run-modal {
-      align-items: flex-end;
-    }
-    .profile-run-modal > div,
-    .profile-run-modal__box,
-    .forecast-run-modal > div,
-    .forecast-run-modal__box {
-      max-width: none !important;
-      width: 100% !important;
-      border-radius: 14px 14px 0 0 !important;
-      padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
-    }
-  }
+      html.is-mobile .profile-run-modal,
+  html.is-mobile .forecast-run-modal {
+  align-items: flex-end;
+}
+      html.is-mobile .profile-run-modal > div,
+  html.is-mobile .profile-run-modal__box,
+  html.is-mobile .forecast-run-modal > div,
+  html.is-mobile .forecast-run-modal__box {
+  max-width: none !important;
+  width: 100% !important;
+  border-radius: 14px 14px 0 0 !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+  
 
   /* PWA standalone-mode polish. Only applies when the user launched
    * from the home screen (display: standalone reports true). */
@@ -2220,9 +2224,8 @@
     gap: var(--s-3);
     align-items: start;
   }
-  @media (max-width: 768px) {
-    .profiles-layout { grid-template-columns: 1fr; }
-  }
+      html.is-mobile .profiles-layout { grid-template-columns: 1fr; }
+  
   .profiles-list {
     display: flex; flex-direction: column; gap: var(--s-2);
     max-height: calc(100vh - 200px);
@@ -2460,9 +2463,8 @@
     display: grid; grid-template-columns: 300px 1fr; gap: var(--s-3);
     align-items: start;
   }
-  @media (max-width: 768px) {
-    .forecasts-layout { grid-template-columns: 1fr; }
-  }
+      html.is-mobile .forecasts-layout { grid-template-columns: 1fr; }
+  
   .forecasts-list {
     display: flex; flex-direction: column; gap: var(--s-2);
     max-height: calc(100vh - 200px); overflow-y: auto;
@@ -2648,3 +2650,142 @@
   .calib-table tr.acc-ok      .calib-pct { color: var(--yellow); }
   .calib-table tr.acc-weak    .calib-pct { color: var(--red); }
   .calib-table td:last-child { text-align: right; padding-right: 0; }
+
+  /* ---------------------------------------------------------------- *
+   * 1runOS — Sub-tab bar (Plan / Setup group sub-navigation). Sits
+   * directly below the session-bar and only renders when the active
+   * primary tab is a group with more than one surface. Pill styling
+   * intentionally distinct from primary sidebar/mobile-tabbar nav so
+   * the hierarchy reads at a glance.
+   * ---------------------------------------------------------------- */
+  .subtab-bar {
+    position: sticky; top: 40px; z-index: 28;
+    display: flex; flex-wrap: wrap; gap: 4px;
+    padding: 8px 20px;
+    background: color-mix(in srgb, var(--bg-1) 92%, transparent);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .subtab-bar.hidden { display: none; }
+  .subtab {
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    padding: 6px 14px;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition:
+      background-color var(--dur-base) var(--ease),
+      color var(--dur-base) var(--ease);
+  }
+  .subtab:hover:not(.active) {
+    background: var(--hover);
+    color: var(--text);
+  }
+  .subtab.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Today hero — the "Today · one run, make it count" heading. The
+   * subtitle sits inline with the h1 and softens the weight so the
+   * tagline feels integrated, not tacked on. */
+  .today-hero {
+    display: flex; align-items: baseline; gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+  .today-hero__sub {
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* Empty-loop placeholder — the first thing a user sees on Today
+   * before they capture anything. Four arrow-separated steps that
+   * spell out the product's core loop so the value prop is visible
+   * from the very first paint. */
+  .empty--loop {
+    padding: var(--s-6) var(--s-5);
+    display: flex; flex-direction: column; align-items: center;
+    gap: var(--s-4);
+  }
+  .empty-loop__steps {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    align-items: center; gap: var(--s-3);
+  }
+  .empty-loop__step {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    color: var(--fg-2);
+    font-size: var(--fs-sm);
+    font-style: normal;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .empty-loop__arr {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: var(--fs-sm);
+  }
+  .empty-loop__hint {
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    font-style: normal;
+  }
+  .empty-loop__hint b {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+      html.is-mobile .subtab-bar { padding: 6px 12px; top: 0; }
+      html.is-mobile .subtab { padding: 5px 11px; font-size: var(--fs-xs); }
+      html.is-mobile .empty--loop { padding: var(--s-4); }
+      html.is-mobile .empty-loop__steps { gap: var(--s-2); }
+      html.is-mobile .empty-loop__step { padding: 4px 10px; font-size: var(--fs-xs); }
+      html.is-mobile .empty-loop__arr { display: none; }
+  
+
+  /* ---------------------------------------------------------------- *
+   * Electron — native-chrome adjustments. Opted-in by preload.js
+   * adding `is-electron` (and `is-mac` / `is-windows`) to <body>.
+   *
+   * On macOS we use `titleBarStyle: 'hiddenInset'`, which leaves the
+   * traffic lights floating in the top-left corner of the content
+   * area. We pad the brand block downward to clear them and make the
+   * surrounding region draggable for window move.
+   * ---------------------------------------------------------------- */
+  body.is-electron.is-mac .brand {
+    padding-top: 32px;
+    -webkit-app-region: drag;
+  }
+  body.is-electron.is-mac .sidebar { padding-top: 0; }
+  /* Anything interactive inside the drag region has to opt out or it
+   * becomes a dead zone. The sidebar toggle and logo group are the only
+   * things up there; keep them clickable. */
+  body.is-electron .brand button,
+  body.is-electron .brand a,
+  body.is-electron .brand input,
+  body.is-electron .brand .logo {
+    -webkit-app-region: no-drag;
+  }
+  /* Extend the drag region across the top of <main> so the user can
+   * grab the session bar's empty area to move the window. All the cells
+   * and buttons inside opt out individually. */
+  body.is-electron.is-mac .session-bar {
+    -webkit-app-region: drag;
+    padding-top: 12px;
+  }
+  body.is-electron .session-bar button,
+  body.is-electron .session-bar input,
+  body.is-electron .session-bar select,
+  body.is-electron .session-bar .session-bar__pivot,
+  body.is-electron .session-bar .session-bar__cell {
+    -webkit-app-region: no-drag;
+  }

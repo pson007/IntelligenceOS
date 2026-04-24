@@ -123,13 +123,38 @@ $('theme-toggle').addEventListener('click', () => {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 
 // ----------------------------------------------------------------------
-// Mobile detection — adds body.is-mobile when the viewport is ≤ 768px so
-// CSS and JS can both branch on a single source of truth. Updates live on
-// rotation/resize via matchMedia.
+// Mobile detection — combines four signals so we pick the right UI
+// regardless of how the app was opened (Electron, desktop browser,
+// phone browser, narrow window, iPad in desktop-mode):
+//
+//   1. Viewport ≤ 768px → mobile. Catches real phones AND any browser
+//      window someone resized down (responsive design).
+//   2. User-agent contains iPhone|iPad|iPod|Android|Mobile → mobile,
+//      even on wide viewports. Catches iPad in portrait split-view.
+//   3. iPad-in-desktop-mode trick — iPadOS ≥ 13 reports a Mac UA by
+//      default. We sniff `Macintosh` UA + `maxTouchPoints > 1` (Macs
+//      with magic trackpads report 0; only true touchscreen Macs +
+//      iPads have this). Avoids false-positives on regular Macs.
+//   4. Otherwise → desktop. Includes Electron, desktop Chrome,
+//      desktop Safari/Firefox on real Macs.
+//
+// The class is set on `<html>` (documentElement), not <body>: the
+// pre-paint inline script in <head> needs a target, and <body>
+// doesn't exist at head-parse time. The pre-paint script eliminates
+// the desktop→mobile flash on first iPhone load.
+//
+// CSS consumes `html.is-mobile` selectors for all mobile styles.
+// One toggle, four triggers, zero FOUC.
 // ----------------------------------------------------------------------
 const _mobileMQ = window.matchMedia('(max-width: 768px)');
-function _applyMobileClass(matches) {
-  document.body.classList.toggle('is-mobile', !!matches);
+const _MOBILE_UA_RX = /\b(iPhone|iPad|iPod|Android|Mobile)\b/i;
+const _IPAD_DESKTOP_MODE = /\bMacintosh\b/.test(navigator.userAgent)
+  && navigator.maxTouchPoints > 1;
+const _IS_MOBILE_DEVICE = _MOBILE_UA_RX.test(navigator.userAgent)
+  || _IPAD_DESKTOP_MODE;
+function _applyMobileClass(narrowViewport) {
+  const shouldBeMobile = !!narrowViewport || _IS_MOBILE_DEVICE;
+  document.documentElement.classList.toggle('is-mobile', shouldBeMobile);
 }
 _applyMobileClass(_mobileMQ.matches);
 _mobileMQ.addEventListener('change', e => _applyMobileClass(e.matches));
@@ -140,30 +165,21 @@ _mobileMQ.addEventListener('change', e => _applyMobileClass(e.matches));
 // slot (both sidebar .nav-item and bottom tab bar .mtab).
 // ----------------------------------------------------------------------
 const _NAV_ICONS = {
-  trade: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
-  act: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-  watchlist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></svg>',
-  alerts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  plan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
   journal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
-  profiles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
-  forecasts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
-  audit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-  more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/></svg>',
+  setup: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
 };
 document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
   const slot = btn.querySelector('.ico');
   const svg = _NAV_ICONS[btn.dataset.tab];
   if (slot && svg) slot.innerHTML = svg;
 });
-document.querySelectorAll('.mtab[data-tab], .mtab-row[data-tab]').forEach(btn => {
+document.querySelectorAll('.mtab[data-tab]').forEach(btn => {
   const slot = btn.querySelector('.mtab__ico');
   const svg = _NAV_ICONS[btn.dataset.tab];
   if (slot && svg) slot.innerHTML = svg;
 });
-// "More" button has no data-tab — inject its icon explicitly.
-const _moreIconSlot = document.querySelector('#mobile-more-btn .mtab__ico');
-if (_moreIconSlot) _moreIconSlot.innerHTML = _NAV_ICONS.more;
-
 // Delegated handler for mobile drill-in back buttons (Forecasts, Profiles).
 // Clicking removes the `mobile-view-detail` class from the named layout
 // container, returning the user to the list. Works after innerHTML
@@ -202,75 +218,103 @@ _sidebarToggle.addEventListener('click', () => {
 });
 
 // ----------------------------------------------------------------------
-// Tab switching
+// Tab switching — 4 primary groups (Today / Plan / Journal / Setup). Some
+// groups are aliases for a default sub-tab plus an in-page sub-tab bar
+// that reveals the other members of the group. The sub-tab rendering
+// stays outside .tab sections so the existing sections (tab-forecasts,
+// tab-profiles, tab-audit, tab-watchlist, tab-alerts, tab-act) don't
+// need to be physically restructured — the group layer only reroutes.
 // ----------------------------------------------------------------------
-function _syncMobileTabbarActive(tab) {
+const TAB_GROUPS = {
+  today:   { default: 'today',     subs: [] },
+  plan:    { default: 'forecasts', subs: [
+              { id: 'forecasts', label: 'Forecast' },
+              { id: 'profiles',  label: 'Profile' },
+            ] },
+  journal: { default: 'journal',   subs: [] },
+  setup:   { default: 'audit',     subs: [
+              { id: 'audit',     label: 'Activity' },
+              { id: 'watchlist', label: 'Watchlist' },
+              { id: 'alerts',    label: 'Alerts' },
+              { id: 'act',       label: 'Act' },
+            ] },
+};
+
+// Last-active sub per group — so returning to a group after leaving lands
+// back on the same sub-tab the user was on (iOS-style recency memory).
+const _groupLastSub = {};
+
+function _syncMobileTabbarActive(group) {
   document.querySelectorAll('.mtab').forEach(m => {
-    m.classList.toggle('active', m.dataset.tab === tab);
+    m.classList.toggle('active', m.dataset.tab === group);
   });
-  // "More" stays active when the current tab is one of the overflow items.
-  const overflow = ['act', 'watchlist', 'alerts', 'audit'];
-  const moreBtn = document.getElementById('mobile-more-btn');
-  if (moreBtn) moreBtn.classList.toggle('active', overflow.includes(tab));
 }
 
-document.querySelectorAll('.nav-item').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
-    document.querySelectorAll('.nav-item').forEach(x => x.classList.toggle('active', x === btn));
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('hidden', t.id !== `tab-${tab}`));
-    // Tiny entrance animation on the newly-revealed tab — one-shot,
-    // removed after it finishes so it re-fires on the next switch.
-    const activeTab = document.getElementById(`tab-${tab}`);
-    if (activeTab) {
-      activeTab.classList.remove('tab-entering');
-      void activeTab.offsetWidth;  // force reflow so the re-add triggers animation
-      activeTab.classList.add('tab-entering');
-      setTimeout(() => activeTab.classList.remove('tab-entering'), 300);
-    }
-    _syncMobileTabbarActive(tab);
-    // Reset any drill-in detail views when switching tabs (mobile only).
-    document.querySelectorAll('.mobile-view-detail').forEach(el => el.classList.remove('mobile-view-detail'));
-    // Tab-specific on-enter hooks
-    if (tab === 'audit') startAuditPoll(); else stopAuditPoll();
-    if (tab === 'trade') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); } else stopPositionsPoll();
-    if (tab === 'watchlist') loadWatchlist();
-    if (tab === 'alerts') loadAlerts();
-    if (tab === 'journal') loadJournal();
-    if (tab === 'profiles') { loadProfiles(); initProfileRun(); }
-    if (tab === 'forecasts') { loadForecasts(); initForecastRun(); }
+function _renderSubtabBar(group, activeSub) {
+  const bar = document.getElementById('subtab-bar');
+  if (!bar) return;
+  const grp = TAB_GROUPS[group];
+  if (!grp || grp.subs.length === 0) {
+    bar.classList.add('hidden');
+    bar.innerHTML = '';
+    return;
+  }
+  bar.classList.remove('hidden');
+  bar.innerHTML = grp.subs.map(s =>
+    `<button type="button" class="subtab${s.id === activeSub ? ' active' : ''}" data-sub="${s.id}" role="tab">${s.label}</button>`
+  ).join('');
+  bar.querySelectorAll('.subtab').forEach(btn => {
+    btn.addEventListener('click', () => activateGroup(group, btn.dataset.sub));
   });
+}
+
+function _fireTabHook(sub) {
+  if (sub === 'audit') startAuditPoll(); else stopAuditPoll();
+  if (sub === 'today') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); } else stopPositionsPoll();
+  if (sub === 'watchlist') loadWatchlist();
+  if (sub === 'alerts') loadAlerts();
+  if (sub === 'journal') loadJournal();
+  if (sub === 'profiles') { loadProfiles(); initProfileRun(); }
+  if (sub === 'forecasts') { loadForecasts(); initForecastRun(); }
+}
+
+function activateGroup(group, sub = null) {
+  const grp = TAB_GROUPS[group];
+  if (!grp) return;
+  const targetSub = sub || _groupLastSub[group] || grp.default;
+  _groupLastSub[group] = targetSub;
+
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === group);
+  });
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('hidden', t.id !== `tab-${targetSub}`);
+  });
+
+  const activeTab = document.getElementById(`tab-${targetSub}`);
+  if (activeTab) {
+    activeTab.classList.remove('tab-entering');
+    void activeTab.offsetWidth;
+    activeTab.classList.add('tab-entering');
+    setTimeout(() => activeTab.classList.remove('tab-entering'), 300);
+  }
+
+  _syncMobileTabbarActive(group);
+  _renderSubtabBar(group, targetSub);
+
+  document.querySelectorAll('.mobile-view-detail').forEach(el => el.classList.remove('mobile-view-detail'));
+
+  _fireTabHook(targetSub);
+}
+
+document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => activateGroup(btn.dataset.tab));
 });
 
-// Mobile bottom tab bar — re-dispatches to the canonical .nav-item button
-// so all tab-switching logic flows through one path.
 document.querySelectorAll('.mtab[data-tab]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
-    const navBtn = document.querySelector(`.nav-item[data-tab="${tab}"]`);
-    if (navBtn) navBtn.click();
-  });
+  btn.addEventListener('click', () => activateGroup(btn.dataset.tab));
 });
-
-// "More" sheet — overflow drawer for the 4 secondary tabs.
-const _moreBtn = document.getElementById('mobile-more-btn');
-const _moreSheet = document.getElementById('mobile-more-sheet');
-function _showMoreSheet(show) {
-  _moreSheet.classList.toggle('hidden', !show);
-  _moreSheet.setAttribute('aria-hidden', show ? 'false' : 'true');
-}
-if (_moreBtn) _moreBtn.addEventListener('click', () => _showMoreSheet(true));
-if (_moreSheet) {
-  _moreSheet.querySelector('.mobile-more-sheet__backdrop').addEventListener('click', () => _showMoreSheet(false));
-  _moreSheet.querySelectorAll('.mtab-row[data-tab]').forEach(row => {
-    row.addEventListener('click', () => {
-      const tab = row.dataset.tab;
-      const navBtn = document.querySelector(`.nav-item[data-tab="${tab}"]`);
-      if (navBtn) navBtn.click();
-      _showMoreSheet(false);
-    });
-  });
-}
 
 // ----------------------------------------------------------------------
 // Health

@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>IntelligenceOS Console</title>
+<title>1runOS — One run per day.</title>
 
 <!-- PWA / Add-to-Home-Screen — when launched from the home screen,
      iOS runs this page in standalone mode (no URL bar, no tabs). -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="IOS Console" />
+<meta name="apple-mobile-web-app-title" content="1runOS" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="theme-color" id="theme-color-meta" content="#0d1117" />
 <link rel="manifest" href="/ui/manifest.json" />
@@ -29,6 +29,21 @@
       }
     } catch (e) {}
   })();
+  // Pre-paint mobile detection — applies `is-mobile` to <html> before
+  // the stylesheet resolves so mobile rules paint correctly on the
+  // first frame (no desktop→mobile flash on slow iPhone connections).
+  // Mirrors the four-signal logic in app.js so a refresh-driven decision
+  // matches the steady-state matchMedia decision exactly.
+  (function () {
+    var ua = navigator.userAgent;
+    var narrow = window.matchMedia('(max-width: 768px)').matches;
+    var mobile_ua = /\b(iPhone|iPad|iPod|Android|Mobile)\b/i.test(ua);
+    var ipad_desktop_mode = /\bMacintosh\b/.test(ua)
+      && (navigator.maxTouchPoints || 0) > 1;
+    if (narrow || mobile_ua || ipad_desktop_mode) {
+      document.documentElement.classList.add('is-mobile');
+    }
+  })();
 </script>
 <link rel="stylesheet" href="/ui/style.css" />
 </head>
@@ -36,23 +51,19 @@
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
-      <div class="logo">IOS</div>
+      <div class="logo">1r</div>
       <div>
-        <div class="brand-name">IntelligenceOS</div>
-        <div class="brand-sub">Console</div>
+        <div class="brand-name">1runOS</div>
+        <div class="brand-sub">One run per day.</div>
       </div>
       <button class="sidebar-toggle" id="sidebar-toggle"
               aria-label="Toggle sidebar" aria-expanded="true">✕</button>
     </div>
     <nav class="nav">
-      <button class="nav-item active" data-tab="trade"><span class="ico">◉</span> Trade</button>
-      <button class="nav-item" data-tab="act"><span class="ico">◈</span> Act</button>
-      <button class="nav-item" data-tab="watchlist"><span class="ico">☰</span> Watchlist</button>
-      <button class="nav-item" data-tab="alerts"><span class="ico">⊙</span> Alerts</button>
+      <button class="nav-item active" data-tab="today"><span class="ico">◉</span> Today</button>
+      <button class="nav-item" data-tab="plan"><span class="ico">◆</span> Plan</button>
       <button class="nav-item" data-tab="journal"><span class="ico">◐</span> Journal</button>
-      <button class="nav-item" data-tab="profiles"><span class="ico">▦</span> Profiles</button>
-      <button class="nav-item" data-tab="forecasts"><span class="ico">◆</span> Forecasts</button>
-      <button class="nav-item" data-tab="audit"><span class="ico">⎙</span> Audit</button>
+      <button class="nav-item" data-tab="setup"><span class="ico">⚙</span> Setup</button>
     </nav>
     <div class="status">
       <div class="status-dot" id="health-dot"></div>
@@ -125,10 +136,16 @@
     </div>
 
 
-    <!-- TRADE TAB (chart + order entry + positions, unified) --------- -->
-    <section class="tab" id="tab-trade">
-      <h1>Trade</h1>
-      <div class="subtitle">Chart, order entry, and positions — one view, one symbol.</div>
+    <!-- Sub-tab bar — shown only when the active primary nav maps to a
+         group with multiple sub-surfaces (Plan → Forecast/Profile;
+         Setup → Activity/Watchlist/Alerts/Act). Rendered dynamically
+         by renderSubtabBar() in app.js. Hidden by default. -->
+    <nav class="subtab-bar hidden" id="subtab-bar" role="tablist" aria-label="Sub-navigation"></nav>
+
+    <!-- TODAY TAB — the run. Chart, AI read, order entry, lessons. ---- -->
+    <section class="tab" id="tab-today">
+      <h1 class="today-hero">Today<span class="today-hero__sub">· one run, make it count</span></h1>
+      <div class="subtitle">Read the chart · trade the thesis · journal the lesson.</div>
 
       <!-- Session scorecard + daily risk budget. Scorecard pulls from
            the decision log (hidden when empty); budget is a user-entered
@@ -333,7 +350,18 @@
           <span class="muted">—</span>
         </div>
         <div id="trade-chart-shot">
-          <div class="empty dashed">Pick a symbol above or tap Capture to pull the live chart.</div>
+          <div class="empty dashed empty--loop">
+            <div class="empty-loop__steps">
+              <span class="empty-loop__step">① Capture</span>
+              <span class="empty-loop__arr">→</span>
+              <span class="empty-loop__step">② AI reads it</span>
+              <span class="empty-loop__arr">→</span>
+              <span class="empty-loop__step">③ Trade the thesis</span>
+              <span class="empty-loop__arr">→</span>
+              <span class="empty-loop__step">④ Lesson for tomorrow</span>
+            </div>
+            <div class="empty-loop__hint">Pick a symbol and hit <b>Capture</b> to start today's run.</div>
+          </div>
         </div>
       </div>
 
@@ -867,22 +895,11 @@
      only when body.is-mobile is set; dispatches to the existing
      .nav-item buttons so tab-switching logic stays single-source. -->
 <nav class="mobile-tabbar" aria-label="Primary navigation">
-  <button class="mtab active" data-tab="trade"><span class="mtab__ico">◉</span><span class="mtab__lbl">Trade</span></button>
-  <button class="mtab" data-tab="forecasts"><span class="mtab__ico">◆</span><span class="mtab__lbl">Forecasts</span></button>
-  <button class="mtab" data-tab="profiles"><span class="mtab__ico">▦</span><span class="mtab__lbl">Profiles</span></button>
+  <button class="mtab active" data-tab="today"><span class="mtab__ico">◉</span><span class="mtab__lbl">Today</span></button>
+  <button class="mtab" data-tab="plan"><span class="mtab__ico">◆</span><span class="mtab__lbl">Plan</span></button>
   <button class="mtab" data-tab="journal"><span class="mtab__ico">◐</span><span class="mtab__lbl">Journal</span></button>
-  <button class="mtab" id="mobile-more-btn"><span class="mtab__ico">⋯</span><span class="mtab__lbl">More</span></button>
+  <button class="mtab" data-tab="setup"><span class="mtab__ico">⚙</span><span class="mtab__lbl">Setup</span></button>
 </nav>
-<div class="mobile-more-sheet hidden" id="mobile-more-sheet" aria-hidden="true">
-  <div class="mobile-more-sheet__backdrop"></div>
-  <div class="mobile-more-sheet__panel" role="dialog" aria-label="More tabs">
-    <div class="mobile-more-sheet__handle"></div>
-    <button class="mtab-row" data-tab="act"><span class="mtab__ico">◈</span> Act</button>
-    <button class="mtab-row" data-tab="watchlist"><span class="mtab__ico">☰</span> Watchlist</button>
-    <button class="mtab-row" data-tab="alerts"><span class="mtab__ico">⊙</span> Alerts</button>
-    <button class="mtab-row" data-tab="audit"><span class="mtab__ico">⎙</span> Audit</button>
-  </div>
-</div>
 
 <div class="toast hidden" id="toast"></div>
 
