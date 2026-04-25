@@ -60,7 +60,10 @@ SEL_MODEL_BUTTON = '[data-testid="model-switcher-dropdown-button"]'
 # Model menu items. "Instant" / "Thinking" show up on accounts with
 # the new simplified picker. data-testid is stable enough; label text
 # is what we match on (model_name passed in).
-SEL_MODEL_MENUITEM = '[role="menuitemradio"]'
+# ChatGPT has shipped both `menuitemradio` and `menuitem` for the model
+# picker across recent builds; selector matches either so we don't break
+# on dropdown role rotations.
+SEL_MODEL_MENUITEM = '[role="menuitemradio"], [role="menuitem"]'
 
 # Assistant message bubble. ChatGPT uses `data-message-author-role`
 # which is the cleanest possible role signal — distinguishes user vs
@@ -205,12 +208,45 @@ async def _select_model(page: Page, model_name: str) -> None:
         return
 
     audit.log("chatgpt_web.model_select_start", model=model_name, current=current)
-    await button.click()
-    try:
-        await page.wait_for_selector(SEL_MODEL_MENUITEM, state="visible", timeout=3000)
-    except PWTimeoutError:
-        await page.keyboard.press("Escape")
-        raise RuntimeError("ChatGPT model dropdown didn't open") from None
+
+    # Try open + retry once if the dropdown doesn't render. Slow networks
+    # / heavy chatgpt.com loads regularly miss a 3s window.
+    opened = False
+    for attempt in range(2):
+        await button.click()
+        try:
+            await page.wait_for_selector(
+                SEL_MODEL_MENUITEM, state="visible", timeout=6000,
+            )
+            opened = True
+            break
+        except PWTimeoutError:
+            audit.log("chatgpt_web.model_dropdown.retry", attempt=attempt + 1)
+            await page.keyboard.press("Escape")
+            await page.wait_for_timeout(800)
+
+    if not opened:
+        # Diagnostic: capture the menu region's DOM state so audit shows
+        # what TV/ChatGPT actually rendered. Catches role-rotation drift.
+        diag = await page.evaluate(r"""() => {
+            const items = Array.from(document.querySelectorAll(
+              '[role="menuitemradio"], [role="menuitem"], [role="option"]'
+            ));
+            return {
+                count: items.length,
+                roles: items.slice(0, 5).map(i => i.getAttribute('role')),
+                texts: items.slice(0, 5).map(i => (i.innerText||'').trim().slice(0, 40)),
+                btn_aria: document.querySelector(
+                  '[data-testid="model-switcher-dropdown-button"]'
+                )?.getAttribute('aria-expanded'),
+            };
+        }""")
+        audit.log("chatgpt_web.model_dropdown.fail", **diag)
+        raise RuntimeError(
+            f"ChatGPT model dropdown didn't open after 2 tries "
+            f"(found {diag.get('count', 0)} menu items, "
+            f"btn aria-expanded={diag.get('btn_aria')})"
+        )
 
     items = page.locator(SEL_MODEL_MENUITEM)
     count = await items.count()
