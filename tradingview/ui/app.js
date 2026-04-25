@@ -225,6 +225,17 @@ _sidebarToggle.addEventListener('click', () => {
 // tab-profiles, tab-audit, tab-watchlist, tab-alerts, tab-act) don't
 // need to be physically restructured — the group layer only reroutes.
 // ----------------------------------------------------------------------
+// Setup's default sub depends on whether the user has finished the
+// onboarding wizard. First-time users land on 'onboarding'; returning
+// users (flag set) land on 'audit'. A dedicated 'Wizard' sub-tab stays
+// available so power users can re-run setup any time.
+function _onboardingDone() {
+  try { return localStorage.getItem('onboarding-complete') === '1'; }
+  catch (e) { return false; }
+}
+function _setupDefault() {
+  return _onboardingDone() ? 'audit' : 'onboarding';
+}
 const TAB_GROUPS = {
   today:   { default: 'today',     subs: [] },
   plan:    { default: 'forecasts', subs: [
@@ -232,11 +243,12 @@ const TAB_GROUPS = {
               { id: 'profiles',  label: 'Profile' },
             ] },
   journal: { default: 'journal',   subs: [] },
-  setup:   { default: 'audit',     subs: [
-              { id: 'audit',     label: 'Activity' },
-              { id: 'watchlist', label: 'Watchlist' },
-              { id: 'alerts',    label: 'Alerts' },
-              { id: 'act',       label: 'Act' },
+  setup:   { get default() { return _setupDefault(); }, subs: [
+              { id: 'onboarding', label: 'Wizard' },
+              { id: 'audit',      label: 'Activity' },
+              { id: 'watchlist',  label: 'Watchlist' },
+              { id: 'alerts',     label: 'Alerts' },
+              { id: 'act',        label: 'Act' },
             ] },
 };
 
@@ -276,6 +288,7 @@ function _fireTabHook(sub) {
   if (sub === 'journal') loadJournal();
   if (sub === 'profiles') { loadProfiles(); initProfileRun(); }
   if (sub === 'forecasts') { loadForecasts(); initForecastRun(); }
+  if (sub === 'onboarding') initWizard();
 }
 
 function activateGroup(group, sub = null) {
@@ -4532,6 +4545,168 @@ async function selectForecastDay(symbol, date) {
 }
 
 // ----------------------------------------------------------------------
+// Onboarding wizard — 4-step first-run flow. Lives inside Setup as the
+// `tab-onboarding` section. State is tracked in a module-level object
+// so the wizard resumes where the user left off if they switch tabs
+// mid-flow. Completion flag persists in localStorage.
+// ----------------------------------------------------------------------
+const _wizard = {
+  initialized: false,
+  step: 1,
+  checks: { chrome: false, capture: false },
+};
+
+function initWizard() {
+  if (_wizard.initialized) {
+    // Re-entering after leaving: fire the step's auto-probe if applicable.
+    _wizardGotoStep(_wizard.step);
+    return;
+  }
+  _wizard.initialized = true;
+  _wizardBindHandlers();
+  _wizardGotoStep(1);
+}
+
+function _wizardBindHandlers() {
+  // Step progression via data-wizard-next / data-wizard-prev buttons.
+  document.querySelectorAll('#wizard [data-wizard-next]').forEach(btn => {
+    btn.addEventListener('click', () => _wizardGotoStep(_wizard.step + 1));
+  });
+  document.querySelectorAll('#wizard [data-wizard-prev]').forEach(btn => {
+    btn.addEventListener('click', () => _wizardGotoStep(_wizard.step - 1));
+  });
+
+  // Step 2 — Chrome recheck
+  const recheckBtn = $('wizard-chrome-recheck');
+  if (recheckBtn) recheckBtn.addEventListener('click', _wizardProbeChrome);
+
+  // Step 2 — Copy command
+  const copyBtn = $('wizard-cmd-copy');
+  if (copyBtn) copyBtn.addEventListener('click', () => {
+    const txt = $('wizard-cmd-text').textContent;
+    navigator.clipboard.writeText(txt).then(() => {
+      copyBtn.textContent = 'Copied';
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1800);
+    }).catch(() => { toast('copy failed — select manually', 'err'); });
+  });
+
+  // Step 3 — Run test capture
+  const capBtn = $('wizard-capture-run');
+  if (capBtn) capBtn.addEventListener('click', _wizardRunCapture);
+
+  // Step 4 — Finish
+  const finishBtn = $('wizard-finish');
+  if (finishBtn) finishBtn.addEventListener('click', () => {
+    try { localStorage.setItem('onboarding-complete', '1'); } catch (e) {}
+    // Route to Today tab — the actual workflow starts here.
+    activateGroup('today');
+  });
+}
+
+function _wizardGotoStep(n) {
+  n = Math.max(1, Math.min(4, n));
+  _wizard.step = n;
+
+  // Toggle active panel
+  document.querySelectorAll('#wizard .wizard-step').forEach(el => {
+    el.classList.toggle('active', Number(el.dataset.step) === n);
+  });
+  // Progress indicator — dots before the current are done, current is active
+  document.querySelectorAll('#wizard .wizard-progress__dot').forEach(el => {
+    const s = Number(el.dataset.step);
+    el.classList.toggle('active', s === n);
+    el.classList.toggle('done', s < n);
+  });
+
+  // Auto-probes
+  if (n === 2) _wizardProbeChrome();
+}
+
+async function _wizardProbeChrome() {
+  const probe = $('wizard-chrome-probe');
+  const help = $('wizard-chrome-help');
+  const nextBtn = $('wizard-chrome-next');
+  if (!probe) return;
+
+  // Reset to spinner state
+  probe.className = 'wizard-probe';
+  probe.innerHTML =
+    `<span class="wizard-probe__spinner"></span>` +
+    `<span class="wizard-probe__lbl">Checking Chrome on port 9222…</span>`;
+  if (help) help.classList.add('hidden');
+  if (nextBtn) nextBtn.disabled = true;
+
+  try {
+    const r = await api('/api/health/browser');
+    if (r && r.ok !== false) {
+      probe.className = 'wizard-probe wizard-probe--ok';
+      probe.innerHTML =
+        `<span class="wizard-probe__spinner"></span>` +
+        `<span class="wizard-probe__lbl">Chrome connected — CDP on :9222, TradingView attachable.</span>`;
+      _wizard.checks.chrome = true;
+      if (nextBtn) nextBtn.disabled = false;
+      if (help) help.classList.add('hidden');
+      return;
+    }
+    const errMsg = (r && r.err) ? r.err : 'Chrome not reachable on 9222';
+    throw new Error(errMsg);
+  } catch (e) {
+    probe.className = 'wizard-probe wizard-probe--err';
+    probe.innerHTML =
+      `<span class="wizard-probe__spinner"></span>` +
+      `<span class="wizard-probe__lbl">Chrome isn\u2019t reachable on :9222 — ${escapeHTML(e.message || String(e))}</span>`;
+    if (help) help.classList.remove('hidden');
+    if (nextBtn) nextBtn.disabled = true;
+    _wizard.checks.chrome = false;
+  }
+}
+
+async function _wizardRunCapture() {
+  const runBtn = $('wizard-capture-run');
+  const probe = $('wizard-capture-probe');
+  const shot = $('wizard-capture-shot');
+  const img = $('wizard-capture-img');
+  const meta = $('wizard-capture-meta');
+  const err = $('wizard-capture-err');
+  const nextBtn = $('wizard-capture-next');
+
+  if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Capturing…'; }
+  if (probe) probe.classList.remove('hidden');
+  if (shot) shot.classList.add('hidden');
+  if (err) err.classList.add('hidden');
+  if (nextBtn) nextBtn.classList.add('hidden');
+
+  try {
+    const r = await api('/api/chart/screenshot', {
+      method: 'POST',
+      body: JSON.stringify({ symbol: 'MNQ1!', interval: '1D' }),
+    });
+    if (!r || !r.path) throw new Error('no path returned');
+    // Server inlines the PNG as a data: URI so <img> loads work even
+    // when the regular /api/chart/image endpoint is auth-gated.
+    if (img) img.src = r.data_url || r.url;
+    if (meta) meta.textContent = `${r.symbol || 'MNQ1!'} · ${r.interval || '1D'} · ${r.path.split('/').pop()}`;
+    if (shot) shot.classList.remove('hidden');
+    if (probe) probe.classList.add('hidden');
+    if (runBtn) { runBtn.classList.add('hidden'); }
+    if (nextBtn) nextBtn.classList.remove('hidden');
+    _wizard.checks.capture = true;
+  } catch (e) {
+    if (probe) probe.classList.add('hidden');
+    if (err) {
+      err.classList.remove('hidden');
+      err.classList.add('wizard-probe--err');
+      err.innerHTML =
+        `<span class="wizard-probe__spinner"></span>` +
+        `<span class="wizard-probe__lbl">Capture failed — ${escapeHTML(e.message || String(e))}</span>`;
+    }
+    if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Retry capture'; }
+    _wizard.checks.capture = false;
+  }
+}
+
+// ----------------------------------------------------------------------
 // Initial load
 // ----------------------------------------------------------------------
 refreshChartMeta();
@@ -4540,3 +4715,11 @@ setupCombo('alert-symbol');
 populateSymbolCombos();  // fire-and-forget — fills all three combos from watchlist
 loadTradeLessons();      // Trade is the default tab — surface lessons immediately
 startSessionBarPoll();   // persistent session-bar across all tabs
+
+// First-run auto-launch — land in Setup → Wizard when the onboarding
+// flag hasn't been set yet. Uses the group activation path so the
+// sidebar highlights Setup and the sub-tab bar appears.
+if (!_onboardingDone()) {
+  // Defer so the initial tab's own hooks finish first (no interleaving).
+  setTimeout(() => activateGroup('setup'), 0);
+}

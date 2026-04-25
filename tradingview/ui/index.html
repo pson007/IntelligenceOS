@@ -936,6 +936,117 @@
       </div>
     </section>
 
+    <!-- ONBOARDING WIZARD — 4-step first-run flow. Registered as a sub-tab
+         of Setup; the group's default routes here until localStorage flag
+         `onboarding-complete` is set. Each step gates on a real check so
+         the user can't finish with a broken stack. -->
+    <section class="tab hidden" id="tab-onboarding">
+      <h1>Setup wizard</h1>
+      <div class="subtitle">Get 1runOS connected to your Chrome in under 90 seconds.</div>
+
+      <div class="wizard" id="wizard">
+        <ol class="wizard-progress" role="list" aria-label="Wizard progress">
+          <li class="wizard-progress__dot active" data-step="1"><span>1</span><span class="wizard-progress__lbl">Welcome</span></li>
+          <li class="wizard-progress__line"></li>
+          <li class="wizard-progress__dot" data-step="2"><span>2</span><span class="wizard-progress__lbl">Chrome</span></li>
+          <li class="wizard-progress__line"></li>
+          <li class="wizard-progress__dot" data-step="3"><span>3</span><span class="wizard-progress__lbl">Test capture</span></li>
+          <li class="wizard-progress__line"></li>
+          <li class="wizard-progress__dot" data-step="4"><span>4</span><span class="wizard-progress__lbl">Done</span></li>
+        </ol>
+
+        <!-- Step 1 — Welcome / framing -->
+        <div class="wizard-step active" data-step="1">
+          <div class="wizard-step__kicker">Step 1 of 4 · Welcome</div>
+          <h2 class="wizard-step__title">One run per day.</h2>
+          <p class="wizard-step__body">
+            1runOS is your second pair of eyes on the chart. Each day it reads your setup,
+            gives you a thesis, journals what happens, and remembers the lesson for tomorrow.
+          </p>
+          <ul class="wizard-checklist">
+            <li><span class="wizard-checklist__ico">①</span> <b>Capture</b> the chart you're watching.</li>
+            <li><span class="wizard-checklist__ico">②</span> <b>Analyze</b> — Claude reads it, returns entry / stop / TP.</li>
+            <li><span class="wizard-checklist__ico">③</span> <b>Trade</b> the thesis — order entry is one click away.</li>
+            <li><span class="wizard-checklist__ico">④</span> <b>Learn</b> — the journal feeds tomorrow's read.</li>
+          </ul>
+          <div class="wizard-actions">
+            <button type="button" class="primary" data-wizard-next>Get started</button>
+          </div>
+        </div>
+
+        <!-- Step 2 — Chrome CDP check -->
+        <div class="wizard-step" data-step="2">
+          <div class="wizard-step__kicker">Step 2 of 4 · Chrome</div>
+          <h2 class="wizard-step__title">Connect to your Chrome.</h2>
+          <p class="wizard-step__body">
+            1runOS drives your <b>real</b> Chrome to read TradingView and talk to Claude.
+            No login details stored here — your existing sessions stay in your browser.
+          </p>
+          <div class="wizard-probe" id="wizard-chrome-probe">
+            <span class="wizard-probe__spinner"></span>
+            <span class="wizard-probe__lbl">Checking Chrome on port 9222…</span>
+          </div>
+          <div class="wizard-cmd hidden" id="wizard-chrome-help">
+            <div class="wizard-cmd__kicker">Chrome isn't running with remote debugging. Paste this into Terminal:</div>
+            <div class="wizard-cmd__box">
+              <code id="wizard-cmd-text">cd ~/Desktop/IntelligenceOS/tradingview &amp;&amp; ./start_chrome_cdp.sh</code>
+              <button type="button" class="wizard-cmd__copy" id="wizard-cmd-copy">Copy</button>
+            </div>
+            <div class="wizard-cmd__hint muted">Then sign into <a href="https://tradingview.com" target="_blank" rel="noopener">tradingview.com</a> and <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> once. Click Re-check below.</div>
+          </div>
+          <div class="wizard-actions">
+            <button type="button" data-wizard-prev>Back</button>
+            <button type="button" id="wizard-chrome-recheck">Re-check</button>
+            <button type="button" class="primary" data-wizard-next id="wizard-chrome-next" disabled>Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 3 — Test capture -->
+        <div class="wizard-step" data-step="3">
+          <div class="wizard-step__kicker">Step 3 of 4 · Test capture</div>
+          <h2 class="wizard-step__title">Let's grab your first chart.</h2>
+          <p class="wizard-step__body">
+            We'll pull a live MNQ1! screenshot from your TradingView tab. Takes ~3 seconds.
+            If this works, everything works.
+          </p>
+          <div class="wizard-probe hidden" id="wizard-capture-probe">
+            <span class="wizard-probe__spinner"></span>
+            <span class="wizard-probe__lbl">Capturing MNQ1! 1D…</span>
+          </div>
+          <div class="wizard-shot hidden" id="wizard-capture-shot">
+            <img id="wizard-capture-img" alt="Captured chart" />
+            <div class="wizard-shot__meta mono muted" id="wizard-capture-meta"></div>
+          </div>
+          <div class="wizard-probe wizard-probe--err hidden" id="wizard-capture-err"></div>
+          <div class="wizard-actions">
+            <button type="button" data-wizard-prev>Back</button>
+            <button type="button" id="wizard-capture-run" class="primary">Run test capture</button>
+            <button type="button" class="primary hidden" data-wizard-next id="wizard-capture-next">Looks good — continue</button>
+          </div>
+        </div>
+
+        <!-- Step 4 — Done -->
+        <div class="wizard-step" data-step="4">
+          <div class="wizard-step__kicker">Step 4 of 4 · Ready</div>
+          <h2 class="wizard-step__title">You're set. Now make it count.</h2>
+          <p class="wizard-step__body">
+            Every morning, pull up your chart on TradingView, hit <b>Capture</b> on the
+            Today tab, then <b>Analyze</b>. Trade the thesis. Journal at close. Tomorrow
+            the read is a little sharper.
+          </p>
+          <div class="wizard-tips">
+            <div class="wizard-tip"><b>⌘K</b> captures the chart from anywhere in the app.</div>
+            <div class="wizard-tip"><b>⌘⌥Space</b> captures <em>and</em> analyzes from any app system-wide.</div>
+            <div class="wizard-tip">Click the menu-bar <b>▲ +0R</b> any time for a glance at today's bias.</div>
+          </div>
+          <div class="wizard-actions">
+            <button type="button" data-wizard-prev>Back</button>
+            <button type="button" class="primary" id="wizard-finish">Start trading</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 

@@ -1,0 +1,46 @@
+{
+  "name": "1runos",
+  "productName": "1runOS",
+  "version": "0.1.0",
+  "description": "1runOS — One run per day. AI chart-reader + journal for day traders.",
+  "author": {
+    "name": "Phirun Son",
+    "email": "phirun.son@gmail.com"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "ONERUN_DEV=1 electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^32.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "dev.1runos.app",
+    "productName": "1runOS",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "name": "IntelligenceOS Console",
-  "short_name": "IOS Console",
-  "description": "Local dashboard for TradingView automation — chart control, vision-loop act runs, trade placement, watchlist, alerts, and audit log.",
+  "name": "1runOS — One run per day.",
+  "short_name": "1runOS",
+  "description": "One run per day. AI reads your chart, journals your trades, and teaches you tomorrow what you learned today.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",

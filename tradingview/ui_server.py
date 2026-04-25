@@ -1,4 +1,4 @@
-"""IntelligenceOS Console — local web UI for driving TradingView automation.
+"""1runOS — local web UI for driving TradingView automation.
 
 Run:
     cd tradingview
@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="IntelligenceOS Console", lifespan=lifespan)
+app = FastAPI(title="1runOS", lifespan=lifespan)
 
 _UI_DIR = Path(__file__).parent / "ui"
 _AUDIT_DIR = Path(__file__).parent / "audit"

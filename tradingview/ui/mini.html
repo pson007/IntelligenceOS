@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>1runOS Mini</title>
+<script>
+  // Pre-paint theme so first frame matches the main app's theme. The
+  // popup reads the same localStorage key the main renderer writes.
+  (function () {
+    try {
+      var t = localStorage.getItem('ios-theme') || 'dark';
+      if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="/ui/style.css" />
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: transparent;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body { font-family: var(--sans); color: var(--text); }
+
+  /* Small arrow (caret) connecting popup to the tray icon above it —
+   * reinforces the spatial link to the menu-bar item the user just
+   * clicked. Positioned horizontally via JS to match tray center. */
+  .mini-caret {
+    position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 14px; height: 7px;
+    background: var(--bg-1);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    border-top: 1px solid var(--border);
+    z-index: 2;
+  }
+
+  .mini {
+    position: absolute; top: 6px; left: 0; right: 0;
+    margin: 0 8px 8px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.42), 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .mini-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .mini-brand {
+    font-weight: 700; letter-spacing: 0.01em;
+    font-size: var(--fs-md);
+  }
+  .mini-brand__sub {
+    color: var(--muted); font-size: var(--fs-xs);
+    font-weight: 400; margin-left: 6px;
+    letter-spacing: 0.02em;
+  }
+  .mini-date {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: var(--fs-xs);
+  }
+
+  .mini-hero {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .mini-hero__lbl {
+    color: var(--muted); font-size: var(--fs-xs);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .mini-hero__val {
+    font-size: var(--fs-lg); font-weight: 600;
+    margin-top: 2px;
+    letter-spacing: -0.01em;
+  }
+  .mini-hero__chip {
+    display: inline-block;
+    margin-left: 8px; vertical-align: middle;
+    padding: 2px 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: var(--radius-full);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .mini-hero.dir-up    .mini-hero__val { color: var(--green); }
+  .mini-hero.dir-down  .mini-hero__val { color: var(--red); }
+  .mini-hero.dir-flat  .mini-hero__val { color: var(--fg-2); }
+
+  .mini-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px 14px;
+    padding: 6px 0;
+  }
+  .mini-cell {
+    display: flex; flex-direction: column;
+  }
+  .mini-cell__lbl {
+    color: var(--muted); font-size: var(--fs-xs);
+    letter-spacing: 0.03em;
+  }
+  .mini-cell__val {
+    font-family: var(--mono);
+    font-size: var(--fs-base); font-weight: 500;
+    margin-top: 2px;
+    letter-spacing: -0.005em;
+  }
+  .mini-cell__val.pos { color: var(--green); }
+  .mini-cell__val.neg { color: var(--red); }
+  .mini-cell__val.muted { color: var(--muted); font-weight: 400; }
+
+  .mini-inval {
+    margin-top: 10px; padding: 8px 10px;
+    background: var(--bg-2);
+    border-radius: 8px;
+    font-size: var(--fs-xs);
+    color: var(--fg-2);
+    line-height: 1.45;
+    max-height: 74px;
+    overflow: hidden;
+    position: relative;
+  }
+  .mini-inval__lbl {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+
+  .mini-actions {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .mini-btn {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-2);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: background var(--dur-base) var(--ease),
+                border-color var(--dur-base) var(--ease),
+                color var(--dur-base) var(--ease);
+  }
+  .mini-btn:hover {
+    background: var(--btn-hover-bg);
+    border-color: var(--btn-hover-border);
+  }
+  .mini-btn.primary {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+  }
+  .mini-btn.primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+  .mini-btn__sub {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    margin-top: 1px;
+    letter-spacing: 0.04em;
+  }
+  .mini-btn.primary .mini-btn__sub {
+    color: color-mix(in srgb, var(--on-accent) 75%, transparent);
+  }
+
+  .mini-err {
+    color: var(--red);
+    font-size: var(--fs-xs);
+    text-align: center;
+    padding: 6px 0 0;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="mini-caret" id="caret"></div>
+<div class="mini">
+  <div class="mini-head">
+    <div>
+      <span class="mini-brand">1runOS</span>
+      <span class="mini-brand__sub">· one run per day</span>
+    </div>
+    <div class="mini-date" id="date">—</div>
+  </div>
+
+  <div class="mini-hero" id="hero">
+    <div class="mini-hero__lbl">Today's bias</div>
+    <div class="mini-hero__val" id="bias">—<span class="mini-hero__chip" id="bias-chip" hidden></span></div>
+  </div>
+
+  <div class="mini-grid">
+    <div class="mini-cell">
+      <span class="mini-cell__lbl">Open P&amp;L</span>
+      <span class="mini-cell__val muted" id="pnl">—</span>
+    </div>
+    <div class="mini-cell">
+      <span class="mini-cell__lbl">Session</span>
+      <span class="mini-cell__val muted" id="r">—</span>
+    </div>
+  </div>
+
+  <div class="mini-inval" id="inval-wrap">
+    <span class="mini-inval__lbl">Invalidates if</span>
+    <span id="inval">—</span>
+  </div>
+
+  <div class="mini-actions">
+    <button class="mini-btn" id="btn-capture">
+      Capture
+      <span class="mini-btn__sub">⌘K</span>
+    </button>
+    <button class="mini-btn primary" id="btn-open">
+      Open 1runOS
+      <span class="mini-btn__sub">main window</span>
+    </button>
+  </div>
+
+  <div class="mini-err" id="err" hidden></div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function fmtMoney(n) {
+    if (n == null || isNaN(n)) return '—';
+    const sign = n < 0 ? '-' : (n > 0 ? '+' : '');
+    return sign + '$' + Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  }
+
+  function fmtBias(tf) {
+    const pivot = tf && tf.pivot;
+    if (pivot && pivot.revised_bias) {
+      return { label: pivot.revised_bias, chip: pivot.classification || 'pivot', pivoted: true };
+    }
+    if (!tf || !tf.exists) return { label: 'no forecast today', chip: '', pivoted: false };
+    const dir = tf.direction;
+    const dirLabel = dir === 'up' ? 'long' : dir === 'down' ? 'short' : (dir || 'flat');
+    const conf = tf.direction_confidence;
+    const chip = tf.latest_live_stage ? ('F@' + tf.latest_live_stage.slice(0,2) + ':' + tf.latest_live_stage.slice(2)) : 'pre';
+    return {
+      label: conf ? (dirLabel + ' · ' + conf) : dirLabel,
+      chip,
+      pivoted: false,
+    };
+  }
+
+  async function refresh() {
+    try {
+      const r = await fetch('/api/session/today');
+      if (!r.ok) throw new Error('http ' + r.status);
+      const s = await r.json();
+      $('err').hidden = true;
+      $('date').textContent = s.date || '';
+
+      const tf = s.today_forecast || {};
+      const bias = fmtBias(tf);
+      const hero = $('hero');
+      hero.classList.remove('dir-up', 'dir-down', 'dir-flat');
+      if (tf.exists && !bias.pivoted) {
+        if (tf.direction === 'up') hero.classList.add('dir-up');
+        else if (tf.direction === 'down') hero.classList.add('dir-down');
+        else hero.classList.add('dir-flat');
+      } else if (bias.pivoted) {
+        // Pivoted bias — color by the word direction if we can infer it.
+        const text = (bias.label || '').toLowerCase();
+        if (/buy|long|reclaim|bounce/.test(text)) hero.classList.add('dir-up');
+        else if (/sell|short|failure|breakdown/.test(text)) hero.classList.add('dir-down');
+        else hero.classList.add('dir-flat');
+      }
+      $('bias').firstChild.textContent = bias.label;
+      const chip = $('bias-chip');
+      chip.textContent = bias.chip;
+      chip.hidden = !bias.chip;
+
+      const pos = s.positions || {};
+      const pnlEl = $('pnl');
+      if (pos.available && (pos.open_count || 0) > 0 && typeof pos.unrealized_pnl === 'number') {
+        const p = pos.unrealized_pnl;
+        pnlEl.textContent = fmtMoney(p) + ' · ' + pos.open_count;
+        pnlEl.className = 'mini-cell__val ' + (p > 0 ? 'pos' : p < 0 ? 'neg' : 'muted');
+      } else if (pos.available) {
+        pnlEl.textContent = 'flat';
+        pnlEl.className = 'mini-cell__val muted';
+      } else {
+        pnlEl.textContent = 'busy';
+        pnlEl.className = 'mini-cell__val muted';
+      }
+
+      const sess = s.session || {};
+      const rEl = $('r');
+      const rSum = Number(sess.realized_r_sum || 0);
+      if ((sess.total || 0) > 0) {
+        rEl.textContent = (rSum >= 0 ? '+' : '') + rSum.toFixed(2) + 'R · ' + (sess.wins || 0) + 'W/' + (sess.losses || 0) + 'L';
+        rEl.className = 'mini-cell__val ' + (rSum > 0 ? 'pos' : rSum < 0 ? 'neg' : '');
+      } else {
+        rEl.textContent = 'no decisions';
+        rEl.className = 'mini-cell__val muted';
+      }
+
+      const pivot = tf.pivot;
+      let inval = pivot && pivot.revised_invalidation
+        ? pivot.revised_invalidation
+        : (tf.invalidation || 'Run today\u2019s pre-session forecast to set one.');
+      if (inval.length > 180) inval = inval.slice(0, 177) + '\u2026';
+      $('inval').textContent = inval;
+    } catch (e) {
+      $('err').textContent = 'sync error — ' + (e.message || 'unknown');
+      $('err').hidden = false;
+    }
+  }
+
+  let timer = null;
+  function start() {
+    refresh();
+    if (timer) clearInterval(timer);
+    timer = setInterval(refresh, 10_000);
+  }
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+  }
+
+  window.addEventListener('load', start);
+  window.addEventListener('blur', stop);
+  window.addEventListener('focus', start);
+
+  // Caret horizontal position — main.js pushes the tray-center-relative
+  // offset via `?cx=NN` on the URL so the caret tip points at the tray
+  // icon even when the popup is clamped against a screen edge.
+  try {
+    const p = new URLSearchParams(location.search);
+    const cx = p.get('cx');
+    if (cx) {
+      const caret = $('caret');
+      caret.style.left = cx + 'px';
+      caret.style.transform = 'translateX(-50%)';
+    }
+  } catch (e) {}
+
+  // Bridge to Electron main — exposed by preload.js.
+  $('btn-open').addEventListener('click', () => {
+    if (window.oneRun?.openMain) window.oneRun.openMain();
+  });
+  $('btn-capture').addEventListener('click', () => {
+    if (window.oneRun?.captureChart) window.oneRun.captureChart();
+  });
+  // Esc dismisses the popup without opening anything.
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && window.oneRun?.closeMini) window.oneRun.closeMini();
+  });
+</script>
+</body>
+</html>
