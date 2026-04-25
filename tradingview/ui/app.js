@@ -3411,9 +3411,23 @@ async function loadForecasts() {
 let _forecastRunInited = false;
 let _forecastRunPollTimer = null;
 let _forecastRunSeenEvents = 0;
+let _forecastRunElapsedTimer = null;
+let _forecastRunStartedAt = 0;
+let _forecastRunActiveKind = null;
 const _forecastCal = {
   viewYear: 0, viewMonth: 0,
   selected: null,  // single YYYY-MM-DD or null
+};
+
+// Labels for the status bar — short human-facing tag per kind. Mirrors
+// the `data-kind` attribute on each .forecast-run-btn so the bar reads
+// the same dialect as the buttons.
+const _FORECAST_KIND_LABEL = {
+  pre_session: 'Pre-session',
+  live_f1: 'F1 (live 10:00)',
+  live_f2: 'F2 (live 12:00)',
+  live_f3: 'F3 (live 14:00)',
+  adhoc: 'Ad-hoc (Bar Replay)',
 };
 
 function initForecastRun() {
@@ -3426,6 +3440,10 @@ function initForecastRun() {
   document.getElementById('forecast-cal-prev').addEventListener('click', () => _forecastGotoMonth(-1));
   document.getElementById('forecast-cal-next').addEventListener('click', () => _forecastGotoMonth(+1));
   document.getElementById('forecast-run-go').addEventListener('click', onForecastRunClick);
+  document.getElementById('forecast-run-pre-session').addEventListener('click', () => onTypedForecastClick('pre_session'));
+  document.getElementById('forecast-run-f1').addEventListener('click', () => onTypedForecastClick('live_f1'));
+  document.getElementById('forecast-run-f2').addEventListener('click', () => onTypedForecastClick('live_f2'));
+  document.getElementById('forecast-run-f3').addEventListener('click', () => onTypedForecastClick('live_f3'));
 
   // Calendar collapse toggle — user preference persists in localStorage so
   // the minimize state survives reloads. Defaults to expanded.
@@ -3624,31 +3642,111 @@ async function onForecastRunClick() {
     _showForecastModal(sel);
     return;
   }
-  _dispatchForecastRun(payload);
+  _dispatchForecastRun({ kind: 'adhoc', endpoint: '/api/forecasts/run', body: payload });
 }
 
-async function _dispatchForecastRun(payload) {
-  const goEl = document.getElementById('forecast-run-go');
+// Typed forecast runs: pre-session + live F1/F2/F3. All target today on
+// the LIVE chart (no calendar selection needed); server defaults date.
+async function onTypedForecastClick(kind) {
+  if (_forecastRunPollTimer) return;  // a run is already in flight
+  const today = _fmtDate(new Date());
+  if (kind === 'pre_session') {
+    _dispatchForecastRun({
+      kind, endpoint: '/api/forecasts/pre_session',
+      body: { date: today, symbol: 'MNQ1' },
+    });
+    return;
+  }
+  const stageMap = { live_f1: 'F1', live_f2: 'F2', live_f3: 'F3' };
+  const stage = stageMap[kind];
+  if (!stage) return;
+  _dispatchForecastRun({
+    kind, endpoint: '/api/forecasts/live',
+    body: { stage, date: today, symbol: 'MNQ1', force: true },
+  });
+}
+
+function _setForecastButtonsDisabled(disabled) {
+  const ids = ['forecast-run-go', 'forecast-run-pre-session',
+               'forecast-run-f1', 'forecast-run-f2', 'forecast-run-f3'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (disabled) {
+      el.disabled = true;
+    } else if (id === 'forecast-run-go') {
+      // Ad-hoc button's enabled state depends on calendar selection.
+      _refreshForecastSummary();
+    } else {
+      el.disabled = false;
+    }
+  });
+}
+
+function _showForecastStatusBar(kind) {
+  const bar = document.getElementById('forecast-status-bar');
+  const kindEl = document.getElementById('forecast-status-kind');
+  const stateEl = document.getElementById('forecast-status-state');
+  const fillEl = document.getElementById('forecast-status-fill');
+  const elapsedEl = document.getElementById('forecast-status-elapsed');
+  bar.classList.remove('hidden', 'done', 'failed');
+  bar.classList.add('running');
+  kindEl.textContent = _FORECAST_KIND_LABEL[kind] || kind;
+  stateEl.textContent = 'running…';
+  fillEl.style.width = '';  // CSS drives the stripe animation while .running
+  elapsedEl.textContent = '0s';
+  _forecastRunStartedAt = Date.now();
+  if (_forecastRunElapsedTimer) clearInterval(_forecastRunElapsedTimer);
+  _forecastRunElapsedTimer = setInterval(() => {
+    const s = Math.floor((Date.now() - _forecastRunStartedAt) / 1000);
+    const mm = Math.floor(s / 60), ss = s % 60;
+    elapsedEl.textContent = mm > 0 ? `${mm}m${ss.toString().padStart(2, '0')}s` : `${s}s`;
+  }, 1000);
+}
+
+function _finishForecastStatusBar(state, detail = '') {
+  const bar = document.getElementById('forecast-status-bar');
+  const stateEl = document.getElementById('forecast-status-state');
+  const fillEl = document.getElementById('forecast-status-fill');
+  bar.classList.remove('running');
+  bar.classList.add(state);  // 'done' or 'failed'
+  stateEl.textContent = state === 'done' ? `done${detail ? ' · ' + detail : ''}` : `failed${detail ? ' · ' + detail : ''}`;
+  fillEl.style.width = '100%';
+  if (_forecastRunElapsedTimer) { clearInterval(_forecastRunElapsedTimer); _forecastRunElapsedTimer = null; }
+}
+
+async function _dispatchForecastRun(spec) {
+  // Legacy callers pass a raw payload object (ad-hoc). Normalize to
+  // the new {kind, endpoint, body} shape so both flows share one path.
+  if (!spec.endpoint) {
+    spec = { kind: 'adhoc', endpoint: '/api/forecasts/run', body: spec };
+  }
+  const { kind, endpoint, body } = spec;
   const statusEl = document.getElementById('forecast-run-status');
   const progressEl = document.getElementById('forecast-run-progress');
   const phaseEl = document.getElementById('forecast-run-phase');
   const eventsEl = document.getElementById('forecast-run-events');
 
-  goEl.disabled = true;
+  _forecastRunActiveKind = kind;
+  _setForecastButtonsDisabled(true);
+  _showForecastStatusBar(kind);
   statusEl.textContent = 'starting…';
   progressEl.classList.remove('hidden');
-  phaseEl.textContent = `Starting forecast for ${payload.date} (resume=${payload.resume})`;
+  const date = body.date || _fmtDate(new Date());
+  phaseEl.textContent = `Starting ${_FORECAST_KIND_LABEL[kind] || kind} for ${date}`;
   eventsEl.innerHTML = '';
   _forecastRunSeenEvents = 0;
 
   let task_id, request_id;
   try {
-    const r = await api('/api/forecasts/run', { method: 'POST', body: payload });
+    const r = await api(endpoint, { method: 'POST', body });
     task_id = r.task_id; request_id = r.request_id;
   } catch (e) {
     statusEl.textContent = 'failed to start';
     phaseEl.textContent = `Error: ${e.message}`;
-    goEl.disabled = false;
+    _finishForecastStatusBar('failed', e.message);
+    _setForecastButtonsDisabled(false);
+    _forecastRunActiveKind = null;
     return;
   }
 
@@ -3708,12 +3806,16 @@ async function _pollForecastRun(task_id, request_id) {
     if (status.state === 'done') {
       statusEl.textContent = 'done';
       phaseEl.textContent = `Complete. Refreshing list…`;
+      _finishForecastStatusBar('done');
       await loadForecasts();
       renderForecastCalendar();
     } else {
       statusEl.textContent = 'failed';
       phaseEl.textContent = `Error: ${status.error || 'unknown'}`;
+      _finishForecastStatusBar('failed', status.error || 'unknown');
     }
+    _forecastRunActiveKind = null;
+    _setForecastButtonsDisabled(false);
     _refreshForecastSummary();
   }
 }

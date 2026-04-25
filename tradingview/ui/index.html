@@ -799,9 +799,57 @@
           </div>
         </div>
 
-        <div class="profile-run-footer">
+        <div class="profile-run-footer forecast-run-footer">
           <div class="profile-run-summary" id="forecast-run-summary">Pick a day to run F1 → F2 → F3 → reconciliation</div>
-          <button class="btn btn-primary" id="forecast-run-go" disabled>Run</button>
+          <!-- Typed forecast buttons — five distinct run modes so the
+               operator sees exactly which pipeline is being fired.
+               Pre-session / F1 / F2 / F3 hit the live chart at their
+               cursor times (today only). Ad-hoc fires the full Bar
+               Replay chain for the selected calendar day. -->
+          <div class="forecast-run-buttons" id="forecast-run-buttons" role="group" aria-label="Forecast run type">
+            <button type="button" class="btn forecast-run-btn" id="forecast-run-pre-session"
+                    data-kind="pre_session"
+                    title="Pre-session forecast — read the chart before RTH open. Runs the pre_session_forecast CLI for today.">
+              <span class="forecast-run-btn__lbl">Pre-session</span>
+              <span class="forecast-run-btn__hint">pre-open</span>
+            </button>
+            <button type="button" class="btn forecast-run-btn" id="forecast-run-f1"
+                    data-kind="live_f1"
+                    title="Live F1 forecast — captures the LIVE chart at 10:00 ET. Use at or shortly after 10:00.">
+              <span class="forecast-run-btn__lbl">F1</span>
+              <span class="forecast-run-btn__hint">10:00</span>
+            </button>
+            <button type="button" class="btn forecast-run-btn" id="forecast-run-f2"
+                    data-kind="live_f2"
+                    title="Live F2 forecast — LIVE chart at 12:00 ET.">
+              <span class="forecast-run-btn__lbl">F2</span>
+              <span class="forecast-run-btn__hint">12:00</span>
+            </button>
+            <button type="button" class="btn forecast-run-btn" id="forecast-run-f3"
+                    data-kind="live_f3"
+                    title="Live F3 forecast — LIVE chart at 14:00 ET.">
+              <span class="forecast-run-btn__lbl">F3</span>
+              <span class="forecast-run-btn__hint">14:00</span>
+            </button>
+            <button type="button" class="btn btn-primary forecast-run-btn" id="forecast-run-go"
+                    data-kind="adhoc" disabled
+                    title="Ad-hoc full chain — Bar Replay for the selected day. Runs F1 → F2 → F3 → reconciliation end-to-end (~15–20 min).">
+              <span class="forecast-run-btn__lbl">Ad-hoc</span>
+              <span class="forecast-run-btn__hint">F1→F2→F3→recon</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Status bar — visible while any forecast run is in flight.
+             Labels WHICH kind is running and fills a progress bar so the
+             operator can tell at a glance when the run is complete. -->
+        <div class="forecast-status-bar hidden" id="forecast-status-bar" aria-live="polite">
+          <span class="forecast-status-bar__kind" id="forecast-status-kind">—</span>
+          <div class="forecast-status-bar__track">
+            <div class="forecast-status-bar__fill" id="forecast-status-fill"></div>
+          </div>
+          <span class="forecast-status-bar__state mono small" id="forecast-status-state">—</span>
+          <span class="forecast-status-bar__elapsed mono small" id="forecast-status-elapsed">0s</span>
         </div>
 
         <div class="profile-run-progress hidden" id="forecast-run-progress">

@@ -1856,6 +1856,123 @@ async def forecast_reconcile_start(payload: dict) -> dict:
     return {"task_id": task_id, "request_id": request_id}
 
 
+@app.post("/api/forecasts/pre_session")
+async def forecast_pre_session_start(payload: dict) -> dict:
+    """Run the pre-session forecast for a given date (default: today).
+
+    Body: {date?: "YYYY-MM-DD", symbol?: "MNQ1"}
+    Returns {task_id, request_id}. Poll /api/forecasts/runs/{task_id}
+    and /api/audit/tail?request_id=... as usual."""
+    global _active_forecast_run
+    p = payload or {}
+    date = (p.get("date") or "").strip() or datetime.now().strftime("%Y-%m-%d")
+    symbol = (p.get("symbol") or "MNQ1").strip()
+
+    if not _PROFILE_DATE_RX.match(date):
+        raise HTTPException(400, "date must be YYYY-MM-DD")
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _forecast_run_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "date": date, "symbol": symbol, "kind": "pre_session",
+    }
+
+    async def runner():
+        global _active_forecast_run
+        try:
+            from tv_automation.pre_session_forecast import run_pre_session
+            result = await run_pre_session(symbol=symbol, date_str=date)
+            _forecast_run_tasks[task_id]["state"] = "done"
+            _forecast_run_tasks[task_id]["result"] = result
+        except Exception as e:
+            _forecast_run_tasks[task_id]["state"] = "failed"
+            _forecast_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _forecast_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_forecast_run == task_id:
+                _active_forecast_run = None
+
+    _active_forecast_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.post("/api/forecasts/live")
+async def forecast_live_stage_start(payload: dict) -> dict:
+    """Run one live forecast stage (F1/F2/F3) against the LIVE chart.
+
+    Body: {stage: "F1"|"F2"|"F3", date?: "YYYY-MM-DD", symbol?: "MNQ1", force?: bool}
+    Returns {task_id, request_id}. `force=true` bypasses the >30 min
+    staleness guard (useful when re-running by hand a few minutes late)."""
+    global _active_forecast_run
+    p = payload or {}
+    stage = (p.get("stage") or "").strip().upper()
+    date = (p.get("date") or "").strip() or None
+    symbol = (p.get("symbol") or "MNQ1").strip()
+    force = bool(p.get("force", False))
+
+    if stage not in ("F1", "F2", "F3"):
+        raise HTTPException(400, "stage must be F1, F2, or F3")
+    if date and not _PROFILE_DATE_RX.match(date):
+        raise HTTPException(400, "date must be YYYY-MM-DD")
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _forecast_run_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "stage": stage, "date": date, "symbol": symbol,
+        "kind": f"live_{stage.lower()}",
+    }
+
+    async def runner():
+        global _active_forecast_run
+        try:
+            from tv_automation.live_forecast import run_live_stage
+            result = await run_live_stage(
+                stage, symbol=symbol, date_str=date, force=force,
+            )
+            _forecast_run_tasks[task_id]["state"] = "done"
+            _forecast_run_tasks[task_id]["result"] = result
+        except Exception as e:
+            _forecast_run_tasks[task_id]["state"] = "failed"
+            _forecast_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _forecast_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_forecast_run == task_id:
+                _active_forecast_run = None
+
+    _active_forecast_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
 @app.get("/api/forecasts/calibration")
 async def forecasts_calibration(min_n: int = 2) -> dict:
     """Per-pattern accuracy across all reconciliations.

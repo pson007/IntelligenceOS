@@ -3828,6 +3828,132 @@ html.is-mobile .profiles-layout {
   padding-top: var(--s-3);
   border-top: 1px solid var(--border);
 }
+
+/* Forecast run buttons — five typed run modes replace the old single
+   Run button. Each button shows a primary label (kind) + hint (cursor
+   time or target), so the operator sees WHICH pipeline they're firing
+   before they click. Laid out as a wrap-friendly group so small screens
+   stack them without overflowing the card. */
+.forecast-run-footer {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.forecast-run-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: stretch;
+}
+.forecast-run-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 12px;
+  min-width: 90px;
+  line-height: 1.1;
+  text-align: left;
+}
+.forecast-run-btn__lbl {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.005em;
+}
+.forecast-run-btn__hint {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--mono);
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+.forecast-run-btn.btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+.forecast-run-btn.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.forecast-run-btn.btn-primary .forecast-run-btn__hint {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Status bar — visible while a run is in flight + a moment after
+   completion. Three cells (kind · progress track · state/elapsed). The
+   fill animates with diagonal stripes while .running, then jumps to a
+   solid green (or red) 100% on done/failed so the operator can tell at
+   a glance whether the run is still going or finished. */
+.forecast-status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+  padding: 8px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.forecast-status-bar.hidden { display: none; }
+.forecast-status-bar__kind {
+  flex: 0 0 auto;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: -0.005em;
+  color: var(--fg);
+}
+.forecast-status-bar__track {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-3);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.forecast-status-bar__fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width var(--dur-base, 180ms) var(--ease, ease);
+  width: 0%;
+}
+.forecast-status-bar.running .forecast-status-bar__fill {
+  width: 100%;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      var(--accent) 0px,
+      var(--accent) 10px,
+      var(--accent-hover) 10px,
+      var(--accent-hover) 20px
+    );
+  animation: forecast-status-stripe 1.2s linear infinite;
+}
+.forecast-status-bar.done .forecast-status-bar__fill {
+  background: var(--green);
+  animation: none;
+}
+.forecast-status-bar.failed .forecast-status-bar__fill {
+  background: var(--red);
+  animation: none;
+}
+@keyframes forecast-status-stripe {
+  from { background-position: 0 0; }
+  to { background-position: 40px 0; }
+}
+.forecast-status-bar__state {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+.forecast-status-bar.done .forecast-status-bar__state { color: var(--green); }
+.forecast-status-bar.failed .forecast-status-bar__state { color: var(--red); }
+.forecast-status-bar__elapsed {
+  flex: 0 0 auto;
+  color: var(--muted);
+  min-width: 42px;
+  text-align: right;
+}
 .profile-run-phase {
   font-size: 12px;
   color: var(--fg);
