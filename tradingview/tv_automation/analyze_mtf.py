@@ -813,10 +813,14 @@ async def pressure_test(
     # out-of-distribution crosscheck. Agreement across >= 2 families is
     # a stronger signal than within-family majority.
     if combos is None:
+        # Default ensemble — claude_web removed from defaults until
+        # claude.ai's UI stabilizes (current build has no file-input
+        # selector reachable + the model dropdown won't open via
+        # automation; pressure test runs reliably failed with both).
+        # Caller can still pass `combos=` explicitly to include it.
         combos = [
-            {"provider": "claude_web",  "model": "sonnet"},
-            {"provider": "claude_web",  "model": "opus"},
             {"provider": "chatgpt_web", "model": "instant"},
+            {"provider": "chatgpt_web", "model": "thinking"},
             {"provider": "ollama",      "model": "gemma4:31b"},
         ]
 

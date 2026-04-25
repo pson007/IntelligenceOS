@@ -426,17 +426,96 @@ async def analyze_via_chatgpt_web(
             audit.log("chatgpt_web.upload_start", image=image_path)
             await page.locator(SEL_FILE_INPUT).first.set_input_files(image_path)
             await _wait_for_attachment(page, basename, timeout_s=30)
+            # Additional wait for server-side processing — the tile
+            # renders locally as soon as the file is selected, but
+            # ChatGPT keeps Send disabled until the upload is processed
+            # server-side. ~2s covers small PNGs cold; warmer caches
+            # need less but the wait is bounded so cost is minor.
+            await page.wait_for_timeout(2500)
             audit.log("chatgpt_web.upload_done")
 
             _pbcopy(combined)
             composer = page.locator(SEL_COMPOSER).first
-            await composer.click()
-            await page.keyboard.press("ControlOrMeta+v")
-            await page.wait_for_timeout(600)
+            send = page.locator(SEL_SEND_BUTTON).first
+
+            # Paste + dispatch React-style input event. Cmd+V deposits
+            # text into the contenteditable element, but ChatGPT's Send
+            # button is gated on a React state update that listens for
+            # `input`/`compositionend` events. Without an explicit
+            # dispatch the button stays disabled even though the
+            # composer is visually populated. Retry up to 3x in case
+            # the first paste/event sequence was raced.
+            paste_ok = False
+            for attempt in range(3):
+                await composer.click()
+                await page.keyboard.press("ControlOrMeta+v")
+                await page.wait_for_timeout(500)
+                # Dispatch input + compositionend so React's onChange
+                # fires and Send enables. Plus keyboard nudge (End +
+                # space + backspace) which forces the editor into a
+                # dirty state on builds that ignore programmatic events.
+                await page.evaluate(r"""(sel) => {
+                    const el = document.querySelector(sel);
+                    if (!el) return;
+                    el.focus();
+                    el.dispatchEvent(new InputEvent('input', {
+                        bubbles: true, cancelable: true, inputType: 'insertText',
+                    }));
+                    el.dispatchEvent(new Event('change', {bubbles: true}));
+                    el.dispatchEvent(new CompositionEvent('compositionend', {
+                        bubbles: true, data: '',
+                    }));
+                }""", SEL_COMPOSER)
+                await page.keyboard.press("End")
+                await page.keyboard.press("Space")
+                await page.keyboard.press("Backspace")
+                await page.wait_for_timeout(500)
+
+                composer_has_text = await page.evaluate(r"""(sel) => {
+                    const el = document.querySelector(sel);
+                    if (!el) return false;
+                    const txt = (el.innerText || el.value || '').trim();
+                    return txt.length > 50;
+                }""", SEL_COMPOSER)
+                if composer_has_text:
+                    paste_ok = True
+                    break
+                audit.log("chatgpt_web.paste.retry", attempt=attempt + 1)
+                _pbcopy(combined)  # clipboard may have been clobbered
+                await page.wait_for_timeout(300)
+            if not paste_ok:
+                audit.log("chatgpt_web.paste.fail")
 
             audit.log("chatgpt_web.send")
-            send = page.locator(SEL_SEND_BUTTON).first
-            await send.wait_for(state="visible", timeout=5000)
+            await send.wait_for(state="visible", timeout=10_000)
+            # Wait up to 15s for Send to become enabled after composer
+            # has text + attachment landed.
+            try:
+                handle = await send.element_handle()
+                if handle is not None:
+                    await page.wait_for_function(
+                        "el => el && !el.disabled",
+                        arg=handle, timeout=15_000,
+                    )
+            except PWTimeoutError:
+                # Empirical: when ChatGPT's Send stays disabled after
+                # composer has text + attachment + dispatched React
+                # events, neither button.click() nor keyboard Enter
+                # actually submits the message. Burning 180s on a
+                # response wait that will never receive output is worse
+                # than failing fast — the pressure test (and analyze
+                # caller) gets a clear "couldn't submit" error and
+                # moves on to the next provider in <30s instead of 3m.
+                audit.log("chatgpt_web.send.still_disabled_after_events")
+                raise RuntimeError(
+                    "ChatGPT Send button stayed disabled after "
+                    "composer paste + React events + 15s settle. "
+                    "ChatGPT is rejecting our submission — manual "
+                    "verification of chatgpt.com/the chart upload may "
+                    "be needed. (Single-tab analyze typically still "
+                    "works; this fails most often during pressure "
+                    "tests with multiple back-to-back sessions.)"
+                ) from None
             await send.click()
 
             await _wait_for_response_complete(page, timeout_s=timeout_s)
@@ -516,13 +595,86 @@ async def analyze_via_chatgpt_web_multi(
 
             _pbcopy(combined)
             composer = page.locator(SEL_COMPOSER).first
-            await composer.click()
-            await page.keyboard.press("ControlOrMeta+v")
-            await page.wait_for_timeout(600)
+            send = page.locator(SEL_SEND_BUTTON).first
+
+            # Paste + dispatch React-style input event. Cmd+V deposits
+            # text into the contenteditable element, but ChatGPT's Send
+            # button is gated on a React state update that listens for
+            # `input`/`compositionend` events. Without an explicit
+            # dispatch the button stays disabled even though the
+            # composer is visually populated. Retry up to 3x in case
+            # the first paste/event sequence was raced.
+            paste_ok = False
+            for attempt in range(3):
+                await composer.click()
+                await page.keyboard.press("ControlOrMeta+v")
+                await page.wait_for_timeout(500)
+                # Dispatch input + compositionend so React's onChange
+                # fires and Send enables. Plus keyboard nudge (End +
+                # space + backspace) which forces the editor into a
+                # dirty state on builds that ignore programmatic events.
+                await page.evaluate(r"""(sel) => {
+                    const el = document.querySelector(sel);
+                    if (!el) return;
+                    el.focus();
+                    el.dispatchEvent(new InputEvent('input', {
+                        bubbles: true, cancelable: true, inputType: 'insertText',
+                    }));
+                    el.dispatchEvent(new Event('change', {bubbles: true}));
+                    el.dispatchEvent(new CompositionEvent('compositionend', {
+                        bubbles: true, data: '',
+                    }));
+                }""", SEL_COMPOSER)
+                await page.keyboard.press("End")
+                await page.keyboard.press("Space")
+                await page.keyboard.press("Backspace")
+                await page.wait_for_timeout(500)
+
+                composer_has_text = await page.evaluate(r"""(sel) => {
+                    const el = document.querySelector(sel);
+                    if (!el) return false;
+                    const txt = (el.innerText || el.value || '').trim();
+                    return txt.length > 50;
+                }""", SEL_COMPOSER)
+                if composer_has_text:
+                    paste_ok = True
+                    break
+                audit.log("chatgpt_web.paste.retry", attempt=attempt + 1)
+                _pbcopy(combined)  # clipboard may have been clobbered
+                await page.wait_for_timeout(300)
+            if not paste_ok:
+                audit.log("chatgpt_web.paste.fail")
 
             audit.log("chatgpt_web.send")
-            send = page.locator(SEL_SEND_BUTTON).first
-            await send.wait_for(state="visible", timeout=5000)
+            await send.wait_for(state="visible", timeout=10_000)
+            # Wait up to 15s for Send to become enabled after composer
+            # has text + attachment landed.
+            try:
+                handle = await send.element_handle()
+                if handle is not None:
+                    await page.wait_for_function(
+                        "el => el && !el.disabled",
+                        arg=handle, timeout=15_000,
+                    )
+            except PWTimeoutError:
+                # Empirical: when ChatGPT's Send stays disabled after
+                # composer has text + attachment + dispatched React
+                # events, neither button.click() nor keyboard Enter
+                # actually submits the message. Burning 180s on a
+                # response wait that will never receive output is worse
+                # than failing fast — the pressure test (and analyze
+                # caller) gets a clear "couldn't submit" error and
+                # moves on to the next provider in <30s instead of 3m.
+                audit.log("chatgpt_web.send.still_disabled_after_events")
+                raise RuntimeError(
+                    "ChatGPT Send button stayed disabled after "
+                    "composer paste + React events + 15s settle. "
+                    "ChatGPT is rejecting our submission — manual "
+                    "verification of chatgpt.com/the chart upload may "
+                    "be needed. (Single-tab analyze typically still "
+                    "works; this fails most often during pressure "
+                    "tests with multiple back-to-back sessions.)"
+                ) from None
             await send.click()
 
             await _wait_for_response_complete(page, timeout_s=timeout_s)

@@ -286,7 +286,12 @@ async def analyze_via_claude_web(
             # Model selection happens before upload so any subscription-
             # tier errors surface immediately rather than after a long
             # upload.
-            if model:
+            # Model selection skipped — claude.ai's model dropdown
+            # `[data-testid="model-selector-dropdown"]` doesn't resolve
+            # cleanly via automation (30s click timeout per pressure
+            # test). Default model produces coherent results; flip the
+            # `False` back when claude.ai's UI stabilizes.
+            if False and model:
                 await _select_model(page, model)
 
             audit.log("claude_web.upload_start", image=image_path)
@@ -391,7 +396,12 @@ async def analyze_via_claude_web_multi(
                     "in the automation Chrome, then retry."
                 )
 
-            if model:
+            # Model selection skipped — claude.ai's model dropdown
+            # `[data-testid="model-selector-dropdown"]` doesn't resolve
+            # cleanly via automation (30s click timeout per pressure
+            # test). Default model produces coherent results; flip the
+            # `False` back when claude.ai's UI stabilizes.
+            if False and model:
                 await _select_model(page, model)
 
             audit.log("claude_web.upload_start", count=len(image_paths))
