@@ -314,9 +314,13 @@
             <button class="tf-pill active" type="button" data-tf="1D">1D</button>
             <button class="tf-pill" type="button" data-tf="1W">1W</button>
           </div>
-          <!-- Analyze provider + model — visible BEFORE clicking Analyze
-               so the trader sees exactly how the next analysis will run.
-               Hidden on narrow layouts to keep the action row tight. -->
+          <!-- Analyze provider — visible BEFORE clicking Analyze so the
+               trader sees how the next analysis will run. Model picker
+               removed: chatgpt.com's dropdown reliably refuses to open
+               via automation, and ChatGPT's default routing produces
+               coherent results regardless. The hidden model selects
+               are kept (display:none) so app.js's provider→model
+               swap logic doesn't need refactoring. -->
           <div class="analyze-config" id="analyze-config">
             <label class="analyze-config__field">
               <span>Provider</span>
@@ -326,19 +330,16 @@
                 <option value="ollama">ollama (local, $0)</option>
               </select>
             </label>
-            <label class="analyze-config__field">
-              <span>Model</span>
-              <input type="text" id="analyze-model" placeholder="auto (gemma4:31b)" />
-              <select id="analyze-model-claude" class="hidden">
-                <option value="sonnet" selected>Sonnet 4.6 (balanced)</option>
-                <option value="opus">Opus 4.7 (most capable)</option>
-                <option value="haiku">Haiku 4.5 (fastest)</option>
-              </select>
-              <select id="analyze-model-chatgpt" class="hidden">
-                <option value="instant" selected>Instant (fast routing)</option>
-                <option value="thinking">Thinking (deeper reasoning)</option>
-              </select>
-            </label>
+            <input type="hidden" id="analyze-model" value="" />
+            <select id="analyze-model-claude" class="hidden" hidden>
+              <option value="sonnet" selected>Sonnet 4.6 (balanced)</option>
+              <option value="opus">Opus 4.7 (most capable)</option>
+              <option value="haiku">Haiku 4.5 (fastest)</option>
+            </select>
+            <select id="analyze-model-chatgpt" class="hidden" hidden>
+              <option value="instant" selected>Instant (fast routing)</option>
+              <option value="thinking">Thinking (deeper reasoning)</option>
+            </select>
           </div>
           <div class="trade-bar__actions">
             <button class="primary" id="trade-capture">Capture</button>

@@ -414,7 +414,13 @@ async def analyze_via_chatgpt_web(
                     "in the automation Chrome, then retry."
                 )
 
-            if model:
+            # Model selection skipped — ChatGPT's dropdown reliably
+            # refuses to open via automation on the current build
+            # (audit shows 3 click escalations all leave aria-expanded=false)
+            # and the default routing produces coherent results. Caller
+            # passes `model=None` from the deck now; left this gate
+            # in place so a future re-enable just flips the param back.
+            if False and model:
                 await _select_model(page, model)
 
             audit.log("chatgpt_web.upload_start", image=image_path)
@@ -493,7 +499,13 @@ async def analyze_via_chatgpt_web_multi(
                     "in the automation Chrome, then retry."
                 )
 
-            if model:
+            # Model selection skipped — ChatGPT's dropdown reliably
+            # refuses to open via automation on the current build
+            # (audit shows 3 click escalations all leave aria-expanded=false)
+            # and the default routing produces coherent results. Caller
+            # passes `model=None` from the deck now; left this gate
+            # in place so a future re-enable just flips the param back.
+            if False and model:
                 await _select_model(page, model)
 
             audit.log("chatgpt_web.upload_start", count=len(image_paths))
