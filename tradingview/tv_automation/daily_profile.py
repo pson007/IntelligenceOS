@@ -537,6 +537,8 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
                 "json_path": str(json_path)}
 
     async with chart_session() as (_ctx, page):
+        from . import layout_guard
+        await layout_guard.ensure_layout(page)
         with audit.timed("daily_profile.run_day", date=date_str, symbol=symbol) as ac:
             await _navigate_to_session_close(page, target_date)
             close_target = target_date.replace(

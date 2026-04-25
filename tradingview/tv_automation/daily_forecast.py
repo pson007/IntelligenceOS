@@ -563,6 +563,8 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
     skipped_stages: list[dict] = []
     saved_stages: list[dict] = []
     async with chart_session() as (_ctx, page):
+        from . import layout_guard
+        await layout_guard.ensure_layout(page)
         with audit.timed("daily_forecast.run_day",
                          date=date_str, symbol=symbol, adhoc=adhoc):
             # Navigate to 10:00 (F1 cursor)

@@ -33,7 +33,7 @@ from playwright.async_api import Page, TimeoutError as PWTimeoutError
 
 from preflight import ensure_automation_chromium
 from session import is_logged_in, tv_context
-from tv_automation import health, pine_compile, replay_api
+from tv_automation import health, layout_guard, pine_compile, replay_api
 
 GENERATED_DIR = Path(__file__).parent / "pine" / "generated"
 PARSE_FAIL_DIR = Path(__file__).parent / "pine" / "parse_failures"
@@ -412,6 +412,18 @@ async def main() -> int:
                   flush=True)
         except health.ChartNotReadyError as e:
             print(f"ERROR: {e}", flush=True, file=sys.stderr)
+            return 1
+
+        # Pin to the clean automation layout — every apply runs against
+        # a known-clean canvas (no preexisting indicators / drawings /
+        # saved Replay state).
+        try:
+            li = await layout_guard.ensure_layout(page)
+            print(f"Layout: {li['name']!r}", flush=True)
+        except layout_guard.LayoutMismatchError as e:
+            print(f"ERROR: {e}\nRun `python -m tv_automation.layout_guard "
+                  f"--bootstrap` once to create the layout.",
+                  flush=True, file=sys.stderr)
             return 1
 
         # Capture pre-apply study count so we can detect the silent

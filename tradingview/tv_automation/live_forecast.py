@@ -172,6 +172,8 @@ async def run_live_stage(
         return {"skipped": True, "path": str(json_path)}
 
     async with chart_session() as (_ctx, page):
+        from . import layout_guard
+        await layout_guard.ensure_layout(page)
         with audit.timed("live_forecast.stage", stage=stage, date=date_str) as ac:
             await _frame_live_session(page)
             screenshot = await _capture(page, symbol, stage.lower() + stage_tag)

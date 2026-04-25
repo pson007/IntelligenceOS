@@ -211,6 +211,8 @@ async def run_pivot(
     md_path, json_path = base.with_suffix(".md"), base.with_suffix(".json")
 
     async with chart_session() as (_ctx, page):
+        from . import layout_guard
+        await layout_guard.ensure_layout(page)
         with audit.timed("pivot.run", date=date_s, stage=stage) as ac:
             screenshot = await _capture_current(page, symbol)
             ac["screenshot"] = str(screenshot)

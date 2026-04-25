@@ -282,6 +282,8 @@ async def run_pre_session(
               same_dow=[p.get("date") for p in same_dow])
 
     async with chart_session() as (_ctx, page):
+        from . import layout_guard
+        await layout_guard.ensure_layout(page)
         with audit.timed("pre_session.run", date=date_str) as ac:
             screenshot = await _capture_premarket(page, symbol)
             ac["screenshot"] = str(screenshot)

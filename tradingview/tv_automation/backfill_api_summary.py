@@ -105,6 +105,8 @@ async def backfill(*, symbol: str | None = None, since: str | None = None,
 
     results = []
     async with chart_session() as (_ctx, page):
+        from . import layout_guard
+        await layout_guard.ensure_layout(page)
         for p in paths:
             try:
                 results.append(await _backfill_one(page, p))
