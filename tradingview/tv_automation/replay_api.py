@@ -181,7 +181,10 @@ async def set_symbol_in_place(
         return true;
     }})()"""
     try:
-        await _eval(page, expr)
+        # Some TV builds return promises from setSymbol/setResolution
+        # (the new bars stream over the network). Await the IIFE so we
+        # don't poll into a half-applied state.
+        await _eval(page, expr, await_promise=True)
     except Exception as e:
         audit.log("replay_api.set_symbol_in_place.fail", err=str(e))
         return None
@@ -199,6 +202,11 @@ async def set_symbol_in_place(
         )
         res_ok = (not interval) or (st["resolution"] == interval)
         if sym_ok and res_ok:
+            # Hydration buffer — `chart.symbol()` flips before the new
+            # bar buffer fills. Wait briefly so a screenshot taken
+            # right after this call doesn't capture mid-transition.
+            # Mirrors the 800ms used after `select_replay_date`.
+            await asyncio.sleep(0.8)
             audit.log("replay_api.set_symbol_in_place",
                       symbol=symbol, interval=interval, landed=st)
             return st
@@ -255,8 +263,15 @@ async def read_indicator_values(page: Page) -> list[dict] | None:
     `lastValueData()` — same data backing the chart's legend numbers.
 
     Returns `[{title, values: [{name, value}, ...]}, ...]`; empty list
-    if no studies have readable values (common during Bar Replay when
-    the cursor controls "last value"); None when neither path works."""
+    if no studies have readable values; None when neither path works.
+
+    **Bar Replay caveat**: when Replay is active, `lastValueData()`
+    returns `{noData: true}` because TV defines "last" relative to the
+    Replay cursor's "live" position which doesn't have a steady
+    last-bar concept. So Replay-driven workflows (daily_profile,
+    live_forecast stages) get an empty list here — the win materializes
+    in non-Replay analyze paths (single-TF analyze, deep analyze on a
+    live chart)."""
     try:
         return await _eval(page, f"""(() => {{
             try {{
@@ -320,10 +335,12 @@ async def zoom_to_bar_range(
     """Frame the chart to bars `[from_idx, to_idx]` via TV's TimeScale
     API — deterministic alternative to wheel-scrolling the time axis.
 
-    Returns True on success. Bar indices come from
-    `mainSeries().bars().firstIndex()`/`lastIndex()`; pass the bounds
-    of whatever window you want centered (e.g., session_open_idx ± N
-    for context padding)."""
+    Indices are clamped to `[firstIndex, lastIndex]` inside the JS so
+    a caller padding past the buffer bounds (e.g. `open_idx - 60` when
+    open_idx is already near firstIndex) doesn't silently zoom to
+    garbage or throw inside TV's internals.
+
+    Returns True on success."""
     try:
         return bool(await _eval(page, f"""(() => {{
             try {{
@@ -334,7 +351,19 @@ async def zoom_to_bar_range(
                     ? cw.model().timeScale()
                     : (typeof c.getTimeScale === 'function' ? c.getTimeScale() : null);
                 if (!ts || typeof ts.zoomToBarsRange !== 'function') return false;
-                ts.zoomToBarsRange({from_idx}, {to_idx});
+                let lo = {from_idx};
+                let hi = {to_idx};
+                try {{
+                    const b = c._chartWidget.model().mainSeries().bars();
+                    if (b) {{
+                        const fi = b.firstIndex();
+                        const li = b.lastIndex();
+                        if (typeof fi === 'number') lo = Math.max(lo, fi);
+                        if (typeof li === 'number') hi = Math.min(hi, li);
+                    }}
+                }} catch (e) {{}}
+                if (hi <= lo) return false;
+                ts.zoomToBarsRange(lo, hi);
                 return true;
             }} catch (e) {{ return false; }}
         }})()"""))

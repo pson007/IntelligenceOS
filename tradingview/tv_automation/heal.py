@@ -32,7 +32,22 @@ from playwright.async_api import Page
 from .lib import selectors as _selectors
 from .lib.cli import run
 from .lib.context import chart_session
-from .lib.selectors_healer import extract_hints, find_candidates
+from .lib.selectors_healer import (
+    crosscheck_with_api, extract_hints, find_candidates,
+)
+
+
+# Surface-roles whose semantic value has a JS-API ground truth.
+# Used by `heal` to print a `state_check` block alongside DOM
+# candidates — distinguishes "selector drifted" from "TV state
+# actually changed and our DOM probe is correctly reporting it."
+_API_CROSSCHECK_ROLES = {
+    "chart.symbol": "symbol",
+    "chart.interval": "resolution",
+    "chart.timeframe": "resolution",
+    "replay.strip": "replay_active",
+    "replay.toolbar": "replay_active",
+}
 
 
 async def _try_resolve(page: Page, candidates: list[str]) -> str | None:
@@ -122,6 +137,17 @@ async def heal(
         all_candidates_dom.sort(key=lambda c: c["score"], reverse=True)
         all_candidates_dom = all_candidates_dom[:10]
 
+        # API ground-truth crosscheck — when this surface_role has a
+        # corresponding JS-API path, surface what TV's API says vs
+        # what the DOM probe was looking for. `verdict=consensus`
+        # means the API agrees state changed (selector is the problem);
+        # `dom_drift` means API says state is stable but DOM probe
+        # missed it (DOM probe reading something stale).
+        state_check = None
+        if surface_role and surface_role in _API_CROSSCHECK_ROLES:
+            api_role = _API_CROSSCHECK_ROLES[surface_role]
+            state_check = await crosscheck_with_api(page, api_role, None)
+
         return {
             "ok": True, "needed_heal": True,
             "surface_role": surface_role,
@@ -129,6 +155,7 @@ async def heal(
             "scope": scope,
             "per_failed_selector": per_failed,
             "best_candidates": all_candidates_dom,
+            "state_check": state_check,
             "message": (
                 f"Top suggestion: {all_candidates_dom[0]['suggested_selector']!r}"
                 if all_candidates_dom

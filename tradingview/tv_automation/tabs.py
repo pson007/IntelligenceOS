@@ -19,12 +19,22 @@ we only need host/port for the JSON endpoints.
 from __future__ import annotations
 
 import re
+import time
 from typing import Any
 from urllib.parse import urlparse
 
 import httpx
 
 from session import CDP_URL
+
+
+# Short-TTL cache so a workflow that calls `chart_targets()` from
+# multiple helpers doesn't re-hit the CDP `/json/list` endpoint each
+# time. 1s is short enough that tab open/close events are still
+# observable and long enough to swallow a rapid sequence inside one
+# request handler.
+_CACHE: dict[str, Any] = {"at": 0.0, "value": None}
+_CACHE_TTL_S = 1.0
 
 
 def _cdp_base() -> str | None:
@@ -41,13 +51,20 @@ _CHART_RX = re.compile(r"tradingview\.com/chart", re.IGNORECASE)
 _CHART_ID_RX = re.compile(r"/chart/([^/?#]+)")
 
 
-async def chart_targets() -> list[dict[str, Any]]:
+async def chart_targets(*, fresh: bool = False) -> list[dict[str, Any]]:
     """Return every TradingView chart tab CDP knows about.
 
     Each entry: `{id, chart_id, url, title, type}`. Empty list when
-    CDP isn't configured or unreachable — callers that need at least
-    one tab should pair this with the existing
-    `find_chart_page` helper as a fallback."""
+    CDP isn't configured or unreachable.
+
+    Cached for 1s so a request handler can call this from multiple
+    helpers without re-hitting `/json/list`. Pass `fresh=True` to bust
+    the cache (e.g. after deliberately opening a new tab)."""
+    now = time.monotonic()
+    if not fresh and _CACHE["value"] is not None \
+       and (now - _CACHE["at"]) < _CACHE_TTL_S:
+        return _CACHE["value"]
+
     base = _cdp_base()
     if base is None:
         return []
@@ -74,6 +91,8 @@ async def chart_targets() -> list[dict[str, Any]]:
             "title": t.get("title", ""),
             "type": "page",
         })
+    _CACHE["at"] = now
+    _CACHE["value"] = out
     return out
 
 
@@ -94,3 +113,23 @@ async def first_chart_target() -> dict[str, Any] | None:
     """Convenience: first chart tab the CDP knows about, or None."""
     targets = await chart_targets()
     return targets[0] if targets else None
+
+
+async def preferred_chart_target(
+    *, prefer_chart_id: str | None = None,
+) -> dict[str, Any] | None:
+    """Pick the best chart tab when multiple are open.
+
+    Selection priority:
+      1. Tab whose `chart_id` matches `prefer_chart_id` (caller's saved
+         layout id, when known).
+      2. First tab — keeps current behavior when no preference is
+         specified."""
+    targets = await chart_targets()
+    if not targets:
+        return None
+    if prefer_chart_id:
+        for t in targets:
+            if t.get("chart_id") == prefer_chart_id:
+                return t
+    return targets[0]

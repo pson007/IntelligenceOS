@@ -104,12 +104,18 @@ null. Never fabricate price levels."""
 
 
 def _user_text(symbol: str, timeframe: str,
-               indicator_block: str | None = None) -> str:
-    block = f"\n\n{indicator_block}" if indicator_block else ""
+               indicator_block: str | None = None,
+               drawings_block: str | None = None) -> str:
+    blocks = []
+    if indicator_block:
+        blocks.append(indicator_block)
+    if drawings_block:
+        blocks.append(drawings_block)
+    suffix = ("\n\n" + "\n\n".join(blocks)) if blocks else ""
     return (
         f"Symbol: {symbol}\n"
         f"Timeframe: {timeframe}\n\n"
-        f"Analyze. Return the JSON object only.{block}"
+        f"Analyze. Return the JSON object only.{suffix}"
     )
 
 
@@ -138,6 +144,15 @@ def _format_indicator_block(values: list[dict] | None) -> str | None:
             lines.append(f"- **{title}**")
             lines.extend(rows)
     return "\n".join(lines) if any_value else None
+
+
+def _format_drawings_block(drawings: dict | None) -> str | None:
+    """Wrap user_drawings.format_for_prompt — defaults to None when no
+    drawings exist on the chart."""
+    if not drawings or not drawings.get("total"):
+        return None
+    from . import user_drawings as ud
+    return ud.format_for_prompt(drawings)
 
 
 # Deep analysis — 10 images, multi-TF integration, produces a backtestable
@@ -227,31 +242,26 @@ def _deep_user_text(symbol: str, timeframes: list[str]) -> str:
 
 
 async def _capture(symbol: str, timeframe: str) -> dict:
-    """Capture a single chart screenshot, emitting audit events the UI
-    can stream via `/api/audit/tail?request_id=...`.
+    """Capture a single chart screenshot + indicator values in one
+    CDP-attached session. Emits audit events the UI streams via
+    `/api/audit/tail?request_id=...`.
 
-    Also reads the chart's Data Window snapshot via the JS API — exact
-    numerical indicator outputs that get injected into the LLM prompt
-    so the model doesn't have to peer at faded panel text in the PNG."""
-    from . import replay_api
-    from .lib.context import chart_session
+    Indicator values come from TV's Data Window via the JS API — exact
+    numerical outputs (RSI, EMA, strategy entry/stop) that get injected
+    into the LLM prompt so the vision model doesn't have to read faded
+    panel text in the PNG."""
     audit.log("analyze.capture_start", symbol=symbol, tf=timeframe)
-    shot = await chart.screenshot(symbol, timeframe, None, area="chart")
+    shot = await chart.screenshot(
+        symbol, timeframe, None, area="chart", read_indicator_values=True,
+    )
     audit.log(
         "analyze.captured", symbol=symbol, tf=timeframe, path=shot["path"],
     )
-
-    indicator_values = None
-    try:
-        async with chart_session() as (_ctx, page):
-            indicator_values = await replay_api.read_indicator_values(page)
-    except Exception as e:
-        audit.log("analyze.indicator_values.fail", err=str(e))
-
     return {
         "tf": timeframe, "path": shot["path"],
         "symbol": shot.get("symbol"), "interval": shot.get("interval"),
-        "indicator_values": indicator_values,
+        "indicator_values": shot.get("indicator_values"),
+        "user_drawings": shot.get("user_drawings"),
     }
 
 
@@ -285,7 +295,7 @@ async def _call_anthropic(capture: dict, symbol: str, timeframe: str,
                 "data": _image_as_b64(capture["path"]),
             },
         },
-        {"type": "text", "text": _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")))},
+        {"type": "text", "text": _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")), _format_drawings_block(capture.get("user_drawings")))},
     ]
 
     resp = await client.messages.create(
@@ -331,7 +341,7 @@ async def _call_openai_compat(capture: dict, symbol: str, timeframe: str,
         api_key=os.environ.get("OPENAI_API_KEY", "sk-local"),
     )
     content = [
-        {"type": "text", "text": _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")))},
+        {"type": "text", "text": _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")), _format_drawings_block(capture.get("user_drawings")))},
         {
             "type": "image_url",
             "image_url": {"url": f"data:image/png;base64,{_image_as_b64(capture['path'])}"},
@@ -364,7 +374,7 @@ async def _call_claude_web(capture: dict, symbol: str, timeframe: str,
     "Haiku 4.5") resolved by _resolve_model from any alias the UI sends."""
     from .claude_web import analyze_via_claude_web
     return await analyze_via_claude_web(
-        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values"))),
+        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")), _format_drawings_block(capture.get("user_drawings"))),
         model=model,
     )
 
@@ -380,7 +390,7 @@ async def _call_chatgpt_web(capture: dict, symbol: str, timeframe: str,
     by _resolve_model from any alias the UI sends."""
     from .chatgpt_web import analyze_via_chatgpt_web
     return await analyze_via_chatgpt_web(
-        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values"))),
+        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")), _format_drawings_block(capture.get("user_drawings"))),
         model=model,
     )
 

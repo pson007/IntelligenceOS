@@ -224,9 +224,14 @@ async def replace_editor_content(page: Page, pine: str) -> None:
     await page.wait_for_timeout(600)
 
 
-async def save_and_add_to_chart(page: Page, script_name: str | None) -> None:
+async def save_and_add_to_chart(page: Page, script_name: str | None) -> dict:
     """Click Save in the editor toolbar; if a Save-As dialog appears,
-    fill the name; then click Add to chart (which also compiles)."""
+    fill the name; then click Add to chart (which also compiles).
+
+    Reads Monaco compile diagnostics (errors/warnings) BEFORE returning
+    — Monaco's marker model is destroyed when the editor panel closes,
+    so this read order is load-bearing. Returns
+    `{compile: {available, errors, warnings, items}}`."""
     # Click the save button in the editor toolbar.
     try:
         save_btn = await first_visible(page, SEL_SAVE_BUTTON_CANDIDATES, timeout=3000)
@@ -263,7 +268,7 @@ async def save_and_add_to_chart(page: Page, script_name: str | None) -> None:
         if not is_enabled:
             print(f"'{title}' button is disabled — script is already in "
                   f"sync with the chart (save was sufficient).", flush=True)
-            return
+            return {"compile": await pine_compile.read_compile_summary(page)}
         await btn.click()
         await page.wait_for_timeout(1500)
         print(f"Clicked '{title}'. Indicator applied to chart.", flush=True)
@@ -289,7 +294,7 @@ async def save_and_add_to_chart(page: Page, script_name: str | None) -> None:
             if found:
                 print(f"Indicator '{script_title}' already on chart — "
                       f"save refreshed it in place.", flush=True)
-                return
+                return {"compile": await pine_compile.read_compile_summary(page)}
         # Hard fail: the toolbar button wasn't there AND we couldn't
         # confirm the indicator in the chart legend. Exit non-zero so
         # the UI shows an explicit error instead of a misleading
@@ -301,6 +306,7 @@ async def save_and_add_to_chart(page: Page, script_name: str | None) -> None:
             flush=True, file=sys.stderr,
         )
         sys.exit(2)
+    return {"compile": await pine_compile.read_compile_summary(page)}
 
 
 async def close_pine_editor(page: Page) -> None:
@@ -420,12 +426,15 @@ async def main() -> int:
         await replace_editor_content(page, pine)
 
         print("Saving + adding to chart...", flush=True)
-        await save_and_add_to_chart(page, name)
+        save_result = await save_and_add_to_chart(page, name)
 
-        # Compile-error sweep — Monaco's marker API knows whether the
-        # editor accepted the script with red squiggles. We read it
-        # BEFORE collapsing the panel (markers belong to the open model).
-        compile_summary = await pine_compile.read_compile_summary(page)
+        # `save_and_add_to_chart` reads compile diagnostics inside its
+        # own scope (Monaco markers vanish when the editor closes), so
+        # the load-bearing read order is enforced by the function, not
+        # by callers.
+        compile_summary = save_result.get("compile") or {
+            "available": False, "errors": 0, "warnings": 0, "items": [],
+        }
         if compile_summary["available"]:
             if compile_summary["errors"] > 0:
                 dump = pine_compile.write_failure_dump(

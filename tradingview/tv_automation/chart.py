@@ -250,6 +250,7 @@ async def screenshot(
     output: Path | None,
     *,
     area: str = "chart",
+    read_indicator_values: bool = False,
 ) -> dict:
     """Capture a PNG. If symbol/interval given, navigate first.
 
@@ -265,6 +266,12 @@ async def screenshot(
         Playwright selector in `_SCREENSHOT_AREAS`. Falls back to
         full viewport if the region isn't found (e.g. Pine Editor
         is collapsed).
+
+    `read_indicator_values=True` reads `chart.dataWindowView()` /
+    `dataSources().lastValueData()` while the same page is attached,
+    populating an `indicator_values` field in the returned dict.
+    Saves a second CDP attach when the caller (e.g. analyze_mtf) wants
+    both the screenshot and the numerical indicator outputs.
     """
     if area != "full" and area not in _SCREENSHOT_AREAS:
         raise ValueError(
@@ -313,13 +320,30 @@ async def screenshot(
                 captured_area = "full"
                 fell_back = True
 
+        indicator_values = None
+        user_drawings_data = None
+        if read_indicator_values:
+            from . import replay_api, user_drawings as ud
+            try:
+                indicator_values = await replay_api.read_indicator_values(page)
+            except Exception as e:
+                audit.log("chart.indicator_values.fail", err=str(e))
+            try:
+                user_drawings_data = await ud.read_user_drawings(page)
+            except Exception as e:
+                audit.log("chart.user_drawings.fail", err=str(e))
+
         audit.log("chart.screenshot",
                   path=str(output), area=captured_area,
                   fell_back=fell_back, **meta)
-        return {
+        result = {
             "path": str(output), "area": captured_area,
             "fell_back": fell_back, **meta,
         }
+        if read_indicator_values:
+            result["indicator_values"] = indicator_values
+            result["user_drawings"] = user_drawings_data
+        return result
 
 
 async def click_at(

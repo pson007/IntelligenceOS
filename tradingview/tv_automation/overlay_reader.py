@@ -122,7 +122,11 @@ async def read_study_drawings(
     description (case-insensitive substring); pass `""` for all studies.
 
     Returns `{available, matched_count, studies: [{study_id, name,
-    lines, labels, boxes, counts}]}` or `None` on hard error."""
+    lines, labels, boxes, counts}]}` or `None` on hard error.
+
+    `name_filter` is passed via Playwright's `evaluate` arg parameter,
+    so it's serialized as JSON — caller-supplied strings can't inject
+    JS even if they ever flow from less-trusted sources."""
     try:
         result = await page.evaluate(_OVERLAY_READER_JS, name_filter)
     except Exception as e:

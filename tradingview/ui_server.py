@@ -24,6 +24,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -1050,10 +1051,27 @@ async def analyze_apply_pine(payload: dict) -> dict:
         # signal/levels/outcome — the image is the highest-signal
         # feedback for rating setup quality.
         applied_screenshot = None
+        study_count_delta = None
         for line in stdout_text.splitlines():
             if line.startswith("APPLIED_SCREENSHOT:"):
                 applied_screenshot = line.split(":", 1)[1].strip()
-                break
+            elif line.startswith("STUDY_COUNT_DELTA:"):
+                # Format: `STUDY_COUNT_DELTA: before=N after=M delta=K`
+                # Captures whether the apply silently no-op'd: a delta
+                # of 0 when the indicator name wasn't already on chart
+                # implies the subprocess succeeded but the study didn't
+                # actually attach.
+                m = re.search(
+                    r"before=(-?\d+)\s+after=(-?\d+)\s+delta=(-?\d+)", line,
+                )
+                if m:
+                    study_count_delta = {
+                        "before": int(m.group(1)),
+                        "after": int(m.group(2)),
+                        "delta": int(m.group(3)),
+                    }
+                    audit.log("analyze.apply_pine.study_count",
+                              **study_count_delta)
 
         request_id = (p.get("request_id") or "").strip()
         linked = False
