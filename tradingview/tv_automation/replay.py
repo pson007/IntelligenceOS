@@ -392,6 +392,15 @@ async def _reload_to_clear_replay(page: Page) -> bool:
 def _within_tolerance(
     landed: datetime, target: datetime, tolerance_min: int,
 ) -> bool:
+    """Compare two datetimes within `tolerance_min`. Handles
+    naive/aware mismatch by treating naive as ET (matches the
+    project-wide convention for chart session time)."""
+    if target.tzinfo is None:
+        from zoneinfo import ZoneInfo
+        target = target.replace(tzinfo=ZoneInfo("America/New_York"))
+    if landed.tzinfo is None:
+        from zoneinfo import ZoneInfo
+        landed = landed.replace(tzinfo=ZoneInfo("America/New_York"))
     delta_s = abs((landed - target).total_seconds())
     return delta_s <= tolerance_min * 60
 
@@ -425,14 +434,13 @@ async def navigate_to(
     is the next step."""
     last_err: Exception | None = None
 
-    # Compute the target epoch ONCE — used by _ensure_history_loaded
-    # to verify the bar buffer covers the target before each tier.
+    # Normalize `when` to tz-aware for all downstream comparisons —
+    # naive callers (e.g. daily_profile passes `date.replace(hour=16)`)
+    # follow the project-wide convention of chart-session time = ET.
     if when.tzinfo is None:
         from zoneinfo import ZoneInfo
-        target_for_epoch = when.replace(tzinfo=ZoneInfo("America/New_York"))
-    else:
-        target_for_epoch = when
-    target_epoch_s = int(target_for_epoch.timestamp())
+        when = when.replace(tzinfo=ZoneInfo("America/New_York"))
+    target_epoch_s = int(when.timestamp())
 
     # Shell-mode pre-check: if Replay is "active" but the strip says
     # "Select date" (no cursor seeded) AND `currentDate()` is null,

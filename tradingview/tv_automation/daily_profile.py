@@ -374,43 +374,24 @@ async def _read_cursor(page: Page) -> datetime | None:
 
 
 async def _navigate_to_session_close(page: Page, date: datetime) -> None:
-    """Navigate replay to ~16:00 ET on `date`.
+    """Navigate replay to ~16:00 ET on `date` via the self-healing
+    `replay.navigate_to` primitive.
 
-    TV's picker lands earlier than requested, so we aim at 17:00 for a
-    target of 16:00. Drift is usually ~1h but occasionally 2h — on those
-    days the landing sits at 15:00, which crops bars past 15:00 in
-    Replay and trips the profile gate's close_cut. We read BarDate and
-    step forward the remaining minutes to close the gap."""
-    # Always enter fresh. A Replay session parked at a prior cursor (e.g.
-    # from a live forecast stage) can leave the Select-date dialog refusing
-    # to re-mount. Exit-then-enter costs ~1s and makes the picker deterministic.
-    if await replay.is_active(page):
-        await replay.exit_replay(page)
-    await replay.enter_replay(page)
-    target = date.replace(hour=17, minute=0, second=0, microsecond=0)
-    await replay.select_start_date(page, target)
-    await page.wait_for_timeout(800)
+    Was: enter Replay → select_start_date(17:00) → read BarDate → step
+    forward delta_min to compensate for TV's picker drift. That drift
+    only existed in the DOM picker dialog; `replay_api.selectDate()`
+    lands the cursor at the exact requested timestamp, and the
+    self-heal escalation handles broken Replay states automatically.
 
-    # BarDate legend sometimes takes longer to populate when the cursor
-    # lands near session-close boundary — retry up to 3x before giving up.
-    cursor = None
-    for attempt in range(3):
-        cursor = await _read_cursor(page)
-        if cursor is not None:
-            break
-        await page.wait_for_timeout(500)
+    Tolerance is tight (5 min) since the API path is exact — wider
+    drift indicates something genuinely wrong, which the recovery
+    ladder will catch and report."""
     close_target = date.replace(hour=16, minute=0, second=0, microsecond=0)
-    if cursor is not None:
-        delta_min = int((close_target - cursor).total_seconds() // 60)
-        audit.log("daily_profile.navigate.initial",
-                  requested=str(target), landed=str(cursor), delta_min=delta_min)
-        MAX_ADJUST = 240
-        if 0 < delta_min <= MAX_ADJUST:
-            await replay.step_forward(page, delta_min)
-    else:
-        audit.log("daily_profile.navigate.no_bardate")
-
-    audit.log("daily_profile.navigated", date=date.strftime("%Y-%m-%d"))
+    landed = await replay.navigate_to(page, close_target, tolerance_min=5)
+    audit.log("daily_profile.navigated",
+              date=date.strftime("%Y-%m-%d"),
+              requested=str(close_target),
+              landed=landed.astimezone(_ET).replace(tzinfo=None).isoformat())
 
 
 # ---------------------------------------------------------------------------

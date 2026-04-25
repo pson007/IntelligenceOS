@@ -65,17 +65,14 @@ async def _backfill_one(page, profile_path: Path) -> dict:
     date_str = m.group(2)
     target_date = datetime.strptime(date_str, "%Y-%m-%d")
 
-    # Navigate Bar Replay to ~16:00 ET on the target date so the buffer
-    # contains the full RTH session. Re-uses daily_profile's exit-then-
-    # enter pattern via the patched primitives.
-    if await replay.is_active(page):
-        await replay.exit_replay(page)
-    await replay.enter_replay(page)
-    when = target_date.replace(hour=17, minute=0, second=0, microsecond=0)
-    await replay.select_start_date(page, when)
-
-    open_dt = target_date.replace(hour=9, minute=30)
+    # Navigate Bar Replay to 16:00 ET on the target date so the bar
+    # buffer covers the full RTH session, then read OHLC. Self-healing
+    # navigate_to handles broken Replay states + lands exactly on target
+    # via the JS API.
     close_dt = target_date.replace(hour=16, minute=0)
+    open_dt = target_date.replace(hour=9, minute=30)
+    await replay.navigate_to(page, close_dt, tolerance_min=5)
+
     api_ohlc = await bar_reader.read_session_ohlc(
         page, start_et=open_dt, end_et=close_dt,
     )

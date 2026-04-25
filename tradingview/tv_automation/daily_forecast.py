@@ -262,40 +262,19 @@ async def _capture(page: Page, symbol: str, stage_label: str) -> Path:
 
 
 async def _navigate_to_10am(page: Page, date: datetime) -> datetime | None:
-    """Navigate replay to 10:00 AM ET on `date`.
+    """Navigate replay to 10:00 AM ET on `date` via the self-healing
+    `replay.navigate_to` primitive. Returns the landed cursor (UTC).
 
-    Works around two quirks of TV's replay date picker:
-      * picker lands ~1 hour earlier than requested time → we pick 11:00 to aim for 10:00
-      * landing bar can drift further under unknown conditions → we read the
-        cursor via BarDate and step forward/backward as needed.
-
-    Returns the cursor datetime after adjustment (best-effort from BarDate —
-    known to drift in the current TV build; use as a hint, not ground truth)."""
-    if not await replay.is_active(page):
-        await replay.enter_replay(page)
-    target = date.replace(hour=11, minute=0, second=0, microsecond=0)
-    await replay.select_start_date(page, target)
-    await page.wait_for_timeout(800)
-
-    cursor = await _read_cursor(page)
+    The previous picker-overshoots-by-~1h workaround + read-BarDate +
+    step-forward dance was needed only for the DOM dialog path.
+    `replay_api.selectDate()` lands the cursor exactly, so we ask for
+    10:00 directly and use a tight tolerance — the recovery ladder
+    handles broken Replay states automatically."""
     ten_am = date.replace(hour=10, minute=0, second=0, microsecond=0)
-
-    if cursor is None:
-        audit.log("daily_forecast.navigate.no_bardate")
-        return None
-
-    # Adjust forward or backward to hit 10:00 exactly. Bound the adjustment
-    # so we don't loop forever if BarDate is wildly wrong.
-    delta_min = int((ten_am - cursor).total_seconds() // 60)
-    audit.log("daily_forecast.navigate.initial",
-              requested=str(target), landed=str(cursor), delta_min=delta_min)
-    MAX_ADJUST = 240
-    if delta_min > 0 and delta_min <= MAX_ADJUST:
-        await replay.step_forward(page, delta_min)
-    elif delta_min < 0 and -delta_min <= MAX_ADJUST:
-        await replay.step_backward(page, -delta_min)
-
-    return await _read_cursor(page)
+    landed = await replay.navigate_to(page, ten_am, tolerance_min=5)
+    audit.log("daily_forecast.navigated",
+              requested=str(ten_am), landed=landed.isoformat())
+    return landed
 
 
 async def _step_forward_bars(page: Page, bars: int) -> None:

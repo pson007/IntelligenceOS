@@ -494,12 +494,14 @@ async def _run_one_sample(
     # (URL-param-driven).
     await chart._navigate(page, spec.symbol, chart.resolve_timeframe(spec.tf))
 
-    await replay.enter_replay(page)
     try:
         t0_dt = datetime.fromisoformat(spec.t0_iso)
     except ValueError:
         t0_dt = datetime.strptime(spec.t0_iso[:19], "%Y-%m-%dT%H:%M:%S")
-    await replay.select_start_date(page, t0_dt)
+    # Self-healing navigate — handles enter_replay + date-pick + recovery
+    # when TV's Replay state is jammed. Tight tolerance (5 min) since
+    # the JS API path lands exactly on target.
+    await replay.navigate_to(page, t0_dt, tolerance_min=5)
 
     if dry_run:
         return SampleResult(
