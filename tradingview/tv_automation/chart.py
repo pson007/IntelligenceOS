@@ -301,6 +301,16 @@ async def screenshot(
         else:
             output.parent.mkdir(parents=True, exist_ok=True)
 
+        # Dismiss any open TV dialog / settings panel / dropdown sitting
+        # on top of the chart — otherwise a Settings modal (Symbol /
+        # Canvas / Trading tabs etc.) ends up in the PNG and the vision
+        # LLM reads garbage. Cheap when nothing's open (~5ms).
+        from .lib.modal import dismiss_overlays
+        overlay_state = await dismiss_overlays(page)
+        if overlay_state["passes"] > 0 or overlay_state["modals_left"] > 0:
+            audit.log("chart.screenshot.dismissed_overlays",
+                      **overlay_state)
+
         captured_area = area
         fell_back = False
         if area == "full":

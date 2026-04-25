@@ -84,4 +84,10 @@ async def chart_session(
         await assert_logged_in(page)
         if auto_reconnect:
             await click_reconnect_if_present(page)
+        # Clear any dialog/dropdown/settings panel left over from a
+        # prior workflow or user interaction — the chart should be
+        # visually clean before any automation reads or screenshots it.
+        # Cheap when nothing's open (single JS count call).
+        from .modal import dismiss_overlays
+        await dismiss_overlays(page, max_passes=2)
         yield ctx, page

@@ -131,3 +131,123 @@ async def close_all(page: Page) -> int:
         await page.wait_for_timeout(200)
         closed += 1
     return closed
+
+
+async def dismiss_overlays(page: Page, *, max_passes: int = 4) -> dict:
+    """Aggressive pre-capture cleanup: dismiss any visible dialog,
+    settings panel, dropdown, or context menu sitting on top of the
+    chart. Used by `chart.screenshot` so a stray Settings dialog
+    (Symbol / Canvas / Trading tabs etc.) doesn't end up in the PNG.
+
+    Three escalation passes:
+      1. Press Escape (covers most TV modals + drops armed drawing tools).
+      2. Find any visible TV-style dialog via `popupDialog-*` /
+         `dialog-*` / `[role="dialog"]` selectors and click its X /
+         Close button.
+      3. Click any visible Cancel button inside a dialog as a final
+         attempt before giving up.
+
+    Repeats up to `max_passes` times in case dismissing one reveals
+    another. Returns `{passes, modals_left, dismissed_via}` for audit."""
+    dismissed_via: list[str] = []
+
+    # Selectors matching TV's actual modal classes — `role="dialog"`
+    # alone misses TV's settings/options dialogs (CSS-modules classes).
+    DIALOG_SELS = [
+        '[class*="popupDialog-"]',
+        '[class^="dialog-"]',
+        '[class*=" dialog-"]',
+        '[role="dialog"]',
+        '[role="alertdialog"]',
+    ]
+
+    def _js_dialog_count() -> str:
+        return r"""() => {
+            const sels = [
+                '[class*="popupDialog-"]',
+                '[class^="dialog-"]',
+                '[class*=" dialog-"]',
+                '[role="dialog"]',
+                '[role="alertdialog"]',
+            ];
+            const seen = new Set();
+            let n = 0;
+            for (const s of sels) {
+                document.querySelectorAll(s).forEach(el => {
+                    if (seen.has(el)) return;
+                    const r = el.getBoundingClientRect();
+                    if (r.width < 100 || r.height < 50) return;
+                    if (r.bottom < 0 || r.top > window.innerHeight) return;
+                    seen.add(el);
+                    n++;
+                });
+            }
+            return n;
+        }"""
+
+    for pass_idx in range(max_passes):
+        modal_count = await page.evaluate(_js_dialog_count())
+        if modal_count == 0:
+            break
+
+        # Pass 1: Escape always cheap; covers most TV modals + drawing
+        # tool deselection + symbol-search dropdown.
+        await page.keyboard.press("Escape")
+        await page.wait_for_timeout(150)
+
+        modal_count = await page.evaluate(_js_dialog_count())
+        if modal_count == 0:
+            dismissed_via.append("escape")
+            continue
+
+        # Pass 2: click an X / Close button inside the topmost dialog.
+        # Walk through known-good selectors with a JS find — cheaper
+        # than multiple Playwright queries.
+        clicked = await page.evaluate(r"""() => {
+            const sels = [
+                '[class*="popupDialog-"]',
+                '[class^="dialog-"]',
+                '[class*=" dialog-"]',
+                '[role="dialog"]',
+                '[role="alertdialog"]',
+            ];
+            for (const s of sels) {
+                const dialogs = Array.from(document.querySelectorAll(s));
+                for (const d of dialogs.reverse()) {
+                    const r = d.getBoundingClientRect();
+                    if (r.width < 100 || r.height < 50) continue;
+                    // Common close-button selectors inside TV dialogs.
+                    const closeBtn = d.querySelector(
+                        'button[aria-label="Close"], '
+                      + '[data-name="close-button"], '
+                      + 'button[class*="closeButton-"], '
+                      + 'svg[class*="close-"]'
+                    );
+                    if (closeBtn) {
+                        (closeBtn.closest('button') || closeBtn).click();
+                        return 'close_button';
+                    }
+                    // Cancel as fallback.
+                    const cancelBtn = Array.from(d.querySelectorAll('button'))
+                        .find(b => /^(cancel|close)$/i.test(
+                            (b.innerText||'').trim()
+                        ));
+                    if (cancelBtn) { cancelBtn.click(); return 'cancel_button'; }
+                }
+            }
+            return null;
+        }""")
+        if clicked:
+            dismissed_via.append(clicked)
+            await page.wait_for_timeout(250)
+            continue
+
+        # Pass 3: nothing dismissable — bail this iteration.
+        break
+
+    final_count = await page.evaluate(_js_dialog_count())
+    return {
+        "passes": len(dismissed_via),
+        "modals_left": final_count,
+        "dismissed_via": dismissed_via,
+    }
