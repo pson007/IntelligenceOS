@@ -189,6 +189,47 @@ def _check_oob(text: str) -> None:
             raise RuntimeError(f"{reason}. Response head: {head!r}")
 
 
+async def _dismiss_chatgpt_overlays(page: Page) -> None:
+    """Pre-flight cleanup for chatgpt.com — onboarding modals,
+    "What's new" tooltips, prompt-suggestion popovers, and the
+    occasional auth-renewal banner can sit on top of the model
+    switcher and intercept clicks. Best-effort: Escape twice +
+    click any visible Close/Got-it/Dismiss button."""
+    try:
+        await page.keyboard.press("Escape")
+        await page.wait_for_timeout(120)
+        await page.keyboard.press("Escape")
+        await page.wait_for_timeout(120)
+        # Click any obvious dismiss button on a popover/banner.
+        await page.evaluate(r"""() => {
+            const selectors = [
+                'button[aria-label="Close"]',
+                'button[aria-label="Dismiss"]',
+                'button[data-testid="close-button"]',
+            ];
+            for (const s of selectors) {
+                const btn = document.querySelector(s);
+                if (btn && btn.getBoundingClientRect().width > 0) {
+                    btn.click();
+                }
+            }
+            // Common "Got it" / "Continue" CTAs on first-run banners.
+            const ctaTexts = ['got it', 'continue', 'okay', 'dismiss'];
+            const buttons = Array.from(document.querySelectorAll('button'));
+            for (const b of buttons) {
+                const t = (b.innerText || '').trim().toLowerCase();
+                if (ctaTexts.includes(t)
+                    && b.getBoundingClientRect().width > 0
+                    && b.getBoundingClientRect().width < 300) {
+                    b.click();
+                    break;
+                }
+            }
+        }""")
+    except Exception:
+        pass
+
+
 async def _select_model(page: Page, model_name: str) -> None:
     """Open the model dropdown and pick the menuitem whose text matches
     `model_name` (case-insensitive substring). No-op if the button
@@ -209,11 +250,38 @@ async def _select_model(page: Page, model_name: str) -> None:
 
     audit.log("chatgpt_web.model_select_start", model=model_name, current=current)
 
-    # Try open + retry once if the dropdown doesn't render. Slow networks
-    # / heavy chatgpt.com loads regularly miss a 3s window.
+    # Pre-clear chatgpt-side popovers that intercept clicks on the
+    # model switcher (onboarding banners, "what's new" tooltips, etc).
+    await _dismiss_chatgpt_overlays(page)
+
+    # Bring button into view + wait for it to stabilize before clicking.
+    try:
+        await button.scroll_into_view_if_needed(timeout=3000)
+    except Exception:
+        pass
+
+    # Try open + retry with progressive escalation. Slow chatgpt.com
+    # loads OR an overlay still intercepting a soft click both surface
+    # as "aria-expanded=false after click". Escalate to force-click +
+    # JS-direct click on subsequent attempts.
     opened = False
-    for attempt in range(2):
-        await button.click()
+    for attempt in range(3):
+        try:
+            if attempt == 0:
+                await button.click(timeout=3000)
+            elif attempt == 1:
+                await button.click(force=True, timeout=3000)
+            else:
+                # JS-level click bypasses any pointer-event interception.
+                await page.evaluate(
+                    'document.querySelector('
+                    + repr(SEL_MODEL_BUTTON) + ').click()'
+                )
+        except Exception as e:
+            audit.log("chatgpt_web.model_button.click_fail",
+                      attempt=attempt + 1, err=str(e))
+            await _dismiss_chatgpt_overlays(page)
+            continue
         try:
             await page.wait_for_selector(
                 SEL_MODEL_MENUITEM, state="visible", timeout=6000,
@@ -224,6 +292,7 @@ async def _select_model(page: Page, model_name: str) -> None:
             audit.log("chatgpt_web.model_dropdown.retry", attempt=attempt + 1)
             await page.keyboard.press("Escape")
             await page.wait_for_timeout(800)
+            await _dismiss_chatgpt_overlays(page)
 
     if not opened:
         # Diagnostic: capture the menu region's DOM state so audit shows
