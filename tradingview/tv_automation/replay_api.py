@@ -98,20 +98,35 @@ async def chart_state(page: Page) -> dict | None:
 
 
 async def is_replay_started(page: Page) -> bool:
+    """True when Replay is engaged AND has a seeded cursor.
+
+    `_replayApi.isReplayStarted()` returns a TV WatchedValue object,
+    not a primitive — `.value()` unwraps it. Without the unwrap, the
+    Python side sees a truthy object and reports True even when Replay
+    is in the half-mounted shell state with no cursor."""
     try:
-        return bool(await _eval(page, f"{_REPLAY_API}.isReplayStarted()"))
+        return bool(await _eval(
+            page, f"{_REPLAY_API}.isReplayStarted().value()",
+        ))
     except Exception:
         return False
 
 
 async def current_replay_date(page: Page) -> datetime | None:
-    """Replay cursor as a UTC datetime, or None if Replay's not active
-    or the API is missing. Source: `replayApi.currentDate()` (epoch ms)."""
+    """Replay cursor as a UTC datetime, or None if no cursor is seeded
+    or the API is missing.
+
+    Two TV-API surface details that bit us hard:
+    1. `currentDate()` returns a **WatchedValue object**, not a number;
+       `.value()` unwraps it to the actual ts (or null).
+    2. The unwrapped ts is in **epoch SECONDS**, not milliseconds —
+       asymmetric with `selectDate(epoch_ms)` which takes milliseconds.
+       (TV's API isn't internally consistent about units; we accept that.)"""
     try:
-        ts_ms = await _eval(page, f"{_REPLAY_API}.currentDate()")
-        if ts_ms is None:
+        ts_s = await _eval(page, f"{_REPLAY_API}.currentDate().value()")
+        if ts_s is None:
             return None
-        return datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
+        return datetime.fromtimestamp(ts_s, tz=timezone.utc)
     except Exception:
         return None
 
