@@ -112,6 +112,35 @@ async def guard(request: Request, call_next):
 _act_tasks: dict[str, dict] = {}
 _ACT_TASK_TTL_S = 60 * 60  # 1 hour
 
+
+# Patterns Playwright/anyio raise when an `async with` block is cancelled
+# mid-flight and the cleanup tries to close a transport that's already
+# torn down. These reach `except Exception` instead of `CancelledError`
+# because the cancellation propagated through a context-manager exit.
+# Reclassify so the UI shows "cancelled" instead of a scary RuntimeError.
+_CANCEL_RECLASSIFY_PATTERNS = (
+    "WriteUnixTransport closed",
+    "the handler is closed",
+    "Browser.close",
+    "Connection closed while reading",
+)
+
+
+def _is_cancellation_artifact(exc: BaseException) -> bool:
+    """True if `exc` looks like a Playwright transport-tear-down raised
+    during an in-flight cancellation. Used by analyze runners to map
+    these back to "cancelled" state instead of "failed"."""
+    msg = str(exc)
+    if any(p in msg for p in _CANCEL_RECLASSIFY_PATTERNS):
+        return True
+    try:
+        cur = asyncio.current_task()
+        if cur is not None and cur.cancelling():
+            return True
+    except Exception:
+        pass
+    return False
+
 # At most one act run at a time — they all share the same Playwright
 # session, so concurrent runs would interleave clicks unpredictably.
 # Tracks the task_id of the currently-running act (or None if idle).
@@ -497,8 +526,13 @@ async def analyze_start(payload: dict) -> dict:
             _analyze_tasks[task_id]["state"] = "cancelled"
             raise
         except Exception as e:
-            _analyze_tasks[task_id]["state"] = "failed"
-            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+            if _is_cancellation_artifact(e):
+                _analyze_tasks[task_id]["state"] = "cancelled"
+                audit.log("analyze.cancellation_artifact_reclassified",
+                          task_id=task_id, err=str(e)[:200])
+            else:
+                _analyze_tasks[task_id]["state"] = "failed"
+                _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
         finally:
             _analyze_tasks[task_id]["finished_at"] = time.time()
             if _active_analyze_task == task_id:
@@ -561,8 +595,13 @@ async def analyze_deep_start(payload: dict) -> dict:
             _analyze_tasks[task_id]["state"] = "cancelled"
             raise
         except Exception as e:
-            _analyze_tasks[task_id]["state"] = "failed"
-            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+            if _is_cancellation_artifact(e):
+                _analyze_tasks[task_id]["state"] = "cancelled"
+                audit.log("analyze.cancellation_artifact_reclassified",
+                          task_id=task_id, err=str(e)[:200])
+            else:
+                _analyze_tasks[task_id]["state"] = "failed"
+                _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
         finally:
             _analyze_tasks[task_id]["finished_at"] = time.time()
             if _active_analyze_task == task_id:
@@ -619,8 +658,13 @@ async def pressure_test_start(payload: dict) -> dict:
             _analyze_tasks[task_id]["state"] = "cancelled"
             raise
         except Exception as e:
-            _analyze_tasks[task_id]["state"] = "failed"
-            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+            if _is_cancellation_artifact(e):
+                _analyze_tasks[task_id]["state"] = "cancelled"
+                audit.log("analyze.cancellation_artifact_reclassified",
+                          task_id=task_id, err=str(e)[:200])
+            else:
+                _analyze_tasks[task_id]["state"] = "failed"
+                _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
         finally:
             _analyze_tasks[task_id]["finished_at"] = time.time()
             if _active_analyze_task == task_id:
