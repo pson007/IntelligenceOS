@@ -103,12 +103,41 @@ should be "Skip", confidence should be low, and entry/stop/tp should be
 null. Never fabricate price levels."""
 
 
-def _user_text(symbol: str, timeframe: str) -> str:
+def _user_text(symbol: str, timeframe: str,
+               indicator_block: str | None = None) -> str:
+    block = f"\n\n{indicator_block}" if indicator_block else ""
     return (
         f"Symbol: {symbol}\n"
         f"Timeframe: {timeframe}\n\n"
-        "Analyze. Return the JSON object only."
+        f"Analyze. Return the JSON object only.{block}"
     )
+
+
+def _format_indicator_block(values: list[dict] | None) -> str | None:
+    """Render TV's Data Window snapshot as a markdown table the LLM
+    can reference for exact numerical reads. Returns None when no
+    values were available (so the prompt stays unchanged)."""
+    if not values:
+        return None
+    lines = [
+        "## INDICATOR VALUES (exact, read from chart memory — prefer these "
+        "over visual reads off the screenshot)"
+    ]
+    any_value = False
+    for group in values:
+        title = group.get("title") or "(unnamed)"
+        rows = []
+        for v in group.get("values") or []:
+            val = v.get("value")
+            if val is None or val == "":
+                continue
+            name = v.get("name") or "?"
+            rows.append(f"  - {name}: {val}")
+            any_value = True
+        if rows:
+            lines.append(f"- **{title}**")
+            lines.extend(rows)
+    return "\n".join(lines) if any_value else None
 
 
 # Deep analysis — 10 images, multi-TF integration, produces a backtestable
@@ -199,15 +228,30 @@ def _deep_user_text(symbol: str, timeframes: list[str]) -> str:
 
 async def _capture(symbol: str, timeframe: str) -> dict:
     """Capture a single chart screenshot, emitting audit events the UI
-    can stream via `/api/audit/tail?request_id=...`."""
+    can stream via `/api/audit/tail?request_id=...`.
+
+    Also reads the chart's Data Window snapshot via the JS API — exact
+    numerical indicator outputs that get injected into the LLM prompt
+    so the model doesn't have to peer at faded panel text in the PNG."""
+    from . import replay_api
+    from .lib.context import chart_session
     audit.log("analyze.capture_start", symbol=symbol, tf=timeframe)
     shot = await chart.screenshot(symbol, timeframe, None, area="chart")
     audit.log(
         "analyze.captured", symbol=symbol, tf=timeframe, path=shot["path"],
     )
+
+    indicator_values = None
+    try:
+        async with chart_session() as (_ctx, page):
+            indicator_values = await replay_api.read_indicator_values(page)
+    except Exception as e:
+        audit.log("analyze.indicator_values.fail", err=str(e))
+
     return {
         "tf": timeframe, "path": shot["path"],
         "symbol": shot.get("symbol"), "interval": shot.get("interval"),
+        "indicator_values": indicator_values,
     }
 
 
@@ -241,7 +285,7 @@ async def _call_anthropic(capture: dict, symbol: str, timeframe: str,
                 "data": _image_as_b64(capture["path"]),
             },
         },
-        {"type": "text", "text": _user_text(symbol, timeframe)},
+        {"type": "text", "text": _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")))},
     ]
 
     resp = await client.messages.create(
@@ -287,7 +331,7 @@ async def _call_openai_compat(capture: dict, symbol: str, timeframe: str,
         api_key=os.environ.get("OPENAI_API_KEY", "sk-local"),
     )
     content = [
-        {"type": "text", "text": _user_text(symbol, timeframe)},
+        {"type": "text", "text": _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values")))},
         {
             "type": "image_url",
             "image_url": {"url": f"data:image/png;base64,{_image_as_b64(capture['path'])}"},
@@ -320,7 +364,7 @@ async def _call_claude_web(capture: dict, symbol: str, timeframe: str,
     "Haiku 4.5") resolved by _resolve_model from any alias the UI sends."""
     from .claude_web import analyze_via_claude_web
     return await analyze_via_claude_web(
-        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe),
+        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values"))),
         model=model,
     )
 
@@ -336,7 +380,7 @@ async def _call_chatgpt_web(capture: dict, symbol: str, timeframe: str,
     by _resolve_model from any alias the UI sends."""
     from .chatgpt_web import analyze_via_chatgpt_web
     return await analyze_via_chatgpt_web(
-        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe),
+        capture["path"], _SYSTEM_PROMPT, _user_text(symbol, timeframe, _format_indicator_block(capture.get("indicator_values"))),
         model=model,
     )
 

@@ -112,10 +112,17 @@ async def _navigate(page: Page, symbol: str | None, interval: str | None) -> Non
     path segment in the current URL (e.g. `/chart/wqVfOr3Z/`). Without
     this, every symbol change wipes the user's saved indicators/drawings.
 
-    Skips `page.goto` when the current URL already carries the target
-    symbol + interval — a reload would otherwise exit any active Bar
-    Replay session, which breaks workflows (e.g. `replay_bench.py`)
-    that activate Replay around a screenshot."""
+    Two paths:
+      1. **In-place API mutation** via `chart.setSymbol/setResolution`.
+         No reload, ~50ms, preserves Bar Replay state and panel focus.
+         Used when the page is already on a TV chart with the JS API
+         exposed — i.e. the common case during a workflow.
+      2. **Page navigation** via `page.goto(target_url)`. Used on
+         first-load (chart API not exposed yet) and as a fallback.
+
+    The URL is *not* updated by the API path — anything that reads
+    URL params for current state should use `chart.symbol()` /
+    `chart.resolution()` (via `replay_api.chart_state`) instead."""
     if not symbol and not interval:
         return
     target = chart_url_for(page.url, symbol, interval)
@@ -124,10 +131,24 @@ async def _navigate(page: Page, symbol: str | None, interval: str | None) -> Non
                   reason="already_on_target",
                   current=page.url[:120], target=target[:120])
         return
+
+    # In-place path — only when we're already on a chart with the API
+    # exposed. Skips ~2.5s of page reload + canvas hydration.
+    from . import replay_api
+    if "tradingview.com/chart" in page.url \
+       and await replay_api.api_available(page):
+        landed = await replay_api.set_symbol_in_place(
+            page, symbol=symbol, interval=interval,
+        )
+        if landed is not None:
+            audit.log("chart.navigate.in_place",
+                      symbol=symbol, interval=interval, landed=landed)
+            return
+        audit.log("chart.navigate.in_place.fallback",
+                  symbol=symbol, interval=interval)
+
     await page.goto(target, wait_until="domcontentloaded")
     await page.wait_for_selector("canvas", state="visible", timeout=30_000)
-    # Slight buffer — quick-trade bar, indicators, legend all hydrate
-    # after the canvas paints.
     await page.wait_for_timeout(1500)
 
 

@@ -122,10 +122,25 @@ async def first_visible(page: Page, selectors: list[str], timeout: int = 5000):
 
 
 async def find_chart_page(ctx):
+    """Locate (or open) a TradingView chart tab.
+
+    First tries CDP `/json/list` for stable target identification when
+    multiple chart tabs are open — `chart_targets()` returns each tab's
+    `chart_id` (parsed from the URL path), letting us pick deterministically
+    instead of grabbing whichever Playwright iterated to first."""
+    from tv_automation import tabs as tv_tabs
+    targets = await tv_tabs.chart_targets()
+    target_url = targets[0]["url"] if targets else None
+
     for p in ctx.pages:
         if "tradingview.com/chart" in p.url:
+            if target_url and p.url != target_url:
+                continue  # prefer the CDP-discovered first chart
             await p.bring_to_front()
             return p
+
+    # No matching tab attached to this Playwright context — fall back
+    # to opening fresh.
     page = await ctx.new_page()
     await page.goto(CHART_URL, wait_until="domcontentloaded")
     await page.wait_for_selector("canvas", state="visible", timeout=30_000)

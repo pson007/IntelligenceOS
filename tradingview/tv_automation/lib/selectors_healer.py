@@ -193,3 +193,54 @@ async def find_candidates(
         _SCORER_JS,
         {"hints": hints, "scopeSel": scope_selector},
     )
+
+
+async def crosscheck_with_api(
+    page: Page, dom_role: str, dom_value: Any,
+) -> dict[str, Any]:
+    """Compare a DOM-derived value to TV's JS API ground truth.
+
+    Distinguishes "selector drifted, but state is correct" from "state
+    actually changed". When the DOM read says one thing but the API
+    says another, the API is authoritative — which means the DOM-based
+    selector is reading something stale or wrong.
+
+    Roles supported:
+      - `symbol` — DOM title parse vs `chart.symbol()` / `symbolExt().ticker`
+      - `resolution` — DOM toolbar text vs `chart.resolution()`
+      - `replay_active` — DOM strip presence vs `replayApi.isReplayStarted()`
+
+    Returns `{role, dom_value, api_value, agree, api_available, verdict}`
+    where `verdict` is one of `consensus` (both agree), `dom_drift`
+    (api says dom is wrong), `api_unreachable` (no comparison possible).
+    """
+    from .. import replay_api
+
+    if not await replay_api.api_available(page):
+        return {"role": dom_role, "dom_value": dom_value, "api_value": None,
+                "agree": None, "api_available": False,
+                "verdict": "api_unreachable"}
+
+    api_value: Any = None
+    if dom_role == "symbol":
+        ext = await replay_api.chart_symbol_ext(page)
+        api_value = (ext or {}).get("ticker") if ext else None
+        if not api_value:
+            st = await replay_api.chart_state(page)
+            api_value = (st or {}).get("symbol")
+    elif dom_role == "resolution":
+        st = await replay_api.chart_state(page)
+        api_value = (st or {}).get("resolution")
+    elif dom_role == "replay_active":
+        api_value = await replay_api.is_replay_started(page)
+    else:
+        return {"role": dom_role, "dom_value": dom_value, "api_value": None,
+                "agree": None, "api_available": True,
+                "verdict": "unsupported_role"}
+
+    agree = (api_value == dom_value)
+    return {
+        "role": dom_role, "dom_value": dom_value, "api_value": api_value,
+        "agree": agree, "api_available": True,
+        "verdict": "consensus" if agree else "dom_drift",
+    }

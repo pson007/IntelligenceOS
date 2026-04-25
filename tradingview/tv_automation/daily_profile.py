@@ -30,7 +30,7 @@ import argparse
 import asyncio
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -49,6 +49,7 @@ from .profile_gate import verify_full_session, GateResult
 _PROFILES_ROOT = (Path(__file__).parent.parent / "profiles").resolve()
 _SCREENSHOT_ROOT = (Path.home() / "Desktop" / "TradingView").resolve()
 _PARSE_FAIL_ROOT = (Path(__file__).parent.parent / "pine" / "parse_failures").resolve()
+_ET = ZoneInfo("America/New_York")
 
 
 # ---------------------------------------------------------------------------
@@ -182,6 +183,37 @@ Return ONLY the narrative sections followed by the fenced JSON block. No preambl
 # Framing + gate
 # ---------------------------------------------------------------------------
 
+async def _frame_session_view_api(
+    page: Page, *, close_target: datetime, pad_bars_before: int = 60,
+    pad_bars_after: int = 30,
+) -> bool:
+    """Deterministic alternative to `_frame_session_view`'s wheel-zoom.
+
+    Computes the bar index for `close_target` via TV's bar buffer and
+    calls `zoomToBarsRange(open_idx - pad_before, close_idx + pad_after)`.
+    No retries needed — same call lands the same view every time.
+
+    Returns True on success. Falls back to caller's variant loop on
+    False (API path unavailable, bars not loaded yet, missing TS API)."""
+    if not await replay_api.api_available(page):
+        return False
+    session_open = close_target.replace(hour=9, minute=30)
+    open_epoch = int(session_open.replace(tzinfo=_ET).astimezone(timezone.utc).timestamp())
+    close_epoch = int(close_target.replace(tzinfo=_ET).astimezone(timezone.utc).timestamp())
+    open_idx = await replay_api.find_bar_index_for_time(page, open_epoch)
+    close_idx = await replay_api.find_bar_index_for_time(page, close_epoch)
+    if open_idx is None or close_idx is None:
+        return False
+    ok = await replay_api.zoom_to_bar_range(
+        page, open_idx - pad_bars_before, close_idx + pad_bars_after,
+    )
+    if ok:
+        audit.log("daily_profile.frame.api",
+                  open_idx=open_idx, close_idx=close_idx,
+                  pad_before=pad_bars_before, pad_after=pad_bars_after)
+    return ok
+
+
 async def _frame_session_view(page: Page, variant: int = 0) -> None:
     """Frame chart so one full RTH session dominates, cursor's day visible.
 
@@ -269,13 +301,29 @@ async def _frame_and_gate(
 
     last_screenshot: Path | None = None
     last_gate: GateResult | None = None
+
+    # API framing — single deterministic zoom bypasses the variant
+    # retry loop entirely. Falls through to wheel-zoom if it returns
+    # False (bars not loaded, TS API unavailable on this build).
+    api_framed = False
+    if close_target is not None:
+        api_framed = await _frame_session_view_api(
+            page, close_target=close_target,
+        )
+
     for attempt in range(3):
-        await _frame_session_view(page, variant=attempt)
+        if not api_framed:
+            await _frame_session_view(page, variant=attempt)
         last_screenshot = await _capture(page, symbol, f"frame{attempt}", expect=expect)
         last_gate = await verify_full_session(str(last_screenshot))
         audit.log("daily_profile.gate",
-                  attempt=attempt, ok=last_gate.ok, reason=last_gate.reason)
+                  attempt=attempt, ok=last_gate.ok, reason=last_gate.reason,
+                  framed_via="api" if api_framed else f"wheel_v{attempt}")
         if last_gate.ok:
+            break
+        if api_framed:
+            # Deterministic framing — re-snapping the same view won't
+            # change the gate result. Record + bail.
             break
         if last_gate.reason and "morning_cut" not in last_gate.reason and "close_cut" not in last_gate.reason:
             # Unreadable labels or parse failure — a reframe is unlikely
@@ -305,9 +353,6 @@ def _bardate_to_datetime(legend_text: str | None) -> datetime | None:
         return datetime(vals[0], vals[1], vals[2], vals[3], vals[4])
     except (ValueError, TypeError):
         return None
-
-
-_ET = ZoneInfo("America/New_York")
 
 
 async def _read_cursor(page: Page) -> datetime | None:

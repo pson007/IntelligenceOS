@@ -277,9 +277,21 @@ async def _probe_symbol(
     page: Page, expected: str, state: dict | None = None,
 ) -> tuple[bool, dict]:
     """Active chart's symbol matches expected (after normalization).
-    Prefers TV's JS API (`chart.symbol()`); falls back to parsing the
-    page title when the API isn't reachable."""
+
+    Tier of preference: `chart.symbolExt()` (rich metadata + ticker
+    field) > `chart.symbol()` from `state` (already-cached) >
+    `page.title()` regex parse (DOM fallback)."""
     if state is not None and state.get("symbol"):
+        # Use ext when reachable for richer metadata + the ticker field
+        # which strips exchange prefix natively.
+        ext = await replay_api.chart_symbol_ext(page)
+        if ext and ext.get("ticker"):
+            seen = _normalize_symbol(ext["ticker"])
+            want = _normalize_symbol(expected)
+            return (seen == want,
+                    {"expected": want, "seen": seen, "via": "api_ext",
+                     "exchange": ext.get("exchange"),
+                     "session": ext.get("session")})
         seen = _normalize_symbol(state["symbol"])
         want = _normalize_symbol(expected)
         return (seen == want, {"expected": want, "seen": seen, "via": "api"})
