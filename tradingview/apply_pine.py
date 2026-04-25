@@ -145,16 +145,60 @@ async def open_pine_editor(page: Page) -> None:
 
 
 async def replace_editor_content(page: Page, pine: str) -> None:
-    """Put `pine` on the clipboard, focus the editor, select-all, paste."""
+    """Put `pine` on the clipboard, focus the editor, select-all, paste.
+
+    Why the focus dance (and not just `ta.click(force=True)`):
+    if a drawing tool (Text, Trend Line, etc.) is the active tool on
+    the chart when apply fires, its pointer-capturing overlay eats
+    clicks on the Pine Editor area. `force=True` bypasses actionability
+    checks, so the DOM click event dispatches — but keyboard focus
+    never moves to the textarea. The subsequent Cmd+V then paints the
+    whole Pine source into a *new text annotation on the chart*.
+
+    Guards: (1) Escape twice to drop any active drawing tool +
+    dismiss a draft annotation, (2) focus Monaco's textarea via JS
+    (bypasses pointer capture — focus is decoupled from the mouse
+    pipeline), (3) verify document.activeElement actually landed
+    inside .pine-editor-monaco before issuing the paste."""
     pbcopy(pine)
 
-    # Click inside the Monaco editor to give it focus. Using the textarea
-    # is more reliable than clicking the container because Monaco's
-    # container has a bunch of child overlays.
+    # Drop any active drawing tool / close a draft annotation so the
+    # chart canvas stops capturing pointer events. Two Escapes covers
+    # "open annotation" and "armed tool" in either order.
+    await page.keyboard.press("Escape")
+    await page.wait_for_timeout(60)
+    await page.keyboard.press("Escape")
+    await page.wait_for_timeout(100)
+
     ta = page.locator(SEL_MONACO_TEXTAREA).first
     await ta.wait_for(state="attached", timeout=5000)
-    await ta.click(force=True)
-    await page.wait_for_timeout(150)
+
+    # Focus via element.focus() first — immune to any pointer-event
+    # interception the chart's tool layer might still be doing.
+    focused_ok = await page.evaluate("""() => {
+      const ta = document.querySelector('.pine-editor-monaco textarea');
+      if (!ta) return false;
+      ta.focus();
+      const a = document.activeElement;
+      return !!(a && a.closest && a.closest('.pine-editor-monaco'));
+    }""")
+    if not focused_ok:
+        # Fallback: force-click, then re-verify. If focus STILL didn't
+        # land in Monaco, refuse to paste — a silent mis-paste corrupts
+        # the chart (Pine source as a text annotation), which is worse
+        # than a loud failure.
+        await ta.click(force=True)
+        await page.wait_for_timeout(150)
+        inside = await page.evaluate(
+            "() => !!(document.activeElement && document.activeElement.closest"
+            " && document.activeElement.closest('.pine-editor-monaco'))"
+        )
+        if not inside:
+            raise RuntimeError(
+                "Could not focus the Pine Editor (Monaco textarea). "
+                "A drawing tool is likely active on the chart — click "
+                "the cursor/select tool in TV's left toolbar, then retry."
+            )
 
     # Select all existing content, then paste.
     await page.keyboard.press("ControlOrMeta+a")
