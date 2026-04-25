@@ -521,7 +521,16 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
         from . import layout_guard
         await layout_guard.ensure_layout(page)
         with audit.timed("daily_profile.run_day", date=date_str, symbol=symbol) as ac:
-            await _navigate_to_session_close(page, target_date)
+            # Soft-fail nav — a single Replay glitch on one day shouldn't
+            # kill a multi-day batch. We continue with whatever cursor
+            # TV ends up on; the gate downstream catches mis-framed
+            # captures and the artifact records the failure.
+            try:
+                await _navigate_to_session_close(page, target_date)
+            except RuntimeError as e:
+                audit.log("daily_profile.navigate.fail",
+                          date=date_str, err=str(e))
+                ac["nav_fail"] = str(e)
             close_target = target_date.replace(
                 hour=16, minute=0, second=0, microsecond=0,
             )

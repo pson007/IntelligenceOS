@@ -490,6 +490,13 @@ async def _run_one_sample(
     forward bar-by-bar until first-touch of stop/TP → set outcome."""
     t_start = time.time()
 
+    # Pin to the clean automation layout — same first-line invariant
+    # every other Replay-using workflow uses. Prevents bench runs from
+    # contaminating their own measurement when the user happens to be
+    # on a Money Print or other indicator-laden layout.
+    from . import layout_guard
+    await layout_guard.ensure_layout(page)
+
     # Ensure chart is on the right symbol/tf. Cheap when already correct
     # (URL-param-driven).
     await chart._navigate(page, spec.symbol, chart.resolve_timeframe(spec.tf))

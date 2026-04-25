@@ -51,6 +51,11 @@ def _list_candidates(symbol: str | None, since: str | None,
         if until and date_str > until:
             continue
         out.append(p)
+    # Sort by ascending date — TV's bar buffer grows backward when
+    # navigate_to seeks to historical data. Walking oldest-first means
+    # each subsequent date is already covered by the buffer scrolled
+    # for the previous date, avoiding cascade reloads.
+    out.sort(key=lambda p: _FILE_RX.match(p.name).group(2))
     return out
 
 
@@ -66,12 +71,15 @@ async def _backfill_one(page, profile_path: Path) -> dict:
     target_date = datetime.strptime(date_str, "%Y-%m-%d")
 
     # Navigate Bar Replay to 16:00 ET on the target date so the bar
-    # buffer covers the full RTH session, then read OHLC. Self-healing
-    # navigate_to handles broken Replay states + lands exactly on target
-    # via the JS API.
+    # buffer covers the full RTH session, then read OHLC. Soft-fail
+    # the nav so a single bad day doesn't kill a 44-day backfill batch.
     close_dt = target_date.replace(hour=16, minute=0)
     open_dt = target_date.replace(hour=9, minute=30)
-    await replay.navigate_to(page, close_dt, tolerance_min=5)
+    try:
+        await replay.navigate_to(page, close_dt, tolerance_min=5)
+    except RuntimeError as e:
+        return {"path": str(profile_path), "skipped": "nav_failed",
+                "err": str(e)}
 
     api_ohlc = await bar_reader.read_session_ohlc(
         page, start_et=open_dt, end_et=close_dt,

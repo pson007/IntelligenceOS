@@ -546,9 +546,14 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
         await layout_guard.ensure_layout(page)
         with audit.timed("daily_forecast.run_day",
                          date=date_str, symbol=symbol, adhoc=adhoc):
-            # Navigate to 10:00 (F1 cursor)
-            cursor = await _navigate_to_10am(page, target_date)
-            audit.log("daily_forecast.navigated", cursor=str(cursor))
+            # Navigate to 10:00 (F1 cursor) — soft-fail: log and continue
+            # with whatever cursor TV ends up on rather than killing the
+            # whole pipeline if any single stage's nav misses.
+            try:
+                cursor = await _navigate_to_10am(page, target_date)
+                audit.log("daily_forecast.navigated", cursor=str(cursor))
+            except RuntimeError as e:
+                audit.log("daily_forecast.navigated.fail", err=str(e))
 
             for (label, cursor_time, step_bars) in STAGES:
                 # Ad-hoc time gate — bail the remainder of the pipeline once
@@ -563,8 +568,22 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
                         skipped_stages.append({"stage": label, "reason": reason})
                         break
 
+                # Seek to absolute stage time via navigate_to instead of
+                # bar-counting. Each stage has a known wall-clock target
+                # (10:00, 12:00, 14:00 ET); navigate_to lands the cursor
+                # exactly and self-heals if Replay state breaks. Soft-
+                # fails on exhaustion so one bad stage doesn't kill the
+                # whole day's pipeline.
                 if step_bars > 0:
-                    await _step_forward_bars(page, step_bars)
+                    stage_target = datetime.combine(
+                        target_date.date(), cursor_time,
+                    )
+                    try:
+                        await replay.navigate_to(page, stage_target,
+                                                  tolerance_min=5)
+                    except RuntimeError as e:
+                        audit.log("daily_forecast.stage.nav_fail",
+                                  stage=label, err=str(e))
 
                 _, json_path = _forecast_file_paths(symbol, date_str, cursor_time.strftime("%H%M"))
                 if resume and json_path.exists():
@@ -606,7 +625,17 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
                           reason=recon_blocked)
                 reconciliation = {"skipped": True, "reason": recon_blocked}
             else:
-                await _step_forward_bars(page, BARS_TO_CLOSE_FROM_F3)
+                # Seek to 16:00 ET via navigate_to — same rationale as
+                # the inter-stage seeks above.
+                close_target = target_date.replace(
+                    hour=16, minute=0, second=0, microsecond=0,
+                )
+                try:
+                    await replay.navigate_to(page, close_target,
+                                              tolerance_min=5)
+                except RuntimeError as e:
+                    audit.log("daily_forecast.reconciliation.nav_fail",
+                              err=str(e))
                 if resume and recon_json.exists():
                     audit.log("daily_forecast.reconciliation.skip_existing")
                     reconciliation = json.loads(recon_json.read_text())
