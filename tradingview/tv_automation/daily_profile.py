@@ -32,12 +32,16 @@ import json
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from playwright.async_api import Page
 
-from . import replay
+from . import bar_reader, replay, replay_api
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
+from .lib.capture_invariants import (
+    CaptureExpect, CaptureInvariantError, assert_capture_ready,
+)
 from .lib.context import chart_session
 from .profile_gate import verify_full_session, GateResult
 
@@ -221,8 +225,18 @@ async def _frame_session_view(page: Page, variant: int = 0) -> None:
     await page.wait_for_timeout(400)
 
 
-async def _capture(page: Page, symbol: str, tag: str) -> Path:
-    """Screenshot the chart, return the path."""
+async def _capture(
+    page: Page, symbol: str, tag: str, *, expect: CaptureExpect | None = None,
+) -> Path:
+    """Screenshot the chart, return the path.
+
+    When `expect` is given, runs `assert_capture_ready` first — silent
+    flaky captures (wrong symbol, wrong TF, modal in frame, drawing
+    tool armed, replay off, cursor at wrong bar) become loud
+    `CaptureInvariantError`s instead of useless PNGs that the LLM
+    misreads hours later."""
+    if expect is not None:
+        await assert_capture_ready(page, expect)
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_profile_{tag}_{ts}.png"
@@ -230,17 +244,34 @@ async def _capture(page: Page, symbol: str, tag: str) -> Path:
     return path
 
 
-async def _frame_and_gate(page: Page, symbol: str) -> tuple[Path, GateResult]:
+async def _frame_and_gate(
+    page: Page, symbol: str, *, close_target: datetime | None = None,
+) -> tuple[Path, GateResult]:
     """Frame → gate, with up to 2 retries on morning_cut / close_cut.
 
     Returns (final_screenshot_path, final_gate_result). Profiling proceeds
     even if the final gate fails — the gate failure is recorded in the
-    artifact so it's visible when comparing reference days."""
+    artifact so it's visible when comparing reference days.
+
+    `close_target` (when provided) seeds the capture-invariant check
+    so the screenshot is gated on Replay being active and the cursor
+    sitting near the requested close time. Cursor check is soft on
+    this wire-up — fires audit events but doesn't break workflows
+    while we baseline real cursor drift."""
+    expect = CaptureExpect(
+        symbol=symbol if "!" in symbol else f"{symbol}!",
+        interval="1m",
+        replay_mode=True,
+        cursor_time=close_target,
+        cursor_tolerance_min=30,
+        soft_cursor=True,
+    ) if close_target is not None else None
+
     last_screenshot: Path | None = None
     last_gate: GateResult | None = None
     for attempt in range(3):
         await _frame_session_view(page, variant=attempt)
-        last_screenshot = await _capture(page, symbol, f"frame{attempt}")
+        last_screenshot = await _capture(page, symbol, f"frame{attempt}", expect=expect)
         last_gate = await verify_full_session(str(last_screenshot))
         audit.log("daily_profile.gate",
                   attempt=attempt, ok=last_gate.ok, reason=last_gate.reason)
@@ -276,8 +307,17 @@ def _bardate_to_datetime(legend_text: str | None) -> datetime | None:
         return None
 
 
+_ET = ZoneInfo("America/New_York")
+
+
 async def _read_cursor(page: Page) -> datetime | None:
-    """Best-effort read of Replay cursor time from the BarDate legend plot."""
+    """Replay cursor time as naive ET. Prefers TV's JS API
+    (`replayApi.currentDate()`, exact epoch ms) and falls back to
+    parsing the BarDate legend when the API isn't reachable."""
+    api_dt = await replay_api.current_replay_date(page)
+    if api_dt is not None:
+        return api_dt.astimezone(_ET).replace(tzinfo=None)
+
     text = await page.evaluate(
         r"""() => {
             const items = Array.from(document.querySelectorAll('[data-qa-id="legend-source-item"]'));
@@ -454,10 +494,26 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
     async with chart_session() as (_ctx, page):
         with audit.timed("daily_profile.run_day", date=date_str, symbol=symbol) as ac:
             await _navigate_to_session_close(page, target_date)
-            screenshot, gate = await _frame_and_gate(page, symbol)
+            close_target = target_date.replace(
+                hour=16, minute=0, second=0, microsecond=0,
+            )
+            screenshot, gate = await _frame_and_gate(
+                page, symbol, close_target=close_target,
+            )
             ac["screenshot"] = str(screenshot)
             ac["gate_ok"] = gate.ok
             ac["gate_reason"] = gate.reason
+
+            # Numerical ground truth — read OHLC from chart memory
+            # while the cursor is parked at close. Survives whatever
+            # the vision LLM later reports about the same session, and
+            # gives the reconcile step a deterministic actual_summary.
+            session_open = target_date.replace(
+                hour=9, minute=30, second=0, microsecond=0,
+            )
+            api_ohlc = await bar_reader.read_session_ohlc(
+                page, start_et=session_open, end_et=close_target,
+            )
 
             user_prompt = (
                 f"Profile the {symbol}! RTH session for {date_str} ({dow}). "
@@ -512,6 +568,8 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
                 saved.update(structured)
             else:
                 saved["raw_response"] = text
+            if api_ohlc is not None:
+                saved["actual_summary_api"] = api_ohlc
 
             json_path.write_text(json.dumps(saved, indent=2))
             ac["saved_to"] = str(json_path)

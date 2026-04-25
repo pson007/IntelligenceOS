@@ -33,8 +33,10 @@ from playwright.async_api import Page, TimeoutError as PWTimeoutError
 
 from preflight import ensure_automation_chromium
 from session import is_logged_in, tv_context
+from tv_automation import health, pine_compile, replay_api
 
 GENERATED_DIR = Path(__file__).parent / "pine" / "generated"
+PARSE_FAIL_DIR = Path(__file__).parent / "pine" / "parse_failures"
 CHART_URL = "https://www.tradingview.com/chart/"
 
 # ---- Selectors ----------------------------------------------------------
@@ -380,6 +382,22 @@ async def main() -> int:
             print("ERROR: not signed in to TradingView.", flush=True)
             return 1
 
+        # Chart readiness — fail loud if TradingViewApi isn't exposed
+        # (e.g., chart tab still loading, maintenance page) instead of
+        # bombing deeper in the Pine Editor flow.
+        try:
+            ready = await health.assert_chart_ready(page)
+            print(f"Chart ready: {ready['symbol']} @ {ready['resolution']}",
+                  flush=True)
+        except health.ChartNotReadyError as e:
+            print(f"ERROR: {e}", flush=True, file=sys.stderr)
+            return 1
+
+        # Capture pre-apply study count so we can detect the silent
+        # "subprocess succeeded but study didn't actually attach" mode.
+        pre_state = await replay_api.chart_state(page)
+        studies_before = len(pre_state["studies"]) if pre_state else None
+
         print("Opening Pine Editor...", flush=True)
         await open_pine_editor(page)
 
@@ -388,6 +406,44 @@ async def main() -> int:
 
         print("Saving + adding to chart...", flush=True)
         await save_and_add_to_chart(page, name)
+
+        # Compile-error sweep — Monaco's marker API knows whether the
+        # editor accepted the script with red squiggles. We read it
+        # BEFORE collapsing the panel (markers belong to the open model).
+        compile_summary = await pine_compile.read_compile_summary(page)
+        if compile_summary["available"]:
+            if compile_summary["errors"] > 0:
+                dump = pine_compile.write_failure_dump(
+                    pine, compile_summary, PARSE_FAIL_DIR, stem=pine_path.stem,
+                )
+                print(
+                    f"WARN: Pine compiled with {compile_summary['errors']} "
+                    f"error(s), {compile_summary['warnings']} warning(s). "
+                    f"Diagnostics: {dump}",
+                    flush=True, file=sys.stderr,
+                )
+                for m in compile_summary["items"][:5]:
+                    print(f"  [{m['severity_label']}] line {m['line']}: "
+                          f"{m['message']}", flush=True, file=sys.stderr)
+            elif compile_summary["warnings"] > 0:
+                print(f"NOTE: Pine compiled with "
+                      f"{compile_summary['warnings']} warning(s).", flush=True)
+            else:
+                print("Pine compiled clean (no Monaco diagnostics).", flush=True)
+        else:
+            print("NOTE: could not read Monaco compile diagnostics "
+                  "(fiber walk failed).", flush=True)
+
+        # Study-count delta — emit machine-parseable line so the
+        # ui_server subprocess wrapper can spot anomalies (e.g., delta
+        # of 0 when the indicator name wasn't already on chart implies
+        # the apply silently no-op'd).
+        post_state = await replay_api.chart_state(page)
+        studies_after = len(post_state["studies"]) if post_state else None
+        if studies_before is not None and studies_after is not None:
+            delta = studies_after - studies_before
+            print(f"STUDY_COUNT_DELTA: before={studies_before} "
+                  f"after={studies_after} delta={delta}", flush=True)
 
         print("Collapsing Pine Editor panel...", flush=True)
         await close_pine_editor(page)

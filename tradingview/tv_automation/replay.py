@@ -180,16 +180,29 @@ _SELECT_BUTTON = 'div[role="dialog"] >> text="Select"'
 
 
 async def select_start_date(page: Page, when: datetime) -> None:
-    """Set the replay starting point to `when`. Opens the date picker,
-    fills the date + time inputs, clicks `Select` to apply.
+    """Set the replay starting point to `when`. Prefers TV's internal
+    JS API (`replayApi.selectDate(epoch_ms)`) — no dialog, no typing,
+    immune to the date-picker mount race. Falls back to the DOM dialog
+    when the API isn't reachable, so this is safe to leave on always.
 
-    Date picker modal resolved by `probes/probe_replay_datepicker.py`:
+    Date picker modal (DOM fallback path), resolved by
+    `probes/probe_replay_datepicker.py`:
       * Dialog:   `div[role="dialog"]` with class `wrapper-b8SxMnzX`
       * Date:     `input[placeholder="YYYY-MM-DD"]`
       * Time:     second `input` (no placeholder; e.g. value="00:00")
       * Submit:   button with text `Select`
       * Cancel:   button with text `Cancel`
     """
+    from . import replay_api
+    if await replay_api.api_available(page):
+        try:
+            await replay_api.select_replay_date(page, when)
+            audit.log("replay.select_start_date",
+                      when=when.strftime("%Y-%m-%d %H:%M"), via="api")
+            return
+        except Exception as e:
+            audit.log("replay.select_start_date.api_fallback", err=str(e))
+
     await open_date_picker(page)
     # Wait for the dialog to mount before targeting inputs.
     dialog = await wait_visible(page, _DATE_DIALOG, timeout_ms=3000)
@@ -234,7 +247,7 @@ async def select_start_date(page: Page, when: datetime) -> None:
     # needed.
     await page.wait_for_timeout(800)
     audit.log("replay.select_start_date",
-              when=f"{date_str} {time_str}")
+              when=f"{date_str} {time_str}", via="dom")
 
 
 # ---------------------------------------------------------------------------
@@ -249,7 +262,11 @@ async def step_forward(page: Page, bars: int = 1) -> None:
     anchors and left the step-forward button without a stable DOM identifier
     (only an SVG path signature, which rotates between TV releases). The
     keyboard shortcut is the stable surface — verified 2026-04-20: 1 press =
-    1 bar, scales linearly up to at least 120 presses."""
+    1 bar, scales linearly up to at least 120 presses.
+
+    When `replayApi` is reachable, captures cursor before + polls after
+    so silent stalls (chart focus lost mid-batch) become loud audit
+    events instead of bad screenshots downstream."""
     if bars < 0:
         raise ValueError("bars must be non-negative; use step_backward")
     if bars == 0:
@@ -258,10 +275,31 @@ async def step_forward(page: Page, bars: int = 1) -> None:
         await page.bring_to_front()
     except Exception:
         pass
+
+    from . import replay_api
+    api_ok = await replay_api.api_available(page)
+    before = await replay_api.current_replay_date(page) if api_ok else None
+
     for _ in range(bars):
         await page.keyboard.press("Shift+ArrowRight")
         await page.wait_for_timeout(40)
-    audit.log("replay.step_forward", bars=bars)
+
+    confirmed_after = None
+    if api_ok and before is not None:
+        # Mirrors the MCP's pattern: 12×250ms (~3s) for the cursor to
+        # advance. Independent of `bars` since one keystroke flushes
+        # the rest — we just need confirmation that ANY motion happened.
+        for _ in range(12):
+            cur = await replay_api.current_replay_date(page)
+            if cur is not None and cur > before:
+                confirmed_after = cur
+                break
+            await page.wait_for_timeout(250)
+
+    audit.log("replay.step_forward", bars=bars,
+              before=before.isoformat() if before else None,
+              after=confirmed_after.isoformat() if confirmed_after else None,
+              confirmed=confirmed_after is not None if api_ok and before else None)
 
 
 async def step_backward(page: Page, bars: int = 1) -> None:

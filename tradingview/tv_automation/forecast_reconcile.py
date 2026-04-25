@@ -276,15 +276,29 @@ async def run_reconciliation(
                      stage_count=len(stages)) as ac:
         ac["screenshot"] = screenshot
 
+        # When the profile was built with `bar_reader`, prefer the
+        # numerical OHLC over the LLM's vision read — vision misreads
+        # HOD/LOD points by 50pt regularly on busy charts.
+        actual_block = {
+            "summary": profile.get("summary", {}),
+            "tags": profile.get("tags", {}),
+            "pivots": (profile.get("pivots") or [])[:8],
+            "takeaway": profile.get("takeaway", ""),
+        }
+        if profile.get("actual_summary_api"):
+            actual_block["actual_summary_api"] = profile["actual_summary_api"]
+            actual_block["_note"] = (
+                "actual_summary_api is exact OHLC from chart memory — "
+                "prefer it over `summary.*_approx` for HOD/LOD/close grading."
+            )
+            ac["actual_summary_source"] = "api"
+        else:
+            ac["actual_summary_source"] = "vision"
+
         parts = [
             f"# RECONCILIATION TARGET: {symbol}! {date_str} ({dow})", "",
             "## ACTUAL OUTCOME (from completed-day profile — ground truth)",
-            json.dumps({
-                "summary": profile.get("summary", {}),
-                "tags": profile.get("tags", {}),
-                "pivots": (profile.get("pivots") or [])[:8],
-                "takeaway": profile.get("takeaway", ""),
-            }, indent=2),
+            json.dumps(actual_block, indent=2),
             "",
         ]
         for tag, label, data in stages:
