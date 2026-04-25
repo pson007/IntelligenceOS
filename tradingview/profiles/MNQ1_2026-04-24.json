@@ -1,0 +1,112 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-24",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-24T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame1_20260424_182512.png",
+  "gate": {
+    "ok": false,
+    "reason": "session_first_unreadable",
+    "first": null,
+    "last": null
+  },
+  "profiled_at": "2026-04-24T18:27:01-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "failed_breakdown_midday_reclaim_trend_up",
+    "open_approx": 27210.25,
+    "close_approx": 27440.75,
+    "hod_approx": 27457.5,
+    "lod_approx": 27130.0,
+    "net_range_pts_open_to_close": 230.5,
+    "net_range_pct_open_to_close": 0.85,
+    "intraday_span_pts": 327.5,
+    "shape_sentence": "Bullish recovery trend day: early dip under open, midday reclaim, afternoon continuation, close near HOD."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 27210.25,
+      "type": "open"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 27170.0,
+      "type": "early_dip"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 27130.0,
+      "type": "lod_demand_defense"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 27265.0,
+      "type": "reclaim"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 27340.0,
+      "type": "continuation_breakout"
+    },
+    {
+      "time_et": "15:45",
+      "price_approx": 27457.5,
+      "type": "hod_area"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 27440.75,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "12:15",
+      "direction": "up",
+      "note": "Midday long after failed breakdown and reclaim; led the afternoon trend extension."
+    },
+    "red_circles": {
+      "behavior": "Bearish signals appeared around the breakdown/short-warning zone but failed after price reclaimed demand."
+    },
+    "green_circles": {
+      "behavior": "Bullish confirmations clustered into the afternoon continuation and supported the close near highs."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 27270-27330 was reclaimed and broken during the afternoon drive."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 27130-27210 was respected and became the main launch zone."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Below/near open, probing lower demand after a weak early push.",
+    "12pm_red": "Reclaim phase; failed breakdown converting into bullish rotation.",
+    "2pm_green": "Upside continuation active above reclaimed levels.",
+    "4pm_yellow": "Green close near HOD, confirming bullish session completion."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "failed_breakdown_midday_reclaim_trend_up",
+    "open_type": "gap_up_pullback_reclaim",
+    "lunch_behavior": "bullish_reclaim_from_failed_breakdown",
+    "afternoon_drive": "steady_upside_continuation",
+    "goat_time": "12:15",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "demand_27130_27210",
+    "banks_broken": "supply_27270_27330"
+  },
+  "takeaway": "Bullish trend day with an early failed breakdown, defended morning demand, and a midday long that became the reference pivot. Best comparable: gap-up pullback into demand followed by afternoon upside continuation and close near HOD."
+}

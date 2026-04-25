@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-24",
+  "cursor_time": "14:00",
+  "stage": "F3",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f31400_20260424_161759.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "03:00:00",
+    "session_last": "14:30:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-24T16:18:46",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-24 ~14:00 ET\n\nBars observed: ~5-min bars from 09:30\u201314:00 (~54 bars)\n\nSummary: Opening dip \u2192 reclaim \u2192 steady grind higher \u2192 midday breakout and hold above VWAP/value\n\nRANKED SIMILAR ARCHETYPES\n\nStop-hunt-reclaim trend day up \u2014 early flush reversed and never lost higher-low structure.\n\nLate-morning breakout \u2192 lunch consolidation \u2192 continuation \u2014 range formed ~11:30\u201313:00 then expanded.\n\nTrend-up with shallow pullbacks \u2014 buyers consistently defend dips, no value acceptance lower.\n\nPROJECTED PATH\n\n14:00 \u2192 14:00 marker (immediate): Already in breakout hold; expect minor pullback/sideways above ~27,350\u201327,380.\n\n14:00 \u2192 16:00: Gradual continuation higher with one more push leg; trend persistence unless sharp rejection.\n\nInto close: Grind-up / squeeze into highs; no strong reversal signal present.\n\nProjected close price (range): 27,430 \u2013 27,520\n\nRest-of-day HOD (range): 27,500 \u2013 27,580\n\nRest-of-day LOD (range): 27,320 \u2013 27,360\n\nTACTICAL BIAS\n\nPrimary bias: Long (68%)\n\nInvalidation: Sustained break below ~27,300 (loss of higher-low + VWAP zone)\n\nPreferred entry: Pullbacks into 27,340\u201327,380\n\nR:R logic: Risk ~40\u201360 pts for continuation leg ~100\u2013150 pts into close extension\n\nKEY LEVELS\n\nOverhead supply: 27,470\u201327,520 (visible resistance cluster)\n\nUnderlying demand: 27,300\u201327,350 (VWAP / breakout base)\n\nPivot-to-watch: 27,400 (acceptance above = continuation, loss = range)\n\nPREDICTION TAGS\n\ndirection: up 68%\nstructure: trend_up_reclaim 72%\nlunch_behavior: consolidation_hold 70%\nafternoon_drive: continuation_grind 66%\ngoat_direction: up 60%\nclose_near_extreme: near_high 64%\n\nACCUMULATED LESSONS (applied)\n\nReclaim after early weakness \u2192 anchor bias long, not neutral\n\nLunch held structure \u2192 widen upside expectations\n\nNo reversal attempt into 14:00 \u2192 default toward near-HOD close scenario"
+}

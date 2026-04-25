@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-24",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260424_161653.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "03:00:00",
+    "session_last": "14:30:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-24T16:17:52",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-24 ~12:00 ET\n\nBars observed so far this session: ~30 completed 5-min RTH bars, 09:30\u201311:55 ET\n\nWhat has happened so far: Before the cursor, MNQ flushed early, reclaimed the 27,200 area, then held higher lows into late morning, creating a stop-hunt-reclaim bullish session.\n\nRANKED SIMILAR ARCHETYPES\n\nStop-hunt-reclaim trend-up \u2014 Early downside was rejected, then price reclaimed value and held above the opening flush.\n\nLunch higher-low continuation \u2014 The market is consolidating above reclaimed demand rather than failing back below it.\n\nSlow grind into afternoon expansion \u2014 Not a clean vertical trend day yet, but structure favors another upside attempt after lunch.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop-to-bullish drift between ~27,260\u201327,360, with buyers defending pullbacks above 27,220.\n\nBetween next marker and 14:00: Next marker is 14:00, so no separate window.\n\nBetween 14:00 and 16:00: Bias for continuation higher if 27,300\u201327,330 is reclaimed/held; likely push toward upper supply and possible close near session highs.\n\nProjected close price range: 27,430\u201327,520\n\nRest-of-day HOD range: 27,470\u201327,560\n\nRest-of-day LOD range: 27,190\u201327,250\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained break below 27,190\u201327,210\n\nPreferred entry zone: Pullback into 27,240\u201327,280, especially if it forms a higher low\n\nR:R logic: Longs are favored only if downside holds above the reclaimed flush zone; risk ~40\u201370 pts for upside toward 27,470+, giving roughly 2:1 or better if entered near demand.\n\nKEY LEVELS\n\nOverhead supply: 27,380\u201327,430, then 27,470\u201327,560\n\nUnderlying demand: 27,240\u201327,280, deeper 27,190\u201327,210\n\nPivot-to-watch: 27,300\u201327,330\n\nPREDICTION TAGS\n\ndirection: up, 68%\n\nstructure: stop-hunt-reclaim, 72%\n\nlunch_behavior: higher-low consolidation, 64%\n\nafternoon_drive: bullish continuation, 61%\n\ngoat_direction: upside, 66%\n\nclose_near_extreme: near_high, 60%"
+}

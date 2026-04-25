@@ -1,0 +1,67 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-24",
+  "dow": "Fri",
+  "stage": "pre_session_forecast",
+  "mode": "live_prerth",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_presession_20260424_091515.png",
+  "based_on_priors": [
+    "2026-04-22",
+    "2026-04-21",
+    "2026-04-20",
+    "2026-04-17",
+    "2026-04-16"
+  ],
+  "same_dow_refs": [
+    "2026-04-17",
+    "2026-04-10",
+    "2026-04-03"
+  ],
+  "lessons_injected": true,
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-24T09:16:06",
+  "raw_response": "REGIME READ\n\nShort-term regime has flipped back to trend-up / grind continuation after the 4/21 liquidation break. 4/22 confirmed a stop-hunt reclaim \u2192 trend day, and overnight action continues that pattern with steady higher lows and expansion above prior value (~27000). However, coming after a sharp recovery sequence, this sits between continuation vs. exhaustion, so bias is up but with reduced confidence.\n\nSAME-DOW REFERENCES\n\n2026-04-17: Gap-up trend with midday shakeout \u2192 late reclaim; supports continuation but with an afternoon stress event.\n\n2026-04-10: Morning strength \u2192 midday flush \u2192 afternoon repair; warns against chasing early highs.\n\n2026-04-03: Early push failed \u2192 afternoon drift down; reminds that Friday can fade if opening strength stalls.\n\nPREDICTIONS\n\nDirection: up (confidence: low\u2013med)\n\nOpen type: gap_up_rotational\n\nStructure: early_push_then_midday_shakeout_then_trend_resume\n\nExpected move size: medium\n\nNet pct range: +0.20% to +0.75%\n\nIntraday span range (pts): 140\u2013260\n\nTIME WINDOW EXPECTATIONS\n\n10:00: Initial push or sweep of highs, risk of stall/rejection if momentum weakens\n\n12:00: Midday shakeout / pullback toward VWAP or trend base\n\n14:00: Reclaim attempt if structure intact; trend continuation trigger\n\n16:00 (close): Drift higher into upper range if reclaim succeeds; otherwise mid-upper close\n\nPROBABLE GOAT\n\nDirection: long\n\nTime window: midday_to_afternoon\n\nRationale: Dip after early extension into trend support offers best R:R for continuation\n\nTACTICAL BIAS\n\nPrimary bias: buy_dips_after_failed_breakdown\n\nInvalidation conditions:\n\nOpening drive fails and price accepts back below ~27100 (prior breakout zone)\n\n10:00 shows lower high + inability to reclaim VWAP\n\nLunch trades persistently below trend pack with no higher low\n\nPREDICTION TAGS\n\ndirection: up\n\nstructure: early_push_then_midday_shakeout_then_trend_resume\n\nopen_type: gap_up_rotational\n\nlunch_behavior: midday_pullback_then_base\n\nafternoon_drive: upside_continuation_if_reclaimed\n\ngoat_direction: up\n\nclose_near_extreme: no_mid_upper_range\n\nCONFIDENCE NOTES\n\nPrimary uncertainty is whether overnight trend is already extended and due for a Friday fade. The most likely failure mode is early strength that cannot hold above prior breakout (~27100), triggering a rotational or down day. Watch the 10:00 reaction closely; failure there likely shifts the day to mean-reversion instead of trend.\n\nJSON\n{\n  \"regime_read\": \"Short-term trend-up continuation after reclaim, but positioned between continuation and exhaustion following recent recovery.\",\n  \"same_dow_references\": [\n    \"2026-04-17: Gap-up trend with midday shakeout and late reclaim supports continuation with volatility.\",\n    \"2026-04-10: Morning strength followed by midday flush warns against chasing early highs.\",\n    \"2026-04-03: Early push failure led to afternoon fade, highlighting Friday reversal risk.\"\n  ],\n  \"predictions\": {\n    \"direction\": \"up\",\n    \"direction_confidence\": \"low\",\n    \"open_type\": \"gap_up_rotational\",\n    \"structure\": \"early_push_then_midday_shakeout_then_trend_resume\",\n    \"expected_move_size\": \"med\",\n    \"predicted_net_pct_lo\": 0.2,\n    \"predicted_net_pct_hi\": 0.75,\n    \"predicted_intraday_span_lo_pts\": 140,\n    \"predicted_intraday_span_hi_pts\": 260\n  },\n  \"time_window_expectations\": {\n    \"10am\": \"Initial push into highs with risk of stall or rejection\",\n    \"12pm\": \"Midday pullback toward VWAP or trend support\",\n    \"2pm\": \"Potential reclaim and continuation if structure holds\",\n    \"4pm\": \"Upper-range drift close if reclaim succeeds, otherwise mid-range\"\n  },\n  \"probable_goat\": {\n    \"direction\": \"long\",\n    \"time_window\": \"midday_to_afternoon\",\n    \"rationale\": \"Midday dip into support likely offers best continuation entry\"\n  },\n  \"tactical_bias\": {\n    \"bias\": \"buy_dips_after_failed_breakdown\",\n    \"invalidation\": \"Acceptance below 27100, failure to reclaim VWAP by 10:00, or persistent trading below trend support into lunch\"\n  },\n  \"prediction_tags\": {\n    \"direction\": \"up\",\n    \"structure\": \"early_push_then_midday_shakeout_then_trend_resume\",\n    \"open_type\": \"gap_up_rotational\",\n    \"lunch_behavior\": \"midday_pullback_then_base\",\n    \"afternoon_drive\": \"upside_continuation_if_reclaimed\",\n    \"goat_direction\": \"up\",\n    \"close_near_extreme\": \"no_mid_upper_range\"\n  },\n  \"confidence_notes\": \"Low confidence due to extension after recent reclaim trend. Early failure at highs could flip the day to rotational or down. 10:00 structure is the key validation point.\"\n}",
+  "regime_read": "Short-term trend-up continuation after reclaim, but positioned between continuation and exhaustion following recent recovery.",
+  "same_dow_references": [
+    "2026-04-17: Gap-up trend with midday shakeout and late reclaim supports continuation with volatility.",
+    "2026-04-10: Morning strength followed by midday flush warns against chasing early highs.",
+    "2026-04-03: Early push failure led to afternoon fade, highlighting Friday reversal risk."
+  ],
+  "predictions": {
+    "direction": "up",
+    "direction_confidence": "low",
+    "open_type": "gap_up_rotational",
+    "structure": "early_push_then_midday_shakeout_then_trend_resume",
+    "expected_move_size": "med",
+    "predicted_net_pct_lo": 0.2,
+    "predicted_net_pct_hi": 0.75,
+    "predicted_intraday_span_lo_pts": 140,
+    "predicted_intraday_span_hi_pts": 260
+  },
+  "time_window_expectations": {
+    "10am": "Initial push into highs with risk of stall or rejection",
+    "12pm": "Midday pullback toward VWAP or trend support",
+    "2pm": "Potential reclaim and continuation if structure holds",
+    "4pm": "Upper-range drift close if reclaim succeeds, otherwise mid-range"
+  },
+  "probable_goat": {
+    "direction": "long",
+    "time_window": "midday_to_afternoon",
+    "rationale": "Midday dip into support likely offers best continuation entry"
+  },
+  "tactical_bias": {
+    "bias": "buy_dips_after_failed_breakdown",
+    "invalidation": "Acceptance below 27100, failure to reclaim VWAP by 10:00, or persistent trading below trend support into lunch"
+  },
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "early_push_then_midday_shakeout_then_trend_resume",
+    "open_type": "gap_up_rotational",
+    "lunch_behavior": "midday_pullback_then_base",
+    "afternoon_drive": "upside_continuation_if_reclaimed",
+    "goat_direction": "up",
+    "close_near_extreme": "no_mid_upper_range"
+  },
+  "confidence_notes": "Low confidence due to extension after recent reclaim trend. Early failure at highs could flip the day to rotational or down. 10:00 structure is the key validation point.",
+  "parsed_structured": true
+}

@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-24",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260424_161606.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "03:00:00",
+    "session_last": "11:30:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-24T16:16:44",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-24 ~10:00 ET\n\nBars observed so far this session: ~7 five-minute RTH bars, 09:30\u201310:00 ET\n\nWhat has happened so far in 1 sentence: RTH opened strong, flushed into ~27,130, then reclaimed sharply back above ~27,250\u201327,290 by the cursor \u2014 a stop-hunt-reclaim structure.\n\nRANKED SIMILAR ARCHETYPES\n\nStop-hunt-reclaim trend-up \u2014 Opening downside liquidity was taken, then price reclaimed value quickly before 10:00.\n\nGap-and-go with failed breakdown \u2014 The attempted open fade failed, keeping buyers in control above the reclaim zone.\n\nMorning squeeze into controlled grind \u2014 Early trapped shorts can fuel continuation, but after the first impulse, price may need a consolidation phase.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect pullback/rotation near 27,250\u201327,300, but buyers likely defend unless price loses ~27,200.\n\nBetween next marker and 14:00: Likely sideways-to-up grind; holding above 27,250 favors another push toward 27,370\u201327,450.\n\nBetween 14:00 and 16:00 close: If still above 27,300, expect afternoon continuation and close near upper range. Failed 14:00 continuation would create chop, not immediate full reversal.\n\nProjected close price range: 27,430\u201327,560\n\nRest-of-day HOD range: 27,500\u201327,620\n\nRest-of-day LOD range: 27,180\u201327,250\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained loss of 27,180\u201327,200\n\nPreferred entry zone: 27,240\u201327,285 on pullback/reclaim\n\nR:R logic: Risk below 27,180; target 27,430+, giving roughly 1.8R\u20132.5R if entry is near 27,260.\n\nKEY LEVELS\n\nOverhead supply: 27,370\u201327,450, then 27,500\u201327,620\n\nUnderlying demand: 27,240\u201327,280; deeper demand near 27,130\u201327,180\n\nPivot-to-watch: 27,300\n\nPREDICTION TAGS\n\ndirection: up, 68%\n\nstructure: stop-hunt-reclaim, 72%\n\nlunch_behavior: hold-above-reclaim / shallow dip, 61%\n\nafternoon_drive: continuation grind higher, 64%\n\ngoat_direction: up, 66%\n\nclose_near_extreme: near_high, 63%"
+}
