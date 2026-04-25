@@ -308,14 +308,20 @@ async def _select_model(page: Page, model_name: str) -> None:
                 btn_aria: document.querySelector(
                   '[data-testid="model-switcher-dropdown-button"]'
                 )?.getAttribute('aria-expanded'),
+                btn_text: (document.querySelector(
+                  '[data-testid="model-switcher-dropdown-button"]'
+                ) || {}).innerText || null,
             };
         }""")
-        audit.log("chatgpt_web.model_dropdown.fail", **diag)
-        raise RuntimeError(
-            f"ChatGPT model dropdown didn't open after 2 tries "
-            f"(found {diag.get('count', 0)} menu items, "
-            f"btn aria-expanded={diag.get('btn_aria')})"
-        )
+        # Best-effort model switch — if the dropdown won't open after
+        # all retries, ChatGPT's default model (usually Instant) is
+        # almost always what the caller wanted anyway. Killing the whole
+        # analyze for a model-switch failure when we can still use the
+        # default is bad UX. Audit captures the failure so we can
+        # diagnose patterns without breaking user flow.
+        audit.log("chatgpt_web.model_dropdown.fail",
+                  requested=model_name, attempts=3, **diag)
+        return
 
     items = page.locator(SEL_MODEL_MENUITEM)
     count = await items.count()
