@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from playwright.async_api import Page
 
@@ -154,6 +154,418 @@ async def exit_replay(page: Page) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Self-healing navigation
+# ---------------------------------------------------------------------------
+
+
+_BARDATE_RX = re.compile(
+    r"BarDate\s*([\d.,]+)\s*([\d.,]+)\s*([\d.,]+)\s*([\d.,]+)\s*([\d.,]+)"
+)
+
+
+_STRIP_DATE_RX = re.compile(
+    r"(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{2,4})"
+    r"(?:\s+(\d{1,2}):(\d{2})\s*(AM|PM)?)?",
+    re.IGNORECASE,
+)
+_MONTH_MAP = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+
+
+def _parse_strip_date(text: str) -> datetime | None:
+    """Parse TV's Select-date button text (e.g. `Mon 20 Apr 26 12:00 PM`)
+    into a tz-aware ET datetime. The button shows whatever cursor
+    Replay is parked at, or 'Select date' when none is set."""
+    if not text or text.lower().strip() == "select date":
+        return None
+    m = _STRIP_DATE_RX.search(text)
+    if not m:
+        return None
+    try:
+        day = int(m.group(1))
+        month = _MONTH_MAP.get(m.group(2).lower())
+        year = int(m.group(3))
+        if year < 100:
+            year += 2000
+        hour = int(m.group(4)) if m.group(4) else 0
+        minute = int(m.group(5)) if m.group(5) else 0
+        ampm = (m.group(6) or "").upper()
+        if ampm == "PM" and hour < 12:
+            hour += 12
+        elif ampm == "AM" and hour == 12:
+            hour = 0
+        from zoneinfo import ZoneInfo
+        from datetime import timezone
+        et = ZoneInfo("America/New_York")
+        naive = datetime(year, month, day, hour, minute)
+        return naive.replace(tzinfo=et).astimezone(timezone.utc)
+    except (ValueError, TypeError, KeyError):
+        return None
+
+
+async def _read_strip_date(page: Page) -> str | None:
+    """Return the Select-date button's current text, or None."""
+    try:
+        return await page.evaluate(r"""() => {
+            const strip = document.querySelector(
+                'div[data-name="replay-bottom-toolbar"]'
+            );
+            if (!strip) return null;
+            const btn = strip.querySelector(
+                'div[data-role="button"][class*="selectDateBar__button"], '
+              + 'div[data-role="button"][title="Select date"]'
+            );
+            return btn ? (btn.innerText || '').trim() : null;
+        }""")
+    except Exception:
+        return None
+
+
+async def confirm_cursor(page: Page) -> datetime | None:
+    """Read the current Replay cursor — tries API first, falls back to
+    BarDate legend, then to the Replay strip's Select-date button text.
+
+    The API path (`replayApi.currentDate()`) returns None when TV is
+    in a half-mounted Replay state. The BarDate legend item is the
+    next-best signal but isn't always present (chart's data window may
+    not include it). The strip-date button is always rendered when
+    Replay is active and shows the active cursor (or 'Select date'
+    when none is set).
+
+    Returns a UTC-aware datetime when readable, None when no source
+    confirms a cursor."""
+    from . import replay_api
+    cur = await replay_api.current_replay_date(page)
+    if cur is not None:
+        return cur
+
+    text = await page.evaluate(
+        r"""() => {
+            const items = Array.from(document.querySelectorAll(
+                '[data-qa-id="legend-source-item"]'
+            ));
+            const bar = items.find(i =>
+                (i.innerText || '').trim().startsWith('BarDate')
+            );
+            return bar ? (bar.innerText || '').trim() : null;
+        }"""
+    )
+    if text:
+        m = _BARDATE_RX.match(text)
+        if m:
+            try:
+                from zoneinfo import ZoneInfo
+                from datetime import timezone
+                et = ZoneInfo("America/New_York")
+                vals = [int(float(g.replace(",", ""))) for g in m.groups()]
+                naive = datetime(vals[0], vals[1], vals[2], vals[3], vals[4])
+                return naive.replace(tzinfo=et).astimezone(timezone.utc)
+            except (ValueError, TypeError):
+                pass
+
+    strip_text = await _read_strip_date(page)
+    return _parse_strip_date(strip_text) if strip_text else None
+
+
+async def _ensure_history_loaded(
+    page: Page, target_epoch_s: int, *,
+    max_batches: int = 12, bars_per_batch: int = 200,
+) -> bool:
+    """Scroll the chart's time axis backward until `target_epoch_s` is
+    in the bar buffer. TV silently rejects Replay dates outside the
+    loaded buffer — `select_start_date` looks like it succeeds but the
+    cursor never seeds.
+
+    Strategy: use TV's `timeScale.scrollChartByBar(-N)` to walk history
+    backward. After each batch, check if any bar's time <= target.
+    Returns True when target is reachable, False if max_batches hit.
+
+    For RTH equity index futures, ~390 1-min bars per session × ~5 days
+    = 2000 bars to reach last week, easily within max_batches × bars_per_batch."""
+    from . import replay_api
+
+    for batch in range(max_batches):
+        # Check buffer extent first — early-exit when target is loaded.
+        first_ts = await page.evaluate("""() => {
+            try {
+                const b = window.TradingViewApi._activeChartWidgetWV.value()
+                    ._chartWidget.model().mainSeries().bars();
+                if (!b) return null;
+                const fi = b.firstIndex();
+                if (fi === undefined) return null;
+                const v = b.valueAt(fi);
+                return v ? v[0] : null;
+            } catch (e) { return null; }
+        }""")
+        if first_ts is not None and first_ts <= target_epoch_s:
+            audit.log("replay.history_loaded", batches=batch,
+                      first_ts=first_ts, target_ts=target_epoch_s)
+            return True
+
+        # Scroll back by N bars. `scrollChartByBar(N)` accepts negative
+        # to scroll history left. TV loads more bars asynchronously
+        # when the scroll reaches the buffer's left edge.
+        try:
+            await page.evaluate(f"""() => {{
+                try {{
+                    const cw = window.TradingViewApi._activeChartWidgetWV.value()._chartWidget;
+                    if (typeof cw.scrollChartByBar === 'function') {{
+                        cw.scrollChartByBar(-{bars_per_batch});
+                    }} else {{
+                        const ts = cw.model().timeScale();
+                        if (typeof ts.scrollToBar === 'function') {{
+                            ts.scrollToBar(ts.logicalRange()._left - {bars_per_batch});
+                        }}
+                    }}
+                    return true;
+                }} catch (e) {{ return false; }}
+            }}""")
+        except Exception as e:
+            audit.log("replay.history_scroll.fail", batch=batch, err=str(e))
+            break
+        # Wait for TV to fetch + render the newly-needed bars.
+        await page.wait_for_timeout(800)
+
+    audit.log("replay.history_load.exhausted",
+              max_batches=max_batches, target_ts=target_epoch_s)
+    return False
+
+
+async def _force_exit_replay(page: Page, *, settle_ms: int = 1500) -> bool:
+    """Best-effort exit — tries Escape (drops armed tool / dialog),
+    Exit button, toolbar toggle, then waits briefly. Doesn't raise on
+    failure — returns True if `is_active` is False after the attempt,
+    False otherwise (caller can escalate to page reload)."""
+    try:
+        await page.keyboard.press("Escape")
+        await page.wait_for_timeout(150)
+    except Exception:
+        pass
+
+    # Try the dedicated exit button first.
+    try:
+        exit_btn = await pick_visible(page, _EXIT)
+        if exit_btn is not None:
+            await exit_btn.click()
+            await page.wait_for_timeout(settle_ms)
+            if not await is_active(page):
+                audit.log("replay.force_exit.via_exit_btn")
+                return True
+    except Exception:
+        pass
+
+    # Toolbar toggle.
+    try:
+        toggle = await pick_visible(page, _TOGGLE)
+        if toggle is not None:
+            await toggle.click()
+            await page.wait_for_timeout(settle_ms)
+            if not await is_active(page):
+                audit.log("replay.force_exit.via_toggle")
+                return True
+    except Exception:
+        pass
+
+    audit.log("replay.force_exit.failed", still_active=True)
+    return False
+
+
+async def _reload_to_clear_replay(page: Page) -> bool:
+    """Last-resort recovery — reload the chart URL. Kills any stuck
+    Replay state in TV's internal state machine. Preserves layout
+    because the URL carries the layout id. Returns True when the
+    canvas is visible post-reload."""
+    audit.log("replay.recover.reload", url=page.url[:120])
+    try:
+        await page.goto(page.url, wait_until="domcontentloaded")
+        await page.wait_for_selector("canvas", state="visible", timeout=30_000)
+        # Hydration buffer — indicators/legend mount after canvas paints.
+        await page.wait_for_timeout(2000)
+        return True
+    except Exception as e:
+        audit.log("replay.recover.reload.fail", err=str(e))
+        return False
+
+
+def _within_tolerance(
+    landed: datetime, target: datetime, tolerance_min: int,
+) -> bool:
+    delta_s = abs((landed - target).total_seconds())
+    return delta_s <= tolerance_min * 60
+
+
+async def navigate_to(
+    page: Page, when: datetime, *,
+    tolerance_min: int = 240, max_attempts: int = 4,
+) -> datetime:
+    """Self-healing Replay navigate — escalates through recovery actions
+    until the cursor is confirmed within `tolerance_min` of `when`.
+
+    Recovery escalation ladder (each step is tried in order, stopping
+    at the first that confirms the cursor):
+
+      Tier 1: `select_start_date` from current state. Cheap; works when
+              Replay is healthy.
+      Tier 2: Force-exit + re-enter (Start new), then `select_start_date`.
+              Resets TV's Replay state machine without losing the chart.
+      Tier 3: Page reload (preserves layout via URL), enter Replay fresh,
+              then `select_start_date`. Last-resort recovery for cases
+              where TV refuses to drop the strip via toolbar.
+      Tier 4: Same as Tier 3 but with a longer hydration wait — handles
+              slow networks / first-load chart layouts.
+
+    `tolerance_min` defaults to 240 (4 hours) because TV's date picker
+    drifts ~1-2h on the DOM path; callers wanting tighter precision
+    should follow up with `step_forward`/`step_backward`.
+
+    Returns the actual landed UTC datetime. Raises RuntimeError only
+    after every tier exhausts — at which point manual TV intervention
+    is the next step."""
+    last_err: Exception | None = None
+
+    # Compute the target epoch ONCE — used by _ensure_history_loaded
+    # to verify the bar buffer covers the target before each tier.
+    if when.tzinfo is None:
+        from zoneinfo import ZoneInfo
+        target_for_epoch = when.replace(tzinfo=ZoneInfo("America/New_York"))
+    else:
+        target_for_epoch = when
+    target_epoch_s = int(target_for_epoch.timestamp())
+
+    # Shell-mode pre-check: if Replay is "active" but the strip says
+    # "Select date" (no cursor seeded) AND `currentDate()` is null,
+    # TV is in a jammed half-state. Tier 1 (calling select_start_date
+    # from current state) won't recover; jump straight to Tier 2.
+    skip_tier1 = False
+    if await is_active(page):
+        from . import replay_api
+        api_cursor = await replay_api.current_replay_date(page)
+        strip_text = await _read_strip_date(page)
+        shell_mode = (api_cursor is None
+                      and (not strip_text
+                           or strip_text.lower().strip() == "select date"))
+        if shell_mode:
+            audit.log("replay.navigate_to.shell_mode_detected")
+            skip_tier1 = True
+
+    for attempt in range(1, max_attempts + 1):
+        if attempt == 1 and skip_tier1:
+            continue
+        try:
+            if attempt == 1:
+                # Tier 1: try from current state.
+                if not await is_active(page):
+                    await enter_replay(page)
+                # Replay can't seed dates outside the bar buffer; load
+                # history before attempting select. Cheap when target
+                # is already in buffer (early-exit on first check).
+                await _ensure_history_loaded(page, target_epoch_s)
+                await select_start_date(page, when)
+            elif attempt == 2:
+                # Tier 2: force-exit + re-enter.
+                await _force_exit_replay(page)
+                await page.wait_for_timeout(800)
+                await enter_replay(page)
+                await _ensure_history_loaded(page, target_epoch_s)
+                await select_start_date(page, when)
+            elif attempt == 3:
+                # Tier 3: page reload, fresh Replay.
+                if not await _reload_to_clear_replay(page):
+                    raise RuntimeError("page reload failed")
+                await enter_replay(page)
+                await _ensure_history_loaded(page, target_epoch_s)
+                await select_start_date(page, when)
+            else:
+                # Tier 4+: reload with extended hydration.
+                await _reload_to_clear_replay(page)
+                await page.wait_for_timeout(3000)
+                await enter_replay(page)
+                await page.wait_for_timeout(1500)
+                await _ensure_history_loaded(
+                    page, target_epoch_s, max_batches=20,
+                )
+                await select_start_date(page, when)
+        except Exception as e:
+            last_err = e
+            audit.log("replay.navigate_to.tier_fail",
+                      tier=attempt, err=str(e))
+            continue
+
+        # Settle, then confirm via API → BarDate fallback.
+        await page.wait_for_timeout(1200)
+        landed = await confirm_cursor(page)
+        if landed is None:
+            audit.log("replay.navigate_to.no_confirmation", tier=attempt)
+            continue
+
+        if _within_tolerance(landed, when, tolerance_min):
+            drift_min = (landed - when).total_seconds() / 60
+            audit.log("replay.navigate_to.confirmed",
+                      tier=attempt,
+                      target=when.isoformat(),
+                      landed=landed.isoformat(),
+                      drift_min=round(drift_min, 1))
+            return landed
+
+        audit.log("replay.navigate_to.out_of_tolerance",
+                  tier=attempt,
+                  target=when.isoformat(),
+                  landed=landed.isoformat(),
+                  drift_min=round((landed - when).total_seconds() / 60, 1))
+
+    # All tiers exhausted — collect diagnostic state so caller knows
+    # what to investigate. The most common cause when even Tier 4
+    # fails is TV's Replay state being corrupted at the layout level
+    # (saved-layout chart URLs restore broken Replay state on reload),
+    # which requires opening a fresh chart tab to recover.
+    diag: dict[str, Any] = {}
+    try:
+        from . import replay_api
+        diag["is_active"] = await is_active(page)
+        diag["is_replay_started"] = await replay_api.is_replay_started(page)
+        diag["current_date_api"] = await replay_api.current_replay_date(page)
+        diag["strip_text"] = await _read_strip_date(page)
+        diag["url"] = page.url
+    except Exception:
+        pass
+
+    audit.log("replay.navigate_to.exhausted",
+              target=when.isoformat(), tiers=max_attempts, **{
+                  k: (v.isoformat() if hasattr(v, "isoformat") else v)
+                  for k, v in diag.items()
+              })
+
+    hint = ""
+    if diag.get("strip_text", "").lower().strip() == "select date":
+        hint = (" Replay strip shows 'Select date' — TV refused our "
+                "date pick. Likely cause: chart's saved-layout URL "
+                "is restoring a corrupted Replay state on every reload. "
+                "Recover by opening a fresh chart tab "
+                "(`https://www.tradingview.com/chart/` without the layout id), "
+                "or close + reopen the chart tab manually.")
+
+    raise RuntimeError(
+        f"navigate_to exhausted {max_attempts} tiers without "
+        f"confirming cursor within {tolerance_min} min of "
+        f"{when.isoformat()}. Diagnostic: {diag}. "
+        f"Last error: {last_err}.{hint}"
+    )
+
+
+async def recover(page: Page) -> bool:
+    """Reset Replay to a clean inactive state. Returns True when
+    `is_active` is False after the attempt. Useful as a workflow
+    pre-flight when prior automation may have left Replay jammed."""
+    if not await is_active(page):
+        return True
+    if await _force_exit_replay(page):
+        return True
+    return await _reload_to_clear_replay(page) and not await is_active(page)
+
+
+# ---------------------------------------------------------------------------
 # Date picker
 # ---------------------------------------------------------------------------
 
@@ -209,8 +621,15 @@ async def select_start_date(page: Page, when: datetime) -> None:
     if dialog is None:
         raise SelectorDriftError("date_dialog", "replay", [_DATE_DIALOG])
 
-    date_str = when.strftime("%Y-%m-%d")
-    time_str = when.strftime("%H:%M")
+    # Dialog inputs are CHART-LOCAL time (ET for CME futures). Convert
+    # tz-aware datetimes; treat naive as already chart-local.
+    if when.tzinfo is not None:
+        from zoneinfo import ZoneInfo
+        local = when.astimezone(ZoneInfo("America/New_York"))
+    else:
+        local = when
+    date_str = local.strftime("%Y-%m-%d")
+    time_str = local.strftime("%H:%M")
 
     # Date input.
     date_inp = await pick_visible(page, _DATE_INPUT)

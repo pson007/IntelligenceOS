@@ -124,9 +124,13 @@ async def select_replay_date(
     no typing, no dropdown drift. Polls `currentDate()` until the
     change confirms; raises RuntimeError on timeout (~7.5s default).
 
-    Naive datetimes are treated as UTC."""
+    Naive datetimes are treated as **chart session time (America/New_York
+    for CME index futures)** to match the existing convention that
+    `daily_profile._navigate_to_session_close` and friends already use.
+    Pass tz-aware datetimes for unambiguous semantics."""
     if when.tzinfo is None:
-        when = when.replace(tzinfo=timezone.utc)
+        from zoneinfo import ZoneInfo
+        when = when.replace(tzinfo=ZoneInfo("America/New_York"))
     target_ms = int(when.timestamp() * 1000)
 
     # Await the promise selectDate may return — without this we race
