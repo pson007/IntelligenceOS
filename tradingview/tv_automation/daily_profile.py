@@ -296,8 +296,12 @@ async def _navigate_to_session_close(page: Page, date: datetime) -> None:
     days the landing sits at 15:00, which crops bars past 15:00 in
     Replay and trips the profile gate's close_cut. We read BarDate and
     step forward the remaining minutes to close the gap."""
-    if not await replay.is_active(page):
-        await replay.enter_replay(page)
+    # Always enter fresh. A Replay session parked at a prior cursor (e.g.
+    # from a live forecast stage) can leave the Select-date dialog refusing
+    # to re-mount. Exit-then-enter costs ~1s and makes the picker deterministic.
+    if await replay.is_active(page):
+        await replay.exit_replay(page)
+    await replay.enter_replay(page)
     target = date.replace(hour=17, minute=0, second=0, microsecond=0)
     await replay.select_start_date(page, target)
     await page.wait_for_timeout(800)
