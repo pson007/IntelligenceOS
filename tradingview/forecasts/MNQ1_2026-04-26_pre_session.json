@@ -1,0 +1,63 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-26",
+  "dow": "Sun",
+  "stage": "pre_session_forecast",
+  "mode": "live_prerth",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_presession_20260426_190436.png",
+  "based_on_priors": [
+    "2026-04-24",
+    "2026-04-23",
+    "2026-04-22",
+    "2026-04-21",
+    "2026-04-20"
+  ],
+  "same_dow_refs": [],
+  "lessons_injected": true,
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-26T19:05:08",
+  "raw_response": "REGIME READ\n\nCurrent regime is bullish-reclaim but extended/rotational, not clean trend continuation. The strongest priors are 2026-04-24 and 2026-04-22: both rewarded buying defended demand after a flush/reclaim and closed near HOD, while 2026-04-23/04-21 warn that failed strength can rotate into sharp liquidation if supply holds. Overnight is trading just below Friday's close after testing the 27440\u201327460 prior-HOD/close area and rejecting into 27340s, then partially reclaiming; forecast should lean mildly up only if 27340\u201327360 holds and 27420+ is reclaimed. \n\nPasted text\n\nSAME-DOW REFERENCES\n\nNo same-DOW Sun references in the 30-day lookback; no direct Sunday RTH analogue.\n\n2026-04-24: Best structural comparable if early weakness holds above demand and reclaims 27420\u201327440, favoring afternoon continuation.\n\n2026-04-23: Bearish caution comparable if morning strength stalls below prior highs and lunch breaks lower.\n\nPREDICTIONS\n\nDirection: up with medium-low confidence\n\nOpen type: rotational_open_dip_then_reclaim\n\nStructure: stop_hunt_reclaim_then_afternoon_grind\n\nExpected move size: medium\n\nNet pct range: +0.15% to +0.55%\n\nIntraday span range: 190\u2013310 pts\n\nTIME WINDOW EXPECTATIONS\n\n10:00: Early probe lower or sideways chop; bull case needs 27340\u201327360 defended and fast reclaim above 27390\u201327410.\n\n12:00: If above 27420, expect acceptance/reclaim behavior; if below 27360, shift to bearish rotation.\n\n14:00: Bull case should show higher low above 27400 and grind toward 27470\u201327520.\n\n16:00: Expected close upper half, closer to HOD if afternoon holds above breakout base.\n\nPROBABLE GOAT\n\nDirection: long\n\nTime window: opening/morning\n\nRationale: Best edge is buying a stop-hunt/demand sweep if the overnight selloff low area holds and price reclaims 27390\u201327420.\n\nTACTICAL BIAS\n\nPrimary bias: buy_dips_on_reclaim\n\nInvalidation conditions:\n\nSustained trade below 27335 after 10:00.\n\nFailed reclaim of 27390\u201327410 with lower highs into 11:00.\n\nLunch break below 27340 after an early reclaim attempt.\n\nPREDICTION TAGS\n\ndirection: up\n\nstructure: stop_hunt_reclaim_then_afternoon_grind\n\nopen_type: rotational_open_dip_then_reclaim\n\nlunch_behavior: bullish_hold_after_reclaim\n\nafternoon_drive: controlled_upside_grind\n\ngoat_direction: up\n\nclose_near_extreme: no_mid_upper_range\n\nCONFIDENCE NOTES\n\nMain risk is that the overnight rejection from prior-HOD/close is real supply, not a stop-hunt setup. Least certain is magnitude: Sunday/globex context can compress range or exaggerate thin-liquidity moves. The most likely invalidation trigger is failure to reclaim 27390\u201327410 after an opening dip.\n\nJSON\n{\n  \"regime_read\": \"Current regime is bullish-reclaim but extended/rotational, not clean trend continuation. The strongest priors are 2026-04-24 and 2026-04-22: both rewarded buying defended demand after a flush/reclaim and closed near HOD, while 2026-04-23/04-21 warn that failed strength can rotate into sharp liquidation if supply holds. Overnight is trading just below Friday's close after testing the 27440\u201327460 prior-HOD/close area and rejecting into 27340s, then partially reclaiming; forecast should lean mildly up only if 27340\u201327360 holds and 27420+ is reclaimed.\",\n  \"same_dow_references\": [\n    \"No same-DOW Sun references in the 30-day lookback; no direct Sunday RTH analogue.\",\n    \"2026-04-24: Best structural comparable if early weakness holds above demand and reclaims 27420\u201327440, favoring afternoon continuation.\",\n    \"2026-04-23: Bearish caution comparable if morning strength stalls below prior highs and lunch breaks lower.\"\n  ],\n  \"predictions\": {\n    \"direction\": \"up\",\n    \"direction_confidence\": \"med\",\n    \"open_type\": \"rotational_open_dip_then_reclaim\",\n    \"structure\": \"stop_hunt_reclaim_then_afternoon_grind\",\n    \"expected_move_size\": \"med\",\n    \"predicted_net_pct_lo\": 0.15,\n    \"predicted_net_pct_hi\": 0.55,\n    \"predicted_intraday_span_lo_pts\": 190,\n    \"predicted_intraday_span_hi_pts\": 310\n  },\n  \"time_window_expectations\": {\n    \"10am\": \"Early probe lower or sideways chop; bull case needs 27340\u201327360 defended and fast reclaim above 27390\u201327410.\",\n    \"12pm\": \"If above 27420, expect acceptance/reclaim behavior; if below 27360, shift to bearish rotation.\",\n    \"2pm\": \"Bull case should show higher low above 27400 and grind toward 27470\u201327520.\",\n    \"4pm\": \"Expected close upper half, closer to HOD if afternoon holds above breakout base.\"\n  },\n  \"probable_goat\": {\n    \"direction\": \"long\",\n    \"time_window\": \"opening/morning\",\n    \"rationale\": \"Best edge is buying a stop-hunt/demand sweep if the overnight selloff low area holds and price reclaims 27390\u201327420.\"\n  },\n  \"tactical_bias\": {\n    \"bias\": \"buy_dips_on_reclaim\",\n    \"invalidation\": \"Invalid if sustained below 27335 after 10:00, if 27390\u201327410 fails to reclaim with lower highs into 11:00, or if lunch breaks back below 27340 after an early reclaim attempt.\"\n  },\n  \"prediction_tags\": {\n    \"direction\": \"up\",\n    \"structure\": \"stop_hunt_reclaim_then_afternoon_grind\",\n    \"open_type\": \"rotational_open_dip_then_reclaim\",\n    \"lunch_behavior\": \"bullish_hold_after_reclaim\",\n    \"afternoon_drive\": \"controlled_upside_grind\",\n    \"goat_direction\": \"up\",\n    \"close_near_extreme\": \"no_mid_upper_range\"\n  },\n  \"confidence_notes\": \"Main risk is that the overnight rejection from prior-HOD/close is real supply, not a stop-hunt setup. Least certain is magnitude: Sunday/globex context can compress range or exaggerate thin-liquidity moves. The most likely invalidation trigger is failure to reclaim 27390\u201327410 after an opening dip.\"\n}",
+  "regime_read": "Current regime is bullish-reclaim but extended/rotational, not clean trend continuation. The strongest priors are 2026-04-24 and 2026-04-22: both rewarded buying defended demand after a flush/reclaim and closed near HOD, while 2026-04-23/04-21 warn that failed strength can rotate into sharp liquidation if supply holds. Overnight is trading just below Friday's close after testing the 27440\u201327460 prior-HOD/close area and rejecting into 27340s, then partially reclaiming; forecast should lean mildly up only if 27340\u201327360 holds and 27420+ is reclaimed.",
+  "same_dow_references": [
+    "No same-DOW Sun references in the 30-day lookback; no direct Sunday RTH analogue.",
+    "2026-04-24: Best structural comparable if early weakness holds above demand and reclaims 27420\u201327440, favoring afternoon continuation.",
+    "2026-04-23: Bearish caution comparable if morning strength stalls below prior highs and lunch breaks lower."
+  ],
+  "predictions": {
+    "direction": "up",
+    "direction_confidence": "med",
+    "open_type": "rotational_open_dip_then_reclaim",
+    "structure": "stop_hunt_reclaim_then_afternoon_grind",
+    "expected_move_size": "med",
+    "predicted_net_pct_lo": 0.15,
+    "predicted_net_pct_hi": 0.55,
+    "predicted_intraday_span_lo_pts": 190,
+    "predicted_intraday_span_hi_pts": 310
+  },
+  "time_window_expectations": {
+    "10am": "Early probe lower or sideways chop; bull case needs 27340\u201327360 defended and fast reclaim above 27390\u201327410.",
+    "12pm": "If above 27420, expect acceptance/reclaim behavior; if below 27360, shift to bearish rotation.",
+    "2pm": "Bull case should show higher low above 27400 and grind toward 27470\u201327520.",
+    "4pm": "Expected close upper half, closer to HOD if afternoon holds above breakout base."
+  },
+  "probable_goat": {
+    "direction": "long",
+    "time_window": "opening/morning",
+    "rationale": "Best edge is buying a stop-hunt/demand sweep if the overnight selloff low area holds and price reclaims 27390\u201327420."
+  },
+  "tactical_bias": {
+    "bias": "buy_dips_on_reclaim",
+    "invalidation": "Invalid if sustained below 27335 after 10:00, if 27390\u201327410 fails to reclaim with lower highs into 11:00, or if lunch breaks back below 27340 after an early reclaim attempt."
+  },
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "stop_hunt_reclaim_then_afternoon_grind",
+    "open_type": "rotational_open_dip_then_reclaim",
+    "lunch_behavior": "bullish_hold_after_reclaim",
+    "afternoon_drive": "controlled_upside_grind",
+    "goat_direction": "up",
+    "close_near_extreme": "no_mid_upper_range"
+  },
+  "confidence_notes": "Main risk is that the overnight rejection from prior-HOD/close is real supply, not a stop-hunt setup. Least certain is magnitude: Sunday/globex context can compress range or exaggerate thin-liquidity moves. The most likely invalidation trigger is failure to reclaim 27390\u201327410 after an opening dip.",
+  "parsed_structured": true
+}
