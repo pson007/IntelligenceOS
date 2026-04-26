@@ -1,0 +1,166 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-20",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-20T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260426_175338.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-04-26T17:54:37-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "bullish_drive_then_high_range_rotation",
+    "open_approx": 24945.0,
+    "close_approx": 25292.0,
+    "hod_approx": 25345.0,
+    "lod_approx": 24925.0,
+    "net_range_pts_open_to_close": 347,
+    "net_range_pct_open_to_close": 1.39,
+    "intraday_span_pts": 420,
+    "shape_sentence": "Bullish gap/drive day that expanded hard from the open, rotated through midday, flushed after lunch, then reclaimed into a firm close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24945.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 25160.0,
+      "type": "first_drive_high"
+    },
+    {
+      "time_et": "09:58",
+      "price_approx": 25065.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "10:12",
+      "price_approx": 25270.0,
+      "type": "impulse_high"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 25075.0,
+      "type": "higher_low"
+    },
+    {
+      "time_et": "10:58",
+      "price_approx": 25345.0,
+      "type": "morning_hod_test"
+    },
+    {
+      "time_et": "11:30",
+      "price_approx": 25200.0,
+      "type": "midday_pullback"
+    },
+    {
+      "time_et": "11:55",
+      "price_approx": 25340.0,
+      "type": "retest_high"
+    },
+    {
+      "time_et": "12:30",
+      "price_approx": 25105.0,
+      "type": "lunch_flush_low"
+    },
+    {
+      "time_et": "13:05",
+      "price_approx": 25260.0,
+      "type": "reclaim_high"
+    },
+    {
+      "time_et": "13:40",
+      "price_approx": 25175.0,
+      "type": "afternoon_higher_low"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 25335.0,
+      "type": "hod_retest"
+    },
+    {
+      "time_et": "14:45",
+      "price_approx": 25245.0,
+      "type": "fade_low"
+    },
+    {
+      "time_et": "15:25",
+      "price_approx": 25235.0,
+      "type": "late_higher_low"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25292.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:30",
+      "direction": "up",
+      "note": "Opening drive from roughly 24,945 to 25,160 was the cleanest standout move."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivot behavior appeared around repeated upper tests near 25,330\u201325,345, but sellers failed to reverse the session."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivot behavior worked best after flushes into 25,075\u201325,110 and later 25,175\u201325,235."
+    },
+    "orange_banks_supply": {
+      "behavior": "Primary supply sat near 25,330\u201325,345 and was mostly respected through repeated tests."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand near 25,075\u201325,110 and 25,175\u201325,235 held the midday and afternoon recovery structure."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Price was elevated after the open drive, rotating near 25,200\u201325,270 with buyers still active.",
+    "12pm_red": "Price was near an upper retest around 25,330 before the lunch-hour liquidation.",
+    "2pm_green": "Price retested the upper supply zone near 25,330\u201325,345 but did not sustain breakout.",
+    "4pm_yellow": "Closed firm near 25,292, closer to HOD than LOD."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "bullish_drive_then_high_range_rotation",
+    "open_type": "gap_up_drive",
+    "lunch_behavior": "sharp_flush_then_reclaim",
+    "afternoon_drive": "controlled_rebuild_into_upper_range",
+    "goat_time": "09:30",
+    "goat_direction": "up",
+    "peak_hour": 11,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "upper_supply_25330_25345_and_demand_25075_25110",
+    "banks_broken": "early_intraday_resistance_broken_during_morning_drive"
+  },
+  "takeaway": "Bullish drive day with an early GOAT impulse, repeated upper supply tests, and a lunch flush that failed to break demand.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-20T09:30",
+    "end_et": "2026-02-20T16:00",
+    "open": 24930.75,
+    "close": 25289.75,
+    "hod": 25355.25,
+    "lod": 24892.5,
+    "span_pts": 462.75,
+    "net_pts": 359.0,
+    "net_pct": 1.44,
+    "first_bar_ts": 1771597800,
+    "last_bar_ts": 1771621140
+  }
+}

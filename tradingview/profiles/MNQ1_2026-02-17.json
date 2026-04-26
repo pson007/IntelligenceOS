@@ -1,0 +1,136 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-17",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-17T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260426_174952.png",
+  "gate": {
+    "ok": false,
+    "reason": "morning_cut (session_first=11:30:00, required\u226410:15:00)",
+    "first": "11:30:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-04-26T17:50:48-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "midday_flush_v_reversal_late_fade",
+    "open_approx": 24980.0,
+    "close_approx": 24992.0,
+    "hod_approx": 25103.0,
+    "lod_approx": 24835.0,
+    "net_range_pts_open_to_close": 12,
+    "net_range_pct_open_to_close": 0.05,
+    "intraday_span_pts": 268,
+    "shape_sentence": "Deep midday selloff into LOD, violent early-PM upside reversal to HOD, then controlled late fade into a mildly bullish close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24980.0,
+      "type": "open"
+    },
+    {
+      "time_et": "11:30",
+      "price_approx": 24915.0,
+      "type": "bearish_breakdown"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 24995.0,
+      "type": "reclaim_attempt"
+    },
+    {
+      "time_et": "12:50",
+      "price_approx": 24835.0,
+      "type": "lod_bullish_pivot"
+    },
+    {
+      "time_et": "13:25",
+      "price_approx": 24910.0,
+      "type": "goat_upside_ignition"
+    },
+    {
+      "time_et": "13:40",
+      "price_approx": 25055.0,
+      "type": "range_reclaim"
+    },
+    {
+      "time_et": "14:35",
+      "price_approx": 25103.0,
+      "type": "hod_bearish_pivot"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 24960.0,
+      "type": "late_selloff_low"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24992.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "13:25",
+      "direction": "up",
+      "note": "Vertical upside reversal from roughly 24,910 to 25,055."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots clustered best around the 14:35 HOD rejection and lower-high continuation after 15:00."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots were strongest at the 12:50 LOD reversal and the 15:35 secondary demand hold."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 25,080\u201325,105 was tested near the HOD, briefly probed, then rejected."
+    },
+    "blue_banks_demand": {
+      "behavior": "Primary demand around 24,835\u201324,880 was respected; secondary demand near 24,955\u201324,965 held into the close."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Not visible in this frame; later RTH action showed no clean early continuation.",
+    "12pm_red": "Failed recovery near 24,990 before another sell leg into LOD.",
+    "2pm_green": "Post-GOAT strength held above 25,050 and built toward the HOD.",
+    "4pm_yellow": "Closed near 24,992 after late selloff and partial reclaim; not near either session extreme."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "midday_flush_v_reversal_late_fade",
+    "open_type": "rotational_open",
+    "lunch_behavior": "selloff_to_lod_then_base",
+    "afternoon_drive": "sharp_reversal_to_hod_then_fade",
+    "goat_time": "13:25",
+    "goat_direction": "up",
+    "peak_hour": 14,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "midday_demand_and_late_secondary_demand_respected",
+    "banks_broken": "upper_supply_briefly_probed_then_rejected"
+  },
+  "takeaway": "Bullish reversal day with a midday flush into demand, a violent early-afternoon reclaim, and a late fade that still held above secondary support.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-17T09:30",
+    "end_et": "2026-02-17T16:00",
+    "open": 24874.25,
+    "close": 24992.25,
+    "hod": 25105,
+    "lod": 24664.75,
+    "span_pts": 440.25,
+    "net_pts": 118.0,
+    "net_pct": 0.4744,
+    "first_bar_ts": 1771338600,
+    "last_bar_ts": 1771361940
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-19",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-19T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260426_175211.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-04-26T17:53:24-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "volatile_reclaim_after_midday_flush",
+    "open_approx": 25070.0,
+    "close_approx": 25079.0,
+    "hod_approx": 25175.0,
+    "lod_approx": 24960.0,
+    "net_range_pts_open_to_close": 9,
+    "net_range_pct_open_to_close": 0.04,
+    "intraday_span_pts": 215,
+    "shape_sentence": "Volatile two-way session: morning upside expansion, midday liquidation, afternoon basing, then late reclaim into the close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25070.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 24970.0,
+      "type": "early_flush_low"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 25155.0,
+      "type": "reclaim_spike_high"
+    },
+    {
+      "time_et": "11:20",
+      "price_approx": 25175.0,
+      "type": "hod_bearish_pivot"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 25025.0,
+      "type": "breakdown"
+    },
+    {
+      "time_et": "12:25",
+      "price_approx": 25115.0,
+      "type": "lower_high"
+    },
+    {
+      "time_et": "13:20",
+      "price_approx": 24960.0,
+      "type": "lod_demand_test"
+    },
+    {
+      "time_et": "14:20",
+      "price_approx": 25065.0,
+      "type": "failed_rally"
+    },
+    {
+      "time_et": "14:45",
+      "price_approx": 24965.0,
+      "type": "second_demand_test"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 25010.0,
+      "type": "higher_low_launch"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25079.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "11:20",
+      "direction": "down",
+      "note": "Standout reversal from the morning high near 25,175 into the 25,020s."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots worked at failed extensions above 25,150\u201325,175 and on lower highs after 12:20."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots worked after exhaustion into 24,960\u201324,985, especially the early-PM double-test and late higher-low."
+    },
+    "orange_banks_supply": {
+      "behavior": "25,150\u201325,175 acted as major supply and was respected; no sustained upside break."
+    },
+    "blue_banks_demand": {
+      "behavior": "24,960\u201324,985 was defended twice; no sustained downside break during RTH."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Strong reclaim from the opening flush into upper resistance near 25,150.",
+    "12pm_red": "Active breakdown phase after the late-morning high; sellers controlled the tape.",
+    "2pm_green": "Recovery attempt from the LOD zone, still below morning structure.",
+    "4pm_yellow": "Late bullish reclaim closed near 25,079, back near the open and off the lows."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "volatile_reclaim_after_midday_flush",
+    "open_type": "rotational_open",
+    "lunch_behavior": "sharp_selloff_into_demand",
+    "afternoon_drive": "late_reclaim_from_double_bottom",
+    "goat_time": "11:20",
+    "goat_direction": "down",
+    "peak_hour": 11,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "supply_25150_25175_and_demand_24960_24985",
+    "banks_broken": "none_sustained"
+  },
+  "takeaway": "Volatile bullish-reclaim day: early range expansion failed at supply, midday sellers flushed price into demand, and the afternoon held a double-bottom before a late drive back toward the open.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-19T09:30",
+    "end_et": "2026-02-19T16:00",
+    "open": 25049.5,
+    "close": 25078.5,
+    "hod": 25177.25,
+    "lod": 24963.5,
+    "span_pts": 213.75,
+    "net_pts": 29.0,
+    "net_pct": 0.1158,
+    "first_bar_ts": 1771511400,
+    "last_bar_ts": 1771534740
+  }
+}

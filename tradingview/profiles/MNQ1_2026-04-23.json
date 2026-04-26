@@ -1,0 +1,136 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-23",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-23T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260426_174551.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "15:30:00"
+  },
+  "profiled_at": "2026-04-26T17:46:46-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "morning_rally_midday_flush_afternoon_partial_reclaim",
+    "open_approx": 27055.0,
+    "close_approx": 26926.0,
+    "hod_approx": 27150.0,
+    "lod_approx": 26690.0,
+    "net_range_pts_open_to_close": -129,
+    "net_range_pct_open_to_close": -0.48,
+    "intraday_span_pts": 460,
+    "shape_sentence": "Morning grind-up into late-morning HOD, sharp lunch/early-PM liquidation to LOD, then partial afternoon repair that failed to reclaim the open."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 27055.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 27010.0,
+      "type": "morning_higher_low_rotation"
+    },
+    {
+      "time_et": "11:20",
+      "price_approx": 27150.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "12:35",
+      "price_approx": 27090.0,
+      "type": "lower_high_breakdown_start"
+    },
+    {
+      "time_et": "13:45",
+      "price_approx": 26690.0,
+      "type": "lod_capitulation_low"
+    },
+    {
+      "time_et": "14:30",
+      "price_approx": 26980.0,
+      "type": "afternoon_reclaim_high"
+    },
+    {
+      "time_et": "15:00",
+      "price_approx": 26860.0,
+      "type": "pullback_support"
+    },
+    {
+      "time_et": "15:45",
+      "price_approx": 26935.0,
+      "type": "late_lower_high"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26926.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "13:00",
+      "direction": "down",
+      "note": "Standout liquidation leg from roughly 27080 into the 26690 LOD area."
+    },
+    "red_circles": {
+      "behavior": "Best bearish pivot behavior appeared around the late-morning HOD, the 12:30-12:45 lower-high before breakdown, and the afternoon failed reclaim near 26960-26980."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots were reactive, mainly around the 1345 LOD and later higher-low attempts near 26860-26880."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply near 27110-27150 and 26960-26990 was respected; afternoon repair stalled below the morning high zone."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand near 26690-26730 held the capitulation low; secondary demand around 26850-26880 was tested during late-session chop."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Rotational but stabilizing near 27010 after the open.",
+    "12pm_red": "Still elevated below HOD near 27075-27095, before the downside expansion.",
+    "2pm_green": "Post-flush rebound underway from the 26700 area.",
+    "4pm_yellow": "Closed near 26926, off LOD but below the open and below morning value."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "morning_rally_midday_flush_afternoon_partial_reclaim",
+    "open_type": "rotational_open",
+    "lunch_behavior": "breakdown_from_lower_high",
+    "afternoon_drive": "partial_reclaim_then_stall",
+    "goat_time": "13:00",
+    "goat_direction": "down",
+    "peak_hour": 11,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "morning_supply_and_lod_demand_respected",
+    "banks_broken": "midday_support_broke_decisively"
+  },
+  "takeaway": "Bearish reversal day with a late-morning high, decisive lunch/early-PM liquidation, and an afternoon bounce that repaired some damage but failed to reclaim the open.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-04-23T09:30",
+    "end_et": "2026-04-23T16:00",
+    "open": 27015,
+    "close": 26926.25,
+    "hod": 27156,
+    "lod": 26680,
+    "span_pts": 476,
+    "net_pts": -88.75,
+    "net_pct": -0.3285,
+    "first_bar_ts": 1776951000,
+    "last_bar_ts": 1776974340
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-16",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-16T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260426_174831.png",
+  "gate": {
+    "ok": false,
+    "reason": "close_cut (session_last=12:45:00, required\u226515:30:00)",
+    "first": "08:45:00",
+    "last": "12:45:00"
+  },
+  "profiled_at": "2026-04-26T17:49:38-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "early_flush_failed_reclaim_midday_low_recovery",
+    "open_approx": 24970.0,
+    "close_approx": 24961.5,
+    "hod_approx": 25010.0,
+    "lod_approx": 24888.0,
+    "net_range_pts_open_to_close": -8.5,
+    "net_range_pct_open_to_close": -0.03,
+    "intraday_span_pts": 122,
+    "shape_sentence": "Early flush, sharp 09:45 reclaim, deeper mid-morning/midday washout, then controlled recovery into the shortened close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24970.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 24910.0,
+      "type": "morning_low_bullish_pivot"
+    },
+    {
+      "time_et": "10:08",
+      "price_approx": 25010.0,
+      "type": "hod_bearish_pivot"
+    },
+    {
+      "time_et": "10:35",
+      "price_approx": 24900.0,
+      "type": "secondary_selloff_low"
+    },
+    {
+      "time_et": "11:35",
+      "price_approx": 24888.0,
+      "type": "lod_bullish_pivot"
+    },
+    {
+      "time_et": "12:30",
+      "price_approx": 24965.0,
+      "type": "afternoon_reclaim_pivot"
+    },
+    {
+      "time_et": "12:50",
+      "price_approx": 24982.0,
+      "type": "late_recovery_high"
+    },
+    {
+      "time_et": "13:00",
+      "price_approx": 24961.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:45",
+      "direction": "up",
+      "note": "Sharp reversal from the morning flush into the 10:08 HOD."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots formed at failed highs, especially near 25010 and later near 24980."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots formed after downside exhaustion near 24910 and 24888."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 24980-25010 was respected; buyers failed to sustain above it."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 24888-24910 held and produced the main rebounds."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Price was rallying strongly from the 09:45 low toward the eventual HOD.",
+    "12pm_red": "Price was stabilizing after the LOD and beginning a recovery attempt near 24940-24955.",
+    "2pm_green": "No 14:00 RTH continuation visible; session appears shortened.",
+    "4pm_yellow": "No 16:00 RTH print visible; active session ended around 13:00."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "early_flush_failed_reclaim_midday_low_recovery",
+    "open_type": "rotational_open",
+    "lunch_behavior": "low_base_then_recovery",
+    "afternoon_drive": "shortened_session_late_reclaim",
+    "goat_time": "09:45",
+    "goat_direction": "up",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "partial",
+    "close_near_extreme": "no",
+    "banks_respected": "lower demand near 24888-24910 and upper supply near 24980-25010",
+    "banks_broken": "opening support broke during the morning selloff"
+  },
+  "takeaway": "Partial holiday-style session with early downside expansion, sharp bullish reversal, failed high, deeper midday washout, and a late recovery that could not fully reclaim upper supply.",
+  "actual_summary_api": {
+    "bars_count": 210,
+    "start_et": "2026-02-16T09:30",
+    "end_et": "2026-02-16T16:00",
+    "open": 24978.25,
+    "close": 24961.5,
+    "hod": 25013,
+    "lod": 24886,
+    "span_pts": 127,
+    "net_pts": -16.75,
+    "net_pct": -0.0671,
+    "first_bar_ts": 1771252200,
+    "last_bar_ts": 1771264740
+  }
+}

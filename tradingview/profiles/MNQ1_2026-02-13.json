@@ -1,0 +1,136 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-13",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-13T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_profile_frame0_20260426_180914.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-04-26T18:10:09-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "early_flush_late_morning_drive_midday_top_afternoon_selloff_late_bounce",
+    "open_approx": 24980.0,
+    "close_approx": 25018.0,
+    "hod_approx": 25205.0,
+    "lod_approx": 24820.0,
+    "net_range_pts_open_to_close": 38,
+    "net_range_pct_open_to_close": 0.15,
+    "intraday_span_pts": 385,
+    "shape_sentence": "Bullish recovery day: early liquidation into LOD, strong late-morning trend up, midday topping range, then afternoon selloff with a late bounce into a modest green close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24980.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 24820.0,
+      "type": "lod_bullish_reversal_base"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 25130.0,
+      "type": "goat_upside_breakout"
+    },
+    {
+      "time_et": "11:10",
+      "price_approx": 24950.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "12:35",
+      "price_approx": 25205.0,
+      "type": "hod_midday_peak"
+    },
+    {
+      "time_et": "13:25",
+      "price_approx": 25120.0,
+      "type": "higher_low_pullback"
+    },
+    {
+      "time_et": "14:15",
+      "price_approx": 25185.0,
+      "type": "lower_high_rejection"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 24955.0,
+      "type": "afternoon_selloff_low"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25018.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:30",
+      "direction": "up",
+      "note": "Strongest clean impulse was the late-morning vertical reclaim from below 25000 into the 25130s."
+    },
+    "red_circles": {
+      "behavior": "Most relevant near the midday and early-afternoon topping area around 25180-25205 before the post-14:00 breakdown."
+    },
+    "green_circles": {
+      "behavior": "Most important around the early flush low near 24820 and the late-day bounce zone around 24955-24970."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 25180-25205 was tested repeatedly and respected; price failed to sustain above it."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 24820-24860 held the morning flush; later demand near 24950-24970 held into the closing rebound."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Recovering from the opening flush near 24940-24970 and beginning the upside reversal.",
+    "12pm_red": "Strong bullish continuation near 25135-25160, approaching the eventual midday high.",
+    "2pm_green": "Elevated near 25155-25175 but transitioning from topping/range behavior into lower highs.",
+    "4pm_yellow": "Closed near 25018 after a late rebound; green on the day but well below the midday high."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "early_flush_late_morning_drive_midday_top_afternoon_selloff_late_bounce",
+    "open_type": "rotational_open_flush_reversal",
+    "lunch_behavior": "elevated_consolidation_near_highs",
+    "afternoon_drive": "post_2pm_downside_drive_then_late_rebound",
+    "goat_time": "10:30",
+    "goat_direction": "up",
+    "peak_hour": 12,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "morning demand and midday supply respected",
+    "banks_broken": "minor intraday supports broke during the afternoon selloff"
+  },
+  "takeaway": "Bullish reversal day with an early stop-run flush, a powerful late-morning reclaim, and a midday supply cap. Best reference comparison: early demand defense into trend-up continuation, followed by failed high acceptance and a post-14:00 liquidation that still closed green after a late rebound.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-13T09:30",
+    "end_et": "2026-02-13T16:00",
+    "open": 24958.25,
+    "close": 25018,
+    "hod": 25211,
+    "lod": 24794.25,
+    "span_pts": 416.75,
+    "net_pts": 59.75,
+    "net_pct": 0.2394,
+    "first_bar_ts": 1770993000,
+    "last_bar_ts": 1771016340
+  }
+}
