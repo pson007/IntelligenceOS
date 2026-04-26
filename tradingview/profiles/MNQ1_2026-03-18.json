@@ -8,9 +8,8 @@
   "layout": "Money Print",
   "provider": "chatgpt_web",
   "model": "Thinking",
-  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_1_20260420_191408.png",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-03-18.png",
   "profiled_at": "2026-04-20T19:14:08-04:00",
-
   "summary": {
     "direction": "down",
     "box_color": "red",
@@ -25,20 +24,58 @@
     "intraday_span_pct": 1.74,
     "shape_sentence": "Early upside auction failed, converted into long bear-trend session with midday grind lower, brief 2 PM retest, and selloff finishing on the lows."
   },
-
   "pivots": [
-    {"time_et": "09:40", "price_approx": 25035, "type": "opening_push_HOD_reversal"},
-    {"time_et": "09:45", "price_approx": 25030, "type": "first_red_circle_opening_failure"},
-    {"time_et": "10:15", "price_approx": 24785, "type": "major_down_leg"},
-    {"time_et": "11:10", "price_approx": 24940, "type": "GOAT_rejection_zone"},
-    {"time_et": "12:30", "price_approx": 24890, "type": "bearish_pivot_lower_high"},
-    {"time_et": "13:05", "price_approx": 24790, "type": "support_test"},
-    {"time_et": "13:58", "price_approx": 24910, "type": "strongest_PM_bounce_failed"},
-    {"time_et": "14:28", "price_approx": 24905, "type": "red_circle_failure_afternoon_drive"},
-    {"time_et": "15:05", "price_approx": 24742, "type": "brief_bounce_attempt"},
-    {"time_et": "15:55", "price_approx": 24605, "type": "closing_LOW"}
+    {
+      "time_et": "09:40",
+      "price_approx": 25035,
+      "type": "opening_push_HOD_reversal"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 25030,
+      "type": "first_red_circle_opening_failure"
+    },
+    {
+      "time_et": "10:15",
+      "price_approx": 24785,
+      "type": "major_down_leg"
+    },
+    {
+      "time_et": "11:10",
+      "price_approx": 24940,
+      "type": "GOAT_rejection_zone"
+    },
+    {
+      "time_et": "12:30",
+      "price_approx": 24890,
+      "type": "bearish_pivot_lower_high"
+    },
+    {
+      "time_et": "13:05",
+      "price_approx": 24790,
+      "type": "support_test"
+    },
+    {
+      "time_et": "13:58",
+      "price_approx": 24910,
+      "type": "strongest_PM_bounce_failed"
+    },
+    {
+      "time_et": "14:28",
+      "price_approx": 24905,
+      "type": "red_circle_failure_afternoon_drive"
+    },
+    {
+      "time_et": "15:05",
+      "price_approx": 24742,
+      "type": "brief_bounce_attempt"
+    },
+    {
+      "time_et": "15:55",
+      "price_approx": 24605,
+      "type": "closing_LOW"
+    }
   ],
-
   "labels": {
     "goat": {
       "time_et": "11:10",
@@ -50,42 +87,94 @@
     "red_circles": {
       "count": 4,
       "locations": [
-        {"time_et": "09:45", "context": "opening failure, first downside rotation"},
-        {"time_et": "12:30", "context": "midday lower high, renewed weakness"},
-        {"time_et": "14:28", "context": "triggered main afternoon sell leg"},
-        {"time_et": "15:12", "context": "minor bounce failure, continuation to lows"}
+        {
+          "time_et": "09:45",
+          "context": "opening failure, first downside rotation"
+        },
+        {
+          "time_et": "12:30",
+          "context": "midday lower high, renewed weakness"
+        },
+        {
+          "time_et": "14:28",
+          "context": "triggered main afternoon sell leg"
+        },
+        {
+          "time_et": "15:12",
+          "context": "minor bounce failure, continuation to lows"
+        }
       ],
-      "follow_through_quality": "high — all four worked"
+      "follow_through_quality": "high \u2014 all four worked"
     },
     "green_circles": {
       "count": 2,
       "locations": [
-        {"time_et": "09:38", "context": "opening push, fully reversed"},
-        {"time_et": "13:50", "context": "pre-2pm bounce, failed at supply"}
+        {
+          "time_et": "09:38",
+          "context": "opening push, fully reversed"
+        },
+        {
+          "time_et": "13:50",
+          "context": "pre-2pm bounce, failed at supply"
+        }
       ],
-      "follow_through_quality": "low — tactical bounces not structural reversals"
+      "follow_through_quality": "low \u2014 tactical bounces not structural reversals"
     },
     "orange_banks_supply": [
-      {"level_lo": 25030, "level_hi": 25045, "behavior": "respected", "note": "hard cap, produced HOD and opening failure"},
-      {"level_approx": 24945, "behavior": "respected", "note": "GOAT area, late-morning rejection"},
-      {"level_lo": 24905, "level_hi": 24915, "behavior": "respected", "note": "rejected twice around/after 2pm"}
+      {
+        "level_lo": 25030,
+        "level_hi": 25045,
+        "behavior": "respected",
+        "note": "hard cap, produced HOD and opening failure"
+      },
+      {
+        "level_approx": 24945,
+        "behavior": "respected",
+        "note": "GOAT area, late-morning rejection"
+      },
+      {
+        "level_lo": 24905,
+        "level_hi": 24915,
+        "behavior": "respected",
+        "note": "rejected twice around/after 2pm"
+      }
     ],
     "blue_banks_demand": [
-      {"level_approx": 24845, "behavior": "broken", "note": "temporary after first flush"},
-      {"level_lo": 24830, "level_hi": 24835, "behavior": "broken", "note": "only paused price at noon"},
-      {"level_approx": 24790, "behavior": "broken", "note": "tested then broken"},
-      {"level_lo": 24735, "level_hi": 24750, "behavior": "broken", "note": "late afternoon cluster, tagged repeatedly then failed"},
-      {"level_approx": 24710, "behavior": "broken", "note": "final pocket, gave way into close"}
+      {
+        "level_approx": 24845,
+        "behavior": "broken",
+        "note": "temporary after first flush"
+      },
+      {
+        "level_lo": 24830,
+        "level_hi": 24835,
+        "behavior": "broken",
+        "note": "only paused price at noon"
+      },
+      {
+        "level_approx": 24790,
+        "behavior": "broken",
+        "note": "tested then broken"
+      },
+      {
+        "level_lo": 24735,
+        "level_hi": 24750,
+        "behavior": "broken",
+        "note": "late afternoon cluster, tagged repeatedly then failed"
+      },
+      {
+        "level_approx": 24710,
+        "behavior": "broken",
+        "note": "final pocket, gave way into close"
+      }
     ]
   },
-
   "time_markers": {
     "10am_blue": "transition from early bullish attempt to bearish control; price already failing from supply stack, accelerated lower around marker",
     "12pm_red": "inside weak drifting bear-flag; no reversal, price pinned under cloud, resumed lower shortly after",
     "2pm_green": "best afternoon rebound but only retested orange-bank supply 24905-24915; rejection set up cleanest late-day sell sequence",
     "4pm_yellow": "closed near session low, no meaningful reversal, sellers retained control into bell"
   },
-
   "tags": {
     "direction": "down",
     "structure": "failed_opening_push_trend_down_bear_flag",
@@ -101,6 +190,5 @@
     "banks_respected_count": 3,
     "banks_broken_count": 5
   },
-
-  "takeaway": "Useful failed-up-open then trend-down continuation reference day. Key tell: market's inability to reclaim supply after opening reversal — every bounce topped below or into stored orders, demand zones only delayed decline. Tactical projection: when future session opens strong into visible overhead supply but cannot hold above it by 10:00 marker, treat midday rebounds as suspect, expect 2pm test to be decisive, favor continuation if late-day demand pockets break in sequence."
+  "takeaway": "Useful failed-up-open then trend-down continuation reference day. Key tell: market's inability to reclaim supply after opening reversal \u2014 every bounce topped below or into stored orders, demand zones only delayed decline. Tactical projection: when future session opens strong into visible overhead supply but cannot hold above it by 10:00 marker, treat midday rebounds as suspect, expect 2pm test to be decisive, favor continuation if late-day demand pockets break in sequence."
 }

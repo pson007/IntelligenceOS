@@ -1,3 +1,7 @@
 .claude/
 *.png
+# Profile screenshots travel with the JSON they describe — committed
+# alongside the artifact so the Profiles UI doesn't 404 on machines
+# without the user's local ~/Desktop/TradingView/ cache.
+!tradingview/profiles/*.png
 .DS_Store

@@ -121,45 +121,181 @@ async def assert_layout(page: Page) -> dict[str, Any]:
     return info
 
 
-async def ensure_layout(page: Page) -> dict[str, Any]:
+def _normalize_layout_name(s: str | None) -> str:
+    """Strip leading non-alphanumeric/non-letter chars (emoji prefixes
+    like 🟢, 📊, 🕵 the user uses to flag active layouts) and lowercase
+    for tolerant comparison. TV's `getSavedCharts` returns the full
+    name including emoji, but the toolbar's `.innerText` reader returns
+    only the text portion — emojis render as glyphs that don't show up
+    in innerText. Comparing normalized forms keeps both sources alike."""
+    if not s:
+        return ""
+    return re.sub(r"^[^A-Za-z0-9]+", "", s).strip().lower()
+
+
+async def _load_layout_via_api(page: Page, name: str) -> dict | None:
+    """Switch to a saved layout by name. Looks up the layout's chart-id
+    via `getSavedCharts` (emoji-safe — matches against TV's own data,
+    not a typed-into-DOM search box) then dispatches
+    `loadChartFromServer(id)`. Confirmed to navigate the SPA in
+    practice — caller's `ensure_layout` polls `current_layout()` for
+    the toolbar-name confirmation (with normalized comparison since
+    the toolbar drops emoji glyphs).
+
+    Returns the lookup dict {`ok`, `id`, `url_slug`, `match_name`} on
+    success, or None on lookup failure."""
+    lookup = await page.evaluate(r"""(target) => new Promise((resolve) => {
+        try {
+            window.TradingViewApi.getSavedCharts((charts) => {
+                if (!charts || !Array.isArray(charts)) {
+                    resolve({ok: false, reason: 'getSavedCharts returned no data'});
+                    return;
+                }
+                const exact = charts.find(c => (c.name || c.title || '') === target);
+                const norm = (s) => (s || '').replace(/^[^A-Za-z0-9]+/, '').trim().toLowerCase();
+                const targetNorm = norm(target);
+                const fuzzy = exact || charts.find(c => norm(c.name || c.title) === targetNorm);
+                const sub = fuzzy || charts.find(c =>
+                    (c.name || c.title || '').toLowerCase().includes(target.toLowerCase())
+                );
+                if (!sub) {
+                    resolve({ok: false, reason: 'no name match', available: charts.length});
+                    return;
+                }
+                resolve({
+                    ok: true,
+                    id: sub.id || sub.chartId,
+                    url_slug: sub.url || null,
+                    match_name: sub.name || sub.title,
+                });
+            });
+            setTimeout(() => resolve({ok: false, reason: 'getSavedCharts timeout'}), 5000);
+        } catch (e) {
+            resolve({ok: false, reason: 'exception: ' + e.message});
+        }
+    })""", name)
+
+    if not lookup or not lookup.get("ok"):
+        audit.log("layout_guard.api_load.fail",
+                  expected=name, **(lookup or {}))
+        return None
+
+    slug = lookup.get("url_slug")
+    if not slug:
+        audit.log("layout_guard.api_load.no_slug",
+                  expected=name, match=lookup.get("match_name"))
+        return None
+
+    # Direct navigation to the chart URL is more reliable than the
+    # `loadChartFromServer` SPA path — that one was observed to silently
+    # no-op going Profile → Automation (2026-04-26) even though the
+    # reverse worked. `page.goto` bypasses TV's internal SPA router
+    # and always re-loads the chart fresh.
+    #
+    # Install a permissive dialog handler in case TV throws a
+    # beforeunload prompt (rare on /chart/ URLs but cheap). The
+    # handler auto-accepts so we don't hang on a stale prompt.
+    async def _accept_dialog(d):
+        try: await d.accept()
+        except Exception: pass
+
+    page.on("dialog", _accept_dialog)
+    try:
+        target_url = f"https://www.tradingview.com/chart/{slug}/"
+        await page.goto(target_url, wait_until="domcontentloaded",
+                        timeout=20_000)
+    except Exception as e:
+        audit.log("layout_guard.api_load.nav_fail",
+                  expected=name, err=str(e))
+        try: page.remove_listener("dialog", _accept_dialog)
+        except Exception: pass
+        return None
+    finally:
+        try: page.remove_listener("dialog", _accept_dialog)
+        except Exception: pass
+
+    audit.log("layout_guard.api_load.dispatched",
+              expected=name, match=lookup.get("match_name"),
+              id=lookup.get("id"), slug=slug)
+    return lookup
+
+
+async def ensure_layout(page: Page,
+                        layout_name: str | None = None) -> dict[str, Any]:
     """First-line invariant for every automation. Returns layout info
-    when the active chart is on `EXPECTED_LAYOUT_NAME`; switches to it
+    when the active chart is on the expected layout; switches to it
     when not (via `layouts.load`); raises if the layout doesn't exist.
+
+    `layout_name` defaults to `EXPECTED_LAYOUT_NAME` ("1run Automation"
+    or whatever `AUTOMATION_LAYOUT_NAME` env var sets). Pass an explicit
+    name to enforce a workflow-specific layout — `daily_profile` passes
+    "1run Profile" because the profile capture needs a different study
+    stack than the generic automation layout.
 
     Caller is expected to be inside its own `chart_session` block;
     the inner `layouts.load` call uses a nested session, which is
     safe — Playwright reuses CDP connections."""
+    expected = layout_name or EXPECTED_LAYOUT_NAME
+    expected_norm = _normalize_layout_name(expected)
     info = await current_layout(page)
-    if info.get("name") == EXPECTED_LAYOUT_NAME:
-        audit.log("layout_guard.ensure.already_on", **info)
+    if _normalize_layout_name(info.get("name")) == expected_norm:
+        audit.log("layout_guard.ensure.already_on",
+                  expected=expected, **info)
         return info
 
     audit.log("layout_guard.ensure.switching",
               from_name=info.get("name"),
-              to_name=EXPECTED_LAYOUT_NAME)
-    try:
-        from . import layouts
-        result = await layouts.load(EXPECTED_LAYOUT_NAME)
-        if not result.get("ok"):
+              to_name=expected)
+    # Prefer the JS-API loader: emoji-safe, doesn't depend on the DOM
+    # picker's search-box behavior, no opening/closing of the menu.
+    # Falls back to the DOM-based `layouts.load` only if the API path
+    # didn't dispatch — covers older TV builds where the API is missing.
+    api_result = await _load_layout_via_api(page, expected)
+    if api_result is None:
+        try:
+            from . import layouts
+            result = await layouts.load(expected)
+            if not result.get("ok"):
+                raise LayoutMismatchError(
+                    expected, info.get("name"), action="load_failed",
+                )
+        except Exception as e:
+            audit.log("layout_guard.ensure.load_fail",
+                      err=str(e), expected=expected)
             raise LayoutMismatchError(
-                EXPECTED_LAYOUT_NAME, info.get("name"), action="load_failed",
-            )
-    except Exception as e:
-        audit.log("layout_guard.ensure.load_fail", err=str(e))
-        raise LayoutMismatchError(
-            EXPECTED_LAYOUT_NAME, info.get("name"), action="load_exception",
-        ) from e
+                expected, info.get("name"), action="load_exception",
+            ) from e
 
-    # Re-read to confirm. The page object is now pointing at the new
-    # layout's URL; query the JS again for the new name.
-    await page.wait_for_timeout(1500)
-    after = await current_layout(page)
-    if after.get("name") != EXPECTED_LAYOUT_NAME:
+    # Re-read to confirm. The chart re-renders asynchronously after
+    # `loadChartFromServer` — toolbar name + URL update at different
+    # rates depending on study count and TV's React reconciliation.
+    # Accept either signal: URL slug match (deterministic — TV puts
+    # the chart-id slug in the path) OR normalized toolbar name match
+    # (handles cases where URL stays the same on certain transitions).
+    expected_slug = (api_result or {}).get("url_slug") if api_result else None
+    after: dict[str, Any] = {"name": None, "layout_id": None}
+    for _ in range(40):
+        await page.wait_for_timeout(200)
+        after = await current_layout(page)
+        url_match = (expected_slug
+                     and after.get("layout_id") == expected_slug)
+        name_match = (_normalize_layout_name(after.get("name"))
+                      == expected_norm)
+        if url_match or name_match:
+            break
+    final_url_match = (expected_slug
+                       and after.get("layout_id") == expected_slug)
+    final_name_match = (_normalize_layout_name(after.get("name"))
+                        == expected_norm)
+    if not (final_url_match or final_name_match):
         raise LayoutMismatchError(
-            EXPECTED_LAYOUT_NAME, after.get("name"),
+            expected, after.get("name"),
             action="post_switch_mismatch",
         )
-    audit.log("layout_guard.ensure.switched", **after)
+    audit.log("layout_guard.ensure.switched",
+              expected=expected,
+              matched_via="url_slug" if final_url_match else "name",
+              **after)
     return after
 
 

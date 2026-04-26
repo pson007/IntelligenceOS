@@ -51,6 +51,19 @@ _SCREENSHOT_ROOT = (Path.home() / "Desktop" / "TradingView").resolve()
 _PARSE_FAIL_ROOT = (Path(__file__).parent.parent / "pine" / "parse_failures").resolve()
 _ET = ZoneInfo("America/New_York")
 
+# Profile capture uses a layout-specific study stack (different from
+# the generic "1run Automation" layout that other workflows use). Pin
+# the name in one place — the user marks active layouts with a 🟢
+# prefix in TradingView's layout picker so the literal name carries
+# the emoji. Override with PROFILE_LAYOUT_NAME env var if the user
+# renames it (parallels AUTOMATION_LAYOUT_NAME for layout_guard's
+# default). Older profiles had a hardcoded "Money Print" string here
+# that drifted from the actual layout in use.
+import os as _os
+_PROFILE_LAYOUT_NAME = _os.environ.get(
+    "PROFILE_LAYOUT_NAME", "🟢1run Profile",
+)
+
 
 def _symbol_for_api(symbol: str) -> str:
     return symbol if "!" in symbol or ":" in symbol else f"{symbol}!"
@@ -523,7 +536,9 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
 
     async with chart_session() as (_ctx, page):
         from . import layout_guard
-        await layout_guard.ensure_layout(page)
+        layout_info = await layout_guard.ensure_layout(
+            page, layout_name=_PROFILE_LAYOUT_NAME,
+        )
         landed = await replay_api.set_symbol_in_place(
             page, symbol=_symbol_for_api(symbol), interval="1",
         )
@@ -596,6 +611,24 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
                 )
                 md_path.write_text(md_body)
 
+                # Archive the screenshot next to the JSON so the
+                # artifact is self-contained — the original lives in
+                # ~/Desktop/TradingView/ which is gitignored, machine-
+                # local, and eventually pruned. Path stored in JSON
+                # points at the archived copy so the Profiles UI never
+                # 404s. Soft-fails (logs) so a copy error doesn't kill
+                # the whole profile run.
+                archived_screenshot = _PROFILES_ROOT / f"{symbol}_{date_str}.png"
+                try:
+                    import shutil
+                    shutil.copyfile(str(screenshot), str(archived_screenshot))
+                    screenshot_for_json = str(archived_screenshot)
+                except Exception as e:
+                    audit.log("daily_profile.screenshot_archive.fail",
+                              src=str(screenshot), dst=str(archived_screenshot),
+                              err=str(e))
+                    screenshot_for_json = str(screenshot)
+
                 saved: dict = {
                     "symbol": f"{symbol}!",
                     "date": date_str,
@@ -604,10 +637,12 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
                     "session": "RTH",
                     "session_complete": True,
                     "cursor_ts_approx": f"{date_str}T16:00:00-04:00",
-                    "layout": "Money Print",
+                    "layout": (layout_info.get("name")
+                               if isinstance(layout_info, dict) else None)
+                              or _PROFILE_LAYOUT_NAME,
                     "provider": "chatgpt_web",
                     "model": "Thinking",
-                    "screenshot_path": str(screenshot),
+                    "screenshot_path": screenshot_for_json,
                     "gate": {
                         "ok": gate.ok,
                         "reason": gate.reason,

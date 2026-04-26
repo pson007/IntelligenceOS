@@ -1,55 +1,110 @@
 {
-  "symbol": "MNQ1!", "date": "2026-04-16", "dow": "Thu",
-  "timeframe": "1m", "session": "RTH", "session_complete": true,
+  "symbol": "MNQ1!",
+  "date": "2026-04-16",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
   "cursor_ts_approx": "2026-04-16T16:00:00-04:00",
-  "layout": "Money Print", "provider": "chatgpt_web", "model": "Thinking",
-  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_1_20260420_220849.png",
-  "gate": {"ok": true, "first": "10:00", "last": "15:45"},
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-04-16.png",
+  "gate": {
+    "ok": true,
+    "first": "10:00",
+    "last": "15:45"
+  },
   "profiled_at": "2026-04-20T22:08:49-04:00",
-
   "summary": {
-    "direction": "up", "box_color": "green",
+    "direction": "up",
+    "box_color": "green",
     "structure": "trend_then_range",
-    "open_approx": 26220, "close_approx": 26456.75,
-    "hod_approx": 26560, "lod_approx": 26120,
-    "net_range_pts_open_to_close": 236.75, "net_range_pct_open_to_close": 0.90,
+    "open_approx": 26220,
+    "close_approx": 26456.75,
+    "hod_approx": 26560,
+    "lod_approx": 26120,
+    "net_range_pts_open_to_close": 236.75,
+    "net_range_pct_open_to_close": 0.9,
     "intraday_span_pts": 440,
     "shape_sentence": "Trend up morning, mid-day continuation, afternoon distribution, shallow pullback, late range hold near VWAP."
   },
-
   "pivots": [
-    {"time_et": "09:45", "price_approx": 26200, "type": "green_higher_low_trend_start"},
-    {"time_et": "10:05", "price_approx": 26350, "type": "red_minor_pullback"},
-    {"time_et": "11:45", "price_approx": 26560, "type": "red_HOD_exhaustion"},
-    {"time_et": "12:30", "price_approx": 26420, "type": "green_first_higher_low"},
-    {"time_et": "13:45", "price_approx": 26500, "type": "red_lower_high_range"},
-    {"time_et": "14:15", "price_approx": 26330, "type": "green_afternoon_LOD"},
-    {"time_et": "15:30", "price_approx": 26420, "type": "green_higher_low_into_close"},
-    {"time_et": "16:00", "price_approx": 26456.75, "type": "close"}
+    {
+      "time_et": "09:45",
+      "price_approx": 26200,
+      "type": "green_higher_low_trend_start"
+    },
+    {
+      "time_et": "10:05",
+      "price_approx": 26350,
+      "type": "red_minor_pullback"
+    },
+    {
+      "time_et": "11:45",
+      "price_approx": 26560,
+      "type": "red_HOD_exhaustion"
+    },
+    {
+      "time_et": "12:30",
+      "price_approx": 26420,
+      "type": "green_first_higher_low"
+    },
+    {
+      "time_et": "13:45",
+      "price_approx": 26500,
+      "type": "red_lower_high_range"
+    },
+    {
+      "time_et": "14:15",
+      "price_approx": 26330,
+      "type": "green_afternoon_LOD"
+    },
+    {
+      "time_et": "15:30",
+      "price_approx": 26420,
+      "type": "green_higher_low_into_close"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26456.75,
+      "type": "close"
+    }
   ],
-
   "labels": {
-    "goat": {"in_rth": true, "time_et_range": "10:00-11:30", "direction": "up", "note": "clean trend leg, multiple continuations"},
-    "red_circles": {"behavior": "clustered_near_HOD_distribution_not_reversal"},
-    "green_circles": {"behavior": "consistent_higher_lows_early_and_late_trend_intact"},
-    "orange_banks_supply": {"behavior": "stacked_26500_26560_capped_further_upside"},
-    "blue_banks_demand": {"behavior": "held_repeatedly_26300_26350_key_support"}
+    "goat": {
+      "in_rth": true,
+      "time_et_range": "10:00-11:30",
+      "direction": "up",
+      "note": "clean trend leg, multiple continuations"
+    },
+    "red_circles": {
+      "behavior": "clustered_near_HOD_distribution_not_reversal"
+    },
+    "green_circles": {
+      "behavior": "consistent_higher_lows_early_and_late_trend_intact"
+    },
+    "orange_banks_supply": {
+      "behavior": "stacked_26500_26560_capped_further_upside"
+    },
+    "blue_banks_demand": {
+      "behavior": "held_repeatedly_26300_26350_key_support"
+    }
   },
-
   "time_markers": {
     "10am_blue": "acceleration point, breakout from consolidation, start of GOAT leg",
     "12pm_red": "peak and stall, transition from trend to distribution",
     "2pm_green": "weakness flush + immediate recovery, confirms range not reversal",
     "4pm_yellow": "tight consolidation near VWAP, no late liquidation"
   },
-
   "tags": {
     "direction": "up",
     "structure": "trend_then_range",
     "open_type": "continuation_above_prior_demand",
     "lunch_behavior": "distribution_pullback",
     "afternoon_drive": "none_balanced",
-    "goat_time": "10:45", "goat_direction": "up",
+    "goat_time": "10:45",
+    "goat_direction": "up",
     "peak_hour": 11,
     "late_reversal_attempt": true,
     "session_completion": "partial",
@@ -57,6 +112,5 @@
     "banks_respected": "demand_strong_supply_at_highs",
     "banks_broken": "early_minor_supply"
   },
-
   "takeaway": "Clean trend morning defines bias. Noon supply halts expansion, market transitions to balance NOT reversal. Demand held every test while supply capped highs. Controlled bullish session, not impulsive close."
 }

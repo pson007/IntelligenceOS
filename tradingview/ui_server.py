@@ -365,7 +365,8 @@ async def chart_screenshot(payload: dict | None = None) -> dict:
 
 
 _PINE_APPLIED_ROOT = (Path(__file__).parent / "pine" / "applied").resolve()
-_IMAGE_ROOTS = (_SCREENSHOT_ROOT, _PINE_APPLIED_ROOT)
+_PROFILES_IMAGE_ROOT = (Path(__file__).parent / "profiles").resolve()
+_IMAGE_ROOTS = (_SCREENSHOT_ROOT, _PINE_APPLIED_ROOT, _PROFILES_IMAGE_ROOT)
 
 
 @app.get("/api/chart/image")
@@ -1483,12 +1484,20 @@ async def profile_get(key: str) -> dict:
 
 @app.get("/api/profiles/{key}/screenshot")
 async def profile_screenshot(key: str):
-    """Serve the reference-day screenshot PNG for a profile."""
+    """Serve the reference-day screenshot PNG for a profile.
+
+    Prefers the in-repo archived copy at `profiles/{key}.png` (always
+    present for runs after the screenshot-archive change; backfilled
+    for older profiles). Falls back to the recorded `screenshot_path`
+    so we still serve anything that hasn't been archived yet."""
     if not _PROFILE_KEY_RX.match(key):
         raise HTTPException(400, "invalid key")
     jf = _PROFILES_ROOT / f"{key}.json"
     if not jf.exists():
         raise HTTPException(404, "profile not found")
+    bundled = _PROFILES_ROOT / f"{key}.png"
+    if bundled.exists():
+        return FileResponse(str(bundled), media_type="image/png")
     data = json.loads(jf.read_text())
     path = data.get("screenshot_path")
     if not path:
