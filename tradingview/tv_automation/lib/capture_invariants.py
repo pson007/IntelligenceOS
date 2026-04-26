@@ -243,19 +243,19 @@ async def _probe_no_drawing_tool(page: Page) -> tuple[bool, dict]:
 
 
 async def _probe_chart_hydrated(page: Page) -> tuple[bool, dict]:
-    """Chart has rendered — at least one legend source + a sized canvas.
+    """Chart has rendered — chart API/legend evidence + a sized canvas.
 
     Why not price-axis labels: TV draws the y-axis price ticks on a
     `<canvas>`, not as DOM. Counting DOM elements there always returns
     0 even when the chart is fully hydrated (cost us a debug cycle).
 
     Two-signal check:
-    - `[data-qa-id="legend-source-item"]` count >= 1 — proves the
-      chart's series/indicator stack rendered. An empty/loading chart
-      has 0 legend items.
+    - Either `[data-qa-id="legend-source-item"]` count >= 1 OR live
+      chart API state exposes symbol+resolution. Some clean layouts
+      render no DOM legend rows even when the chart is ready.
     - At least one `.chart-markup-table canvas` with non-zero pixel
       dimensions — proves the canvas itself is actually painting.
-    Both must pass; either alone is too soft."""
+    Both evidence + canvas must pass; either alone is too soft."""
     detail = await page.evaluate("""() => {
       const legend = document.querySelectorAll(
         '[data-qa-id="legend-source-item"]'
@@ -267,9 +267,27 @@ async def _probe_chart_hydrated(page: Page) -> tuple[bool, dict]:
         const r = c.getBoundingClientRect();
         return r.width > 100 && r.height > 100;
       }).length;
-      return {legend_items: legend, sized_canvases: sized};
+      let apiSymbol = null;
+      let apiResolution = null;
+      try {
+        const c = window.TradingViewApi._activeChartWidgetWV.value();
+        if (c) {
+          apiSymbol = c.symbol ? c.symbol() : null;
+          apiResolution = c.resolution ? c.resolution() : null;
+        }
+      } catch (e) {}
+      return {
+        legend_items: legend,
+        sized_canvases: sized,
+        api_symbol: apiSymbol,
+        api_resolution: apiResolution,
+      };
     }""")
-    ok = detail["legend_items"] >= 1 and detail["sized_canvases"] >= 1
+    has_state = bool(detail.get("api_symbol") and detail.get("api_resolution"))
+    ok = (
+        detail["sized_canvases"] >= 1
+        and (detail["legend_items"] >= 1 or has_state)
+    )
     return (ok, detail)
 
 

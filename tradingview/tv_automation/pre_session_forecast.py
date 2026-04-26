@@ -27,9 +27,10 @@ from pathlib import Path
 
 from playwright.async_api import Page
 
-from . import lessons as lessons_mod
+from . import lessons as lessons_mod, replay, replay_api
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
+from .lib.capture_invariants import CaptureExpect, assert_capture_ready
 from .lib.context import chart_session
 
 
@@ -42,6 +43,10 @@ _PARSE_FAIL_ROOT = (Path(__file__).parent.parent / "pine" / "parse_failures").re
 RECENT_PRIORS_N = 5
 SAME_DOW_LOOKBACK_DAYS = 30
 SAME_DOW_N = 3
+
+
+def _symbol_for_api(symbol: str) -> str:
+    return symbol if "!" in symbol or ":" in symbol else f"{symbol}!"
 
 
 _PRE_SESSION_SYSTEM = """You are a day-trading pre-session forecaster for MNQ1! (Micro E-mini Nasdaq-100 futures, CME). Given (a) a pre-market chart screenshot showing overnight/globex action, (b) the last few completed-day profiles as priors, and (c) same-day-of-week reference days, forecast how TODAY's RTH session (09:30–16:00 ET) will unfold BEFORE it opens.
@@ -205,12 +210,16 @@ def _compact_profile(p: dict) -> dict:
     }
 
 
-async def _capture_premarket(page: Page, symbol: str) -> Path:
+async def _capture_premarket(
+    page: Page, symbol: str, *, expect: CaptureExpect | None = None,
+) -> Path:
     """Screenshot the current live chart for overnight context."""
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     await page.bring_to_front()
     await page.keyboard.press("End")
     await page.wait_for_timeout(400)
+    if expect is not None:
+        await assert_capture_ready(page, expect)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_presession_{ts}.png"
     await page.screenshot(path=str(path))
@@ -284,8 +293,22 @@ async def run_pre_session(
     async with chart_session() as (_ctx, page):
         from . import layout_guard
         await layout_guard.ensure_layout(page)
+        await replay.exit_replay(page)
+        landed = await replay_api.set_symbol_in_place(
+            page, symbol=_symbol_for_api(symbol), interval="1",
+        )
+        if landed is None:
+            raise RuntimeError("set_symbol_in_place failed before pre-session forecast")
+        audit.log("pre_session.chart_pinned", landed=landed)
         with audit.timed("pre_session.run", date=date_str) as ac:
-            screenshot = await _capture_premarket(page, symbol)
+            screenshot = await _capture_premarket(
+                page, symbol,
+                expect=CaptureExpect(
+                    symbol=_symbol_for_api(symbol),
+                    interval="1m",
+                    replay_mode=False,
+                ),
+            )
             ac["screenshot"] = str(screenshot)
 
             parts = [f"# FORECAST TARGET: {symbol}! {date_str} ({dow})", ""]

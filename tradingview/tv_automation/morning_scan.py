@@ -34,8 +34,9 @@ import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from . import bar_reader, replay_api, user_drawings as ud
+from . import bar_reader, replay, replay_api, user_drawings as ud
 from .lib import audit
+from .lib.capture_invariants import CaptureExpect, assert_capture_ready
 from .lib.context import chart_session
 
 
@@ -98,10 +99,21 @@ async def _scan_one_symbol(
     safe_sym = re.sub(r"[^A-Za-z0-9]+", "_", sym_for_api)
     ts = datetime.now().strftime("%H%M%S")
     shot_path = _SCREENSHOT_ROOT / f"{safe_sym}_{interval}_{ts}.png"
+    screenshot_error = None
     try:
+        await assert_capture_ready(
+            page,
+            CaptureExpect(
+                symbol=sym_for_api,
+                interval=interval,
+                replay_mode=False,
+            ),
+        )
         await page.screenshot(path=str(shot_path))
     except Exception as e:
-        audit.log("morning_scan.screenshot.fail", symbol=symbol, err=str(e))
+        screenshot_error = f"{type(e).__name__}: {e}"
+        audit.log("morning_scan.screenshot.fail",
+                  symbol=symbol, err=screenshot_error)
         shot_path = None
 
     drawings_summary = None
@@ -122,7 +134,8 @@ async def _scan_one_symbol(
         "symbol": symbol,
         "tv_symbol": landed.get("symbol"),
         "interval": landed.get("resolution"),
-        "ok": True,
+        "ok": screenshot_error is None,
+        "error": screenshot_error,
         "today_session": today_ohlc,
         "prev_session": prev_ohlc,
         "overnight": overnight_ohlc,
@@ -184,6 +197,7 @@ async def scan(
     async with chart_session() as (_ctx, page):
         from . import layout_guard
         await layout_guard.ensure_layout(page)
+        await replay.exit_replay(page)
         if not await replay_api.api_available(page):
             return {
                 "ok": False,

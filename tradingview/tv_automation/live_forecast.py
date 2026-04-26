@@ -32,9 +32,10 @@ from pathlib import Path
 
 from playwright.async_api import Page
 
-from . import lessons as lessons_mod
+from . import lessons as lessons_mod, replay, replay_api
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
+from .lib.capture_invariants import CaptureExpect, assert_capture_ready
 from .lib.context import chart_session
 from .profile_gate import verify_full_session
 
@@ -52,6 +53,10 @@ STAGE_CURSOR: dict[str, dtime] = {
 # after the trigger time), abort past this threshold rather than forecast
 # at a misleading cursor time.
 STALE_MINUTES = 30
+
+
+def _symbol_for_api(symbol: str) -> str:
+    return symbol if "!" in symbol or ":" in symbol else f"{symbol}!"
 
 
 _LIVE_FORECAST_SYSTEM = """You are a day-trading forecast analyst for MNQ1! (Micro E-mini Nasdaq-100 futures, CME). Given a LIVE chart with the session in progress, forecast how the REMAINDER of the trading day will unfold.
@@ -132,7 +137,12 @@ async def _frame_live_session(page: Page) -> None:
     await page.wait_for_timeout(400)
 
 
-async def _capture(page: Page, symbol: str, stage_label: str) -> Path:
+async def _capture(
+    page: Page, symbol: str, stage_label: str,
+    *, expect: CaptureExpect | None = None,
+) -> Path:
+    if expect is not None:
+        await assert_capture_ready(page, expect)
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_live_{stage_label}_{ts}.png"
@@ -174,9 +184,23 @@ async def run_live_stage(
     async with chart_session() as (_ctx, page):
         from . import layout_guard
         await layout_guard.ensure_layout(page)
+        await replay.exit_replay(page)
+        landed = await replay_api.set_symbol_in_place(
+            page, symbol=_symbol_for_api(symbol), interval="1",
+        )
+        if landed is None:
+            raise RuntimeError("set_symbol_in_place failed before live forecast")
+        audit.log("live_forecast.chart_pinned", landed=landed)
         with audit.timed("live_forecast.stage", stage=stage, date=date_str) as ac:
             await _frame_live_session(page)
-            screenshot = await _capture(page, symbol, stage.lower() + stage_tag)
+            screenshot = await _capture(
+                page, symbol, stage.lower() + stage_tag,
+                expect=CaptureExpect(
+                    symbol=_symbol_for_api(symbol),
+                    interval="1m",
+                    replay_mode=False,
+                ),
+            )
             ac["screenshot"] = str(screenshot)
 
             gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)

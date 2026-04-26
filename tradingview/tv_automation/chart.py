@@ -125,18 +125,23 @@ async def _navigate(page: Page, symbol: str | None, interval: str | None) -> Non
     `chart.resolution()` (via `replay_api.chart_state`) instead."""
     if not symbol and not interval:
         return
+    from . import replay_api
     target = chart_url_for(page.url, symbol, interval)
-    if _url_matches_target(page.url, symbol, interval):
-        audit.log("chart.navigate.skip",
-                  reason="already_on_target",
-                  current=page.url[:120], target=target[:120])
-        return
 
     # In-place path — only when we're already on a chart with the API
-    # exposed. Skips ~2.5s of page reload + canvas hydration.
-    from . import replay_api
+    # exposed. Skips ~2.5s of page reload + canvas hydration. The URL is
+    # stale after this path, so use chart_state() for skip checks too.
+    api_available = False
     if "tradingview.com/chart" in page.url \
        and await replay_api.api_available(page):
+        api_available = True
+        state = await replay_api.chart_state(page)
+        if _state_matches_target(state, symbol, interval):
+            audit.log("chart.navigate.skip",
+                      reason="already_on_target_api",
+                      current=page.url[:120], target=target[:120],
+                      landed=state)
+            return
         landed = await replay_api.set_symbol_in_place(
             page, symbol=symbol, interval=interval,
         )
@@ -147,9 +152,36 @@ async def _navigate(page: Page, symbol: str | None, interval: str | None) -> Non
         audit.log("chart.navigate.in_place.fallback",
                   symbol=symbol, interval=interval)
 
+    if not api_available and _url_matches_target(page.url, symbol, interval):
+        audit.log("chart.navigate.skip",
+                  reason="already_on_target_url",
+                  current=page.url[:120], target=target[:120])
+        return
+
     await page.goto(target, wait_until="domcontentloaded")
     await page.wait_for_selector("canvas", state="visible", timeout=30_000)
     await page.wait_for_timeout(1500)
+
+
+def _state_matches_target(state: dict | None, symbol: str | None,
+                          interval: str | None) -> bool:
+    """True when live TradingView chart API state matches the request.
+
+    Unlike URL params, this remains authoritative after in-place
+    `setSymbol` / `setResolution` calls, which deliberately do not
+    rewrite the browser URL."""
+    if state is None:
+        return False
+    if symbol:
+        seen = str(state.get("symbol") or "")
+        seen_tail = seen.split(":")[-1]
+        want_tail = symbol.split(":")[-1]
+        if not (seen == symbol or seen_tail == want_tail):
+            return False
+    if interval:
+        if state.get("resolution") != resolve_timeframe(interval):
+            return False
+    return True
 
 
 def _url_matches_target(url: str, symbol: str | None,
@@ -174,30 +206,38 @@ def _url_matches_target(url: str, symbol: str | None,
 
 
 async def _extract_metadata(page: Page) -> dict:
-    """Read the active chart's symbol + interval from title and DOM.
-    Title is authoritative for symbol; interval is pulled from the
-    active interval button when the title doesn't include it (common
-    with saved layouts)."""
+    """Read the active chart's symbol + interval.
+
+    TradingView's URL/title can lag behind in-place API navigation, so
+    prefer `chart.symbol()` / `chart.resolution()` and use DOM/URL only
+    as fallback."""
     title = await page.title()
     url = page.url
     symbol = interval = None
 
+    try:
+        from . import replay_api
+        state = await replay_api.chart_state(page)
+        if state is not None:
+            interval = state.get("resolution") or None
+            ext = await replay_api.chart_symbol_ext(page)
+            symbol = (
+                (ext or {}).get("ticker")
+                or state.get("symbol")
+                or None
+            )
+            if symbol and ":" in symbol:
+                symbol = symbol.split(":")[-1]
+    except Exception:
+        pass
+
     m = re.match(r"^\s*([A-Z0-9:\._\-!]+)\s+([A-Z0-9]+)\s+chart", title)
-    if m:
+    if m and not symbol:
         symbol, interval = m.group(1), m.group(2)
-    else:
+    elif not symbol:
         m2 = re.match(r"^\s*([A-Z0-9:\._\-!]+)\s", title)
         if m2:
             symbol = m2.group(1)
-
-    if not symbol:
-        um = re.search(r"[?&]symbol=([^&]+)", url)
-        if um:
-            symbol = um.group(1)
-    if not interval:
-        um = re.search(r"[?&]interval=([^&]+)", url)
-        if um:
-            interval = um.group(1)
 
     if not interval:
         try:
@@ -215,6 +255,15 @@ async def _extract_metadata(page: Page) -> dict:
             }""")
         except Exception:
             interval = None
+
+    if not symbol:
+        um = re.search(r"[?&]symbol=([^&]+)", url)
+        if um:
+            symbol = um.group(1)
+    if not interval:
+        um = re.search(r"[?&]interval=([^&]+)", url)
+        if um:
+            interval = um.group(1)
 
     return {
         "symbol": symbol or "UNKNOWN",

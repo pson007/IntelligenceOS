@@ -41,10 +41,13 @@ _ET = ZoneInfo("America/New_York")
 
 from playwright.async_api import Page
 
-from . import replay
+from . import replay, replay_api
 from . import lessons as lessons_mod
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
+from .lib.capture_invariants import (
+    CaptureExpect, CaptureInvariantError, assert_capture_ready,
+)
 from .lib.context import chart_session
 from .profile_gate import verify_full_session
 
@@ -61,6 +64,10 @@ STAGES: list[tuple[str, dtime, int]] = [
 ]
 # Step from F3 to session close for the reconciliation screenshot.
 BARS_TO_CLOSE_FROM_F3 = 120
+
+
+def _symbol_for_api(symbol: str) -> str:
+    return symbol if "!" in symbol or ":" in symbol else f"{symbol}!"
 
 
 # ---------------------------------------------------------------------------
@@ -252,8 +259,13 @@ async def _frame_with_cursor_right(page: Page) -> None:
     await page.wait_for_timeout(400)
 
 
-async def _capture(page: Page, symbol: str, stage_label: str) -> Path:
+async def _capture(
+    page: Page, symbol: str, stage_label: str,
+    *, expect: CaptureExpect | None = None,
+) -> Path:
     """Screenshot the chart, return the path."""
+    if expect is not None:
+        await assert_capture_ready(page, expect)
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_forecast_{stage_label}_{ts}.png"
@@ -309,7 +321,28 @@ async def _run_forecast_stage(
     artifacts don't pollute the forecast store or confuse --resume."""
     with audit.timed("daily_forecast.stage", stage=stage_label, cursor=str(cursor_time)) as ac:
         await _frame_with_cursor_right(page)
-        screenshot = await _capture(page, symbol, stage_label.lower() + cursor_time.strftime("%H%M"))
+        target_dt = datetime.combine(
+            datetime.strptime(date_str, "%Y-%m-%d").date(), cursor_time,
+        )
+        expect = CaptureExpect(
+            symbol=_symbol_for_api(symbol),
+            interval="1m",
+            replay_mode=True,
+            cursor_time=target_dt,
+            cursor_tolerance_min=10,
+        )
+        try:
+            screenshot = await _capture(
+                page, symbol,
+                stage_label.lower() + cursor_time.strftime("%H%M"),
+                expect=expect,
+            )
+        except CaptureInvariantError as e:
+            audit.log("daily_forecast.stage.capture_invariant_fail",
+                      stage=stage_label, invariant=e.reason, **e.details)
+            ac["skipped"] = "capture_invariant_fail"
+            ac["capture_invariant_reason"] = e.reason
+            return None
         ac["screenshot"] = str(screenshot)
 
         # Gate — for forecast we accept partial frames, but verify minimum
@@ -397,7 +430,19 @@ async def _run_reconciliation(
     """Grade F1/F2/F3 against the actual day outcome."""
     with audit.timed("daily_forecast.reconciliation", date=date_str) as ac:
         await _frame_session_view(page)
-        screenshot = await _capture(page, symbol, "1600_close")
+        close_target = datetime.strptime(date_str, "%Y-%m-%d").replace(
+            hour=16, minute=0, second=0, microsecond=0,
+        )
+        screenshot = await _capture(
+            page, symbol, "1600_close",
+            expect=CaptureExpect(
+                symbol=_symbol_for_api(symbol),
+                interval="1m",
+                replay_mode=True,
+                cursor_time=close_target,
+                cursor_tolerance_min=10,
+            ),
+        )
         ac["screenshot"] = str(screenshot)
 
         # Load completed-day profile if available — stronger ground truth than
@@ -544,6 +589,12 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
     async with chart_session() as (_ctx, page):
         from . import layout_guard
         await layout_guard.ensure_layout(page)
+        landed = await replay_api.set_symbol_in_place(
+            page, symbol=_symbol_for_api(symbol), interval="1",
+        )
+        if landed is None:
+            raise RuntimeError("set_symbol_in_place failed before daily forecast")
+        audit.log("daily_forecast.chart_pinned", landed=landed)
         with audit.timed("daily_forecast.run_day",
                          date=date_str, symbol=symbol, adhoc=adhoc):
             # Navigate to 10:00 (F1 cursor) — soft-fail: log and continue

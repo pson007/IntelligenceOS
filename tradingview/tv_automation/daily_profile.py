@@ -52,6 +52,10 @@ _PARSE_FAIL_ROOT = (Path(__file__).parent.parent / "pine" / "parse_failures").re
 _ET = ZoneInfo("America/New_York")
 
 
+def _symbol_for_api(symbol: str) -> str:
+    return symbol if "!" in symbol or ":" in symbol else f"{symbol}!"
+
+
 # ---------------------------------------------------------------------------
 # Prompt
 # ---------------------------------------------------------------------------
@@ -520,6 +524,12 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
     async with chart_session() as (_ctx, page):
         from . import layout_guard
         await layout_guard.ensure_layout(page)
+        landed = await replay_api.set_symbol_in_place(
+            page, symbol=_symbol_for_api(symbol), interval="1",
+        )
+        if landed is None:
+            raise RuntimeError("set_symbol_in_place failed before daily profile")
+        audit.log("daily_profile.chart_pinned", landed=landed)
         with audit.timed("daily_profile.run_day", date=date_str, symbol=symbol) as ac:
             # Soft-fail nav — a single Replay glitch on one day shouldn't
             # kill a multi-day batch. We continue with whatever cursor
