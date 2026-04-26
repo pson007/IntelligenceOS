@@ -330,7 +330,15 @@
                 <option value="ollama">ollama (local, $0)</option>
               </select>
             </label>
-            <input type="hidden" id="analyze-model" value="" />
+            <!-- Ollama mode picker — populated dynamically from
+                 /api/analyze/local_models, which filters
+                 _LOCAL_VISION_MODELS by what's actually installed.
+                 Empty option set = Ollama unreachable; UI shows a
+                 hint and the user can still type a model name in
+                 #analyze-model-ollama-text as a manual override. -->
+            <select id="analyze-model" class="hidden" hidden></select>
+            <input type="text" id="analyze-model-ollama-text" class="hidden" hidden
+                   placeholder="ollama model (e.g. gemma4:31b)" />
             <select id="analyze-model-claude" class="hidden" hidden>
               <option value="sonnet" selected>Sonnet 4.6 (balanced)</option>
               <option value="opus">Opus 4.7 (most capable)</option>

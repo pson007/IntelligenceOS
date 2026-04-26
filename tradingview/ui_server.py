@@ -544,6 +544,60 @@ async def analyze_start(payload: dict) -> dict:
     return {"task_id": task_id, "request_id": request_id}
 
 
+# Curated set of vision-capable local models, in display order. Only
+# entries that show up in `ollama list` get returned to the UI — keeps
+# the dropdown honest about what the user can actually run. Add new
+# entries here when a new chart-bench winner emerges; the UI picks them
+# up automatically.
+_LOCAL_VISION_MODELS: list[dict] = [
+    {"id": "gemma4:31b", "label": "Quality — gemma4:31b",
+     "note": "proven default (4-bench winner 2026-04-18)"},
+    {"id": "gemma4:26b", "label": "Balanced — gemma4:26b",
+     "note": "faster, slight signal-quality tradeoff"},
+    {"id": "qwen3.6:27b", "label": "Experimental — qwen3.6:27b",
+     "note": "newer family, unbenched for chart tasks"},
+    {"id": "qwen3.6:latest", "label": "Experimental — qwen3.6:latest",
+     "note": "newest tag, larger context"},
+]
+
+
+@app.get("/api/analyze/local_models")
+async def analyze_local_models() -> dict:
+    """List vision-capable local Ollama models that are actually
+    installed. Intersects `_LOCAL_VISION_MODELS` (curated chart-tested
+    candidates) with `ollama list` output. Returns the default model
+    explicitly so the UI can pre-select it.
+
+    Empty list if Ollama isn't installed/reachable — caller should fall
+    back to a free-text input or hide the Ollama provider option."""
+    import asyncio as _asyncio
+    try:
+        proc = await _asyncio.create_subprocess_exec(
+            "ollama", "list",
+            stdout=_asyncio.subprocess.PIPE,
+            stderr=_asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await _asyncio.wait_for(proc.communicate(), timeout=4.0)
+    except (FileNotFoundError, _asyncio.TimeoutError):
+        return {"installed": [], "default": None, "available": False}
+    except Exception as e:
+        return {"installed": [], "default": None, "available": False,
+                "error": f"{type(e).__name__}: {e}"}
+
+    # `ollama list` first column is the NAME (with tag). Skip the header
+    # row and pull the first whitespace-delimited token from each line.
+    installed_names: set[str] = set()
+    for line in stdout.decode("utf-8", errors="replace").splitlines()[1:]:
+        line = line.strip()
+        if not line:
+            continue
+        installed_names.add(line.split()[0])
+
+    available = [m for m in _LOCAL_VISION_MODELS if m["id"] in installed_names]
+    default = next((m["id"] for m in available), None)
+    return {"installed": available, "default": default, "available": True}
+
+
 # Deep multi-TF analysis — captures 10 TFs and produces an integrated
 # signal + optimal-TF recommendation + Pine strategy script. Same task
 # shape as /api/analyze so the UI can use the same polling loop; the

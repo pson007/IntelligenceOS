@@ -1684,13 +1684,59 @@ function renderPressureTest(r) {
 }
 
 // Provider → model control swap. Each provider has its own model
-// affordance: Ollama uses an open-ended text input (many models,
-// custom names), claude.ai uses a fixed 3-tier dropdown, ChatGPT uses
-// a fixed 2-option dropdown (Instant / Thinking). Show exactly one
-// control at a time and read from whichever is visible at submit.
+// affordance: Ollama gets a dynamic dropdown populated from
+// /api/analyze/local_models (curated × installed) plus a free-text
+// fallback for custom model names not in the curated list; claude.ai
+// uses a fixed 3-tier dropdown; ChatGPT uses a fixed 2-option dropdown
+// (Instant / Thinking). Show exactly one primary control at a time and
+// read from whichever is visible at submit.
+let _ollamaModelsLoaded = false;
+async function _loadOllamaModels() {
+  if (_ollamaModelsLoaded) return;
+  _ollamaModelsLoaded = true;
+  const sel = $('analyze-model');
+  const txt = $('analyze-model-ollama-text');
+  try {
+    const r = await api('/api/analyze/local_models');
+    const installed = (r && r.installed) || [];
+    if (!installed.length) {
+      // Ollama unreachable or no curated models installed — fall back
+      // to a free-text input so the user isn't blocked.
+      sel.classList.add('hidden'); sel.hidden = true;
+      txt.classList.remove('hidden'); txt.hidden = false;
+      return;
+    }
+    sel.innerHTML = installed.map((m, i) => {
+      const selected = (m.id === r.default || (i === 0 && !r.default)) ? ' selected' : '';
+      const note = m.note ? ` — ${m.note}` : '';
+      return `<option value="${m.id}"${selected}>${m.label}${note}</option>`;
+    }).join('');
+  } catch (e) {
+    // API failed (server down, etc) — fall back to free text.
+    sel.classList.add('hidden'); sel.hidden = true;
+    txt.classList.remove('hidden'); txt.hidden = false;
+  }
+}
+
 function _syncAnalyzeModelControl() {
   const p = $('analyze-provider').value;
-  $('analyze-model').classList.toggle('hidden', p !== 'ollama');
+  const sel = $('analyze-model');
+  const txt = $('analyze-model-ollama-text');
+  // Ollama branch: select OR text fallback (decided by _loadOllamaModels).
+  // We reveal whichever is currently in the populated state.
+  if (p === 'ollama') {
+    _loadOllamaModels();
+    if (sel.options.length > 0) {
+      sel.classList.remove('hidden'); sel.hidden = false;
+      txt.classList.add('hidden'); txt.hidden = true;
+    } else {
+      sel.classList.add('hidden'); sel.hidden = true;
+      txt.classList.remove('hidden'); txt.hidden = false;
+    }
+  } else {
+    sel.classList.add('hidden'); sel.hidden = true;
+    txt.classList.add('hidden'); txt.hidden = true;
+  }
   $('analyze-model-claude').classList.toggle('hidden', p !== 'claude_web');
   $('analyze-model-chatgpt').classList.toggle('hidden', p !== 'chatgpt_web');
 }
@@ -1698,7 +1744,11 @@ function _analyzeModelValue() {
   const p = $('analyze-provider').value;
   if (p === 'claude_web')  return $('analyze-model-claude').value || null;
   if (p === 'chatgpt_web') return $('analyze-model-chatgpt').value || null;
-  return $('analyze-model').value.trim() || null;
+  // Ollama: prefer the curated select if visible/populated; otherwise
+  // the free-text fallback.
+  const sel = $('analyze-model');
+  if (sel.options.length > 0 && !sel.hidden) return sel.value || null;
+  return $('analyze-model-ollama-text').value.trim() || null;
 }
 $('analyze-provider').addEventListener('change', _syncAnalyzeModelControl);
 _syncAnalyzeModelControl();  // initialize on page load
