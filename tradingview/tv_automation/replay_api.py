@@ -25,8 +25,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, AsyncIterator
 
 from playwright.async_api import Page
 
@@ -35,6 +36,17 @@ from .lib import audit
 
 _CHART_API = "window.TradingViewApi._activeChartWidgetWV.value()"
 _REPLAY_API = "window.TradingViewApi._replayApi"
+
+
+# TV's autoplay accepts only this discrete set of delay values. Calling
+# `_replayApi.changeAutoplayDelay(N)` with any other value **persists a
+# corrupt delay into TV cloud account state** that survives page reload
+# — flagged by tradesdontlie/tradingview-mcp's `replay.js:6`. Guard every
+# `changeAutoplayDelay` call with `if delay not in VALID_AUTOPLAY_DELAYS:
+# raise ValueError(...)` *before* the eval reaches CDP.
+VALID_AUTOPLAY_DELAYS: tuple[int, ...] = (
+    100, 143, 200, 300, 1000, 2000, 3000, 5000, 10000,
+)
 
 
 def js_str(s: str) -> str:
@@ -95,6 +107,35 @@ async def chart_state(page: Page) -> dict | None:
         }})()""")
     except Exception:
         return None
+
+
+def bar_seconds_from_resolution(resolution: str) -> int:
+    """Convert TV's internal resolution token ('1', '60', 'D', '1W') to
+    bar duration in seconds. Falls back to 60s for unrecognized inputs.
+
+    Used by `do_step()` to validate the magnitude of a Replay advance —
+    `bars * bar_seconds` is the expected `(after - before).total_seconds()`."""
+    s = str(resolution).strip()
+    if s.isdigit():
+        return int(s) * 60
+    return {"D": 86400, "1D": 86400, "W": 604800, "1W": 604800,
+            "M": 2592000, "1M": 2592000}.get(s, 60)
+
+
+async def is_replay_available(page: Page) -> bool:
+    """True when `_replayApi.isReplayAvailable()` reports the current
+    symbol/TF supports Bar Replay. False on missing API.
+
+    `isReplayAvailable()` returns a TV WatchedValue, not a primitive —
+    `.value()` unwraps it. Without the unwrap, callers see a truthy
+    object and incorrectly skip the gate (verified during PR #1
+    end-to-end verification, 2026-04-26)."""
+    try:
+        return bool(await _eval(
+            page, f"{_REPLAY_API}.isReplayAvailable().value()",
+        ))
+    except Exception:
+        return False
 
 
 async def is_replay_started(page: Page) -> bool:
@@ -168,6 +209,204 @@ async def select_replay_date(
         f"replayApi.selectDate timeout after {max_polls * poll_ms}ms — "
         f"target {when.isoformat()} did not confirm via currentDate()."
     )
+
+
+async def do_step(
+    page: Page, bars: int = 1, *,
+    poll_ms: int = 250, max_polls: int = 12,
+    expected_bar_seconds: int | None = None,
+    drift_tolerance: float = 2.0,
+) -> datetime | None:
+    """Advance the Replay cursor by `bars` bars via `_replayApi.doStep()`.
+
+    Replaces the `Shift+ArrowRight` keystroke primitive used by
+    `replay.step_forward` — JS-API calls have no chart-focus dependency,
+    so a chart that lost focus mid-batch (the documented keyboard
+    failure mode in `project_replay_step_forward.md`) advances reliably.
+
+    All `bars` calls dispatch in a single CDP roundtrip via a JS `for`
+    loop; we then poll `currentDate()` for change vs. before.
+
+    `expected_bar_seconds` (optional) enables drift detection: when set,
+    the advance is rejected if `(landed - before).total_seconds()` is
+    less than (1/drift_tolerance)× or more than drift_tolerance× the
+    expected `bars × expected_bar_seconds`. Calibrated against the
+    2026-04-26 verification where a freshly-seeded replay landed
+    `do_step(1)` 4321 bars away from where it should have — the existing
+    drift-blind do_step would have silently returned success.
+
+    Returns the landed cursor datetime on confirmed in-tolerance advance,
+    or None on any of:
+      * `before` was unknown (replay half-mounted; stale `cur` would
+        otherwise be accepted as success — blind spot #6 from PR #1 review)
+      * `doStep` is missing or threw
+      * confirmation timeout (poll exhaustion → `do_step.timeout` audit)
+      * drift outside tolerance (TV jumped through a gap →
+        `do_step.drift` audit)
+    Each failure mode emits a distinct audit event; `step_forward`
+    falls through to the keyboard primitive on any None.
+
+    Backward stepping is not exposed by TV's public `_replayApi`; keep
+    using `Shift+ArrowLeft` in `replay.step_backward`."""
+    if bars < 0:
+        raise ValueError("bars must be non-negative")
+    if bars == 0:
+        return await current_replay_date(page)
+
+    before = await current_replay_date(page)
+    if before is None:
+        audit.log("replay_api.do_step.no_before", bars=bars)
+        return None
+
+    try:
+        ok = await _eval(page, f"""(() => {{
+            const rp = {_REPLAY_API};
+            if (!rp || typeof rp.doStep !== 'function') return false;
+            for (let i = 0; i < {bars}; i++) rp.doStep();
+            return true;
+        }})()""")
+    except Exception as e:
+        audit.log("replay_api.do_step.fail", bars=bars, err=str(e))
+        return None
+    if not ok:
+        audit.log("replay_api.do_step.no_function", bars=bars)
+        return None
+
+    # `doStep()` is async internally — `currentDate()` reflects the
+    # advance ~250-500ms later even though the call returns immediately.
+    for _ in range(max_polls):
+        cur = await current_replay_date(page)
+        if cur is not None and cur > before:
+            if expected_bar_seconds is not None:
+                actual_s = (cur - before).total_seconds()
+                expected_s = bars * expected_bar_seconds
+                ratio = actual_s / expected_s if expected_s else 0
+                if not (1 / drift_tolerance) <= ratio <= drift_tolerance:
+                    audit.log("replay_api.do_step.drift",
+                              bars=bars, expected_s=expected_s,
+                              actual_s=int(actual_s), ratio=round(ratio, 2),
+                              before=before.isoformat(),
+                              landed=cur.isoformat())
+                    return None
+            return cur
+        await asyncio.sleep(poll_ms / 1000)
+
+    audit.log("replay_api.do_step.timeout",
+              bars=bars, poll_ms=poll_ms, max_polls=max_polls,
+              before=before.isoformat())
+    return None
+
+
+async def stop_replay(page: Page) -> bool:
+    """Disengage Bar Replay via `_replayApi.stopReplay()`.
+
+    JS-API path: no DOM clicks, no strip-disappearance polling, no
+    selector dependency. Returns True when replay was active and is now
+    stopped, False if replay wasn't active OR the API isn't reachable
+    (caller should escalate to `replay.exit_replay` for the DOM
+    fallback). Idempotent — safe to call when not in replay."""
+    if not await api_available(page):
+        return False
+    if not await is_replay_started(page):
+        return True
+    try:
+        await _eval(page, f"{_REPLAY_API}.stopReplay()")
+    except Exception as e:
+        audit.log("replay_api.stop_replay.fail", err=str(e))
+        return False
+    # Confirm — stopReplay flips isReplayStarted within ~250ms.
+    for _ in range(8):
+        if not await is_replay_started(page):
+            audit.log("replay_api.stop_replay.confirmed")
+            return True
+        await asyncio.sleep(0.25)
+    audit.log("replay_api.stop_replay.no_confirmation")
+    return False
+
+
+@asynccontextmanager
+async def replay_session(page: Page) -> AsyncIterator[None]:
+    """Engage-and-cleanup context manager for any caller that needs
+    Bar Replay active for the duration of a block.
+
+    Records whether replay was already engaged on entry. On exit:
+      * If we engaged it: stop it cleanly (preferred: JS-API; fallback:
+        DOM via `replay.exit_replay`).
+      * If it was already on: leave it as we found it — caller's outer
+        scope is responsible.
+    Cleanup runs on both normal exit AND exceptions. Use this wrapping
+    a workflow block whenever you can; for legacy callers that engage
+    replay deeper in the call stack, use `try / finally:
+    await replay.exit_replay(page)` at the workflow boundary instead."""
+    was_engaged_on_entry = await is_replay_started(page)
+    try:
+        yield
+    finally:
+        if was_engaged_on_entry:
+            audit.log("replay_api.replay_session.preserve",
+                      reason="was_engaged_on_entry")
+            return
+        # We took on the engagement OR replay got started inside the
+        # block — clean up either way.
+        if not await is_replay_started(page):
+            return
+        if await stop_replay(page):
+            return
+        # API path failed → DOM fallback. Lazy import to avoid
+        # circularity (replay imports replay_api).
+        try:
+            from . import replay as _replay
+            await _replay.exit_replay(page)
+        except Exception as e:
+            audit.log("replay_api.replay_session.cleanup_fail", err=str(e))
+
+
+async def toggle_autoplay(page: Page) -> bool | None:
+    """Toggle replay autoplay via `_replayApi.toggleAutoplay()`.
+
+    Returns the resulting `isAutoplayStarted()` state, or None if the
+    API isn't reachable. Safe to call repeatedly — TV serializes the
+    toggle internally."""
+    if not await api_available(page):
+        return None
+    try:
+        await _eval(page, f"{_REPLAY_API}.toggleAutoplay()")
+    except Exception as e:
+        audit.log("replay_api.toggle_autoplay.fail", err=str(e))
+        return None
+    try:
+        return bool(await _eval(
+            page, f"{_REPLAY_API}.isAutoplayStarted().value()",
+        ))
+    except Exception:
+        return None
+
+
+async def set_autoplay_delay(page: Page, delay_ms: int) -> bool:
+    """Set autoplay delay via `_replayApi.changeAutoplayDelay(ms)`.
+
+    **Hard-validates** `delay_ms` against `VALID_AUTOPLAY_DELAYS` before
+    the call reaches CDP. Off-whitelist values persist a corrupt delay
+    into TV cloud account state that survives reload — flagged by
+    tradesdontlie/tradingview-mcp `replay.js:6`. Raises ValueError on
+    any value outside the whitelist; the static check is the whole
+    point of routing through this wrapper instead of inlining the eval.
+
+    Returns True on success, False if the API isn't reachable."""
+    if delay_ms not in VALID_AUTOPLAY_DELAYS:
+        raise ValueError(
+            f"delay_ms={delay_ms} not in VALID_AUTOPLAY_DELAYS "
+            f"{VALID_AUTOPLAY_DELAYS} — would corrupt TV cloud state."
+        )
+    if not await api_available(page):
+        return False
+    try:
+        await _eval(page, f"{_REPLAY_API}.changeAutoplayDelay({delay_ms})")
+        return True
+    except Exception as e:
+        audit.log("replay_api.set_autoplay_delay.fail",
+                  delay_ms=delay_ms, err=str(e))
+        return False
 
 
 async def set_symbol_in_place(

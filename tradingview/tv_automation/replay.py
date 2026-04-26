@@ -125,9 +125,21 @@ async def enter_replay(page: Page) -> None:
 
 
 async def exit_replay(page: Page) -> None:
-    """Exit Bar Replay. No-op if not active. Prefers the strip's dedicated
-    Exit button (leaves the chart in its Replay-entry state) and falls
-    back to clicking the toolbar toggle."""
+    """Exit Bar Replay. No-op if not active.
+
+    Prefers `_replayApi.stopReplay()` (JS-API path — no DOM dependency,
+    confirms in <2s). Falls back to the strip's dedicated Exit button,
+    then the toolbar toggle. The fallback chain matters because TV
+    occasionally renders the strip in a half-state where the API is
+    reachable but `is_active` (DOM-based) still reports True; in that
+    case the API path still cleans up correctly."""
+    from . import replay_api
+    if await replay_api.stop_replay(page):
+        # `stop_replay` already confirmed isReplayStarted flipped to
+        # False. The strip may still take a beat to disappear visually
+        # but the engagement state is gone.
+        return
+
     if not await is_active(page):
         audit.log("replay.exit.skip", reason="not_active")
         return
@@ -683,19 +695,97 @@ async def select_start_date(page: Page, when: datetime) -> None:
 
 
 async def step_forward(page: Page, bars: int = 1) -> None:
-    """Advance the replay cursor by `bars` bars via Shift+ArrowRight. `bars` must be ≥ 0.
+    """Advance the replay cursor by `bars` bars. `bars` must be ≥ 0.
 
-    TV's current replay build removed the `title="Play"` / `title="Forward"`
-    anchors and left the step-forward button without a stable DOM identifier
-    (only an SVG path signature, which rotates between TV releases). The
-    keyboard shortcut is the stable surface — verified 2026-04-20: 1 press =
-    1 bar, scales linearly up to at least 120 presses.
+    Prefers `_replayApi.doStep()` (JS-API path — no chart-focus
+    dependency, dispatches all N steps in one CDP roundtrip, drift-
+    validated against the current TF) when reachable; falls back to the
+    keyboard `Shift+ArrowRight` primitive when the API isn't available
+    OR when the API path returns an unconfirmed/drifted advance. The
+    keyboard surface remains the proven baseline: verified 2026-04-20
+    against TV's current build that 1 press = 1 bar, scaling linearly
+    to at least 120 presses, with the step button itself lacking a
+    stable DOM identifier.
 
-    When `replayApi` is reachable, captures cursor before + polls after
-    so silent stalls (chart focus lost mid-batch) become loud audit
-    events instead of bad screenshots downstream."""
+    Audit event `replay.step_forward` carries `via` ∈ {api,
+    api_then_keyboard, keyboard} plus before/after timestamps so silent
+    stalls and drifted batches surface as loud audit signal."""
     if bars < 0:
         raise ValueError("bars must be non-negative; use step_backward")
+    if bars == 0:
+        return
+
+    from . import replay_api
+    api_ok = await replay_api.api_available(page)
+    before = await replay_api.current_replay_date(page) if api_ok else None
+
+    bar_secs: int | None = None
+    if api_ok:
+        try:
+            res = await page.evaluate(
+                f"() => {replay_api._CHART_API}.resolution()"
+            )
+            bar_secs = replay_api.bar_seconds_from_resolution(str(res))
+        except Exception:
+            bar_secs = None
+
+    confirmed_after: datetime | None = None
+    via = "keyboard"
+    if api_ok:
+        confirmed_after = await replay_api.do_step(
+            page, bars, expected_bar_seconds=bar_secs,
+        )
+        via = "api"
+        # Fall through to keyboard if API path produced no confirmed,
+        # in-tolerance advance — covers no_before / timeout / drift /
+        # missing-doStep alike.
+        if confirmed_after is None:
+            try:
+                await page.bring_to_front()
+            except Exception:
+                pass
+            for _ in range(bars):
+                await page.keyboard.press("Shift+ArrowRight")
+                await page.wait_for_timeout(40)
+            via = "api_then_keyboard"
+            # Best-effort post-keystroke confirmation when we have a
+            # baseline. We only require *any* forward motion here since
+            # the API drift check already failed once — over-tightening
+            # would mask the keyboard path's own value.
+            if before is not None:
+                for _ in range(12):
+                    cur = await replay_api.current_replay_date(page)
+                    if cur is not None and cur > before:
+                        confirmed_after = cur
+                        break
+                    await page.wait_for_timeout(250)
+    else:
+        try:
+            await page.bring_to_front()
+        except Exception:
+            pass
+        for _ in range(bars):
+            await page.keyboard.press("Shift+ArrowRight")
+            await page.wait_for_timeout(40)
+
+    audit.log("replay.step_forward", bars=bars, via=via,
+              before=before.isoformat() if before else None,
+              after=confirmed_after.isoformat() if confirmed_after else None,
+              confirmed=confirmed_after is not None)
+
+
+async def step_backward(page: Page, bars: int = 1) -> None:
+    """Retreat the replay cursor by `bars` bars via Shift+←.
+
+    TV exposes no `_replayApi.doStep`-style backward primitive
+    (verified 2026-04-26 against the current build via
+    `tradesdontlie/tradingview-mcp` source review). The keyboard
+    shortcut is our only lever — but we now share the focus + post-
+    confirm hardening the forward path uses, so a chart that lost
+    focus mid-batch produces a loud `confirmed=false` audit event
+    instead of a silent stall."""
+    if bars < 0:
+        raise ValueError("bars must be non-negative; use step_forward")
     if bars == 0:
         return
     try:
@@ -708,42 +798,22 @@ async def step_forward(page: Page, bars: int = 1) -> None:
     before = await replay_api.current_replay_date(page) if api_ok else None
 
     for _ in range(bars):
-        await page.keyboard.press("Shift+ArrowRight")
-        await page.wait_for_timeout(40)
+        await page.keyboard.press("Shift+ArrowLeft")
+        await page.wait_for_timeout(150)
 
-    confirmed_after = None
+    confirmed_after: datetime | None = None
     if api_ok and before is not None:
-        # Mirrors the MCP's pattern: 12×250ms (~3s) for the cursor to
-        # advance. Independent of `bars` since one keystroke flushes
-        # the rest — we just need confirmation that ANY motion happened.
         for _ in range(12):
             cur = await replay_api.current_replay_date(page)
-            if cur is not None and cur > before:
+            if cur is not None and cur < before:
                 confirmed_after = cur
                 break
             await page.wait_for_timeout(250)
 
-    audit.log("replay.step_forward", bars=bars,
+    audit.log("replay.step_backward", bars=bars, via="keyboard",
               before=before.isoformat() if before else None,
               after=confirmed_after.isoformat() if confirmed_after else None,
               confirmed=confirmed_after is not None if api_ok and before else None)
-
-
-async def step_backward(page: Page, bars: int = 1) -> None:
-    """Retreat the replay cursor by `bars` bars via Shift+←. TV has no
-    dedicated back button in the strip; the shortcut is our only lever."""
-    if bars < 0:
-        raise ValueError("bars must be non-negative; use step_forward")
-    if bars == 0:
-        return
-    try:
-        await page.bring_to_front()
-    except Exception:
-        pass
-    for _ in range(bars):
-        await page.keyboard.press("Shift+ArrowLeft")
-        await page.wait_for_timeout(150)
-    audit.log("replay.step_backward", bars=bars)
 
 
 # ---------------------------------------------------------------------------

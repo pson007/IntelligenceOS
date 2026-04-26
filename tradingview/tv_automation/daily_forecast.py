@@ -595,105 +595,114 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
         if landed is None:
             raise RuntimeError("set_symbol_in_place failed before daily forecast")
         audit.log("daily_forecast.chart_pinned", landed=landed)
-        with audit.timed("daily_forecast.run_day",
-                         date=date_str, symbol=symbol, adhoc=adhoc):
-            # Navigate to 10:00 (F1 cursor) — soft-fail: log and continue
-            # with whatever cursor TV ends up on rather than killing the
-            # whole pipeline if any single stage's nav misses.
-            try:
-                cursor = await _navigate_to_10am(page, target_date)
-                audit.log("daily_forecast.navigated", cursor=str(cursor))
-            except RuntimeError as e:
-                audit.log("daily_forecast.navigated.fail", err=str(e))
+        # Stage navigation engages Bar Replay via `replay.navigate_to`.
+        # try/finally guarantees we exit Replay even on exception so
+        # the next workflow doesn't inherit a Replay-engaged chart.
+        try:
+            with audit.timed("daily_forecast.run_day",
+                             date=date_str, symbol=symbol, adhoc=adhoc):
+                # Navigate to 10:00 (F1 cursor) — soft-fail: log and continue
+                # with whatever cursor TV ends up on rather than killing the
+                # whole pipeline if any single stage's nav misses.
+                try:
+                    cursor = await _navigate_to_10am(page, target_date)
+                    audit.log("daily_forecast.navigated", cursor=str(cursor))
+                except RuntimeError as e:
+                    audit.log("daily_forecast.navigated.fail", err=str(e))
 
-            for (label, cursor_time, step_bars) in STAGES:
-                # Ad-hoc time gate — bail the remainder of the pipeline once
-                # we hit a stage whose wall-clock time hasn't arrived yet.
-                # (Later stages can't possibly be past-cursor either, so we
-                # break rather than continue.)
-                if adhoc:
-                    reason = _adhoc_stage_blocked(date_str, cursor_time)
-                    if reason:
-                        audit.log("daily_forecast.stage.skip_adhoc_time",
-                                  stage=label, reason=reason)
-                        skipped_stages.append({"stage": label, "reason": reason})
-                        break
+                for (label, cursor_time, step_bars) in STAGES:
+                    # Ad-hoc time gate — bail the remainder of the pipeline once
+                    # we hit a stage whose wall-clock time hasn't arrived yet.
+                    # (Later stages can't possibly be past-cursor either, so we
+                    # break rather than continue.)
+                    if adhoc:
+                        reason = _adhoc_stage_blocked(date_str, cursor_time)
+                        if reason:
+                            audit.log("daily_forecast.stage.skip_adhoc_time",
+                                      stage=label, reason=reason)
+                            skipped_stages.append({"stage": label, "reason": reason})
+                            break
 
-                # Seek to absolute stage time via navigate_to instead of
-                # bar-counting. Each stage has a known wall-clock target
-                # (10:00, 12:00, 14:00 ET); navigate_to lands the cursor
-                # exactly and self-heals if Replay state breaks. Soft-
-                # fails on exhaustion so one bad stage doesn't kill the
-                # whole day's pipeline.
-                if step_bars > 0:
-                    stage_target = datetime.combine(
-                        target_date.date(), cursor_time,
+                    # Seek to absolute stage time via navigate_to instead of
+                    # bar-counting. Each stage has a known wall-clock target
+                    # (10:00, 12:00, 14:00 ET); navigate_to lands the cursor
+                    # exactly and self-heals if Replay state breaks. Soft-
+                    # fails on exhaustion so one bad stage doesn't kill the
+                    # whole day's pipeline.
+                    if step_bars > 0:
+                        stage_target = datetime.combine(
+                            target_date.date(), cursor_time,
+                        )
+                        try:
+                            await replay.navigate_to(page, stage_target,
+                                                      tolerance_min=5)
+                        except RuntimeError as e:
+                            audit.log("daily_forecast.stage.nav_fail",
+                                      stage=label, err=str(e))
+
+                    _, json_path = _forecast_file_paths(symbol, date_str, cursor_time.strftime("%H%M"))
+                    if resume and json_path.exists():
+                        audit.log("daily_forecast.stage.skip_existing", stage=label)
+                        saved_stages.append(json.loads(json_path.read_text()))
+                        continue
+
+                    saved = await _run_forecast_stage(
+                        page, symbol=symbol, date_str=date_str,
+                        stage_label=label, cursor_time=cursor_time,
+                    )
+                    if saved is None:
+                        # Gate-fail — stage skipped, no artifact written.
+                        skipped_stages.append({"stage": label, "reason": "gate_fail"})
+                        continue
+                    saved_stages.append(saved)
+
+                # Step to 16:00 for reconciliation screenshot (only if we
+                # actually ran forecasts this session — otherwise no stepping
+                # needed and no reconcile either).
+                profile_path = _PROFILES_ROOT / f"{symbol}_{date_str}.json"
+                _, recon_json = _reconciliation_file_paths(symbol, date_str)
+                recon_blocked: str | None = None
+
+                if not saved_stages:
+                    recon_blocked = "no forecast stages produced artifacts"
+                elif adhoc:
+                    recon_blocked = _adhoc_reconciliation_blocked(date_str, profile_path)
+                elif not profile_path.exists():
+                    # Fix #1 — always guard reconciliation behind profile existence,
+                    # even outside adhoc mode. A reconcile without ground truth is
+                    # worse than no reconcile (produces a bad file we then have to
+                    # clean up; also misleads the lessons + calibration feedback
+                    # loops).
+                    recon_blocked = f"no profile at {profile_path.name}"
+
+                if recon_blocked:
+                    audit.log("daily_forecast.reconciliation.skipped",
+                              reason=recon_blocked)
+                    reconciliation = {"skipped": True, "reason": recon_blocked}
+                else:
+                    # Seek to 16:00 ET via navigate_to — same rationale as
+                    # the inter-stage seeks above.
+                    close_target = target_date.replace(
+                        hour=16, minute=0, second=0, microsecond=0,
                     )
                     try:
-                        await replay.navigate_to(page, stage_target,
+                        await replay.navigate_to(page, close_target,
                                                   tolerance_min=5)
                     except RuntimeError as e:
-                        audit.log("daily_forecast.stage.nav_fail",
-                                  stage=label, err=str(e))
-
-                _, json_path = _forecast_file_paths(symbol, date_str, cursor_time.strftime("%H%M"))
-                if resume and json_path.exists():
-                    audit.log("daily_forecast.stage.skip_existing", stage=label)
-                    saved_stages.append(json.loads(json_path.read_text()))
-                    continue
-
-                saved = await _run_forecast_stage(
-                    page, symbol=symbol, date_str=date_str,
-                    stage_label=label, cursor_time=cursor_time,
-                )
-                if saved is None:
-                    # Gate-fail — stage skipped, no artifact written.
-                    skipped_stages.append({"stage": label, "reason": "gate_fail"})
-                    continue
-                saved_stages.append(saved)
-
-            # Step to 16:00 for reconciliation screenshot (only if we
-            # actually ran forecasts this session — otherwise no stepping
-            # needed and no reconcile either).
-            profile_path = _PROFILES_ROOT / f"{symbol}_{date_str}.json"
-            _, recon_json = _reconciliation_file_paths(symbol, date_str)
-            recon_blocked: str | None = None
-
-            if not saved_stages:
-                recon_blocked = "no forecast stages produced artifacts"
-            elif adhoc:
-                recon_blocked = _adhoc_reconciliation_blocked(date_str, profile_path)
-            elif not profile_path.exists():
-                # Fix #1 — always guard reconciliation behind profile existence,
-                # even outside adhoc mode. A reconcile without ground truth is
-                # worse than no reconcile (produces a bad file we then have to
-                # clean up; also misleads the lessons + calibration feedback
-                # loops).
-                recon_blocked = f"no profile at {profile_path.name}"
-
-            if recon_blocked:
-                audit.log("daily_forecast.reconciliation.skipped",
-                          reason=recon_blocked)
-                reconciliation = {"skipped": True, "reason": recon_blocked}
-            else:
-                # Seek to 16:00 ET via navigate_to — same rationale as
-                # the inter-stage seeks above.
-                close_target = target_date.replace(
-                    hour=16, minute=0, second=0, microsecond=0,
-                )
-                try:
-                    await replay.navigate_to(page, close_target,
-                                              tolerance_min=5)
-                except RuntimeError as e:
-                    audit.log("daily_forecast.reconciliation.nav_fail",
-                              err=str(e))
-                if resume and recon_json.exists():
-                    audit.log("daily_forecast.reconciliation.skip_existing")
-                    reconciliation = json.loads(recon_json.read_text())
-                else:
-                    reconciliation = await _run_reconciliation(
-                        page, symbol=symbol, date_str=date_str, stages_run=saved_stages,
-                    )
+                        audit.log("daily_forecast.reconciliation.nav_fail",
+                                  err=str(e))
+                    if resume and recon_json.exists():
+                        audit.log("daily_forecast.reconciliation.skip_existing")
+                        reconciliation = json.loads(recon_json.read_text())
+                    else:
+                        reconciliation = await _run_reconciliation(
+                            page, symbol=symbol, date_str=date_str, stages_run=saved_stages,
+                        )
+        finally:
+            try:
+                await replay.exit_replay(page)
+            except Exception as e:
+                audit.log("daily_forecast.exit_replay.fail", err=str(e))
 
     return {
         "symbol": symbol,

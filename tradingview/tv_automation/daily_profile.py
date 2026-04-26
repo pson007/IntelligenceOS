@@ -530,101 +530,113 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
         if landed is None:
             raise RuntimeError("set_symbol_in_place failed before daily profile")
         audit.log("daily_profile.chart_pinned", landed=landed)
-        with audit.timed("daily_profile.run_day", date=date_str, symbol=symbol) as ac:
-            # Soft-fail nav — a single Replay glitch on one day shouldn't
-            # kill a multi-day batch. We continue with whatever cursor
-            # TV ends up on; the gate downstream catches mis-framed
-            # captures and the artifact records the failure.
+        # `_navigate_to_session_close` engages Bar Replay to position the
+        # cursor at 16:00 ET. The try/finally guarantees we exit Replay
+        # even on exception so a failed run doesn't leave the chart in
+        # a state that surprises the next workflow.
+        try:
+            with audit.timed("daily_profile.run_day", date=date_str, symbol=symbol) as ac:
+                # Soft-fail nav — a single Replay glitch on one day shouldn't
+                # kill a multi-day batch. We continue with whatever cursor
+                # TV ends up on; the gate downstream catches mis-framed
+                # captures and the artifact records the failure.
+                try:
+                    await _navigate_to_session_close(page, target_date)
+                except RuntimeError as e:
+                    audit.log("daily_profile.navigate.fail",
+                              date=date_str, err=str(e))
+                    ac["nav_fail"] = str(e)
+                close_target = target_date.replace(
+                    hour=16, minute=0, second=0, microsecond=0,
+                )
+                screenshot, gate = await _frame_and_gate(
+                    page, symbol, close_target=close_target,
+                )
+                ac["screenshot"] = str(screenshot)
+                ac["gate_ok"] = gate.ok
+                ac["gate_reason"] = gate.reason
+
+                # Numerical ground truth — read OHLC from chart memory
+                # while the cursor is parked at close. Survives whatever
+                # the vision LLM later reports about the same session, and
+                # gives the reconcile step a deterministic actual_summary.
+                session_open = target_date.replace(
+                    hour=9, minute=30, second=0, microsecond=0,
+                )
+                api_ohlc = await bar_reader.read_session_ohlc(
+                    page, start_et=session_open, end_et=close_target,
+                )
+
+                user_prompt = (
+                    f"Profile the {symbol}! RTH session for {date_str} ({dow}). "
+                    f"Cursor is at session close (~16:00 ET). Use VISUAL REFERENCE "
+                    f"and TIME MARKERS from the system prompt. Return narrative "
+                    f"sections followed by the fenced JSON block."
+                )
+                text, _, _ = await analyze_via_chatgpt_web(
+                    image_path=str(screenshot),
+                    system_prompt=_PROFILE_SYSTEM,
+                    user_text=user_prompt,
+                    model="Thinking",
+                    timeout_s=600,
+                )
+                ac["response_chars"] = len(text)
+
+                narrative, structured = _split_response(text)
+                if structured is None:
+                    _PARSE_FAIL_ROOT.mkdir(parents=True, exist_ok=True)
+                    dump = _PARSE_FAIL_ROOT / f"profile_{symbol}_{date_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+                    dump.write_text(text)
+                    audit.log("daily_profile.parse_fail", dump=str(dump))
+                    ac["parse_fail_dump"] = str(dump)
+
+                md_body = _build_profile_md(
+                    symbol=symbol, date_str=date_str, dow=dow,
+                    screenshot=screenshot, gate=gate, narrative=narrative,
+                )
+                md_path.write_text(md_body)
+
+                saved: dict = {
+                    "symbol": f"{symbol}!",
+                    "date": date_str,
+                    "dow": dow,
+                    "timeframe": "1m",
+                    "session": "RTH",
+                    "session_complete": True,
+                    "cursor_ts_approx": f"{date_str}T16:00:00-04:00",
+                    "layout": "Money Print",
+                    "provider": "chatgpt_web",
+                    "model": "Thinking",
+                    "screenshot_path": str(screenshot),
+                    "gate": {
+                        "ok": gate.ok,
+                        "reason": gate.reason,
+                        "first": str(gate.session_first) if gate.session_first else None,
+                        "last": str(gate.session_last) if gate.session_last else None,
+                    },
+                    "profiled_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+                }
+                if structured is not None:
+                    saved.update(structured)
+                else:
+                    saved["raw_response"] = text
+                if api_ohlc is not None:
+                    saved["actual_summary_api"] = api_ohlc
+
+                json_path.write_text(json.dumps(saved, indent=2))
+                ac["saved_to"] = str(json_path)
+                return {
+                    "symbol": symbol, "date": date_str,
+                    "md_path": str(md_path), "json_path": str(json_path),
+                    "gate_ok": gate.ok, "parsed_structured": structured is not None,
+                }
+        finally:
+            # Always exit Bar Replay, even on exception. The next
+            # workflow expects a live chart, not a Replay shell.
             try:
-                await _navigate_to_session_close(page, target_date)
-            except RuntimeError as e:
-                audit.log("daily_profile.navigate.fail",
-                          date=date_str, err=str(e))
-                ac["nav_fail"] = str(e)
-            close_target = target_date.replace(
-                hour=16, minute=0, second=0, microsecond=0,
-            )
-            screenshot, gate = await _frame_and_gate(
-                page, symbol, close_target=close_target,
-            )
-            ac["screenshot"] = str(screenshot)
-            ac["gate_ok"] = gate.ok
-            ac["gate_reason"] = gate.reason
-
-            # Numerical ground truth — read OHLC from chart memory
-            # while the cursor is parked at close. Survives whatever
-            # the vision LLM later reports about the same session, and
-            # gives the reconcile step a deterministic actual_summary.
-            session_open = target_date.replace(
-                hour=9, minute=30, second=0, microsecond=0,
-            )
-            api_ohlc = await bar_reader.read_session_ohlc(
-                page, start_et=session_open, end_et=close_target,
-            )
-
-            user_prompt = (
-                f"Profile the {symbol}! RTH session for {date_str} ({dow}). "
-                f"Cursor is at session close (~16:00 ET). Use VISUAL REFERENCE "
-                f"and TIME MARKERS from the system prompt. Return narrative "
-                f"sections followed by the fenced JSON block."
-            )
-            text, _, _ = await analyze_via_chatgpt_web(
-                image_path=str(screenshot),
-                system_prompt=_PROFILE_SYSTEM,
-                user_text=user_prompt,
-                model="Thinking",
-                timeout_s=600,
-            )
-            ac["response_chars"] = len(text)
-
-            narrative, structured = _split_response(text)
-            if structured is None:
-                _PARSE_FAIL_ROOT.mkdir(parents=True, exist_ok=True)
-                dump = _PARSE_FAIL_ROOT / f"profile_{symbol}_{date_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                dump.write_text(text)
-                audit.log("daily_profile.parse_fail", dump=str(dump))
-                ac["parse_fail_dump"] = str(dump)
-
-            md_body = _build_profile_md(
-                symbol=symbol, date_str=date_str, dow=dow,
-                screenshot=screenshot, gate=gate, narrative=narrative,
-            )
-            md_path.write_text(md_body)
-
-            saved: dict = {
-                "symbol": f"{symbol}!",
-                "date": date_str,
-                "dow": dow,
-                "timeframe": "1m",
-                "session": "RTH",
-                "session_complete": True,
-                "cursor_ts_approx": f"{date_str}T16:00:00-04:00",
-                "layout": "Money Print",
-                "provider": "chatgpt_web",
-                "model": "Thinking",
-                "screenshot_path": str(screenshot),
-                "gate": {
-                    "ok": gate.ok,
-                    "reason": gate.reason,
-                    "first": str(gate.session_first) if gate.session_first else None,
-                    "last": str(gate.session_last) if gate.session_last else None,
-                },
-                "profiled_at": datetime.now().astimezone().isoformat(timespec="seconds"),
-            }
-            if structured is not None:
-                saved.update(structured)
-            else:
-                saved["raw_response"] = text
-            if api_ohlc is not None:
-                saved["actual_summary_api"] = api_ohlc
-
-            json_path.write_text(json.dumps(saved, indent=2))
-            ac["saved_to"] = str(json_path)
-            return {
-                "symbol": symbol, "date": date_str,
-                "md_path": str(md_path), "json_path": str(json_path),
-                "gate_ok": gate.ok, "parsed_structured": structured is not None,
-            }
+                await replay.exit_replay(page)
+            except Exception as e:
+                audit.log("daily_profile.exit_replay.fail", err=str(e))
 
 
 # ---------------------------------------------------------------------------
