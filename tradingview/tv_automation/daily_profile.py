@@ -665,6 +665,19 @@ async def run_profile_range(start: str, end: str | None, *,
                             resume: bool = False) -> list[dict]:
     """Profile each weekday in [start, end]. Single date if end is None."""
     dates = _weekday_range(start, end or start)
+    return await run_profile_dates(dates, symbol=symbol, resume=resume)
+
+
+async def run_profile_dates(dates: list[str], *,
+                            symbol: str = "MNQ1",
+                            resume: bool = False) -> list[dict]:
+    """Profile an explicit list of dates — supports non-contiguous picks
+    (e.g. just Mon/Wed/Fri, or scattered days from multiple weeks).
+
+    `run_profile_range` delegates to this. The UI calendar's multi-select
+    sends the explicit list so picks like "this week minus Wednesday" or
+    "two non-adjacent weeks" profile exactly the chosen days instead of
+    the contiguous span between min and max."""
     results: list[dict] = []
     for d in dates:
         with audit.timed("daily_profile.range_day", date=d):

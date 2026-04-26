@@ -1514,22 +1514,45 @@ _PROFILE_SYMBOL_RX = __import__("re").compile(r"^[A-Za-z0-9]{1,12}$")
 
 @app.post("/api/profiles/run")
 async def profile_run_start(payload: dict) -> dict:
-    """Kick off a daily-profile range run.
+    """Kick off a daily-profile run.
 
-    Body: {start: "YYYY-MM-DD", end?: "YYYY-MM-DD", symbol?: "MNQ1", resume?: bool}
-    Returns {task_id, request_id} — poll /api/profiles/runs/{task_id} for status
-    and /api/audit/tail?request_id=... for live events."""
+    Two body shapes:
+      * Range: {start: "YYYY-MM-DD", end?: "YYYY-MM-DD", symbol?, resume?}
+        Profiles each weekday in [start, end] (single day if end omitted).
+      * Explicit dates: {dates: ["YYYY-MM-DD", ...], symbol?, resume?}
+        Profiles exactly those days — supports non-contiguous picks
+        (e.g. Mon + Wed + Fri, or two non-adjacent weeks). The UI's
+        multi-select calendar uses this shape.
+
+    Returns {task_id, request_id} — poll /api/profiles/runs/{task_id} for
+    status and /api/audit/tail?request_id=... for live events."""
     global _active_profile_run
     p = payload or {}
-    start = (p.get("start") or "").strip()
-    end = (p.get("end") or "").strip() or None
+    dates_raw = p.get("dates")
     symbol = (p.get("symbol") or "MNQ1").strip()
     resume = bool(p.get("resume", True))
 
-    if not _PROFILE_DATE_RX.match(start):
-        raise HTTPException(400, "start must be YYYY-MM-DD")
-    if end is not None and not _PROFILE_DATE_RX.match(end):
-        raise HTTPException(400, "end must be YYYY-MM-DD")
+    dates: list[str] | None = None
+    start: str | None = None
+    end: str | None = None
+    if dates_raw is not None:
+        if not isinstance(dates_raw, list) or not dates_raw:
+            raise HTTPException(400, "dates must be a non-empty list")
+        dates = []
+        for d in dates_raw:
+            if not isinstance(d, str) or not _PROFILE_DATE_RX.match(d):
+                raise HTTPException(400, f"invalid date in list: {d!r}")
+            dates.append(d)
+        # Sort + dedupe so the run order is deterministic and the audit
+        # log reads chronologically.
+        dates = sorted(set(dates))
+    else:
+        start = (p.get("start") or "").strip()
+        end = (p.get("end") or "").strip() or None
+        if not _PROFILE_DATE_RX.match(start):
+            raise HTTPException(400, "start must be YYYY-MM-DD (or supply dates: [...])")
+        if end is not None and not _PROFILE_DATE_RX.match(end):
+            raise HTTPException(400, "end must be YYYY-MM-DD")
     if not _PROFILE_SYMBOL_RX.match(symbol):
         raise HTTPException(400, "invalid symbol")
 
@@ -1551,16 +1574,23 @@ async def profile_run_start(payload: dict) -> dict:
         "state": "running",
         "request_id": request_id,
         "started_at": time.time(),
-        "start": start, "end": end, "symbol": symbol, "resume": resume,
+        "start": start, "end": end, "dates": dates,
+        "symbol": symbol, "resume": resume,
     }
 
     async def runner():
         global _active_profile_run
         try:
-            from tv_automation.daily_profile import run_profile_range
-            results = await run_profile_range(
-                start, end, symbol=symbol, resume=resume,
-            )
+            if dates is not None:
+                from tv_automation.daily_profile import run_profile_dates
+                results = await run_profile_dates(
+                    dates, symbol=symbol, resume=resume,
+                )
+            else:
+                from tv_automation.daily_profile import run_profile_range
+                results = await run_profile_range(
+                    start, end, symbol=symbol, resume=resume,
+                )
             _profile_run_tasks[task_id]["state"] = "done"
             _profile_run_tasks[task_id]["results"] = results
         except Exception as e:

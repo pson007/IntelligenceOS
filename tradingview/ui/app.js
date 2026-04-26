@@ -2975,11 +2975,12 @@ function _setProfileMode(mode) {
     btn.classList.toggle('active', btn.dataset.mode === mode);
   });
   // Collapse existing selection to a single representative day so the
-  // mode change doesn't leave a stale multi-day highlight.
+  // mode change doesn't leave a stale multi-day highlight (week→day
+  // would leave 5 highlighted; day→week would leave 1 isolated).
   if (_profileCal.selected.length > 0) {
     const anchor = _profileCal.selected[0];
     _profileCal.selected = [];
-    _selectDate(anchor);
+    _toggleDate(anchor);
   }
   renderProfileCalendar();
   _refreshSelectionSummary();
@@ -2987,7 +2988,7 @@ function _setProfileMode(mode) {
 
 function _selectThisWeek() {
   const today = new Date();
-  _selectDate(_fmtDate(today));
+  _toggleDate(_fmtDate(today));
 }
 
 function _weekdayRange(anchorStr) {
@@ -3006,13 +3007,26 @@ function _weekdayRange(anchorStr) {
   return out;
 }
 
-function _selectDate(dateStr) {
+function _toggleDate(dateStr) {
+  // Click-to-toggle multi-select. Day mode toggles a single date in/out;
+  // Week mode toggles the entire Mon–Fri block of the picked week. The
+  // selection list is the source of truth — sorted on read so the
+  // backend gets dates in chronological order regardless of click order.
   if (!dateStr) return;
-  if (_profileCal.mode === 'day') {
-    _profileCal.selected = [dateStr];
+  const sel = new Set(_profileCal.selected);
+  const targets = _profileCal.mode === 'day'
+    ? [dateStr]
+    : _weekdayRange(dateStr);
+  // If every target is already selected, treat the click as "remove";
+  // otherwise treat it as "add". Mixed-state weeks lean toward add so a
+  // partial week becomes whole on the next click.
+  const allPresent = targets.every(t => sel.has(t));
+  if (allPresent) {
+    targets.forEach(t => sel.delete(t));
   } else {
-    _profileCal.selected = _weekdayRange(dateStr);
+    targets.forEach(t => sel.add(t));
   }
+  _profileCal.selected = Array.from(sel).sort();
 }
 
 function renderProfileCalendar() {
@@ -3055,7 +3069,7 @@ function renderProfileCalendar() {
   grid.innerHTML = cells.join('');
   grid.querySelectorAll('.cal-day:not(.disabled)').forEach(el => {
     el.addEventListener('click', () => {
-      _selectDate(el.dataset.date);
+      _toggleDate(el.dataset.date);
       renderProfileCalendar();
       _refreshSelectionSummary();
     });
@@ -3073,9 +3087,25 @@ function _refreshSelectionSummary() {
   }
   const profiledSet = _profiledDates();
   const overlap = sel.filter(d => profiledSet.has(d));
-  const head = sel.length === 1
-    ? `${sel[0]}`
-    : `${sel[0]} → ${sel[sel.length - 1]}  (${sel.length} days)`;
+  // Detect contiguous-weekday run: every selected date is one weekday
+  // after the previous (skipping weekends). If so, render as range;
+  // otherwise list count + first/last to keep multi-week picks legible.
+  const isContiguousWeekdays = sel.length === 1 || sel.every((d, i) => {
+    if (i === 0) return true;
+    const prev = new Date(sel[i - 1]);
+    const cur = new Date(d);
+    const diffDays = Math.round((cur - prev) / 86400000);
+    // Mon→Tue/Tue→Wed/Wed→Thu/Thu→Fri = 1; Fri→Mon = 3.
+    return diffDays === 1 || diffDays === 3;
+  });
+  let head;
+  if (sel.length === 1) {
+    head = sel[0];
+  } else if (isContiguousWeekdays) {
+    head = `${sel[0]} → ${sel[sel.length - 1]}  (${sel.length} days)`;
+  } else {
+    head = `${sel.length} days  (${sel[0]} … ${sel[sel.length - 1]})`;
+  }
   let overlapLine = '';
   if (overlap.length === sel.length) {
     overlapLine = `<span class="overlap">All ${sel.length} day(s) already profiled — Run will ask: skip or override.</span>`;
@@ -3114,11 +3144,12 @@ function _confirmProfileModal(choice) {
 async function onProfileRunClick() {
   const sel = _profileCal.selected;
   if (!sel.length) return;
-  const start = sel[0];
-  const end = sel.length > 1 ? sel[sel.length - 1] : null;
   const profiledSet = _profiledDates();
   const overlap = sel.filter(d => profiledSet.has(d)).length;
-  const payload = { start, end, symbol: 'MNQ1', resume: true };
+  // Always send the explicit `dates` list — the backend profiles
+  // exactly these days, so non-contiguous picks (Mon+Wed+Fri, two
+  // separate weeks) work without expanding to fill the gaps.
+  const payload = { dates: [...sel], symbol: 'MNQ1', resume: true };
   if (overlap > 0) {
     _pendingRun = payload;
     _showProfileModal({ overlap, total: sel.length });
@@ -3137,7 +3168,14 @@ async function _dispatchProfileRun(payload) {
   goEl.disabled = true;
   statusEl.textContent = 'starting…';
   progressEl.classList.remove('hidden');
-  const label = payload.end ? `${payload.start} → ${payload.end}` : payload.start;
+  let label;
+  if (payload.dates && payload.dates.length) {
+    label = payload.dates.length === 1
+      ? payload.dates[0]
+      : `${payload.dates.length} days (${payload.dates[0]} … ${payload.dates[payload.dates.length - 1]})`;
+  } else {
+    label = payload.end ? `${payload.start} → ${payload.end}` : payload.start;
+  }
   phaseEl.textContent = `Starting run for ${label} (resume=${payload.resume})`;
   eventsEl.innerHTML = '';
   _profileRunSeenEvents = 0;
