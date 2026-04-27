@@ -1219,9 +1219,17 @@ async def analyze_apply_pine(payload: dict) -> dict:
     apply_script = Path(__file__).parent / "apply_pine.py"
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
+    # Pass --layout so apply_pine.py pins to OUR cloned layout instead
+    # of layout_guard's default ("1run Automation"). Without this, the
+    # subprocess immediately switches the chart back to the default and
+    # the script lands on the user's original layout — defeating the
+    # whole "isolate to a fresh layout" intent.
+    cmd = [python_exe, str(apply_script), str(resolved)]
+    if new_layout_name:
+        cmd.extend(["--layout", new_layout_name])
     try:
         proc = await asyncio.create_subprocess_exec(
-            python_exe, str(apply_script), str(resolved),
+            *cmd,
             cwd=str(Path(__file__).parent),
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
         )
@@ -1977,9 +1985,12 @@ async def forecast_pivot_apply(
     apply_script = Path(__file__).parent / "apply_pine.py"
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
+    cmd = [python_exe, str(apply_script), str(pine_path)]
+    if new_layout_name:
+        cmd.extend(["--layout", new_layout_name])
     try:
         proc = await asyncio.create_subprocess_exec(
-            python_exe, str(apply_script), str(pine_path),
+            *cmd,
             cwd=str(Path(__file__).parent),
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
         )
@@ -2463,9 +2474,12 @@ async def forecast_apply(
     apply_script = Path(__file__).parent / "apply_pine.py"
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
+    cmd = [python_exe, str(apply_script), str(pine_path)]
+    if new_layout_name:
+        cmd.extend(["--layout", new_layout_name])
     try:
         proc = await asyncio.create_subprocess_exec(
-            python_exe, str(apply_script), str(pine_path),
+            *cmd,
             cwd=str(Path(__file__).parent),
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
         )
