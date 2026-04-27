@@ -1103,13 +1103,83 @@ async def session_today(symbol: str = "MNQ1") -> dict:
     }
 
 
+async def _create_layout_for_pine(label: str) -> tuple[str, str | None]:
+    """Clone the active TV layout under a fresh name `label` AND switch
+    the chart to that new clone, ready for an apply-pine flow.
+
+    Used by every apply-pine endpoint (analyze, forecast stage, pivot)
+    to keep generated indicators off the user's working layouts —
+    the active layout (1run Automation, Money Print, daily Profile)
+    stays untouched while the new cloned layout receives the script.
+
+    Two-step flow with verification at each:
+      1. `layouts.copy(label)` — TV's "Make a copy…" menu action,
+         creates the new layout in TV's backend. Smoke-tested
+         2026-04-26 to NOT switch the active chart (TV's intended
+         "stay on original" behavior).
+      2. `layout_guard.ensure_layout(page, layout_name=label)` —
+         navigates to the new layout via /chart/{slug}/ so apply_pine
+         attaches there and not to the user's original active layout.
+
+    `layouts.save_as` is intentionally not used: smoke test 2026-04-26
+    found that TV's "Create new layout…" menu action silently no-ops in
+    CDP-attach mode (backend layout count unchanged after the click),
+    causing the subsequent rename inside `save_as` to overwrite the
+    active layout — corrupting user data. `layouts.save_as` itself
+    now has a count-guard that raises BEFORE the rename to prevent
+    that, but it remains non-functional in this build, so we route
+    through `copy` which works.
+
+    Returns (layout_name, layout_id). Raises HTTPException on any
+    failure so the caller short-circuits before running apply_pine —
+    better to abort than apply to whatever layout was active."""
+    try:
+        from tv_automation import layouts as _layouts_mod
+        result = await _layouts_mod.copy(label)
+        if not result.get("ok"):
+            raise HTTPException(500,
+                f"layouts.copy returned not-ok: {result}")
+        audit.log("apply_pine.layout_copied", name=label)
+
+        # TV's "Make a copy..." creates the layout but stays on the
+        # original — explicitly switch so apply_pine lands on the copy.
+        from session import tv_context as _tv_context
+        from tv_automation import layout_guard as _lg_mod
+        async with _tv_context() as ctx:
+            page = next((p for p in ctx.pages if "/chart/" in p.url), None)
+            if page is None:
+                raise HTTPException(500,
+                    "created layout but no /chart/ tab to switch to")
+            info = await _lg_mod.ensure_layout(page, layout_name=label)
+
+        audit.log("apply_pine.layout_switched",
+                  name=label, layout_id=info.get("layout_id"))
+        return label, info.get("layout_id")
+    except HTTPException:
+        raise
+    except Exception as e:
+        audit.log("apply_pine.layout_create_fail",
+                  name=label, err=f"{type(e).__name__}: {e}")
+        raise HTTPException(500,
+            f"failed to create new layout: {type(e).__name__}: {e}")
+
+
 @app.post("/api/analyze/apply-pine")
 async def analyze_apply_pine(payload: dict) -> dict:
     """Apply a previously-generated pine script to the TradingView chart.
 
-    Reuses the existing apply_pine.py orchestration — paste into Pine
-    Editor → save → add to chart. Path must be inside the repo's
-    `pine/generated/` directory, never an arbitrary file.
+    Default flow: create a fresh TV layout first, then paste/save/add
+    the Pine into it — keeps the user's working layouts (1run Automation,
+    Money Print, etc.) clean. The new layout's name is `Pine — TS`
+    where TS is `YYYY-MM-DD HH:MM:SS` local time so each apply is
+    uniquely named and chronologically sortable in TV's picker.
+
+    Pass `{"create_layout": false}` in the payload to skip the
+    new-layout step and apply directly to the active layout (legacy
+    behavior — useful when iterating Pine on a sandbox layout already).
+
+    Path must be inside the repo's `pine/generated/` directory, never
+    an arbitrary file.
     """
     p = payload or {}
     path = (p.get("path") or "").strip()
@@ -1125,6 +1195,22 @@ async def analyze_apply_pine(payload: dict) -> dict:
         raise HTTPException(403, "path outside allowed pine root")
     if not resolved.exists():
         raise HTTPException(404, "pine file not found")
+
+    # Create a new layout BEFORE running apply_pine so the generated
+    # script lands on a fresh chart state — protects the active layout
+    # (1run Automation, Money Print, daily Profile, etc.) from getting
+    # an unwanted study attached. `Create new layout` in TV's manage
+    # menu clones the current chart state (symbol/TF/visible range) so
+    # the new layout opens framed identically; the apply_pine subprocess
+    # then runs against this new layout because it attaches to whatever
+    # tab is active.
+    create_layout = bool(p.get("create_layout", True))
+    new_layout_name: str | None = None
+    new_layout_id: str | None = None
+    if create_layout:
+        from datetime import datetime as _dt
+        label = f"Pine — {_dt.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        new_layout_name, new_layout_id = await _create_layout_for_pine(label)
 
     # Import lazily — apply_pine module lives at top-level, not under
     # tv_automation, and does Playwright UI work we'd rather only pay
@@ -1189,11 +1275,16 @@ async def analyze_apply_pine(payload: dict) -> dict:
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
             "linked_to_decision": linked,
+            "new_layout_name": new_layout_name,
+            "new_layout_id": new_layout_id,
             "stdout": stdout_text[-2000:],
             "stderr": stderr.decode("utf-8", errors="replace")[-2000:],
         }
     except asyncio.TimeoutError:
-        return {"ok": False, "path": str(resolved), "error": "apply_pine timeout (120s)"}
+        return {"ok": False, "path": str(resolved),
+                "new_layout_name": new_layout_name,
+                "new_layout_id": new_layout_id,
+                "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
 
@@ -1843,11 +1934,17 @@ async def forecast_pivot_pine(symbol: str, date: str) -> Response:
 
 
 @app.post("/api/forecasts/{symbol}/{date}/pivot/apply")
-async def forecast_pivot_apply(symbol: str, date: str) -> dict:
+async def forecast_pivot_apply(
+    symbol: str, date: str, payload: dict | None = None,
+) -> dict:
     """Render the pivot Pine + push it to the TradingView chart via the
-    apply_pine.py subprocess. Long-running (~30-60s). Adds as a SECOND
-    indicator on top of the existing pre-session overlay — the morning's
-    plan stays visible underneath."""
+    apply_pine.py subprocess. Long-running (~30-60s).
+
+    Default flow: create a fresh layout (`Pine pivot — DATE — TS`) and
+    attach the pivot script there — keeps it off the user's working
+    layouts. Pass `{"create_layout": false}` to overlay on the active
+    layout instead (legacy behavior — useful when you want to stack
+    the pivot directly on the morning's pre-session overlay)."""
     if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date):
         raise HTTPException(400, "invalid params")
     pivot_jf = _latest_pivot_path(symbol, date)
@@ -1866,6 +1963,15 @@ async def forecast_pivot_apply(symbol: str, date: str) -> dict:
     stage = data.get("stage", "pivot")
     pine_path = pine_dir / f"pivot_overlay_{date}_{stage}.pine"
     pine_path.write_text(pine_text)
+
+    p = payload or {}
+    create_layout = bool(p.get("create_layout", True))
+    new_layout_name: str | None = None
+    new_layout_id: str | None = None
+    if create_layout:
+        from datetime import datetime as _dt
+        label = f"Pine pivot — {date} — {_dt.now().strftime('%H:%M:%S')}"
+        new_layout_name, new_layout_id = await _create_layout_for_pine(label)
 
     import subprocess
     apply_script = Path(__file__).parent / "apply_pine.py"
@@ -1890,11 +1996,16 @@ async def forecast_pivot_apply(symbol: str, date: str) -> dict:
             "pine_path": str(pine_path),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
+            "new_layout_name": new_layout_name,
+            "new_layout_id": new_layout_id,
             "stdout_tail": stdout_text[-1500:],
             "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
         }
     except asyncio.TimeoutError:
-        return {"ok": False, "pine_path": str(pine_path), "error": "apply_pine timeout (120s)"}
+        return {"ok": False, "pine_path": str(pine_path),
+                "new_layout_name": new_layout_name,
+                "new_layout_id": new_layout_id,
+                "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
 
@@ -2303,13 +2414,22 @@ async def forecast_regenerate(symbol: str, date: str, stage: str) -> dict:
 
 
 @app.post("/api/forecasts/{symbol}/{date}/{stage}/apply")
-async def forecast_apply(symbol: str, date: str, stage: str) -> dict:
+async def forecast_apply(
+    symbol: str, date: str, stage: str, payload: dict | None = None,
+) -> dict:
     """Render Pine from the forecast JSON, write to pine/generated/, and
     apply to the TradingView chart via the existing apply_pine.py subprocess.
 
-    Long-running (~30-60s for the browser-driving Playwright work). Blocks
-    until done with a 120s timeout — matches the pattern of
-    `/api/analyze/apply-pine`. UI should disable the button while waiting."""
+    Default flow: create a fresh layout (`Pine forecast — DATE STAGE
+    — TS`) so the script attaches there and the user's working layout
+    stays clean. Pass `{"create_layout": false}` to apply directly to
+    the active layout (legacy behavior — useful when iterating Pine
+    on a sandbox layout already loaded).
+
+    Long-running (~30-60s for the browser-driving Playwright work).
+    Blocks until done with a 120s timeout — matches the pattern of
+    `/api/analyze/apply-pine`. UI should disable the button while
+    waiting."""
     if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
         raise HTTPException(400, "invalid params")
     jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
@@ -2329,6 +2449,15 @@ async def forecast_apply(symbol: str, date: str, stage: str) -> dict:
     pine_dir.mkdir(parents=True, exist_ok=True)
     pine_path = pine_dir / f"forecast_overlay_{date}.pine"
     pine_path.write_text(pine_text)
+
+    p = payload or {}
+    create_layout = bool(p.get("create_layout", True))
+    new_layout_name: str | None = None
+    new_layout_id: str | None = None
+    if create_layout:
+        from datetime import datetime as _dt
+        label = f"Pine forecast — {date} {stage} — {_dt.now().strftime('%H:%M:%S')}"
+        new_layout_name, new_layout_id = await _create_layout_for_pine(label)
 
     import subprocess
     apply_script = Path(__file__).parent / "apply_pine.py"
@@ -2353,11 +2482,16 @@ async def forecast_apply(symbol: str, date: str, stage: str) -> dict:
             "pine_path": str(pine_path),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
+            "new_layout_name": new_layout_name,
+            "new_layout_id": new_layout_id,
             "stdout_tail": stdout_text[-1500:],
             "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
         }
     except asyncio.TimeoutError:
-        return {"ok": False, "pine_path": str(pine_path), "error": "apply_pine timeout (120s)"}
+        return {"ok": False, "pine_path": str(pine_path),
+                "new_layout_name": new_layout_name,
+                "new_layout_id": new_layout_id,
+                "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
 

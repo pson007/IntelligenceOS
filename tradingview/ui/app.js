@@ -966,7 +966,10 @@ function renderAnalysisResult(r) {
   if (r.pine_path) {
     pineBtn.disabled = false;
     pineBtn.onclick = async () => {
-      if (!confirm('Paste this analysis pine script into TradingView? Takes ~20s and takes over the chart view briefly.')) return;
+      if (!confirm('Apply this Pine to a NEW TradingView layout? '
+                 + 'A fresh layout (named "Pine — TS") will be created '
+                 + 'and the script attached there — your active layout '
+                 + 'is left untouched. Takes ~30s.')) return;
       setBusy(pineBtn, true);
       try {
         const ar = await api('/api/analyze/apply-pine', {
@@ -977,14 +980,17 @@ function renderAnalysisResult(r) {
           },
         });
         if (ar.ok) {
+          const layoutBit = ar.new_layout_name
+            ? ` · layout "${ar.new_layout_name}"`
+            : '';
           const shot = ar.applied_screenshot;
           if (shot) {
-            toast(`pine applied · screenshot saved: ${shot.split('/').slice(-2).join('/')}`, 'ok');
+            toast(`pine applied${layoutBit} · screenshot: ${shot.split('/').slice(-2).join('/')}`, 'ok');
           } else {
-            toast('pine applied to chart', 'ok');
+            toast(`pine applied to chart${layoutBit}`, 'ok');
           }
         } else {
-          toast(`pine apply failed: ${(ar.stderr || 'see server log').slice(-200)}`, 'err');
+          toast(`pine apply failed: ${(ar.stderr || ar.error || 'see server log').slice(-200)}`, 'err');
         }
       } catch (e) { toast(`apply-pine: ${e.message}`, 'err'); }
       finally { setBusy(pineBtn, false, 'Apply pine to chart'); }
@@ -4254,10 +4260,11 @@ async function _dispatchPivotApply() {
   try {
     const r = await api(
       `/api/forecasts/MNQ1/${encodeURIComponent(today)}/pivot/apply`,
-      { method: 'POST' }
+      { method: 'POST', body: {} }
     );
     if (r.ok) {
-      toast('pivot applied to chart', 'ok');
+      const layoutBit = r.new_layout_name ? ` · layout "${r.new_layout_name}"` : '';
+      toast(`pivot applied to chart${layoutBit}`, 'ok');
     } else {
       toast(`apply failed: ${r.error || 'check stderr'}`, 'err');
     }
@@ -4616,7 +4623,9 @@ async function selectForecastDay(symbol, date) {
       try {
         const r = await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/apply`, { method: 'POST', body: {} });
         if (r.ok) {
-          toast(`applied: ${r.pine_path?.split('/').pop() || 'pine'}`, 'ok');
+          const fname = r.pine_path?.split('/').pop() || 'pine';
+          const layoutBit = r.new_layout_name ? ` · layout "${r.new_layout_name}"` : '';
+          toast(`applied: ${fname}${layoutBit}`, 'ok');
         } else {
           toast(`apply returned not-ok: ${r.error || 'see stdout'}`, 'err');
           console.warn('apply stdout tail:', r.stdout_tail);

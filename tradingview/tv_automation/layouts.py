@@ -412,6 +412,27 @@ async def save_as(new_name: str) -> dict:
                         actual=f"found one in picker",
                     )
 
+                # Capture saved-chart count via TV's JS API BEFORE the
+                # create step. This is the safety net against a
+                # data-destruction class of bug observed 2026-04-26: in
+                # CDP-attach mode the "Create new layout..." menu click
+                # has been observed to silently no-op (chart appears to
+                # reload but no new chart is registered backend-side).
+                # Without the post-create count check, the subsequent
+                # rename then hits the ACTIVE layout — overwriting the
+                # user's working layout (e.g. "1run Automation") with
+                # the new_name.
+                async def _saved_chart_count() -> int:
+                    return await page.evaluate(r"""() => new Promise(r => {
+                        try {
+                            window.TradingViewApi.getSavedCharts(charts =>
+                                r((charts||[]).length));
+                            setTimeout(() => r(-1), 5000);
+                        } catch (e) { r(-1); }
+                    })""")
+
+                before_count = await _saved_chart_count()
+
                 # Step 1: Create new blank layout.
                 await _open_manage_menu(page)
                 await _click_menu_label(page, f"Create new layout{ELL}")
@@ -419,6 +440,25 @@ async def save_as(new_name: str) -> dict:
                 await page.wait_for_selector(
                     "canvas", state="visible", timeout=15_000,
                 )
+
+                # Verify a NEW layout was actually created backend-side
+                # before doing anything destructive. Hard-fail if the
+                # count didn't increase — the in-progress rename would
+                # otherwise damage the active layout.
+                await page.wait_for_timeout(1500)
+                after_count = await _saved_chart_count()
+                if before_count >= 0 and after_count <= before_count:
+                    audit.log("layouts.save_as.create_no_op",
+                              before_count=before_count,
+                              after_count=after_count,
+                              attempted_name=new_name)
+                    raise VerificationFailedError(
+                        "save_as.create_layout",
+                        expected=f"layout count > {before_count}",
+                        actual=f"got {after_count} — create_new_layout "
+                               f"silently no-op'd; aborting BEFORE rename "
+                               f"to protect the active layout",
+                    )
 
                 # Step 2: dismiss TV's welcome-video overlay if present.
                 video = page.locator('[class*="isShowVideo"]').first
