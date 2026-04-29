@@ -220,8 +220,6 @@ async def run_pivot(
     md_path, json_path = base.with_suffix(".md"), base.with_suffix(".json")
 
     async with chart_session() as (_ctx, page):
-        from . import layout_guard
-        await layout_guard.ensure_layout(page)
         await replay.exit_replay(page)
         landed = await replay_api.set_symbol_in_place(
             page, symbol=_symbol_for_api(symbol), interval="1",

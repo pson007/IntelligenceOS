@@ -178,6 +178,42 @@ def _prune_act_tasks() -> None:
             reg.pop(tid, None)
 
 
+# ---------------------------------------------------------------------------
+# Kill-switch — single file flag at state/paused.json. Presence ⇒ paused.
+# Every long-running endpoint calls _check_not_paused() before _cdp_busy()
+# so a paused workspace 503's new starts without affecting in-flight runs.
+# ---------------------------------------------------------------------------
+
+_STATE_DIR = (Path(__file__).parent / "state").resolve()
+_PAUSED_FLAG = _STATE_DIR / "paused.json"
+
+
+def _read_paused_state() -> dict | None:
+    """Return the paused-state payload {since, reason} when the flag file
+    exists, else None. Tolerant of malformed JSON — a stray empty file
+    still counts as paused (fail-closed)."""
+    if not _PAUSED_FLAG.exists():
+        return None
+    try:
+        data = json.loads(_PAUSED_FLAG.read_text() or "{}")
+    except Exception:
+        data = {}
+    if not isinstance(data, dict):
+        data = {}
+    return {
+        "since": data.get("since"),
+        "reason": data.get("reason") or "",
+    }
+
+
+def _check_not_paused() -> None:
+    """Raise 503 if the kill-switch is engaged. Call at the top of every
+    endpoint that kicks off a CDP-bound or long-running workflow."""
+    state = _read_paused_state()
+    if state is not None:
+        raise HTTPException(503, {"detail": "kill-switch engaged", **state})
+
+
 def _cdp_busy() -> dict | None:
     """Return info about any in-flight act / analyze / profile run, or None
     if idle. All three hold the single CDP session exclusively; used to 409
@@ -274,6 +310,45 @@ async def ui_static(filename: str):
 @app.get("/api/health")
 async def health() -> dict:
     return {"ok": True, "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+
+
+# Kill-switch admin endpoints — pause/resume the workspace from one place.
+# `state` is GET so the UI can poll it cheaply without the CSRF gate.
+@app.get("/api/admin/state")
+async def admin_state() -> dict:
+    """Return current pause state for UI polling."""
+    p = _read_paused_state()
+    return {"paused": p is not None, "state": p}
+
+
+@app.post("/api/admin/pause")
+async def admin_pause(payload: dict | None = None) -> dict:
+    """Engage the kill-switch. Writes state/paused.json — every endpoint
+    that runs a CDP-bound or long-running workflow will 503 until resumed.
+    In-flight runs are NOT cancelled; they finish naturally."""
+    p = payload or {}
+    reason = (p.get("reason") or "").strip()
+    _STATE_DIR.mkdir(parents=True, exist_ok=True)
+    state = {
+        "since": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "reason": reason,
+    }
+    _PAUSED_FLAG.write_text(json.dumps(state, indent=2))
+    audit.log("admin.paused", **state)
+    return {"ok": True, "paused": True, "state": state}
+
+
+@app.post("/api/admin/resume")
+async def admin_resume() -> dict:
+    """Release the kill-switch."""
+    existed = _PAUSED_FLAG.exists()
+    if existed:
+        try:
+            _PAUSED_FLAG.unlink()
+        except OSError as e:
+            raise HTTPException(500, f"failed to clear paused flag: {e}")
+    audit.log("admin.resumed", was_paused=existed)
+    return {"ok": True, "paused": False, "was_paused": existed}
 
 
 # Browser-health probe. Cached for 30s so a noisy UI polling this
@@ -400,6 +475,7 @@ async def act_start(payload: dict) -> dict:
     # Refuse if another CDP-holding run is in flight (act OR analyze).
     # They share a single Playwright session; concurrent runs interleave
     # clicks / chart navigations unpredictably.
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -481,6 +557,7 @@ async def analyze_start(payload: dict) -> dict:
         raise HTTPException(400, "symbol required")
     timeframe = (p.get("timeframe") or "").strip() or None
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -611,6 +688,7 @@ async def analyze_deep_start(payload: dict) -> dict:
     if not symbol:
         raise HTTPException(400, "symbol required")
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -680,6 +758,7 @@ async def pressure_test_start(payload: dict) -> dict:
     timeframe = (p.get("timeframe") or "").strip() or None
     combos = p.get("combos") or None
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -1103,84 +1182,15 @@ async def session_today(symbol: str = "MNQ1") -> dict:
     }
 
 
-async def _create_layout_for_pine(label: str) -> tuple[str, str | None]:
-    """Clone the active TV layout under a fresh name `label` AND switch
-    the chart to that new clone, ready for an apply-pine flow.
-
-    Used by every apply-pine endpoint (analyze, forecast stage, pivot)
-    to keep generated indicators off the user's working layouts —
-    the active layout (1run Automation, Money Print, daily Profile)
-    stays untouched while the new cloned layout receives the script.
-
-    Two-step flow with verification at each:
-      1. `layouts.copy(label)` — TV's "Make a copy…" menu action,
-         creates the new layout in TV's backend. Smoke-tested
-         2026-04-26 to NOT switch the active chart (TV's intended
-         "stay on original" behavior).
-      2. `layout_guard.ensure_layout(page, layout_name=label)` —
-         navigates to the new layout via /chart/{slug}/ so apply_pine
-         attaches there and not to the user's original active layout.
-
-    `layouts.save_as` is intentionally not used: smoke test 2026-04-26
-    found that TV's "Create new layout…" menu action silently no-ops in
-    CDP-attach mode (backend layout count unchanged after the click),
-    causing the subsequent rename inside `save_as` to overwrite the
-    active layout — corrupting user data. `layouts.save_as` itself
-    now has a count-guard that raises BEFORE the rename to prevent
-    that, but it remains non-functional in this build, so we route
-    through `copy` which works.
-
-    Returns (layout_name, layout_id). Raises HTTPException on any
-    failure so the caller short-circuits before running apply_pine —
-    better to abort than apply to whatever layout was active."""
-    try:
-        from tv_automation import layouts as _layouts_mod
-        result = await _layouts_mod.copy(label)
-        if not result.get("ok"):
-            raise HTTPException(500,
-                f"layouts.copy returned not-ok: {result}")
-        audit.log("apply_pine.layout_copied", name=label)
-
-        # TV's "Make a copy..." creates the layout but stays on the
-        # original — explicitly switch so apply_pine lands on the copy.
-        from session import tv_context as _tv_context
-        from tv_automation import layout_guard as _lg_mod
-        async with _tv_context() as ctx:
-            page = next((p for p in ctx.pages if "/chart/" in p.url), None)
-            if page is None:
-                raise HTTPException(500,
-                    "created layout but no /chart/ tab to switch to")
-            info = await _lg_mod.ensure_layout(page, layout_name=label)
-
-        audit.log("apply_pine.layout_switched",
-                  name=label, layout_id=info.get("layout_id"))
-        return label, info.get("layout_id")
-    except HTTPException:
-        raise
-    except Exception as e:
-        audit.log("apply_pine.layout_create_fail",
-                  name=label, err=f"{type(e).__name__}: {e}")
-        raise HTTPException(500,
-            f"failed to create new layout: {type(e).__name__}: {e}")
-
-
 @app.post("/api/analyze/apply-pine")
 async def analyze_apply_pine(payload: dict) -> dict:
     """Apply a previously-generated pine script to the TradingView chart.
 
-    Default flow: create a fresh TV layout first, then paste/save/add
-    the Pine into it — keeps the user's working layouts (1run Automation,
-    Money Print, etc.) clean. The new layout's name is `Pine — TS`
-    where TS is `YYYY-MM-DD HH:MM:SS` local time so each apply is
-    uniquely named and chronologically sortable in TV's picker.
-
-    Pass `{"create_layout": false}` in the payload to skip the
-    new-layout step and apply directly to the active layout (legacy
-    behavior — useful when iterating Pine on a sandbox layout already).
-
-    Path must be inside the repo's `pine/generated/` directory, never
-    an arbitrary file.
+    Applies directly to whatever layout is currently active — no layout
+    cloning or switching. Path must be inside the repo's
+    `pine/generated/` directory, never an arbitrary file.
     """
+    _check_not_paused()
     p = payload or {}
     path = (p.get("path") or "").strip()
     if not path:
@@ -1196,22 +1206,6 @@ async def analyze_apply_pine(payload: dict) -> dict:
     if not resolved.exists():
         raise HTTPException(404, "pine file not found")
 
-    # Create a new layout BEFORE running apply_pine so the generated
-    # script lands on a fresh chart state — protects the active layout
-    # (1run Automation, Money Print, daily Profile, etc.) from getting
-    # an unwanted study attached. `Create new layout` in TV's manage
-    # menu clones the current chart state (symbol/TF/visible range) so
-    # the new layout opens framed identically; the apply_pine subprocess
-    # then runs against this new layout because it attaches to whatever
-    # tab is active.
-    create_layout = bool(p.get("create_layout", True))
-    new_layout_name: str | None = None
-    new_layout_id: str | None = None
-    if create_layout:
-        from datetime import datetime as _dt
-        label = f"Pine — {_dt.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        new_layout_name, new_layout_id = await _create_layout_for_pine(label)
-
     # Import lazily — apply_pine module lives at top-level, not under
     # tv_automation, and does Playwright UI work we'd rather only pay
     # for when actually applying.
@@ -1219,14 +1213,7 @@ async def analyze_apply_pine(payload: dict) -> dict:
     apply_script = Path(__file__).parent / "apply_pine.py"
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
-    # Pass --layout so apply_pine.py pins to OUR cloned layout instead
-    # of layout_guard's default ("1run Automation"). Without this, the
-    # subprocess immediately switches the chart back to the default and
-    # the script lands on the user's original layout — defeating the
-    # whole "isolate to a fresh layout" intent.
     cmd = [python_exe, str(apply_script), str(resolved)]
-    if new_layout_name:
-        cmd.extend(["--layout", new_layout_name])
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -1283,15 +1270,11 @@ async def analyze_apply_pine(payload: dict) -> dict:
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
             "linked_to_decision": linked,
-            "new_layout_name": new_layout_name,
-            "new_layout_id": new_layout_id,
             "stdout": stdout_text[-2000:],
             "stderr": stderr.decode("utf-8", errors="replace")[-2000:],
         }
     except asyncio.TimeoutError:
         return {"ok": False, "path": str(resolved),
-                "new_layout_name": new_layout_name,
-                "new_layout_id": new_layout_id,
                 "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
@@ -1718,6 +1701,7 @@ async def profile_run_start(payload: dict) -> dict:
     if not _PROFILE_SYMBOL_RX.match(symbol):
         raise HTTPException(400, "invalid symbol")
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -1819,6 +1803,7 @@ async def forecast_run_start(payload: dict) -> dict:
     if not _PROFILE_SYMBOL_RX.match(symbol):
         raise HTTPException(400, "invalid symbol")
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -1946,13 +1931,9 @@ async def forecast_pivot_apply(
     symbol: str, date: str, payload: dict | None = None,
 ) -> dict:
     """Render the pivot Pine + push it to the TradingView chart via the
-    apply_pine.py subprocess. Long-running (~30-60s).
-
-    Default flow: create a fresh layout (`Pine pivot — DATE — TS`) and
-    attach the pivot script there — keeps it off the user's working
-    layouts. Pass `{"create_layout": false}` to overlay on the active
-    layout instead (legacy behavior — useful when you want to stack
-    the pivot directly on the morning's pre-session overlay)."""
+    apply_pine.py subprocess. Long-running (~30-60s). Applies to
+    whatever layout is currently active."""
+    _check_not_paused()
     if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date):
         raise HTTPException(400, "invalid params")
     pivot_jf = _latest_pivot_path(symbol, date)
@@ -1972,22 +1953,11 @@ async def forecast_pivot_apply(
     pine_path = pine_dir / f"pivot_overlay_{date}_{stage}.pine"
     pine_path.write_text(pine_text)
 
-    p = payload or {}
-    create_layout = bool(p.get("create_layout", True))
-    new_layout_name: str | None = None
-    new_layout_id: str | None = None
-    if create_layout:
-        from datetime import datetime as _dt
-        label = f"Pine pivot — {date} — {_dt.now().strftime('%H:%M:%S')}"
-        new_layout_name, new_layout_id = await _create_layout_for_pine(label)
-
     import subprocess
     apply_script = Path(__file__).parent / "apply_pine.py"
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
     cmd = [python_exe, str(apply_script), str(pine_path)]
-    if new_layout_name:
-        cmd.extend(["--layout", new_layout_name])
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -2007,15 +1977,11 @@ async def forecast_pivot_apply(
             "pine_path": str(pine_path),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
-            "new_layout_name": new_layout_name,
-            "new_layout_id": new_layout_id,
             "stdout_tail": stdout_text[-1500:],
             "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
         }
     except asyncio.TimeoutError:
         return {"ok": False, "pine_path": str(pine_path),
-                "new_layout_name": new_layout_name,
-                "new_layout_id": new_layout_id,
                 "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
@@ -2039,6 +2005,7 @@ async def forecast_pivot_start(payload: dict) -> dict:
     if not _PROFILE_SYMBOL_RX.match(symbol):
         raise HTTPException(400, "invalid symbol")
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -2095,6 +2062,7 @@ async def forecast_reconcile_start(payload: dict) -> dict:
     if not _PROFILE_SYMBOL_RX.match(symbol):
         raise HTTPException(400, "invalid symbol")
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -2150,6 +2118,7 @@ async def forecast_pre_session_start(payload: dict) -> dict:
     if not _PROFILE_SYMBOL_RX.match(symbol):
         raise HTTPException(400, "invalid symbol")
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -2209,6 +2178,7 @@ async def forecast_live_stage_start(payload: dict) -> dict:
     if not _PROFILE_SYMBOL_RX.match(symbol):
         raise HTTPException(400, "invalid symbol")
 
+    _check_not_paused()
     busy = _cdp_busy()
     if busy:
         raise HTTPException(409, {
@@ -2429,18 +2399,14 @@ async def forecast_apply(
     symbol: str, date: str, stage: str, payload: dict | None = None,
 ) -> dict:
     """Render Pine from the forecast JSON, write to pine/generated/, and
-    apply to the TradingView chart via the existing apply_pine.py subprocess.
-
-    Default flow: create a fresh layout (`Pine forecast — DATE STAGE
-    — TS`) so the script attaches there and the user's working layout
-    stays clean. Pass `{"create_layout": false}` to apply directly to
-    the active layout (legacy behavior — useful when iterating Pine
-    on a sandbox layout already loaded).
+    apply to the TradingView chart via the existing apply_pine.py
+    subprocess. Applies to whatever layout is currently active.
 
     Long-running (~30-60s for the browser-driving Playwright work).
     Blocks until done with a 120s timeout — matches the pattern of
     `/api/analyze/apply-pine`. UI should disable the button while
     waiting."""
+    _check_not_paused()
     if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
         raise HTTPException(400, "invalid params")
     jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
@@ -2461,22 +2427,11 @@ async def forecast_apply(
     pine_path = pine_dir / f"forecast_overlay_{date}.pine"
     pine_path.write_text(pine_text)
 
-    p = payload or {}
-    create_layout = bool(p.get("create_layout", True))
-    new_layout_name: str | None = None
-    new_layout_id: str | None = None
-    if create_layout:
-        from datetime import datetime as _dt
-        label = f"Pine forecast — {date} {stage} — {_dt.now().strftime('%H:%M:%S')}"
-        new_layout_name, new_layout_id = await _create_layout_for_pine(label)
-
     import subprocess
     apply_script = Path(__file__).parent / "apply_pine.py"
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
     cmd = [python_exe, str(apply_script), str(pine_path)]
-    if new_layout_name:
-        cmd.extend(["--layout", new_layout_name])
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -2496,15 +2451,11 @@ async def forecast_apply(
             "pine_path": str(pine_path),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
-            "new_layout_name": new_layout_name,
-            "new_layout_id": new_layout_id,
             "stdout_tail": stdout_text[-1500:],
             "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
         }
     except asyncio.TimeoutError:
         return {"ok": False, "pine_path": str(pine_path),
-                "new_layout_name": new_layout_name,
-                "new_layout_id": new_layout_id,
                 "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
@@ -2531,3 +2482,107 @@ async def forecast_screenshot(symbol: str, date: str, stage: str):
     if not resolved.exists():
         raise HTTPException(404, "file missing")
     return FileResponse(str(resolved), media_type="image/png")
+
+
+# ---------------------------------------------------------------------------
+# Journal — day-arc reconciliation. Closes the loop between every forecast
+# stage and the daily profile (the 16:00 ET ground-truth artifact).
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/journal/{symbol}/{date}")
+async def journal_day(symbol: str, date: str) -> dict:
+    """Assemble the full forecast → reality chain for one trading day.
+
+    Returns the pre-session forecast, every live forecast (10/12/14),
+    any pivots, applied-Pine screenshots, decisions logged in
+    decisions.db, and the daily profile — with deterministic per-stage
+    grading where possible. Pure read; no LLM calls."""
+    if not _PROFILE_KEY_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+    if not _FORECAST_DATE_RX.match(date):
+        raise HTTPException(400, "invalid date (YYYY-MM-DD)")
+    from tv_automation import journal as journal_mod
+    return journal_mod.assemble_day(symbol, date)
+
+
+# ---------------------------------------------------------------------------
+# Canary thesis — pre-committed morning trip-wires written by the
+# pre-session forecast and evaluated on a 5-min cron between 09:00–12:00 ET.
+# Soft auto-pause: failing canary engages the kill-switch only when the
+# trader has open exposure, so a sit-out morning isn't surprised by a
+# pause.
+# ---------------------------------------------------------------------------
+
+
+def _validate_canary_path(symbol: str, date: str) -> None:
+    if not _PROFILE_KEY_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+    if not _FORECAST_DATE_RX.match(date):
+        raise HTTPException(400, "invalid date (YYYY-MM-DD)")
+
+
+@app.get("/api/canary/{symbol}/{date}")
+async def canary_status(symbol: str, date: str) -> dict:
+    """Return the canary thesis + most recent evaluation status. Empty
+    when no pre-session canary exists for this date. Pure read."""
+    _validate_canary_path(symbol, date)
+    from tv_automation import canary as canary_mod
+    canary = canary_mod.load_canary(symbol, date)
+    if not canary:
+        return {"available": False, "symbol": symbol, "date": date}
+    return {
+        "available": True,
+        "symbol": symbol, "date": date,
+        "canary": canary,
+        "status": canary_mod.load_status(symbol, date),
+    }
+
+
+@app.post("/api/canary/{symbol}/{date}/evaluate")
+async def canary_evaluate(symbol: str, date: str) -> dict:
+    """Re-evaluate every canary check whose `evaluate_after` has
+    passed against the live chart. Idempotent. Long-ish (~3-5s for
+    the chart read); UI should call sparingly. Cron runs this every
+    5 min between 09:00 and 12:00 ET."""
+    _validate_canary_path(symbol, date)
+    _check_not_paused()
+    from tv_automation import canary as canary_mod
+    from session import tv_context as _tv_context
+    async with _tv_context() as ctx:
+        page = next((p for p in ctx.pages if "/chart/" in (p.url or "")), None)
+        if page is None:
+            raise HTTPException(503, "no /chart/ tab attached")
+        return await canary_mod.evaluate_canary(page, symbol, date)
+
+
+@app.post("/api/canary/{symbol}/{date}/snooze/{check_id}")
+async def canary_snooze(
+    symbol: str, date: str, check_id: str, payload: dict | None = None,
+) -> dict:
+    """Manually mark one check as ignored. Mandatory `reason` body
+    field — the discipline escape hatch that gets logged to audit.
+    Re-running evaluation will leave the snoozed check at status
+    `snoozed` instead of re-evaluating it. Reading these reasons six
+    weeks later is half the calibration value."""
+    _validate_canary_path(symbol, date)
+    if not re.match(r"^[A-Za-z0-9_\-]{1,64}$", check_id):
+        raise HTTPException(400, "invalid check_id")
+    p = payload or {}
+    reason = (p.get("reason") or "").strip()
+    if len(reason) < 5:
+        raise HTTPException(400, "reason required (≥5 chars)")
+    from tv_automation import canary as canary_mod
+    status = canary_mod.load_status(symbol, date) or {
+        "symbol": symbol, "date": date, "results": [],
+    }
+    snoozes = status.setdefault("snoozes", {})
+    snoozes[check_id] = {
+        "snoozed_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "reason": reason,
+    }
+    canary_mod.write_status(symbol, date, status)
+    audit.log("canary.snoozed",
+              symbol=symbol, date=date,
+              check_id=check_id, reason=reason)
+    return {"ok": True, "snoozes": snoozes}

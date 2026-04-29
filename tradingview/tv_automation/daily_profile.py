@@ -51,18 +51,6 @@ _SCREENSHOT_ROOT = (Path.home() / "Desktop" / "TradingView").resolve()
 _PARSE_FAIL_ROOT = (Path(__file__).parent.parent / "pine" / "parse_failures").resolve()
 _ET = ZoneInfo("America/New_York")
 
-# Profile capture uses a layout-specific study stack (different from
-# the generic "1run Automation" layout that other workflows use). Pin
-# the name in one place — the user marks active layouts with a 🟢
-# prefix in TradingView's layout picker so the literal name carries
-# the emoji. Override with PROFILE_LAYOUT_NAME env var if the user
-# renames it (parallels AUTOMATION_LAYOUT_NAME for layout_guard's
-# default). Older profiles had a hardcoded "Money Print" string here
-# that drifted from the actual layout in use.
-import os as _os
-_PROFILE_LAYOUT_NAME = _os.environ.get(
-    "PROFILE_LAYOUT_NAME", "🟢1run Profile",
-)
 
 
 def _symbol_for_api(symbol: str) -> str:
@@ -536,9 +524,7 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
 
     async with chart_session() as (_ctx, page):
         from . import layout_guard
-        layout_info = await layout_guard.ensure_layout(
-            page, layout_name=_PROFILE_LAYOUT_NAME,
-        )
+        layout_info = await layout_guard.current_layout(page)
         landed = await replay_api.set_symbol_in_place(
             page, symbol=_symbol_for_api(symbol), interval="1",
         )
@@ -638,8 +624,7 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
                     "session_complete": True,
                     "cursor_ts_approx": f"{date_str}T16:00:00-04:00",
                     "layout": (layout_info.get("name")
-                               if isinstance(layout_info, dict) else None)
-                              or _PROFILE_LAYOUT_NAME,
+                               if isinstance(layout_info, dict) else None),
                     "provider": "chatgpt_web",
                     "model": "Thinking",
                     "screenshot_path": screenshot_for_json,

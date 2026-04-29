@@ -70,6 +70,21 @@
       <span id="health-text">checking…</span>
       <button class="theme-toggle" id="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">☾</button>
     </div>
+
+    <!-- Kill-switch — single-click pause/resume of every CDP-bound
+         workflow + scheduled run. Hidden until paused, then shown red
+         with a "PAUSED" label and click-to-resume. The icon-only
+         control next to it lets you engage the switch from the idle
+         state. State polled every 8s by app.js. -->
+    <div class="kill-switch" id="kill-switch">
+      <button type="button" id="kill-switch-pause" class="kill-switch__pause"
+              title="Pause every workflow (analyze, forecasts, profile, apply-pine, act). In-flight runs finish; new starts 503.">⏸</button>
+      <button type="button" id="kill-switch-resume" class="kill-switch__resume hidden"
+              title="Resume — release the kill-switch.">
+        <span class="kill-switch__dot"></span>
+        <span>PAUSED</span>
+      </button>
+    </div>
   </aside>
 
   <main class="main">
@@ -85,6 +100,26 @@
       <div class="session-bar__cell session-bar__inval">
         <span class="session-bar__lbl">Invalidates if</span>
         <span class="session-bar__val" id="sb-inval-val">—</span>
+      </div>
+      <!-- Canary thesis — pre-committed morning trip-wires from the
+           pre-session forecast. Polled every 30s alongside the rest
+           of the session bar. Hidden when no canary exists for today.
+           Click expands a flyout with per-check rows + snooze. -->
+      <div class="session-bar__cell session-bar__canary hidden" id="sb-canary-cell">
+        <span class="session-bar__lbl">Canary</span>
+        <button type="button" id="sb-canary-toggle" class="session-bar__canary-btn">
+          <span class="session-bar__canary-score mono" id="sb-canary-score">—</span>
+          <span class="session-bar__canary-dots" id="sb-canary-dots"></span>
+        </button>
+        <div class="canary-flyout hidden" id="sb-canary-flyout">
+          <div class="canary-flyout__head">
+            <span class="canary-flyout__state mono" id="sb-canary-state">—</span>
+            <span class="canary-flyout__action mono" id="sb-canary-action">—</span>
+            <button type="button" class="icon-btn" id="sb-canary-eval-btn" title="Re-evaluate every check now">↻</button>
+          </div>
+          <div class="canary-flyout__thesis muted" id="sb-canary-thesis"></div>
+          <div class="canary-flyout__rows" id="sb-canary-rows"></div>
+        </div>
       </div>
       <div class="session-bar__cell session-bar__pnl">
         <span class="session-bar__lbl">Open P&amp;L</span>
@@ -340,9 +375,9 @@
             <input type="text" id="analyze-model-ollama-text" class="hidden" hidden
                    placeholder="ollama model (e.g. gemma4:31b)" />
             <select id="analyze-model-claude" class="hidden" hidden>
-              <option value="sonnet" selected>Sonnet 4.6 (balanced)</option>
-              <option value="opus">Opus 4.7 (most capable)</option>
-              <option value="haiku">Haiku 4.5 (fastest)</option>
+              <option value="sonnet" selected>Sonnet 4.6 (default — fast + balanced)</option>
+              <option value="opus">Opus 4.7 (best R:R, ~Sonnet on deep)</option>
+              <option value="haiku">Haiku 4.5 (deprecated — no remaining niche)</option>
             </select>
             <select id="analyze-model-chatgpt" class="hidden" hidden>
               <option value="instant" selected>Instant (fast routing)</option>
@@ -619,6 +654,24 @@
     <section class="tab hidden" id="tab-journal">
       <h1>Journal</h1>
       <div class="subtitle">Every Analyze / Deep run is recorded. Tag how each one resolved to build the calibration track.</div>
+
+      <!-- Day arc — pre-session → 10/12/14 → pivot → outcome timeline
+           for one trading day, with each stage graded against the
+           daily profile. The "did my morning thesis survive contact
+           with reality?" view. Endpoint: /api/journal/{symbol}/{date}. -->
+      <div class="card" id="day-arc-card">
+        <div class="card-head">
+          <h2>Day arc</h2>
+          <div class="card-head__actions">
+            <input type="date" id="day-arc-date" class="day-arc__date" />
+            <button class="icon-btn" id="day-arc-load">Load</button>
+            <span class="day-arc__score mono muted" id="day-arc-score">—</span>
+          </div>
+        </div>
+        <div class="day-arc__body" id="day-arc-body">
+          <div class="empty">Pick a date and click Load.</div>
+        </div>
+      </div>
 
       <!-- Weekly rollup — N-day P&L, win rate, per-provider
            attribution + prior-period comparison so drift is visible.

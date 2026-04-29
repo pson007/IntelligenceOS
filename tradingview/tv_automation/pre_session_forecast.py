@@ -49,6 +49,94 @@ def _symbol_for_api(symbol: str) -> str:
     return symbol if "!" in symbol or ":" in symbol else f"{symbol}!"
 
 
+_CANARY_TIME_RX = re.compile(r"^(\d{1,2}):(\d{2})$")
+
+
+def _resolve_canary_evaluate_at(hhmm: str | None, date_str: str) -> str | None:
+    """LLM emits `evaluate_at: "HH:MM"` (ET). Resolve to absolute ISO
+    with TODAY's date and ET offset so canary.py's `datetime.fromisoformat`
+    parses without ambiguity. Returns None if the input doesn't match
+    HH:MM — caller writes the original through anyway so a malformed
+    timestamp is visible in the artifact rather than silently dropped."""
+    if not hhmm or not isinstance(hhmm, str):
+        return None
+    m = _CANARY_TIME_RX.match(hhmm.strip())
+    if not m:
+        return None
+    hh, mm = int(m.group(1)), int(m.group(2))
+    if hh > 23 or mm > 59:
+        return None
+    from zoneinfo import ZoneInfo
+    et = ZoneInfo("America/New_York")
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+    dt = datetime(d.year, d.month, d.day, hh, mm, 0, tzinfo=et)
+    return dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+
+def _write_canary_artifact(
+    canary_block: dict, symbol: str, date_str: str, dow: str,
+) -> Path:
+    """Persist the canary thesis as its own JSON file. Resolves each
+    check's `evaluate_at: HH:MM` to an absolute ISO `evaluate_after`
+    (and a 1-minute window via `evaluate_before` to keep the eval
+    window tight). Idempotent — overwrites if re-run."""
+    checks_in = canary_block.get("checks") or []
+    checks_out = []
+    for c in checks_in:
+        if not isinstance(c, dict):
+            continue
+        hhmm = c.get("evaluate_at")
+        eval_after = _resolve_canary_evaluate_at(hhmm, date_str)
+        # `evaluate_before` is `evaluate_after + 5 min`. Keeps a finite
+        # window so a long-deferred eval doesn't act on stale data.
+        eval_before = None
+        if eval_after:
+            try:
+                d = datetime.fromisoformat(eval_after)
+                eval_before = (d + timedelta(minutes=5)).strftime(
+                    "%Y-%m-%dT%H:%M:%S%z",
+                )
+            except ValueError:
+                pass
+        checks_out.append({
+            "id": c.get("id"),
+            "label": c.get("label"),
+            "rationale": c.get("rationale"),
+            "check_type": c.get("check_type"),
+            "evaluate_at": hhmm,
+            "evaluate_after": eval_after,
+            "evaluate_before": eval_before,
+            "params": c.get("params") or {},
+            "weight": int(c.get("weight") or 1),
+        })
+
+    artifact = {
+        "symbol": f"{symbol}!",
+        "date": date_str,
+        "dow": dow,
+        "made_at": datetime.now().isoformat(timespec="seconds"),
+        "thesis_summary": canary_block.get("thesis_summary"),
+        "default_action_if_passing":
+            canary_block.get("default_action_if_passing"),
+        "default_action_if_partial":
+            canary_block.get("default_action_if_partial"),
+        "default_action_if_failing":
+            canary_block.get("default_action_if_failing"),
+        "auto_pause_if_failing":
+            bool(canary_block.get("auto_pause_if_failing", True)),
+        "checks": checks_out,
+    }
+    path = _FORECASTS_ROOT / f"{symbol}_{date_str}_canary.json"
+    path.write_text(json.dumps(artifact, indent=2))
+    audit.log("canary.written",
+              symbol=symbol, date=date_str,
+              n_checks=len(checks_out), path=str(path))
+    return path
+
+
 _PRE_SESSION_SYSTEM = """You are a day-trading pre-session forecaster for MNQ1! (Micro E-mini Nasdaq-100 futures, CME). Given (a) a pre-market chart screenshot showing overnight/globex action, (b) the last few completed-day profiles as priors, and (c) same-day-of-week reference days, forecast how TODAY's RTH session (09:30–16:00 ET) will unfold BEFORE it opens.
 
 You are making the FIRST forecast of the day — the one the subsequent 10:00/12:00/14:00 forecasts will refine or contradict. Set the initial bias and name concrete invalidation conditions for later stages to check.
@@ -102,6 +190,46 @@ List the 2–3 same-DOW comparables you're using, 1 sentence each on what they s
 ## CONFIDENCE NOTES
 Two or three sentences stating what could go wrong, what you're least sure about, and which of the invalidation triggers is most likely to fire.
 
+## CANARY THESIS
+Pick 3–5 falsifiable trip-wires that must be true by mid-morning for your bias to remain actionable. Each is a binary (pass/fail) observation the chart will prove or disprove between 09:00 and 12:00 ET. Less is more — pick the highest-leverage observations, not many weak ones.
+
+For each canary check, return:
+- `id` — snake_case identifier (e.g. `overnight_posture`, `open_structure`, `first_30_low`)
+- `label` — short human description
+- `rationale` — why this check is load-bearing for the bias
+- `check_type` — one of `price_level`, `price_level_window`, `open_pattern`, `vwap_relationship`
+- `evaluate_at` — HH:MM ET deadline (the system converts to absolute ISO using TODAY'S date)
+- `params` — type-specific (see below)
+- `weight` — 1 (confirmation) or 2 (thesis-killer)
+
+### Check type: `price_level`
+Pass when the latest 1-min bar's close satisfies the inequality at evaluate_at.
+- `params: { "price_above": NUMBER }` — pass when close > number
+- `params: { "price_below": NUMBER }` — pass when close < number
+
+### Check type: `price_level_window`
+Pass when the extreme of a time window respects a threshold.
+- `params: { "window": "HH:MM-HH:MM", "low_of_window_above": NUMBER }` — pass when no bar's low in the window dipped below the number
+- `params: { "window": "HH:MM-HH:MM", "high_of_window_below": NUMBER }` — pass when no bar's high in the window broke above
+
+### Check type: `open_pattern`
+Pass when the 09:30–09:35 5-bar print classifies into a tolerated label.
+- `params: { "expected": "dip_then_reclaim|rotational_open|trend_break_up|trend_break_down|gap_and_go|inside_bar_open", "tolerated": [...] }`
+- `tolerated` is a superset of `expected` containing classifications you'd accept.
+
+### Check type: `vwap_relationship`
+Pass when the latest 1-min close is on the named side of session VWAP. Requires VWAP to be on the active layout.
+- `params: { "side": "above" }` | `{ "side": "below" }` | `{ "side": "at" }` (within 2 ticks)
+
+### Pre-committed actions
+- `default_action_if_passing` — when 100% of weighted checks pass
+- `default_action_if_partial` — when 50–99% pass (or some still pending)
+- `default_action_if_failing` — when <50% pass
+
+Allowed action values: `trade_full_size`, `trade_half_size`, `trade_smallest`, `paper_only`, `stand_down`.
+
+- `auto_pause_if_failing` — true engages the workspace kill-switch when failing-state is reached AND there's open exposure. Default: true.
+
 ## STRUCTURED JSON
 ```json
 {
@@ -142,7 +270,25 @@ Two or three sentences stating what could go wrong, what you're least sure about
     "goat_direction": "up|down",
     "close_near_extreme": "..."
   },
-  "confidence_notes": "..."
+  "confidence_notes": "...",
+  "canary": {
+    "thesis_summary": "one sentence stating the bias and its load-bearing assumption",
+    "default_action_if_passing": "trade_full_size|trade_half_size|trade_smallest|paper_only|stand_down",
+    "default_action_if_partial":  "trade_full_size|trade_half_size|trade_smallest|paper_only|stand_down",
+    "default_action_if_failing":  "trade_full_size|trade_half_size|trade_smallest|paper_only|stand_down",
+    "auto_pause_if_failing": true,
+    "checks": [
+      {
+        "id": "overnight_posture",
+        "label": "Overnight holds above pre-session demand",
+        "rationale": "...",
+        "check_type": "price_level",
+        "evaluate_at": "09:30",
+        "params": { "price_above": 26950 },
+        "weight": 2
+      }
+    ]
+  }
 }
 ```
 
@@ -213,10 +359,37 @@ def _compact_profile(p: dict) -> dict:
 async def _capture_premarket(
     page: Page, symbol: str, *, expect: CaptureExpect | None = None,
 ) -> Path:
-    """Screenshot the current live chart for overnight context."""
+    """Screenshot the current live chart for overnight context.
+
+    Heavy TV chart tabs (Pine strategies + multiple indicators) can OOM
+    the renderer mid-flow — Playwright surfaces this as
+    `Keyboard.press: Target crashed`. The CDP page object is still
+    valid but input goes nowhere. Detect the dead renderer on the
+    first input call, reload the page, re-apply symbol/interval from
+    `expect`, and retry once.
+    """
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     await page.bring_to_front()
-    await page.keyboard.press("End")
+    try:
+        await page.keyboard.press("End")
+    except Exception as e:
+        if "target crashed" not in str(e).lower():
+            raise
+        audit.log("pre_session.renderer_crashed", err=str(e))
+        await page.reload(wait_until="domcontentloaded")
+        await page.wait_for_selector("canvas", state="visible", timeout=30_000)
+        await page.wait_for_timeout(1500)
+        if expect is not None:
+            relanded = await replay_api.set_symbol_in_place(
+                page, symbol=expect.symbol, interval="1",
+            )
+            if relanded is None:
+                raise RuntimeError(
+                    "set_symbol_in_place failed after renderer-crash reload"
+                )
+            audit.log("pre_session.recovered_after_crash", landed=relanded)
+        await page.bring_to_front()
+        await page.keyboard.press("End")
     await page.wait_for_timeout(400)
     if expect is not None:
         await assert_capture_ready(page, expect)
@@ -291,8 +464,6 @@ async def run_pre_session(
               same_dow=[p.get("date") for p in same_dow])
 
     async with chart_session() as (_ctx, page):
-        from . import layout_guard
-        await layout_guard.ensure_layout(page)
         await replay.exit_replay(page)
         landed = await replay_api.set_symbol_in_place(
             page, symbol=_symbol_for_api(symbol), interval="1",
@@ -383,6 +554,21 @@ async def run_pre_session(
                 saved["parsed_structured"] = True
             else:
                 saved["parsed_structured"] = False
+
+            # Split the canary block into its own artifact. Lifecycle
+            # is different from pre_session — the canary's *status*
+            # mutates throughout the morning (status.json updates as
+            # checks evaluate), but the canary itself is immutable
+            # once written. Resolve `evaluate_at: "HH:MM"` → absolute
+            # ISO with today's date in ET so canary.py can compare
+            # against datetime.now() without re-doing the date math.
+            canary_block = (structured or {}).get("canary") if structured else None
+            if canary_block:
+                _write_canary_artifact(canary_block, symbol, date_str, dow)
+                saved["canary_emitted"] = True
+            else:
+                saved["canary_emitted"] = False
+
             json_path.write_text(json.dumps(saved, indent=2))
             ac["saved_to"] = str(json_path)
             return saved

@@ -39,7 +39,13 @@ async function api(path, opts = {}) {
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch (e) { data = { raw: text }; }
   if (!r.ok) {
-    const msg = (data && (data.detail || data.error)) || `HTTP ${r.status}`;
+    let msg = (data && (data.detail || data.error)) || `HTTP ${r.status}`;
+    // FastAPI's HTTPException(status, {dict}) wraps the dict under
+    // {"detail": <dict>} — surface the inner "detail" string when present
+    // so toasts show "kill-switch engaged" instead of "[object Object]".
+    if (msg && typeof msg === 'object') {
+      msg = msg.detail || msg.error || JSON.stringify(msg);
+    }
     throw new Error(msg);
   }
   return data;
@@ -67,6 +73,8 @@ const _ERROR_HINTS = [
     'Hard-refresh the page (Cmd+Shift+R) — the client is missing the X-UI header.'],
   [/auth: bad or missing X-UI-Token/i,
     'UI_TOKEN is set server-side. Stash via DevTools: localStorage.setItem("ios-ui-token", "<value>")'],
+  [/kill-switch engaged/i,
+    'Workspace is paused. Click the red PAUSED pill in the sidebar to resume.'],
 ];
 function _withHint(msg) {
   for (const [re, hint] of _ERROR_HINTS) {
@@ -285,7 +293,7 @@ function _fireTabHook(sub) {
   if (sub === 'today') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); } else stopPositionsPoll();
   if (sub === 'watchlist') loadWatchlist();
   if (sub === 'alerts') loadAlerts();
-  if (sub === 'journal') loadJournal();
+  if (sub === 'journal') { loadJournal(); initDayArc(); }
   if (sub === 'profiles') { loadProfiles(); initProfileRun(); }
   if (sub === 'forecasts') { loadForecasts(); initForecastRun(); }
   if (sub === 'onboarding') initWizard();
@@ -359,6 +367,42 @@ async function checkHealth() {
 }
 setInterval(checkHealth, 15000);
 checkHealth();
+
+// Kill-switch — single sidebar control that pauses every CDP-bound
+// workflow + scheduled run. State polled every 8s; UI swaps the
+// "Pause" button for a red "PAUSED" pill when engaged.
+async function refreshKillSwitch() {
+  try {
+    const r = await fetch('/api/admin/state', { headers: { 'X-UI': '1' } });
+    if (!r.ok) return;
+    const data = await r.json();
+    const paused = !!data.paused;
+    $('kill-switch-pause').classList.toggle('hidden', paused);
+    $('kill-switch-resume').classList.toggle('hidden', !paused);
+    if (paused && data.state) {
+      const since = data.state.since || '';
+      const reason = data.state.reason || '';
+      $('kill-switch-resume').title =
+        `Paused since ${since}${reason ? ' — ' + reason : ''}. Click to resume.`;
+    }
+  } catch (e) { /* silent — health poll will surface server-down */ }
+}
+$('kill-switch-pause')?.addEventListener('click', async () => {
+  const reason = (prompt('Pause every workflow. Reason (optional):') ?? '').trim();
+  if (reason === null) return;
+  try {
+    const r = await api('/api/admin/pause', { method: 'POST', body: { reason } });
+    if (r.ok) { toast('workspace paused', 'ok'); refreshKillSwitch(); }
+  } catch (e) { toast(`pause failed: ${e.message}`, 'err'); }
+});
+$('kill-switch-resume')?.addEventListener('click', async () => {
+  try {
+    const r = await api('/api/admin/resume', { method: 'POST', body: {} });
+    if (r.ok) { toast('workspace resumed', 'ok'); refreshKillSwitch(); }
+  } catch (e) { toast(`resume failed: ${e.message}`, 'err'); }
+});
+setInterval(refreshKillSwitch, 8000);
+refreshKillSwitch();
 
 // ----------------------------------------------------------------------
 // Custom combobox — input with clickable ▾ dropdown backed by the watchlist.
@@ -980,14 +1024,11 @@ function renderAnalysisResult(r) {
           },
         });
         if (ar.ok) {
-          const layoutBit = ar.new_layout_name
-            ? ` · layout "${ar.new_layout_name}"`
-            : '';
           const shot = ar.applied_screenshot;
           if (shot) {
-            toast(`pine applied${layoutBit} · screenshot: ${shot.split('/').slice(-2).join('/')}`, 'ok');
+            toast(`pine applied · screenshot: ${shot.split('/').slice(-2).join('/')}`, 'ok');
           } else {
-            toast(`pine applied to chart${layoutBit}`, 'ok');
+            toast('pine applied to chart', 'ok');
           }
         } else {
           toast(`pine apply failed: ${(ar.stderr || ar.error || 'see server log').slice(-200)}`, 'err');
@@ -2878,6 +2919,159 @@ function renderJournalList() {
 $('journal-refresh').addEventListener('click', loadJournal);
 $('journal-unreconciled-only').addEventListener('change', loadJournal);
 
+// ----------------------------------------------------------------------
+// Day arc — forecast → reality timeline for one day. Reads
+// /api/journal/{symbol}/{date}, renders pre-session + 10/12/14 + pivot
+// stages with deterministic per-stage grading. Date defaults to today.
+// ----------------------------------------------------------------------
+let _dayArcInitialized = false;
+function initDayArc() {
+  if (_dayArcInitialized) return;
+  _dayArcInitialized = true;
+  const dateInput = $('day-arc-date');
+  if (dateInput && !dateInput.value) {
+    const today = new Date();
+    const iso = today.toISOString().slice(0, 10);
+    dateInput.value = iso;
+  }
+  $('day-arc-load')?.addEventListener('click', loadDayArc);
+}
+
+function _stageStatusClass(grading) {
+  if (!grading) return '';
+  const score = grading.axes_score;
+  if (!score || !score.includes('/')) return '';
+  const [p, t] = score.split('/').map(Number);
+  if (!t) return '';
+  const ratio = p / t;
+  if (ratio >= 0.8) return 'pass';
+  if (ratio >= 0.4) return 'partial';
+  return 'miss';
+}
+
+function _renderBandRow(b) {
+  if (b.predicted_lo == null && b.predicted_hi == null) {
+    return `<span class="day-arc__chip">${b.label}: <i>not predicted</i></span>`;
+  }
+  const lo = b.predicted_lo?.toLocaleString() ?? '?';
+  const hi = b.predicted_hi?.toLocaleString() ?? '?';
+  const actual = b.actual?.toLocaleString() ?? '?';
+  if (b.hit === true) {
+    return `<span class="day-arc__chip pass">${b.label} ✓ <span class="muted">${actual} ∈ [${lo}, ${hi}]</span></span>`;
+  }
+  if (b.hit === false) {
+    const dir = b.side === 'over' ? '↑' : '↓';
+    return `<span class="day-arc__chip miss">${b.label} ✗ ${dir}${b.miss_pts} pts <span class="muted">${actual} vs [${lo}, ${hi}]</span></span>`;
+  }
+  return `<span class="day-arc__chip">${b.label}: n/a</span>`;
+}
+
+function _renderStage(s) {
+  const klass = _stageStatusClass(s.grading);
+  const score = s.grading?.axes_score
+    ? `<span class="day-arc__stage-score">${s.grading.axes_score}</span>`
+    : '<span class="day-arc__stage-score muted">—</span>';
+  let body = '';
+  const g = s.grading;
+  if (g) {
+    const dir = g.direction || {};
+    if (dir.predicted || dir.actual) {
+      const m = dir.match === true ? '<span class="day-arc__chip pass">dir ✓</span>'
+              : dir.match === false ? '<span class="day-arc__chip miss">dir ✗</span>'
+              : '<span class="day-arc__chip">dir n/a</span>';
+      const pct = dir.confidence_pct != null ? ` <span class="muted">@${dir.confidence_pct}%</span>` : '';
+      body += `<div class="day-arc__row">${m}<span><b>predicted</b> ${escapeHtml(dir.predicted || '—')}${pct} → <b>actual</b> ${escapeHtml(dir.actual || '—')}</span></div>`;
+    }
+    if (s.key === 'pre_session') {
+      // Pre-session has span_pts + net_pct + tags blocks.
+      const pre = g;
+      if (pre.span_pts && (pre.span_pts.predicted_lo || pre.span_pts.predicted_hi)) {
+        body += `<div class="day-arc__row">${_renderBandRow({ ...pre.span_pts, label: 'span(pts)' })}</div>`;
+      }
+      if (pre.net_pct && (pre.net_pct.predicted_lo != null || pre.net_pct.predicted_hi != null)) {
+        body += `<div class="day-arc__row">${_renderBandRow({ ...pre.net_pct, label: 'net%' })}</div>`;
+      }
+      const tags = pre.tags || [];
+      if (tags.length) {
+        const chips = tags.map(t => {
+          if (t.match === true) return `<span class="day-arc__chip pass">${escapeHtml(t.key)}: ${escapeHtml(t.predicted)}</span>`;
+          if (t.match === false) return `<span class="day-arc__chip miss">${escapeHtml(t.key)}: ${escapeHtml(t.predicted)}≠${escapeHtml(t.actual)}</span>`;
+          return `<span class="day-arc__chip">${escapeHtml(t.key)}: n/a</span>`;
+        }).join(' ');
+        body += `<div class="day-arc__row">${chips}</div>`;
+      }
+      if (pre.tags_score) body += `<div class="day-arc__row muted">tags ${escapeHtml(pre.tags_score)}</div>`;
+    } else if (g.bands) {
+      body += `<div class="day-arc__row">${g.bands.map(_renderBandRow).join('')}</div>`;
+    }
+  } else {
+    body = '<div class="day-arc__row muted">No daily profile yet — grading n/a until 16:00 ET capture.</div>';
+  }
+  const time = s.made_at ? `<span class="day-arc__stage-time">${escapeHtml(s.made_at)}</span>` : '';
+  return `<div class="day-arc__stage ${klass}">
+    <div class="day-arc__stage-head">
+      <span class="day-arc__stage-label">${escapeHtml(s.label)}</span>
+      ${time}
+      ${score}
+    </div>
+    <div class="day-arc__stage-body">${body}</div>
+  </div>`;
+}
+
+async function loadDayArc() {
+  const date = $('day-arc-date')?.value;
+  if (!date) { toast('pick a date first', 'err'); return; }
+  const body = $('day-arc-body');
+  body.innerHTML = '<div class="empty">Loading…</div>';
+  $('day-arc-score').textContent = '—';
+  try {
+    const data = await api(`/api/journal/MNQ1/${encodeURIComponent(date)}`);
+    if (data.rollup?.score) {
+      $('day-arc-score').textContent = `${data.rollup.score} axes`;
+      $('day-arc-score').classList.remove('muted');
+    } else {
+      $('day-arc-score').textContent = `${data.rollup?.stages_count || 0} stages · grading pending`;
+      $('day-arc-score').classList.add('muted');
+    }
+    let html = '';
+    if (data.profile?.available) {
+      const sm = data.profile.summary || {};
+      const tags = data.profile.tags || {};
+      html += `<div class="day-arc__profile">
+        <h3>Daily profile · ${escapeHtml(data.date)}</h3>
+        <div class="day-arc__takeaway">${escapeHtml(data.profile.takeaway || '')}</div>
+        <div class="day-arc__summary">
+          <div><b>direction</b> ${escapeHtml(sm.direction || '—')}</div>
+          <div><b>open</b> ${sm.open_approx?.toLocaleString() ?? '—'}</div>
+          <div><b>close</b> ${sm.close_approx?.toLocaleString() ?? '—'}</div>
+          <div><b>HOD</b> ${sm.hod_approx?.toLocaleString() ?? '—'}</div>
+          <div><b>LOD</b> ${sm.lod_approx?.toLocaleString() ?? '—'}</div>
+          <div><b>span</b> ${sm.intraday_span_pts ?? '—'} pts</div>
+          <div><b>net%</b> ${sm.net_range_pct_open_to_close != null ? sm.net_range_pct_open_to_close.toFixed(2) : '—'}</div>
+          <div><b>structure</b> ${escapeHtml(tags.structure || '—')}</div>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="day-arc__profile muted"><h3>Daily profile</h3><div>No profile for ${escapeHtml(data.date)} — grading is unavailable until the 16:00 ET capture runs.</div></div>`;
+    }
+    if (!data.stages?.length) {
+      html += '<div class="empty">No forecasts for this date.</div>';
+    } else {
+      html += data.stages.map(_renderStage).join('');
+    }
+    if (data.applied_screenshots?.length) {
+      const items = data.applied_screenshots.map(s => `<li>${escapeHtml(s.name)}</li>`).join('');
+      html += `<div class="day-arc__appshots">Applied-Pine snapshots (${data.applied_screenshots.length}):<ul>${items}</ul></div>`;
+    }
+    if (data.decisions?.length) {
+      html += `<div class="day-arc__appshots">Decisions logged: ${data.decisions.length}</div>`;
+    }
+    body.innerHTML = html;
+  } catch (e) {
+    body.innerHTML = `<div class="empty">Load failed: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
 // End-of-day reconciliation — grades all today's unreconciled
 // decisions against real OHLCV bars (yfinance) and writes outcomes
 // back to the DB. First-touch of stop vs TP; pessimistic tie-break.
@@ -4084,7 +4278,163 @@ async function refreshSessionBar() {
   const rTxt = r_sum >= 0 ? `+${r_sum.toFixed(2)}R` : `${r_sum.toFixed(2)}R`;
   document.getElementById('sb-r-val').textContent =
     sess.total > 0 ? `${rTxt} · ${w}W/${l}L` : '—';
+
+  // Canary cell — independent fetch so a slow canary endpoint doesn't
+  // hold up the rest of the strip.
+  refreshCanaryCell().catch(() => {});
 }
+
+// --------------------------------------------------------------------
+// Canary cell — pre-committed morning trip-wires from pre-session.
+// Polled on the same cadence as the session bar.
+// --------------------------------------------------------------------
+let _canaryFlyoutOpen = false;
+let _canaryLastData = null;
+
+async function refreshCanaryCell() {
+  const cell = document.getElementById('sb-canary-cell');
+  if (!cell) return;
+  const today = new Date().toISOString().slice(0, 10);
+  let data;
+  try {
+    data = await api(`/api/canary/MNQ1/${today}`);
+  } catch (e) { cell.classList.add('hidden'); return; }
+  if (!data?.available) { cell.classList.add('hidden'); return; }
+  cell.classList.remove('hidden');
+  _canaryLastData = data;
+  _renderCanaryCell(data);
+  if (_canaryFlyoutOpen) _renderCanaryFlyout(data);
+}
+
+function _renderCanaryCell(data) {
+  const cell = document.getElementById('sb-canary-cell');
+  const status = data.status;
+  const checks = data.canary?.checks || [];
+  const results = (status?.results || []);
+  const byId = Object.fromEntries(results.map(r => [r.id, r]));
+  const dotsEl = document.getElementById('sb-canary-dots');
+  const scoreEl = document.getElementById('sb-canary-score');
+
+  const dotHtml = checks.map(c => {
+    const r = byId[c.id];
+    const cls = !r ? 'pending'
+      : r.status === 'pass' ? 'pass'
+      : r.status === 'fail' ? 'fail'
+      : r.status === 'snoozed' ? 'snoozed'
+      : r.status === 'evaluate_failed' ? 'failed'
+      : 'pending';
+    const w = c.weight > 1 ? ' canary-dot--strong' : '';
+    return `<span class="canary-dot ${cls}${w}" title="${escapeHtml(c.id)} (w=${c.weight})"></span>`;
+  }).join('');
+  dotsEl.innerHTML = dotHtml;
+
+  cell.classList.remove('state-passing', 'state-partial', 'state-failing', 'state-pending');
+  if (status?.aggregate) {
+    cell.classList.add(`state-${status.aggregate.state}`);
+    const pw = status.aggregate.pass_weight;
+    const tw = (status.aggregate.pass_weight + status.aggregate.fail_weight + status.aggregate.pending_weight + status.aggregate.evaluate_failed_weight);
+    scoreEl.textContent = tw > 0 ? `${pw}/${tw}` : '—';
+  } else {
+    scoreEl.textContent = `${checks.length} checks`;
+  }
+}
+
+function _renderCanaryFlyout(data) {
+  const flyout = document.getElementById('sb-canary-flyout');
+  const stateEl = document.getElementById('sb-canary-state');
+  const actionEl = document.getElementById('sb-canary-action');
+  const thesisEl = document.getElementById('sb-canary-thesis');
+  const rowsEl = document.getElementById('sb-canary-rows');
+  const status = data.status;
+  const checks = data.canary?.checks || [];
+  const byId = Object.fromEntries((status?.results || []).map(r => [r.id, r]));
+
+  if (status?.aggregate) {
+    const ag = status.aggregate;
+    stateEl.textContent = ag.state;
+    stateEl.className = `canary-flyout__state mono state-${ag.state}`;
+    actionEl.innerHTML = `→ <b>${escapeHtml(ag.recommended_action || '')}</b>`;
+  } else {
+    stateEl.textContent = 'pending';
+    stateEl.className = 'canary-flyout__state mono state-pending';
+    actionEl.innerHTML = '→ <b>wait</b>';
+  }
+  thesisEl.textContent = data.canary?.thesis_summary || '';
+
+  rowsEl.innerHTML = checks.map(c => {
+    const r = byId[c.id];
+    const status = r?.status || 'pending';
+    const klass = status === 'not_yet_evaluable' ? 'pending'
+      : status === 'evaluate_failed' ? 'failed'
+      : status;
+    let evidence = '';
+    if (r?.evidence) {
+      const e = r.evidence;
+      if (e.close != null && e.threshold != null) {
+        evidence = `close ${e.close.toLocaleString()} ${e.comparison} ${e.threshold.toLocaleString()}`;
+      } else if (e.reason) {
+        evidence = e.reason;
+      } else {
+        evidence = JSON.stringify(e);
+      }
+    }
+    const time = c.evaluate_at ? `<span class="muted">@${escapeHtml(c.evaluate_at)} ET</span>` : '';
+    const wTag = `<span class="canary-row__weight">w=${c.weight}</span>`;
+    const snoozeBtn = (status === 'pass' || status === 'fail')
+      ? `<button class="canary-row__snooze" data-canary-snooze="${escapeHtml(c.id)}">snooze</button>`
+      : '';
+    return `<div class="canary-row ${klass}">
+      <div class="canary-row__top">
+        <span class="canary-row__id">${escapeHtml(c.id)}</span>
+        ${time}
+        ${wTag}
+        <span class="canary-row__status">${status}</span>
+      </div>
+      <div class="canary-row__rationale">${escapeHtml(c.label || c.rationale || '')}</div>
+      ${evidence ? `<div class="canary-row__evidence">${escapeHtml(evidence)}</div>` : ''}
+      ${snoozeBtn ? `<div class="canary-row__actions">${snoozeBtn}</div>` : ''}
+    </div>`;
+  }).join('') || '<div class="empty">No checks defined.</div>';
+
+  // Wire snooze buttons.
+  rowsEl.querySelectorAll('[data-canary-snooze]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const checkId = btn.dataset.canarySnooze;
+      const reason = (prompt(`Snooze "${checkId}". Reason (≥5 chars, will be logged):`) ?? '').trim();
+      if (!reason || reason.length < 5) return;
+      const today = new Date().toISOString().slice(0, 10);
+      try {
+        await api(`/api/canary/MNQ1/${today}/snooze/${encodeURIComponent(checkId)}`,
+                  { method: 'POST', body: { reason } });
+        toast(`snoozed ${checkId}`, 'ok');
+        refreshCanaryCell();
+      } catch (e) { toast(`snooze failed: ${e.message}`, 'err'); }
+    });
+  });
+}
+
+document.getElementById('sb-canary-toggle')?.addEventListener('click', () => {
+  const flyout = document.getElementById('sb-canary-flyout');
+  _canaryFlyoutOpen = !flyout.classList.toggle('hidden');
+  if (_canaryFlyoutOpen && _canaryLastData) _renderCanaryFlyout(_canaryLastData);
+});
+document.getElementById('sb-canary-eval-btn')?.addEventListener('click', async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const r = await api(`/api/canary/MNQ1/${today}/evaluate`, { method: 'POST', body: {} });
+    if (r.ok) { toast('canary re-evaluated', 'ok'); refreshCanaryCell(); }
+    else toast(`evaluate: ${r.reason || 'see audit'}`, 'err');
+  } catch (e) { toast(`evaluate failed: ${e.message}`, 'err'); }
+});
+// Click outside the flyout closes it.
+document.addEventListener('click', (e) => {
+  if (!_canaryFlyoutOpen) return;
+  const cell = document.getElementById('sb-canary-cell');
+  if (cell && !cell.contains(e.target)) {
+    document.getElementById('sb-canary-flyout').classList.add('hidden');
+    _canaryFlyoutOpen = false;
+  }
+});
 
 function startSessionBarPoll() {
   refreshSessionBar();
@@ -4263,8 +4613,7 @@ async function _dispatchPivotApply() {
       { method: 'POST', body: {} }
     );
     if (r.ok) {
-      const layoutBit = r.new_layout_name ? ` · layout "${r.new_layout_name}"` : '';
-      toast(`pivot applied to chart${layoutBit}`, 'ok');
+      toast('pivot applied to chart', 'ok');
     } else {
       toast(`apply failed: ${r.error || 'check stderr'}`, 'err');
     }
@@ -4624,8 +4973,7 @@ async function selectForecastDay(symbol, date) {
         const r = await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/apply`, { method: 'POST', body: {} });
         if (r.ok) {
           const fname = r.pine_path?.split('/').pop() || 'pine';
-          const layoutBit = r.new_layout_name ? ` · layout "${r.new_layout_name}"` : '';
-          toast(`applied: ${fname}${layoutBit}`, 'ok');
+          toast(`applied: ${fname}`, 'ok');
         } else {
           toast(`apply returned not-ok: ${r.error || 'see stdout'}`, 'err');
           console.warn('apply stdout tail:', r.stdout_tail);

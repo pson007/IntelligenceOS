@@ -1,33 +1,22 @@
-"""Pin every automation to a single clean TradingView layout.
+"""Optional layout helpers — passive readers + bootstrap CLI.
 
-Pre-existing indicators, drawings, or saved Replay state on the active
-chart contaminate every automation downstream — vision LLMs misread a
-busy chart, screenshot framing differs by indicator stack height,
-Replay state restoration brings back stale cursors. This module makes
-"the layout I'm running on" an explicit, asserted invariant rather
-than an implicit assumption.
+Workflows no longer enforce a layout invariant; every flow operates on
+whatever layout the user has open. This module is kept for two
+reasons:
 
-The expected layout is named **"1run Automation"** by default
-(override with `AUTOMATION_LAYOUT_NAME` env var). It should contain:
-  - one symbol pane (MNQ1! by default)
-  - no studies / indicators / drawings
-  - no saved Replay state
-  - default chart type (candles)
+  - `current_layout(page)` is a passive read of the active layout's
+    name + URL chart-id. `daily_profile` uses it to record which
+    layout a capture came from in the saved JSON.
+  - The `--bootstrap` CLI is still useful manual tooling for creating
+    a clean automation layout if you ever want one. It strips all
+    indicators from the active chart, pins symbol/TF, and saves under
+    `AUTOMATION_LAYOUT_NAME` (default "1run Automation").
 
-Workflows call `await layout_guard.ensure_layout(page)` as their first
-operation inside a `chart_session`. This:
-  1. Reads the current layout name from the header toolbar.
-  2. If it matches the expected name, returns immediately.
-  3. Otherwise, switches via `layouts.load(name)` and re-verifies.
-  4. Raises `LayoutMismatchError` if the named layout doesn't exist
-     (caller's responsibility to bootstrap it; see CLI below).
+`ensure_layout` and `assert_layout` are still exported but no caller
+inside the project uses them. Left in place for ad-hoc REPL use.
 
-CLI bootstrap — run ONCE to create the clean layout:
+CLI bootstrap (manual, optional):
     cd tradingview && .venv/bin/python -m tv_automation.layout_guard --bootstrap
-
-Stripping indicators uses `chart.removeEntity(study.id())` per study
-returned by `chart.getAllStudies()`, then `layouts.save_as` with the
-expected name.
 """
 
 from __future__ import annotations

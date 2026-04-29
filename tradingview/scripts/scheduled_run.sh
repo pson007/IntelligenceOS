@@ -48,6 +48,20 @@ notify() {
 
 log "=== IntelligenceOS scheduled job: $JOB ==="
 
+# High-frequency jobs run their own preflight without the shared notify
+# spam. canary_evaluate fires every 5 min during the morning — if CDP is
+# down, we don't want 36 notifications between 09:00 and 12:00.
+if [[ "$JOB" == "canary_evaluate" ]]; then
+    if ! /usr/bin/curl -sf --max-time 3 http://localhost:9222/json/version >/dev/null 2>&1; then
+        log "SKIP: Chrome CDP not responding (silent — canary fires every 5min)"
+        exit 0
+    fi
+    if ! /usr/bin/curl -sf --max-time 3 http://127.0.0.1:8788/api/health >/dev/null 2>&1; then
+        log "SKIP: UI server not running on :8788 (silent — canary fires every 5min)"
+        exit 0
+    fi
+fi
+
 # --- Preflight: Python venv -------------------------------------------------
 if [[ ! -x "$VENV_PY" ]]; then
     log "ABORT: venv python not executable at $VENV_PY"
@@ -108,6 +122,41 @@ case "$JOB" in
             run_py tv_automation.forecast_reconcile || true
         fi
         exit $rc
+        ;;
+    canary_evaluate)
+        # Re-evaluate today's MNQ1 canary thesis against the live chart.
+        # Fires every 5 min between 09:00–12:00 ET on weekdays. Restrained
+        # error handling: this runs ~36×/day, so any notification surface
+        # would spam — log-only, never notify, exit 0 even on transient
+        # endpoint failures (the evaluator status file is the source of
+        # truth, not the per-fire exit code). When no pre-session canary
+        # exists for today, the endpoint returns {ok:false, reason:no_canary}
+        # which is fine — we just log + exit.
+        TODAY="$(/bin/date '+%Y-%m-%d')"
+        # Read UI_TOKEN from .env (KEY=VALUE format); never log it.
+        UI_TOKEN=""
+        if [[ -f "$TV/.env" ]]; then
+            UI_TOKEN="$(/usr/bin/grep -E '^UI_TOKEN=' "$TV/.env" | /usr/bin/head -n 1 | /usr/bin/sed 's/^UI_TOKEN=//')"
+        fi
+        if [[ -z "$UI_TOKEN" ]]; then
+            log "ABORT: no UI_TOKEN in $TV/.env"
+            exit 1
+        fi
+        URL="http://127.0.0.1:8788/api/canary/MNQ1/${TODAY}/evaluate"
+        log "POST $URL"
+        # -s silent, -S still surface errors, --max-time 30 — chart read
+        # should be a few seconds. Capture stdout to log; non-200s flag
+        # via -f, which sets exit code 22.
+        RESP="$(/usr/bin/curl -sS --max-time 30 \
+            -X POST \
+            -H 'X-UI: 1' \
+            -H "X-UI-Token: $UI_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -w '\n__HTTP_CODE__:%{http_code}\n' \
+            "$URL" 2>&1)" || true
+        log "$RESP"
+        # Soft exit — never escalate transient errors to launchd ABORTs.
+        exit 0
         ;;
     *)
         log "ABORT: unknown job $JOB"

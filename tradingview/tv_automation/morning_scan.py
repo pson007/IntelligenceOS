@@ -195,8 +195,6 @@ async def scan(
 
     results: list[dict] = []
     async with chart_session() as (_ctx, page):
-        from . import layout_guard
-        await layout_guard.ensure_layout(page)
         await replay.exit_replay(page)
         if not await replay_api.api_available(page):
             return {

@@ -33,7 +33,7 @@ from playwright.async_api import Page, TimeoutError as PWTimeoutError
 
 from preflight import ensure_automation_chromium
 from session import is_logged_in, tv_context
-from tv_automation import health, layout_guard, pine_compile, replay_api
+from tv_automation import health, pine_compile, replay_api
 
 GENERATED_DIR = Path(__file__).parent / "pine" / "generated"
 PARSE_FAIL_DIR = Path(__file__).parent / "pine" / "parse_failures"
@@ -385,13 +385,6 @@ async def main() -> int:
     ap.add_argument("--name",
                     help="Script name for first-time Save-as "
                          "(default: parsed from indicator() title)")
-    ap.add_argument("--layout",
-                    help="Override the layout to apply against. Default: "
-                         "the AUTOMATION_LAYOUT_NAME-pinned layout (for "
-                         "CLI use). The ui_server apply-pine endpoints "
-                         "pass the freshly-cloned 'Pine — TS' layout name "
-                         "here so the script lands on the new copy "
-                         "instead of being yanked back to the default.")
     args = ap.parse_args()
 
     pine_path = resolve_pine_path(args.path)
@@ -419,21 +412,6 @@ async def main() -> int:
                   flush=True)
         except health.ChartNotReadyError as e:
             print(f"ERROR: {e}", flush=True, file=sys.stderr)
-            return 1
-
-        # Pin to the requested layout. Default (no --layout arg) is the
-        # clean automation layout from AUTOMATION_LAYOUT_NAME — every
-        # CLI apply runs against a known-clean canvas. The ui_server
-        # endpoints override this with the just-cloned "Pine — TS"
-        # layout so the script lands there and the original active
-        # layout stays untouched.
-        try:
-            li = await layout_guard.ensure_layout(page, layout_name=args.layout)
-            print(f"Layout: {li['name']!r}", flush=True)
-        except layout_guard.LayoutMismatchError as e:
-            print(f"ERROR: {e}\nRun `python -m tv_automation.layout_guard "
-                  f"--bootstrap` once to create the layout.",
-                  flush=True, file=sys.stderr)
             return 1
 
         # Capture pre-apply study count so we can detect the silent
