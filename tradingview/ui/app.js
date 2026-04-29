@@ -290,7 +290,7 @@ function _renderSubtabBar(group, activeSub) {
 
 function _fireTabHook(sub) {
   if (sub === 'audit') startAuditPoll(); else stopAuditPoll();
-  if (sub === 'today') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); } else stopPositionsPoll();
+  if (sub === 'today') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); renderTodayArc(); } else stopPositionsPoll();
   if (sub === 'watchlist') loadWatchlist();
   if (sub === 'alerts') loadAlerts();
   if (sub === 'journal') { loadJournal(); initDayArc(); }
@@ -385,22 +385,37 @@ async function refreshKillSwitch() {
       $('kill-switch-resume').title =
         `Paused since ${since}${reason ? ' — ' + reason : ''}. Click to resume.`;
     }
+    // Mirror to topbar — same data, two surfaces.
+    const tPause = document.getElementById('topbar-kill-pause');
+    const tResume = document.getElementById('topbar-kill-resume');
+    if (tPause)  tPause.classList.toggle('hidden', paused);
+    if (tResume) tResume.classList.toggle('hidden', !paused);
+    if (tResume && paused && data.state) {
+      const since = data.state.since || '';
+      const reason = data.state.reason || '';
+      tResume.title =
+        `Paused since ${since}${reason ? ' — ' + reason : ''}. Click to resume.`;
+    }
   } catch (e) { /* silent — health poll will surface server-down */ }
 }
-$('kill-switch-pause')?.addEventListener('click', async () => {
+async function _killPause() {
   const reason = (prompt('Pause every workflow. Reason (optional):') ?? '').trim();
   if (reason === null) return;
   try {
     const r = await api('/api/admin/pause', { method: 'POST', body: { reason } });
     if (r.ok) { toast('workspace paused', 'ok'); refreshKillSwitch(); }
   } catch (e) { toast(`pause failed: ${e.message}`, 'err'); }
-});
-$('kill-switch-resume')?.addEventListener('click', async () => {
+}
+async function _killResume() {
   try {
     const r = await api('/api/admin/resume', { method: 'POST', body: {} });
     if (r.ok) { toast('workspace resumed', 'ok'); refreshKillSwitch(); }
   } catch (e) { toast(`resume failed: ${e.message}`, 'err'); }
-});
+}
+$('kill-switch-pause')?.addEventListener('click', _killPause);
+$('kill-switch-resume')?.addEventListener('click', _killResume);
+document.getElementById('topbar-kill-pause')?.addEventListener('click', _killPause);
+document.getElementById('topbar-kill-resume')?.addEventListener('click', _killResume);
 setInterval(refreshKillSwitch, 8000);
 refreshKillSwitch();
 
@@ -4282,6 +4297,35 @@ async function refreshSessionBar() {
   // Canary cell — independent fetch so a slow canary endpoint doesn't
   // hold up the rest of the strip.
   refreshCanaryCell().catch(() => {});
+
+  // Mirror PnL + R to topbar. Same data, more prominent surface.
+  _mirrorTopbarPnlR(pos, sess);
+}
+
+function _mirrorTopbarPnlR(pos, sess) {
+  const pnlCell = document.getElementById('topbar-pnl');
+  const pnlBox = pnlCell?.parentElement;
+  const rCell = document.getElementById('topbar-r');
+  if (pnlCell && pnlBox) {
+    pnlBox.classList.remove('pnl-up', 'pnl-down');
+    if (pos?.available) {
+      const upnl = pos.unrealized_pnl;
+      pnlCell.textContent = pos.open_count > 0
+        ? `${_fmtMoney(upnl)} · ${pos.open_count}`
+        : 'flat';
+      if (upnl > 0.01) pnlBox.classList.add('pnl-up');
+      else if (upnl < -0.01) pnlBox.classList.add('pnl-down');
+    } else {
+      pnlCell.textContent = '—';
+    }
+  }
+  if (rCell) {
+    const r_sum = sess?.realized_r_sum || 0;
+    const w = sess?.wins || 0;
+    const l = sess?.losses || 0;
+    const rTxt = r_sum >= 0 ? `+${r_sum.toFixed(2)}` : `${r_sum.toFixed(2)}`;
+    rCell.textContent = (sess?.total || 0) > 0 ? `${rTxt} · ${w}/${l}` : '—';
+  }
 }
 
 // --------------------------------------------------------------------
@@ -4293,18 +4337,81 @@ let _canaryLastData = null;
 
 async function refreshCanaryCell() {
   const cell = document.getElementById('sb-canary-cell');
-  if (!cell) return;
   const today = new Date().toISOString().slice(0, 10);
   let data;
   try {
     data = await api(`/api/canary/MNQ1/${today}`);
-  } catch (e) { cell.classList.add('hidden'); return; }
-  if (!data?.available) { cell.classList.add('hidden'); return; }
-  cell.classList.remove('hidden');
+  } catch (e) {
+    if (cell) cell.classList.add('hidden');
+    _renderTopbarCanary(null);
+    return;
+  }
+  if (!data?.available) {
+    if (cell) cell.classList.add('hidden');
+    _renderTopbarCanary(null);
+    return;
+  }
+  if (cell) cell.classList.remove('hidden');
   _canaryLastData = data;
-  _renderCanaryCell(data);
+  if (cell) _renderCanaryCell(data);
   if (_canaryFlyoutOpen) _renderCanaryFlyout(data);
+  _renderTopbarCanary(data);
 }
+
+function _renderTopbarCanary(data) {
+  const box = document.getElementById('topbar-canary');
+  if (!box) return;
+  box.classList.remove('state-passing', 'state-partial', 'state-failing',
+                        'state-pending', 'state-no-canary');
+  const stateEl = document.getElementById('topbar-canary-state');
+  const actionEl = document.getElementById('topbar-canary-action');
+  const dotsEl = document.getElementById('topbar-canary-dots');
+  if (!data) {
+    box.classList.add('state-no-canary');
+    if (stateEl) stateEl.textContent = 'no canary';
+    if (actionEl) actionEl.textContent = 'wait';
+    if (dotsEl) dotsEl.innerHTML = '';
+    return;
+  }
+  const status = data.status || {};
+  const ag = status.aggregate;
+  const checks = data.canary?.checks || [];
+  const byId = Object.fromEntries((status.results || []).map(r => [r.id, r]));
+  const state = ag?.state || 'pending';
+  box.classList.add(`state-${state}`);
+  if (stateEl) stateEl.textContent = state;
+  if (actionEl) {
+    actionEl.textContent = ag?.recommended_action
+      || data.canary?.[`default_action_if_${state}`]
+      || 'wait';
+  }
+  if (dotsEl) {
+    dotsEl.innerHTML = checks.map(c => {
+      const r = byId[c.id];
+      const cls = !r ? 'pending'
+        : r.status === 'pass' ? 'pass'
+        : r.status === 'fail' ? 'fail'
+        : r.status === 'snoozed' ? 'snoozed'
+        : r.status === 'evaluate_failed' ? 'failed'
+        : 'pending';
+      return `<span class="canary-dot ${cls}" title="${escapeHtml(c.id)}"></span>`;
+    }).join('');
+  }
+}
+
+// Topbar canary click — open the legacy flyout (if rendered) so user
+// gets the per-check rows. Falls back to no-op when no canary today.
+document.getElementById('topbar-canary')?.addEventListener('click', () => {
+  if (!_canaryLastData) return;
+  const flyout = document.getElementById('sb-canary-flyout');
+  const cell = document.getElementById('sb-canary-cell');
+  if (cell) cell.classList.remove('hidden');
+  if (flyout) {
+    flyout.classList.toggle('hidden');
+    _canaryFlyoutOpen = !flyout.classList.contains('hidden');
+    if (_canaryFlyoutOpen) _renderCanaryFlyout(_canaryLastData);
+  }
+});
 
 function _renderCanaryCell(data) {
   const cell = document.getElementById('sb-canary-cell');
@@ -5168,3 +5275,382 @@ if (!_onboardingDone()) {
   // Defer so the initial tab's own hooks finish first (no interleaving).
   setTimeout(() => activateGroup('setup'), 0);
 }
+
+
+// ============================================================================
+// UNIFIED TODAY DAY-ARC — single linear timeline of the trading day.
+// Pre-session → canary checks ticking through 09:00–12:00 → 10/12/14
+// forecasts → pivot if any → profile/grading at 16:00. Reads
+// /api/journal/{sym}/{date} + /api/canary/{sym}/{date}; both are pure
+// reads so re-rendering on a 30s poll is cheap.
+// ============================================================================
+
+let _todayArcTimer = null;
+let _todayArcBusy = false;
+
+function _isoToday() {
+  // Local ISO date — matches the cron + UI server's date-of-day
+  // convention. `toISOString()` returns UTC, which differs across the
+  // day-boundary; build the local date manually.
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+function _hhmmEt() {
+  // Approximate HH:MM in ET — used to gate which stages should be
+  // "future" (faded) vs already-due. Browser is on user's local clock;
+  // cron runs in ET. Use `toLocaleTimeString` with America/New_York to
+  // get the actual ET time on whatever device the user is on.
+  try {
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York', hour12: false,
+      hour: '2-digit', minute: '2-digit',
+    });
+    return fmt.format(new Date()).replace(/^24:/, '00:');
+  } catch (e) {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+}
+
+function _hhmmGE(a, b) {
+  // String comparison works for "HH:MM" once both are zero-padded.
+  return a >= b;
+}
+
+function _arcNodeClass(scoreOrStatus) {
+  // Convert axes_score "p/t" or a plain status string to a state class.
+  if (!scoreOrStatus) return 'is-pending';
+  if (typeof scoreOrStatus === 'string' && scoreOrStatus.includes('/')) {
+    const [p, t] = scoreOrStatus.split('/').map(Number);
+    if (!t) return 'is-pending';
+    const r = p / t;
+    if (r >= 0.8) return 'is-pass';
+    if (r >= 0.4) return 'is-partial';
+    return 'is-fail';
+  }
+  if (scoreOrStatus === 'pass' || scoreOrStatus === 'passing') return 'is-pass';
+  if (scoreOrStatus === 'fail' || scoreOrStatus === 'failing') return 'is-fail';
+  if (scoreOrStatus === 'partial') return 'is-partial';
+  return 'is-pending';
+}
+
+function _arcChip(label, kind) {
+  const cls = kind ? ` is-${kind}` : '';
+  return `<span class="today-arc__chip${cls}">${escapeHtml(label)}</span>`;
+}
+
+function _renderArcPreSession(stage, canary) {
+  const grading = stage.grading;
+  const cls = grading ? _arcNodeClass(grading.axes_score) : 'is-pending';
+  const score = grading?.axes_score
+    ? `<span class="today-arc__node-score ${_arcNodeClass(grading.axes_score)}">${escapeHtml(grading.axes_score)}</span>`
+    : '<span class="today-arc__node-score">—</span>';
+  const bias = stage.tactical_bias?.bias_text
+    || stage.predictions?.direction
+    || (stage.regime_read ? stage.regime_read.split('.')[0] : '—');
+  const inval = stage.tactical_bias?.invalidation || '—';
+  const thesis = canary?.canary?.thesis_summary;
+  return `<div class="today-arc__node ${cls}">
+    <div class="today-arc__node-head">
+      <span class="today-arc__node-time">08:30</span>
+      <span class="today-arc__node-label">Pre-session</span>
+      ${score}
+    </div>
+    <div class="today-arc__node-body">
+      <div><b>Bias</b> ${escapeHtml(String(bias).slice(0, 200))}</div>
+      <div><b>Invalidates if</b> <span class="muted">${escapeHtml(String(inval).slice(0, 200))}</span></div>
+      ${thesis ? `<div><b>Thesis</b> <i>${escapeHtml(thesis)}</i></div>` : ''}
+    </div>
+  </div>`;
+}
+
+function _renderArcCanary(canary) {
+  if (!canary?.available) return '';
+  const checks = canary.canary?.checks || [];
+  const status = canary.status || {};
+  const ag = status.aggregate;
+  const byId = Object.fromEntries((status.results || []).map(r => [r.id, r]));
+  const stateCls = ag?.state ? _arcNodeClass(ag.state) : 'is-pending';
+  const ratioTxt = ag
+    ? `${ag.pass_weight}/${ag.pass_weight + ag.fail_weight + ag.pending_weight + ag.evaluate_failed_weight} weight`
+    : `${checks.length} checks · pending`;
+  const action = ag?.recommended_action || 'wait';
+  const rows = checks.map(c => {
+    const r = byId[c.id];
+    const s = r?.status || 'pending';
+    const rowCls = s === 'not_yet_evaluable' ? 'is-pending'
+      : s === 'evaluate_failed' ? 'is-failed'
+      : s === 'pass' ? 'is-pass'
+      : s === 'fail' ? 'is-fail'
+      : s === 'snoozed' ? 'is-snoozed'
+      : 'is-pending';
+    let evidence = '';
+    if (r?.evidence) {
+      const e = r.evidence;
+      if (e.close != null && e.threshold != null) {
+        evidence = `${e.close.toLocaleString()} ${e.comparison} ${e.threshold.toLocaleString()}`;
+      } else if (e.actual_low != null) {
+        evidence = `low ${e.actual_low.toLocaleString()} ${e.comparison} ${e.threshold.toLocaleString()}`;
+      } else if (e.actual_high != null) {
+        evidence = `high ${e.actual_high.toLocaleString()} ${e.comparison} ${e.threshold.toLocaleString()}`;
+      } else if (e.observed) {
+        evidence = `observed ${e.observed}`;
+      } else if (e.reason) {
+        evidence = e.reason;
+      }
+    }
+    const evHtml = evidence
+      ? `<span class="today-arc__canary-evidence" title="${escapeHtml(evidence)}">${escapeHtml(evidence)}</span>`
+      : '';
+    return `<div class="today-arc__canary-row ${rowCls}">
+      <span class="today-arc__canary-id">${escapeHtml(c.id)}</span>
+      ${c.evaluate_at ? `<span class="today-arc__canary-deadline">@${escapeHtml(c.evaluate_at)} ET</span>` : ''}
+      ${evHtml}
+      <span class="today-arc__canary-status">${escapeHtml(s)}</span>
+    </div>`;
+  }).join('');
+  return `<div class="today-arc__node ${stateCls}">
+    <div class="today-arc__node-head">
+      <span class="today-arc__node-time">09:00–12:00</span>
+      <span class="today-arc__node-label">Canary · ${escapeHtml(ag?.state || 'pending')}</span>
+      <span class="today-arc__node-score ${stateCls}">${escapeHtml(ratioTxt)}</span>
+    </div>
+    <div class="today-arc__node-body">
+      <div><b>Action</b> ${escapeHtml(action)}</div>
+      <div class="today-arc__canary-checks">${rows}</div>
+      <div class="today-arc__node-actions">
+        <button class="today-arc__action-btn" id="today-arc-canary-eval">Re-evaluate now</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function _renderArcLiveStage(stage, timeLbl, hhmm, nowEt) {
+  if (!stage) {
+    const isFuture = !_hhmmGE(nowEt, hhmm);
+    return `<div class="today-arc__node ${isFuture ? 'is-future' : 'is-pending'}">
+      <div class="today-arc__node-head">
+        <span class="today-arc__node-time">${timeLbl}</span>
+        <span class="today-arc__node-label">Live forecast</span>
+        <span class="today-arc__node-score">${isFuture ? 'scheduled' : 'not yet run'}</span>
+      </div>
+    </div>`;
+  }
+  const grading = stage.grading;
+  const cls = grading ? _arcNodeClass(grading.axes_score) : 'is-pending';
+  const score = grading?.axes_score
+    ? `<span class="today-arc__node-score ${_arcNodeClass(grading.axes_score)}">${escapeHtml(grading.axes_score)}</span>`
+    : '<span class="today-arc__node-score">awaiting profile</span>';
+  let body = '';
+  if (grading?.bands) {
+    const chips = grading.bands.map(b => {
+      if (b.predicted_lo == null && b.predicted_hi == null) {
+        return _arcChip(`${b.label}: n/a`, '');
+      }
+      if (b.hit === true) {
+        const actual = b.actual?.toLocaleString() ?? '?';
+        return _arcChip(`${b.label} ${actual}`, 'pass');
+      }
+      if (b.hit === false) {
+        return _arcChip(`${b.label} ${b.side === 'over' ? '↑' : '↓'}${b.miss_pts}pts`, 'fail');
+      }
+      const lo = b.predicted_lo?.toLocaleString() ?? '?';
+      const hi = b.predicted_hi?.toLocaleString() ?? '?';
+      return _arcChip(`${b.label} [${lo}, ${hi}]`, '');
+    }).join('');
+    body = `<div class="today-arc__chips">${chips}</div>`;
+  } else if (stage.raw_response) {
+    body = `<div class="muted">${escapeHtml(stage.raw_response.slice(0, 220))}…</div>`;
+  }
+  return `<div class="today-arc__node ${cls}">
+    <div class="today-arc__node-head">
+      <span class="today-arc__node-time">${timeLbl}</span>
+      <span class="today-arc__node-label">${escapeHtml(stage.label || 'Live')}</span>
+      ${score}
+    </div>
+    <div class="today-arc__node-body">${body}</div>
+  </div>`;
+}
+
+function _renderArcPivot(piv) {
+  const grading = piv.grading;
+  const cls = grading ? _arcNodeClass(grading.axes_score) : 'is-fail';
+  const score = grading?.axes_score
+    ? `<span class="today-arc__node-score ${_arcNodeClass(grading.axes_score)}">${escapeHtml(grading.axes_score)}</span>`
+    : '<span class="today-arc__node-score is-fail">invalidated</span>';
+  const reason = piv.reason || piv.raw_response?.slice(0, 200) || '';
+  return `<div class="today-arc__node ${cls}">
+    <div class="today-arc__node-head">
+      <span class="today-arc__node-time">${escapeHtml(piv.label || 'pivot')}</span>
+      <span class="today-arc__node-label">Pivot</span>
+      ${score}
+    </div>
+    <div class="today-arc__node-body">
+      ${reason ? `<div class="muted">${escapeHtml(reason)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function _renderArcProfile(profileWrap, nowEt) {
+  if (profileWrap?.available) {
+    const sm = profileWrap.summary || {};
+    const tags = profileWrap.tags || {};
+    return `<div class="today-arc__node is-pass">
+      <div class="today-arc__node-head">
+        <span class="today-arc__node-time">16:00</span>
+        <span class="today-arc__node-label">Profile · captured</span>
+        <span class="today-arc__node-score">${escapeHtml(sm.direction || '—')}</span>
+      </div>
+      <div class="today-arc__node-body">
+        <div class="today-arc__chips">
+          ${_arcChip(`open ${sm.open_approx?.toLocaleString() ?? '—'}`)}
+          ${_arcChip(`close ${sm.close_approx?.toLocaleString() ?? '—'}`)}
+          ${_arcChip(`HOD ${sm.hod_approx?.toLocaleString() ?? '—'}`)}
+          ${_arcChip(`LOD ${sm.lod_approx?.toLocaleString() ?? '—'}`)}
+          ${tags.structure ? _arcChip(tags.structure) : ''}
+        </div>
+        ${profileWrap.takeaway ? `<div class="muted"><i>${escapeHtml(profileWrap.takeaway)}</i></div>` : ''}
+      </div>
+    </div>`;
+  }
+  const isFuture = !_hhmmGE(nowEt, '16:00');
+  return `<div class="today-arc__node ${isFuture ? 'is-future' : 'is-pending'}">
+    <div class="today-arc__node-head">
+      <span class="today-arc__node-time">16:00</span>
+      <span class="today-arc__node-label">Profile</span>
+      <span class="today-arc__node-score">${isFuture ? 'after close' : 'not captured'}</span>
+    </div>
+    <div class="today-arc__node-body">
+      <div class="muted">Capture pulls today's chart and seeds tomorrow's pre-session priors.</div>
+    </div>
+  </div>`;
+}
+
+async function renderTodayArc() {
+  const body = document.getElementById('today-arc-body');
+  if (!body) return;
+  if (_todayArcBusy) return;
+  _todayArcBusy = true;
+  const date = _isoToday();
+  const dateLabel = document.getElementById('today-arc-date-label');
+  if (dateLabel) dateLabel.textContent = date;
+  const rollup = document.getElementById('today-arc-rollup');
+
+  // Fire both fetches in parallel — independent endpoints.
+  let journal = null, canary = null;
+  try {
+    [journal, canary] = await Promise.all([
+      api(`/api/journal/MNQ1/${date}`).catch(() => null),
+      api(`/api/canary/MNQ1/${date}`).catch(() => null),
+    ]);
+  } finally { _todayArcBusy = false; }
+
+  if (!journal) {
+    body.innerHTML = '<div class="empty">Could not load today\'s arc — server unreachable.</div>';
+    if (rollup) rollup.textContent = '—';
+    return;
+  }
+
+  const stages = journal.stages || [];
+  const stageByKey = Object.fromEntries(stages.map(s => [s.key, s]));
+  const pre = stageByKey['pre_session'];
+  const f10 = stageByKey['1000'];
+  const f12 = stageByKey['1200'];
+  const f14 = stageByKey['1400'];
+  const pivots = stages.filter(s => !['pre_session', '1000', '1200', '1400'].includes(s.key));
+  const nowEt = _hhmmEt();
+
+  const out = [];
+  if (pre) out.push(_renderArcPreSession(pre, canary));
+  else {
+    out.push(`<div class="today-arc__node is-pending">
+      <div class="today-arc__node-head">
+        <span class="today-arc__node-time">08:30</span>
+        <span class="today-arc__node-label">Pre-session</span>
+        <span class="today-arc__node-score">not run</span>
+      </div>
+      <div class="today-arc__node-body">
+        <div class="muted">Run the pre-session forecast to seed today's bias and canary trip-wires.</div>
+      </div>
+    </div>`);
+  }
+  if (canary?.available) out.push(_renderArcCanary(canary));
+  out.push(_renderArcLiveStage(f10, '10:00', '10:00', nowEt));
+  // Inline any pivot artifacts whose stage name suggests they fired
+  // before 12:00. Heuristic: TV stages are "1000"/"1200"/"1400"; pivots
+  // are "pivot_HH-MM-SS" or "invalidation_HHMM" — show after the live
+  // stage that immediately precedes them in time.
+  const pivBefore12 = pivots.filter(p => {
+    const m = (p.key || '').match(/(\d{2})[-_]?(\d{2})/);
+    if (!m) return false;
+    return `${m[1]}:${m[2]}` < '12:00';
+  });
+  pivBefore12.forEach(p => out.push(_renderArcPivot(p)));
+  out.push(_renderArcLiveStage(f12, '12:00', '12:00', nowEt));
+  const pivBefore14 = pivots.filter(p => {
+    const m = (p.key || '').match(/(\d{2})[-_]?(\d{2})/);
+    if (!m) return false;
+    const t = `${m[1]}:${m[2]}`;
+    return t >= '12:00' && t < '14:00';
+  });
+  pivBefore14.forEach(p => out.push(_renderArcPivot(p)));
+  out.push(_renderArcLiveStage(f14, '14:00', '14:00', nowEt));
+  const pivAfter14 = pivots.filter(p => {
+    const m = (p.key || '').match(/(\d{2})[-_]?(\d{2})/);
+    if (!m) return true;  // no time → show late
+    return `${m[1]}:${m[2]}` >= '14:00';
+  });
+  pivAfter14.forEach(p => out.push(_renderArcPivot(p)));
+  out.push(_renderArcProfile(journal.profile, nowEt));
+
+  body.innerHTML = out.join('');
+
+  if (rollup) {
+    if (journal.rollup?.score) {
+      rollup.classList.remove('muted');
+      rollup.textContent = `${journal.rollup.score} axes`;
+    } else {
+      rollup.classList.add('muted');
+      rollup.textContent = `${stages.length} stage${stages.length === 1 ? '' : 's'} · grading pending`;
+    }
+  }
+
+  // Wire the inline canary re-evaluate button.
+  const evalBtn = document.getElementById('today-arc-canary-eval');
+  if (evalBtn) {
+    evalBtn.addEventListener('click', async () => {
+      evalBtn.disabled = true;
+      evalBtn.textContent = 'Evaluating…';
+      try {
+        const r = await api(`/api/canary/MNQ1/${date}/evaluate`, { method: 'POST', body: {} });
+        if (r.ok) toast('canary re-evaluated', 'ok');
+        else toast(`evaluate: ${r.reason || 'see audit'}`, 'err');
+      } catch (e) { toast(`evaluate failed: ${e.message}`, 'err'); }
+      finally {
+        evalBtn.disabled = false;
+        evalBtn.textContent = 'Re-evaluate now';
+        renderTodayArc();
+        refreshCanaryCell();
+      }
+    });
+  }
+}
+
+document.getElementById('today-arc-refresh')?.addEventListener('click', renderTodayArc);
+
+// Auto-poll every 60s while the Today tab is the active one. The
+// session-bar's own 30s poll keeps the topbar canary/PnL fresh; the
+// timeline body (heavier render) refreshes half as often to stay
+// kind to the canary endpoint and the profile endpoint.
+function _startTodayArcPoll() {
+  if (_todayArcTimer) clearInterval(_todayArcTimer);
+  _todayArcTimer = setInterval(() => {
+    if (document.getElementById('tab-today')?.classList.contains('hidden')) return;
+    renderTodayArc();
+  }, 60_000);
+}
+_startTodayArcPoll();

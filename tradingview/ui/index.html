@@ -48,6 +48,51 @@
 <link rel="stylesheet" href="/ui/style.css" />
 </head>
 <body>
+
+<!-- Persistent top header — always visible across tabs and devices.
+     Answers in 3 seconds: am I supposed to be trading right now? what's
+     my live P&L? is the workspace paused? Replaces the canary/PnL/R
+     cells in the legacy session-bar (still in DOM, hidden by CSS) and
+     the sidebar kill-switch (still in DOM, hidden by CSS). All three
+     are wired by the existing refresh* functions; this adds new IDs
+     they also write to. -->
+<header class="topbar" id="topbar" aria-label="Session status">
+  <div class="topbar__brand">
+    <div class="topbar__sym mono" id="topbar-sym" title="Active forecast symbol">MNQ1!</div>
+  </div>
+  <div class="topbar__canary state-pending" id="topbar-canary"
+       role="button" tabindex="0"
+       title="Click for per-check details. State updates every 30s."
+       aria-label="Canary state — click for per-check details">
+    <span class="topbar__canary-state mono" id="topbar-canary-state">no canary</span>
+    <span class="topbar__canary-arrow muted">→</span>
+    <span class="topbar__canary-action mono" id="topbar-canary-action">wait</span>
+    <span class="topbar__canary-dots" id="topbar-canary-dots"></span>
+  </div>
+  <div class="topbar__metrics">
+    <div class="topbar__metric topbar__pnl">
+      <span class="topbar__lbl">P&amp;L</span>
+      <span class="topbar__val mono" id="topbar-pnl">—</span>
+    </div>
+    <div class="topbar__metric topbar__r">
+      <span class="topbar__lbl">R</span>
+      <span class="topbar__val mono" id="topbar-r">—</span>
+    </div>
+  </div>
+  <div class="topbar__kill">
+    <button type="button" id="topbar-kill-pause" class="topbar__kill-btn"
+            title="Pause every workflow (analyze, forecasts, profile, apply-pine, act). In-flight runs finish; new starts 503.">
+      <span class="topbar__kill-ico" aria-hidden="true">⏸</span>
+      <span class="topbar__kill-lbl">Pause</span>
+    </button>
+    <button type="button" id="topbar-kill-resume" class="topbar__kill-btn topbar__kill-btn--paused hidden"
+            title="Workspace is paused. Click to resume.">
+      <span class="topbar__kill-dot"></span>
+      <span class="topbar__kill-lbl">PAUSED</span>
+    </button>
+  </div>
+</header>
+
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
@@ -179,8 +224,41 @@
 
     <!-- TODAY TAB — the run. Chart, AI read, order entry, lessons. ---- -->
     <section class="tab" id="tab-today">
-      <h1 class="today-hero">Today<span class="today-hero__sub">· one run, make it count</span></h1>
-      <div class="subtitle">Read the chart · trade the thesis · journal the lesson.</div>
+      <!-- Unified day-arc — the single linear timeline of today's run.
+           Pre-session bias → canary checks ticking through 09:00–12:00 →
+           10/12/14 forecasts → pivot if any → profile/grading at 16:00.
+           Auto-loads on tab activation; polled every 30s. The desk-time
+           tools (capture, analyze, quick order) live below in a
+           collapsed Trade panel. Endpoints: /api/journal/{sym}/{date} +
+           /api/canary/{sym}/{date}. -->
+      <div class="card today-arc" id="today-arc-card">
+        <div class="card-head today-arc__head">
+          <h2 class="today-arc__title">
+            <span id="today-arc-date-label">Today</span>
+            <span class="today-arc__sub muted" id="today-arc-sub">one run, make it count</span>
+          </h2>
+          <div class="card-head__actions today-arc__actions">
+            <span class="today-arc__rollup mono muted" id="today-arc-rollup">—</span>
+            <button class="icon-btn" id="today-arc-refresh" title="Reload today's day-arc">↻</button>
+          </div>
+        </div>
+        <div class="today-arc__body" id="today-arc-body">
+          <div class="empty">Loading today's arc…</div>
+        </div>
+      </div>
+
+      <!-- Trade desk — the in-session run tools (capture, analyze,
+           quick order, positions, lessons). Collapsed by default;
+           opens with a single tap. Persists open/closed state per-
+           device in localStorage so phone-time use doesn't have to
+           re-toggle on every tab switch. -->
+      <details class="trade-desk" id="trade-desk">
+        <summary class="trade-desk__summary">
+          <span class="trade-desk__chev" aria-hidden="true">▸</span>
+          <span class="trade-desk__lbl">Trade desk</span>
+          <span class="trade-desk__hint muted">capture · analyze · order</span>
+        </summary>
+        <div class="trade-desk__body">
 
       <!-- Session scorecard + daily risk budget. Scorecard pulls from
            the decision log (hidden when empty); budget is a user-entered
@@ -503,6 +581,8 @@
           <div class="empty">Click refresh to load.</div>
         </div>
       </div>
+        </div>
+      </details>
     </section>
 
     <!-- ACT TAB ------------------------------------------------------- -->

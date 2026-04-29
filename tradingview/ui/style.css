@@ -5325,3 +5325,513 @@ html.is-electron .session-bar .session-bar__cell {
     width: 100%;
   }
 }
+
+
+/* ==========================================================================
+   UNIFIED REDESIGN — persistent topbar + Today day-arc + Trade-desk fold.
+   Layered ON TOP of existing styles; legacy session-bar cells and the
+   sidebar kill-switch are hidden via the rules at the bottom of this
+   block (kept in DOM so existing refresh* functions still work — they
+   write to BOTH the legacy IDs and the new topbar IDs).
+   ========================================================================== */
+
+:root {
+  --topbar-h: 56px;
+  --topbar-h-mobile: 52px;
+}
+
+/* Body becomes a flex column so the topbar takes its row and the rest
+   of the app fills the remaining viewport. .app's 100dvh changes to
+   "fill the rest" via flex:1. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.app {
+  flex: 1;
+  height: auto;
+  min-height: 0;  /* allow inner scrolling without pushing topbar offscreen */
+}
+
+/* ---- Topbar ------------------------------------------------------------ */
+.topbar {
+  flex: 0 0 auto;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar__brand {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar__sym {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--bg);
+}
+
+/* Canary state — the loudest element in the topbar. State-colored
+   border + state-colored background tint so a glance answers "am I
+   trading right now?". Failing pulses softly to draw the eye. */
+.topbar__canary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--fs-base);
+  min-width: 0;
+  overflow: hidden;
+}
+.topbar__canary:hover { background: var(--hover); }
+.topbar__canary-state {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+.topbar__canary-arrow {
+  font-size: var(--fs-sm);
+  flex: 0 0 auto;
+}
+.topbar__canary-action {
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar__canary-dots {
+  display: inline-flex;
+  gap: 3px;
+  flex: 0 0 auto;
+  margin-left: 4px;
+}
+.topbar__canary-dots .canary-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  display: inline-block;
+}
+.topbar__canary-dots .canary-dot.pass { background: var(--green); }
+.topbar__canary-dots .canary-dot.fail { background: var(--red); }
+.topbar__canary-dots .canary-dot.pending { background: var(--muted); opacity: 0.4; }
+.topbar__canary-dots .canary-dot.snoozed { background: transparent; border: 1px solid var(--muted); }
+.topbar__canary-dots .canary-dot.failed { background: var(--yellow); }
+
+.topbar__canary.state-passing  { border-color: var(--green);  background: color-mix(in srgb, var(--green)  10%, var(--bg)); }
+.topbar__canary.state-partial  { border-color: var(--yellow); background: color-mix(in srgb, var(--yellow) 10%, var(--bg)); }
+.topbar__canary.state-failing  { border-color: var(--red);    background: color-mix(in srgb, var(--red)    14%, var(--bg)); animation: topbar-canary-pulse 1.8s ease-in-out infinite; }
+.topbar__canary.state-pending  { border-color: var(--border-strong); }
+.topbar__canary.state-no-canary { opacity: 0.7; cursor: default; }
+.topbar__canary.state-passing  .topbar__canary-state { color: var(--green); }
+.topbar__canary.state-partial  .topbar__canary-state { color: var(--yellow); }
+.topbar__canary.state-failing  .topbar__canary-state { color: var(--red); }
+@keyframes topbar-canary-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent); }
+}
+
+.topbar__metrics {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+.topbar__metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+.topbar__lbl {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.topbar__val {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text);
+}
+.topbar__pnl.pnl-up   .topbar__val { color: var(--green); }
+.topbar__pnl.pnl-down .topbar__val { color: var(--red); }
+
+.topbar__kill {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+.topbar__kill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1;
+}
+.topbar__kill-btn:hover {
+  color: var(--text);
+  border-color: var(--red);
+  background: var(--hover);
+}
+.topbar__kill-btn--paused {
+  background: color-mix(in srgb, var(--red) 14%, var(--bg));
+  border-color: var(--red);
+  color: var(--red);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.topbar__kill-btn--paused:hover {
+  background: color-mix(in srgb, var(--red) 22%, var(--bg));
+}
+.topbar__kill-ico {
+  font-size: 14px;
+  line-height: 1;
+}
+.topbar__kill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--red) 60%, transparent);
+  animation: topbar-kill-pulse 1.6s ease-in-out infinite;
+}
+@keyframes topbar-kill-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* Mobile topbar — tighter, action label hides, canary score truncates. */
+@media (max-width: 768px) {
+  .topbar {
+    height: var(--topbar-h-mobile);
+    padding: 0 10px;
+    gap: 8px;
+  }
+  .topbar__sym { font-size: var(--fs-base); padding: 3px 7px; }
+  .topbar__canary { padding: 4px 8px; gap: 6px; }
+  .topbar__canary-arrow,
+  .topbar__canary-action { display: none; }
+  .topbar__metrics { gap: 10px; }
+  .topbar__metric { line-height: 1.05; }
+  .topbar__kill-btn { padding: 6px 9px; }
+  .topbar__kill-lbl { display: none; }
+  .topbar__kill-btn--paused .topbar__kill-lbl {
+    display: inline; font-size: var(--fs-xs);
+  }
+}
+
+/* ---- Hide legacy duplicates (still in DOM for existing handlers) ------ */
+.session-bar__canary,
+.session-bar__pnl,
+.session-bar__r {
+  display: none !important;
+}
+.sidebar .kill-switch {
+  display: none !important;
+}
+/* When the bias and inval are the only cells left, the session-bar is
+   still useful (shows today's thesis). But hide it entirely when the
+   bias is empty so there's no "—" eyesore on no-forecast days. */
+.session-bar.empty {
+  display: none !important;
+}
+
+/* ---- Today day-arc — the unified linear timeline ---------------------- */
+.today-arc {
+  margin-top: 0;
+}
+.today-arc__head {
+  align-items: baseline;
+}
+.today-arc__title {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.today-arc__sub {
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  font-style: italic;
+}
+.today-arc__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.today-arc__rollup {
+  font-size: var(--fs-sm);
+}
+.today-arc__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  padding-left: 16px;
+}
+.today-arc__body::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--border-strong);
+  border-radius: 1px;
+}
+
+.today-arc__node {
+  position: relative;
+  padding: 12px 0 12px 14px;
+  border-bottom: 1px dashed var(--border);
+}
+.today-arc__node:last-child { border-bottom: none; }
+.today-arc__node::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--muted);
+  z-index: 1;
+}
+.today-arc__node.is-pass::before    { border-color: var(--green); background: var(--green); }
+.today-arc__node.is-partial::before { border-color: var(--yellow); background: var(--yellow); }
+.today-arc__node.is-fail::before    { border-color: var(--red); background: var(--red); }
+.today-arc__node.is-pending::before { border-color: var(--muted); background: var(--bg); }
+.today-arc__node.is-future          { opacity: 0.55; }
+
+.today-arc__node-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.today-arc__node-time {
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.today-arc__node-label {
+  font-weight: 600;
+  font-size: var(--fs-base);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.today-arc__node-score {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.today-arc__node-score.is-pass    { color: var(--green); }
+.today-arc__node-score.is-partial { color: var(--yellow); }
+.today-arc__node-score.is-fail    { color: var(--red); }
+.today-arc__node-body {
+  font-size: var(--fs-sm);
+  color: var(--fg-2);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.today-arc__node-body b { color: var(--text); }
+.today-arc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.today-arc__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--hover);
+  color: var(--fg-2);
+  font-family: var(--mono);
+}
+.today-arc__chip.is-pass { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+.today-arc__chip.is-fail { background: color-mix(in srgb, var(--red)   16%, transparent); color: var(--red); }
+.today-arc__chip.is-warn { background: color-mix(in srgb, var(--yellow) 16%, transparent); color: var(--yellow); }
+
+/* Canary checks — inline mini-rows under the canary node. */
+.today-arc__canary-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.today-arc__canary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-xs);
+  padding: 4px 8px;
+  border-radius: 3px;
+  border-left: 2px solid var(--muted);
+  background: var(--bg);
+}
+.today-arc__canary-row.is-pass    { border-left-color: var(--green); }
+.today-arc__canary-row.is-fail    { border-left-color: var(--red); }
+.today-arc__canary-row.is-pending { border-left-color: var(--muted); opacity: 0.7; }
+.today-arc__canary-row.is-failed  { border-left-color: var(--yellow); }
+.today-arc__canary-row.is-snoozed { border-left-color: var(--muted); opacity: 0.55; font-style: italic; }
+.today-arc__canary-id {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--text);
+}
+.today-arc__canary-deadline {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.today-arc__canary-status {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.today-arc__canary-evidence {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 10px;
+  margin-left: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.today-arc__node-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.today-arc__action-btn {
+  font-size: var(--fs-xs);
+  padding: 4px 9px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+.today-arc__action-btn:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--hover);
+}
+
+/* Mobile timeline — tighter padding, stacked actions. */
+@media (max-width: 768px) {
+  .today-arc__body { padding-left: 14px; }
+  .today-arc__node { padding: 10px 0 10px 12px; }
+  .today-arc__node::before { left: -14px; top: 16px; }
+  .today-arc__node-time { font-size: var(--fs-xs); }
+  .today-arc__node-label { font-size: var(--fs-sm); }
+  .today-arc__canary-evidence { max-width: 140px; }
+}
+
+/* ---- Trade desk fold — collapsed by default ---------------------------- */
+.trade-desk {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-1);
+}
+.trade-desk__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  user-select: none;
+  color: var(--text);
+}
+.trade-desk__summary::-webkit-details-marker { display: none; }
+.trade-desk__chev {
+  display: inline-block;
+  transform: rotate(0deg);
+  transition: transform var(--dur-base) var(--ease);
+  color: var(--muted);
+  font-size: 12px;
+  width: 12px;
+}
+.trade-desk[open] .trade-desk__chev { transform: rotate(90deg); }
+.trade-desk__lbl {
+  font-size: var(--fs-md);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.trade-desk__hint {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.trade-desk__body {
+  padding: 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+}
+.trade-desk__body > .card {
+  margin: 8px 0 0;
+}
+@media (max-width: 768px) {
+  .trade-desk__summary { padding: 10px 12px; }
+  .trade-desk__hint { display: none; }
+}
+
