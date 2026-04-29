@@ -290,6 +290,12 @@ async def index() -> HTMLResponse:
 # iterate on app.js / style.css, so force revalidation on every hit.
 @app.get("/ui/{filename:path}")
 async def ui_static(filename: str):
+    # Bare /ui/ (or /ui//foo etc.) → serve index.html. Common when the
+    # PWA is bookmarked at /ui/ instead of /ui/index.html.
+    if not filename or filename in ("", "/"):
+        return HTMLResponse(
+            (_UI_DIR / "index.html").read_text(), headers=_NO_CACHE_HEADERS,
+        )
     path = (_UI_DIR / filename).resolve()
     if not str(path).startswith(str(_UI_DIR)) or not path.is_file():
         raise HTTPException(404, "not found")
@@ -363,9 +369,9 @@ async def _probe_browser() -> dict:
         async with _tv_context() as ctx:
             pages = ctx.pages
             tv = next((p for p in pages if "tradingview.com" in (p.url or "")), None)
-            return {"ok": True, "url": tv.url if tv else None}
+            return {"ok": True, "url": tv.url if tv else None, "err": None}
     except Exception as e:
-        return {"ok": False, "err": f"{type(e).__name__}: {e}"}
+        return {"ok": False, "err": f"{type(e).__name__}: {e}", "url": None}
 
 
 @app.get("/api/health/browser")
