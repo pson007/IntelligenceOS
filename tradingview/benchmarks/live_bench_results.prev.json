@@ -1,0 +1,77 @@
+{
+  "symbol": "MNQ1!",
+  "timeframe": "5m",
+  "capture_path": "/Users/pson/Desktop/TradingView/MNQ1__5_20260419_112429.png",
+  "results": [
+    {
+      "provider": "ollama",
+      "model": "gemma4:31b",
+      "elapsed_s": 88.0,
+      "status": "ok",
+      "chars": 1521,
+      "signal": "Long",
+      "confidence": 75,
+      "entry": 26800.0,
+      "stop": 26740.0,
+      "tp": 26950.0,
+      "rationale": "Price is in a strong bullish trend on the 5m timeframe, as indicated by the impulsive move from 26,450 and the 'BULLISH' macro trend label. Current price action shows a healthy consolidation near the ",
+      "raw_head": ""
+    },
+    {
+      "provider": "ollama",
+      "model": "gemma4:26b",
+      "elapsed_s": 66.1,
+      "status": "ok",
+      "chars": 1172,
+      "signal": "Long",
+      "confidence": 75,
+      "entry": 26800,
+      "stop": 26725,
+      "tp": 26950,
+      "rationale": "The macro trend is explicitly bullish following a significant breakout from the 26,500 level. Price is currently undergoing a periodic retracement into the support zone; entering on this dip targets t",
+      "raw_head": ""
+    },
+    {
+      "provider": "claude_web",
+      "model": "Haiku 4.5",
+      "elapsed_s": 15.3,
+      "status": "ok",
+      "chars": 1369,
+      "signal": "Long",
+      "confidence": 72,
+      "entry": 26842.0,
+      "stop": 26780.0,
+      "tp": 26920.0,
+      "rationale": "Price is trading above the Ichimoku cloud (green base line ~26780) with bullish trend structure. The 5m candles show higher lows forming after the recent pullback from 26880 resistance, and the macro ",
+      "raw_head": ""
+    },
+    {
+      "provider": "claude_web",
+      "model": "Sonnet 4.6",
+      "elapsed_s": 20.4,
+      "status": "ok",
+      "chars": 1840,
+      "signal": "Long",
+      "confidence": 72,
+      "entry": 26842.0,
+      "stop": 26780.0,
+      "tp": 26920.0,
+      "rationale": "Price is trading above both the fast (green) and slow (red) MAs with macro trend labeled BULLISH and flow labeled UP in the top-right panel. After a sharp impulse from ~26,450 to ~26,880, price has pu",
+      "raw_head": ""
+    },
+    {
+      "provider": "claude_web",
+      "model": "Opus 4.7",
+      "elapsed_s": 24.1,
+      "status": "ok",
+      "chars": 1724,
+      "signal": "Long",
+      "confidence": 62,
+      "entry": 26842.0,
+      "stop": 26775.0,
+      "tp": 26900.0,
+      "rationale": "Status panel reads Macro Trend BULLISH / Flow UP, and price is holding above the rising fast EMA after a clean pullback from the ~26885 session high to ~26775 and reclaim. The 9:00 AM breakout leg est",
+      "raw_head": ""
+    }
+  ]
+}

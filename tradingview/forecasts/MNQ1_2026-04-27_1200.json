@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-27",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260427_123712.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "00:30:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-27T12:37:55",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-27 ~12:00 ET\n\nBars observed so far this session: ~151 one-minute RTH bars, ~09:30\u201312:00 ET\n\nWhat has happened so far: RTH opened with a heavy stop-hunt flush, failed to reclaim the 27,400\u201327,420 area, then chopped into a lower-low sweep near 27,315 before reclaiming back toward 27,365.\n\nRANKED SIMILAR ARCHETYPES\n\nFailed-breakdown midday reclaim attempt \u2014 Price swept the late-morning low before the cursor, then reclaimed back into the prior chop range.\n\nBearish trend day trying to convert into range day \u2014 The pre-cursor structure is still lower-high/lower-low, but sellers are no longer cleanly extending below 27,320.\n\nLunch compression before afternoon directional test \u2014 Volatility expanded into 09:30\u201310:30, then price began coiling between demand near 27,315\u201327,340 and supply near 27,390\u201327,420.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop-to-upward drift, with 27,340\u201327,350 holding unless sellers regain control; first test is 27,390\u201327,410.\n\nBetween next marker and 14:00: Next marker is 14:00, so the key question is whether price enters 14:00 above or below 27,380. Above it favors afternoon continuation; below it keeps the day range-bound/bearish.\n\nBetween 14:00 and 16:00: Base case is a reclaim-grind higher into the close if 27,350 holds, but upside should be capped unless 27,420 is accepted.\n\nProjected close price range: 27,390\u201327,455\n\nRest-of-day HOD range: 27,430\u201327,485\n\nRest-of-day LOD range: 27,300\u201327,335\n\nTACTICAL BIAS\n\nPrimary bias: Long / reclaim attempt, 58% confidence\n\nKey level to invalidate the bias: Sustained trade below 27,315\n\nPreferred entry zone: 27,335\u201327,355 on pullback hold, or 27,390 reclaim after acceptance\n\nR:R logic: Longs against 27,315 risk ~25\u201340 pts for a push toward 27,430\u201327,470; avoid chasing into 27,420 unless breakout holds.\n\nKEY LEVELS\n\nOverhead supply: 27,390\u201327,420, then 27,455\u201327,490\n\nUnderlying demand: 27,315\u201327,335, then 27,290\u201327,305\n\nPivot-to-watch: 27,380\n\nPREDICTION TAGS\n\ndirection: up / reclaim, 58%\n\nstructure: failed_breakdown_midday_reclaim_range_to_up, 55%\n\nlunch_behavior: sideways-to-up compression, 60%\n\nafternoon_drive: moderate upside grind, 54%\n\ngoat_direction: bullish from late-morning sweep, 52%\n\nclose_near_extreme: near upper third, not guaranteed HOD, 56%"
+}

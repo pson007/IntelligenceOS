@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-28",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260428_101058.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "04:30:00",
+    "session_last": "10:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-28T10:11:49",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-28 ~10:00 ET from BarDate/replay marker; displayed clock near 10:10:57 AM UTC-4\n\nBars observed so far this session: ~31 RTH 1-min bars, 09:30\u201310:00 ET\n\nWhat has happened so far in 1 sentence: Before the cursor, MNQ flushed hard at/after 09:30 into ~27035\u201327050, immediately reclaimed, then held above the flush low while consolidating below ~27220.\n\nRANKED SIMILAR ARCHETYPES\n\nStop-hunt-reclaim trend-up setup \u2014 The 09:30 flush undercut demand, rejected fast, and price is now holding above the breakdown zone instead of continuing lower.\n\nFailed breakdown / value reclaim day \u2014 The overnight downtrend is losing downside follow-through after a violent RTH liquidity sweep.\n\nVolatile reversal-to-range day \u2014 If 27220\u201327260 supply rejects repeatedly, the day may chop between the 27040 flush low and 27260 resistance.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop-to-higher bias, with pullbacks toward 27140\u201327165 likely defended if the reclaim is real; first test is whether price can clear 27220\u201327260.\n\nBetween next marker and 14:00: Base case: midday reclaim grind, especially if price holds above 27180 and starts accepting over 27240\u201327280.\n\nBetween 14:00 and 16:00 close: Upside continuation favored if above 27280 by 14:00; trend-day logic allows expansion toward upper supply instead of mean reversion.\n\nProjected close price range: 27360\u201327420\n\nRest-of-day HOD range: 27400\u201327455\n\nRest-of-day LOD range: 27035\u201327120\n\nTACTICAL BIAS\n\nPrimary bias: Long, confidence 62%\n\nKey level to invalidate the bias: Sustained trade below 27035\u201327050\n\nPreferred entry zone: 27135\u201327170 pullback, or 27245\u201327280 reclaim/hold\n\nR:R logic: Risk should be framed below the reclaim base or flush low; upside targets are 27260 first, then 27340\u201327420 if acceptance builds above 27280.\n\nKEY LEVELS\n\nOverhead supply: 27220\u201327260, then 27400\u201327420\n\nUnderlying demand: 27135\u201327150, then 27035\u201327050\n\nPivot-to-watch: 27240\u201327280 reclaim zone\n\nPREDICTION TAGS\n\ndirection: up / 62%\n\nstructure: stop-hunt-reclaim / failed_breakdown_midday_reclaim_trend_up / 56%\n\nlunch_behavior: hold above reclaim base, grind higher / 58%\n\nafternoon_drive: upside continuation if above 27280 / 55%\n\ngoat_direction: up / 57%\n\nclose_near_extreme: yes, near upper third to HOD / 54%"
+}

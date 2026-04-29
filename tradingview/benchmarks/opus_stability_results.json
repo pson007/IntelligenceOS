@@ -1,0 +1,60 @@
+{
+  "symbol": "MNQ1!",
+  "single_tf": "5m",
+  "single_runs": [
+    {
+      "elapsed_s": 26.5,
+      "ok": true,
+      "signal": "Long",
+      "confidence": 58,
+      "entry": 27527.0,
+      "stop": 27475.0,
+      "tp": 27625.0,
+      "rr": 1.8846153846153846
+    },
+    {
+      "elapsed_s": 27.9,
+      "ok": true,
+      "signal": "Long",
+      "confidence": 58,
+      "entry": 27527.0,
+      "stop": 27475.0,
+      "tp": 27620.0,
+      "rr": 1.7884615384615385
+    },
+    {
+      "elapsed_s": 25.2,
+      "ok": true,
+      "signal": "Long",
+      "confidence": 62,
+      "entry": 27527.0,
+      "stop": 27475.0,
+      "tp": 27620.0,
+      "rr": 1.7884615384615385
+    }
+  ],
+  "deep_runs": [
+    {
+      "elapsed_s": 67.9,
+      "ok": true,
+      "optimal_tf": "15m",
+      "signal": "Long",
+      "confidence": 64,
+      "entry": 27475.0,
+      "stop": 27420.0,
+      "tp": 27600.0,
+      "rr": 2.272727272727273
+    },
+    {
+      "elapsed_s": 44.6,
+      "ok": true,
+      "optimal_tf": "15m",
+      "signal": "Long",
+      "confidence": 62,
+      "entry": 27485,
+      "stop": 27435,
+      "tp": 27600,
+      "rr": 2.3
+    }
+  ]
+}

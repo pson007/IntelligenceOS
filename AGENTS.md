@@ -2,7 +2,7 @@
 
 Personal trading-intelligence console for a single user (Phirun). A Python
 FastAPI backend drives the user's real Chrome over CDP to automate
-TradingView (chart capture, analysis, order entry) and claude.ai (vision
+TradingView (chart capture, analysis, order entry) and Codex.ai (vision
 LLM analysis without an API key). Not a SaaS, not multi-tenant — one
 operator, one workflow.
 
@@ -13,10 +13,10 @@ operator, one workflow.
 **Phirun Son** — `phirun.son@gmail.com`. Day trader, builder.
 - Primary market: **MNQ1!** (Micro E-mini NASDAQ-100 futures, CME).
   When working in this repo, default symbol = MNQ1! unless told otherwise.
-- TradingView Pro+ subscription, claude.ai Max subscription.
+- TradingView Pro+ subscription, Codex.ai Max subscription.
 - Hardware: **M3 Max MacBook Pro, 128GB RAM, macOS Tahoe 26.4.1**.
   Can comfortably run large local LLMs; prefers **local inference
-  ($0/call)** where quality permits, and falls back to claude.ai web UI
+  ($0/call)** where quality permits, and falls back to Codex.ai web UI
   for better reasoning.
 - Remote access: the console is exposed over Tailscale at
   `home.tail772848.ts.net`; he opens it from iPhone/iPad during the
@@ -38,7 +38,7 @@ Day-trading deck where one chart drives everything:
    - *Single-TF analyze* — one chart, one LLM call, returns Long/Short/
      Skip + entry/stop/tp/R:R + rationale + a Pine v6 **indicator**
      overlay.
-   - *Deep analyze* — all 10 timeframes (30s→1W), one multi-image call,
+   - *Deep analyze* — all 9 timeframes (1m→1M), one multi-image call,
      returns an **optimal TF recommendation** + bracket levels
      calibrated to that TF + a Pine v6 **strategy** (backtestable,
      not just annotation).
@@ -47,7 +47,7 @@ Day-trading deck where one chart drives everything:
    Editor and adds it to the chart.
 
 The whole thing attaches to the user's *real* Chrome. TradingView and
-claude.ai sessions are reused — no separate profile/login state.
+Codex.ai sessions are reused — no separate profile/login state.
 
 ---
 
@@ -66,7 +66,7 @@ IntelligenceOS/
 │   ├── tv_automation/           # The automation package
 │   │   ├── chart.py             # Symbol/TF navigation, screenshots
 │   │   ├── analyze_mtf.py       # Single-TF + deep analysis
-│   │   ├── claude_web.py        # Drive claude.ai for analysis
+│   │   ├── claude_web.py        # Drive Codex.ai for analysis
 │   │   ├── trading.py           # Paper trading via TV order panel
 │   │   ├── orders.py            # Bracket orders + order-panel
 │   │   ├── watchlist.py         # Watchlist scraping/editing
@@ -95,7 +95,7 @@ IntelligenceOS/
 │   └── src/                     # Webhook ingest from TV alerts
 ├── tradingview-chart.sh         # Root-level helper
 ├── start-whisper-recording.sh   # Whisper voice capture
-└── .claude/                     # Claude Code settings
+└── .Codex/                     # Codex settings
 ```
 
 Current branch is `main`. Commits flow directly; there's no staging
@@ -111,7 +111,7 @@ Two processes need to be alive:
 ```bash
 cd tradingview && ./start_chrome_cdp.sh
 ```
-Then sign into tradingview.com and claude.ai once. Sessions persist in
+Then sign into tradingview.com and Codex.ai once. Sessions persist in
 the Chrome profile.
 
 **2. UI server** (development):
@@ -137,23 +137,16 @@ tail that.
 ## Analysis providers (pick carefully)
 
 The UI exposes three providers. Each has a different trade-off profile.
-Bench data lives in `tradingview/benchmarks/live_bench_results.json`
-(single-TF) and `live_bench_deep_results.json` (deep), both 2026-04-26.
-Deep capture wall (10 TFs sequential) is ~45s on top of the LLM time.
+Bench data lives in `tradingview/benchmarks/live_bench_results.json`.
 
-| Provider    | Model               | Single-TF | Deep (10-TF) | Cost              | When to use                                     |
-|-------------|--------------------|-----------|--------------|-------------------|-------------------------------------------------|
-| `ollama`    | `gemma4:31b`       | ~85s      | ~210s        | $0                | Offline / privacy / claude quota burned         |
-| `ollama`    | `gemma4:26b`       | ~75s      | ~105s        | $0                | Local fallback — half the deep time of 31b      |
-| `claude_web`| `Sonnet 4.6` ⭐    | ~28s      | ~43s         | Subscription      | **Default — fast, balanced, well-calibrated**   |
-| `claude_web`| `Opus 4.7` ⭐      | ~29s      | ~47s         | Subscription      | **Co-default — same speed as Sonnet, best R:R** |
-| `claude_web`| `Haiku 4.5`        | ~27s      | ~65s         | Subscription      | Deprecated — no remaining speed/quality niche   |
-| `anthropic` | `claude-sonnet-4-6`| ~10s      | ~30s         | Paid (API)        | Only if `ANTHROPIC_API_KEY` is set              |
-
-**Single-TF vs deep cost**: deep is now only ~1.5–2× single-TF on
-claude_web (was ~3× in April). If you're already opening a claude.ai
-tab, run deep — the marginal cost is small and you get the per-TF
-breakdown plus a backtestable strategy script.
+| Provider    | Model               | Single-TF | Deep (9-TF) | Cost              | When to use                                     |
+|-------------|--------------------|-----------|-------------|-------------------|-------------------------------------------------|
+| `ollama`    | `gemma4:31b`       | ~85s      | ~180s       | $0                | Offline / privacy / Codex quota burned         |
+| `ollama`    | `gemma4:26b`       | ~55s      | ~130s       | $0                | "Fast mode" local — slight signal-quality cost  |
+| `claude_web`| `Sonnet 4.6` ⭐    | ~20s      | ~60s        | Subscription      | **Default recommended — speed + quality**       |
+| `claude_web`| `Haiku 4.5`        | ~15s      | ~45s        | Subscription      | Fast iteration across many symbols              |
+| `claude_web`| `Opus 4.7`         | ~25s      | ~90s        | Subscription      | Hard calls — best confidence calibration        |
+| `anthropic` | `Codex-sonnet-4-6`| ~10s      | ~30s        | Paid (API)        | Only if `ANTHROPIC_API_KEY` is set              |
 
 **Why claude_web exists**: the user has a Max subscription but doesn't
 always have an API key configured. `claude_web` opens a new tab in the
@@ -199,7 +192,7 @@ on trending charts — use them as a crosscheck, not a primary signal
   `_TIMEFRAME_MAP` in `tv_automation/chart.py` and `TV_INTERVAL_TO_PILL`
   in `ui/app.js` are the canonical translation tables — **keep them in
   sync**.
-- **claude.ai smart-quote normalization**: claude.ai's markdown
+- **Codex.ai smart-quote normalization**: Codex.ai's markdown
   renderer turns `'` into `'` (U+2019). `_normalize_text` in
   `claude_web.py` converts them back before JSON parsing. Don't
   remove this — it's the reason parse-failures dropped to zero.
@@ -217,7 +210,7 @@ One paragraph of why.
 - Bullet-list specific changes.
 - Use em-dashes, not ASCII `--`, for sub-clauses.
 
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+Co-Authored-By: Codex Opus 4.7 (1M context) <noreply@anthropic.com>
 ```
 Examples: `trade: unified deck with MTF analysis`, `ui: full-screen PWA
 on iPhone 15 Pro Max`, `close blind spots 1 + 5: concurrent act guard +
@@ -259,7 +252,7 @@ Things this user values:
   `rm -rf`, force-push. These aren't destructive but they are
   user-visible.
 - **Local-first when quality permits**: don't route everything to
-  claude.ai; the ollama path exists for a reason. But also don't
+  Codex.ai; the ollama path exists for a reason. But also don't
   default to ollama when the quality gap is meaningful (see bench).
 - **Don't generate docs unless asked**: no READMEs, no "here's how I
   would structure this" unless requested. The exception: this file.

@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-27",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260427_123626.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "00:30:00",
+    "session_last": "10:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-27T12:37:09",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-04-27, ~10:00 ET\n\nBars observed so far this session: ~31 RTH 1-min bars, 09:30\u201310:00 ET\n\nWhat has happened so far: RTH opened with a violent stop-hunt flush into ~27,290\u201327,320, then sharply reclaimed back above ~27,390\u201327,400 by the cursor.\n\nRANKED SIMILAR ARCHETYPES\n\nStop-hunt-reclaim trend-up \u2014 Opening drive trapped shorts below demand, then reclaimed the breakdown zone quickly.\n\nFailed breakdown into value reclaim \u2014 Price undercut the morning range but did not accept lower; reclaim above ~27,390 shifts pressure upward.\n\nVolatile V-reversal / liquidation washout \u2014 The high-volume flush looks more like forced liquidation than controlled trend continuation.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop/retest around 27,375\u201327,410, then attempt to push toward 27,445\u201327,475 if 27,365 holds.\n\nBetween next marker and 14:00: Bias for higher-low structure; lunch likely compresses above 27,400, with upside attempts into 27,480\u201327,520.\n\nBetween 14:00 and 16:00: If above 27,440, expect afternoon continuation / squeeze toward upper session levels; failure below 27,365 turns it back into range chop.\n\nProjected close price range: 27,490\u201327,545\n\nRest-of-day HOD range: 27,525\u201327,575\n\nRest-of-day LOD range: 27,285\u201327,335\n\nTACTICAL BIAS\n\nPrimary bias: Long, 64% confidence\n\nKey level to invalidate the bias: Sustained trade below 27,360, especially if 27,320 fails again.\n\nPreferred entry zone: Pullback into 27,370\u201327,400 after holding above the flush reclaim.\n\nR:R logic: Risk can be defined below 27,320\u201327,350; upside target is 27,500+, giving roughly 2:1 if entry is near 27,385.\n\nKEY LEVELS\n\nOverhead supply: 27,445\u201327,475, then 27,500\u201327,540\n\nUnderlying demand: 27,290\u201327,335, then 27,360\u201327,385\n\nPivot-to-watch: 27,400\n\nPREDICTION TAGS\n\ndirection: bullish, 64%\nstructure: stop_hunt_reclaim_trend_up, 61%\nlunch_behavior: higher-low compression above 27,400, 58%\nafternoon_drive: upside continuation, 56%\ngoat_direction: long, 62%\nclose_near_extreme: yes, 55%"
+}

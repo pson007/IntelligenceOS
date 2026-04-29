@@ -1,0 +1,30 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-28",
+  "dow": "Tue",
+  "stage": "invalidation_1039",
+  "pivot_called_at_et": "10:39 ET",
+  "operator_reason": null,
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_pivot_20260428_103945.png",
+  "lessons_injected": true,
+  "model": "chatgpt_thinking",
+  "made_at": "2026-04-28T10:39:43-04:00",
+  "raw_response": "BREAK CONTEXT\n\n27069.25 broke after the 27210 reclaim failed and price rejected below VWAP near 27160\u201327180. The break came on an expanded red volume burst into the low, with CVD shown near -33.1K and price now holding below VWAP, below the 27161 open, and below the prior buy/reclaim structure. Acceptance is not deeply established yet, but the location is bearish: failed reclaim, lower high, VWAP rejection, then downside continuation.\n\nPIVOT CLASSIFICATION\n\nREVERSAL \u2014 the long thesis has flipped to short. Entry trigger is a failed retest of 27069\u201327090, or fresh continuation below 27055. Stop above 27130. First target 27020, then 27000 if selling persists.\n\nREVISED TACTICAL BIAS\n\nnew_bias: sell_failure\n\nnew_invalidation: This reversal read fails if price reclaims 27090 quickly and then accepts back above 27130/VWAP. A fast reclaim would turn this into a failed breakdown rather than real short acceptance.\n\nCONFIDENCE\n\npivot_confidence: med\n\nMain risk: the break is only a liquidity sweep under 27069.25 and price snaps back above the breakdown level before shorts can build acceptance.\n\nJSON\n{\n  \"break_context\": \"27069.25 broke after the 27210 reclaim failed and price rejected below VWAP near 27160-27180. The break came on expanded red volume into the low, with CVD near -33.1K and price now below VWAP, below the 27161 open, and below the prior buy/reclaim structure. Acceptance is not deeply established yet, but the sequence is bearish: failed reclaim, lower high, VWAP rejection, then downside continuation.\",\n  \"pivot_classification\": \"REVERSAL\",\n  \"reversal\": {\n    \"direction\": \"short\",\n    \"entry_trigger\": \"Short failed retest of 27069-27090, or fresh continuation below 27055.\",\n    \"stop\": 27130,\n    \"first_target\": 27020\n  },\n  \"flat_conditions\": null,\n  \"shakeout_reclaim\": null,\n  \"revised_tactical_bias\": {\n    \"bias\": \"sell_failure\",\n    \"invalidation\": \"This reversal read fails if price reclaims 27090 quickly and then accepts back above 27130/VWAP. A fast reclaim would turn this into a failed breakdown rather than real short acceptance.\"\n  },\n  \"pivot_confidence\": \"med\",\n  \"confidence_notes\": \"Bearish because the long reclaim failed, VWAP rejected, CVD is negative, and price broke the named downside level. Risk is that the break is only a liquidity sweep under 27069.25 and price snaps back above the breakdown level.\"\n}",
+  "break_context": "27069.25 broke after the 27210 reclaim failed and price rejected below VWAP near 27160-27180. The break came on expanded red volume into the low, with CVD near -33.1K and price now below VWAP, below the 27161 open, and below the prior buy/reclaim structure. Acceptance is not deeply established yet, but the sequence is bearish: failed reclaim, lower high, VWAP rejection, then downside continuation.",
+  "pivot_classification": "REVERSAL",
+  "reversal": {
+    "direction": "short",
+    "entry_trigger": "Short failed retest of 27069-27090, or fresh continuation below 27055.",
+    "stop": 27130,
+    "first_target": 27020
+  },
+  "flat_conditions": null,
+  "shakeout_reclaim": null,
+  "revised_tactical_bias": {
+    "bias": "sell_failure",
+    "invalidation": "This reversal read fails if price reclaims 27090 quickly and then accepts back above 27130/VWAP. A fast reclaim would turn this into a failed breakdown rather than real short acceptance."
+  },
+  "pivot_confidence": "med",
+  "confidence_notes": "Bearish because the long reclaim failed, VWAP rejected, CVD is negative, and price broke the named downside level. Risk is that the break is only a liquidity sweep under 27069.25 and price snaps back above the breakdown level.",
+  "parsed_structured": true
+}
