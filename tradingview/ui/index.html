@@ -1061,6 +1061,147 @@
       </div>
     </section>
 
+    <!-- COACH TAB — AI Visual Coach. Analyzes the live chart and proposes
+         additive visuals (levels, vlines, cross alerts) the trader can
+         accept into the Sketchpad indicator. Composes alongside the
+         Forecast Overlay, not in place of it. -->
+    <section class="tab hidden" id="tab-coach">
+      <h1>Visual Coach</h1>
+      <div class="subtitle">
+        Analyze the live chart with a vision LLM. Propose additive Pine visuals — levels, vertical time markers, directional cross alerts. Accept the ones you want into the Sketchpad indicator.
+      </div>
+
+      <div class="card" id="coach-run-card">
+        <div class="card-head">
+          <h2>Analyze chart</h2>
+          <span class="mono small" id="coach-run-status"></span>
+        </div>
+
+        <div class="coach-controls">
+          <label class="coach-controls__field">
+            <span class="coach-controls__lbl">Symbol</span>
+            <input type="text" id="coach-symbol" value="MNQ1!" maxlength="20"
+                   spellcheck="false" autocapitalize="off">
+          </label>
+          <label class="coach-controls__field">
+            <span class="coach-controls__lbl">TF</span>
+            <select id="coach-tf">
+              <option value="1m">1m</option>
+              <option value="5m" selected>5m</option>
+              <option value="15m">15m</option>
+              <option value="30m">30m</option>
+              <option value="1h">1h</option>
+            </select>
+          </label>
+          <label class="coach-controls__field">
+            <span class="coach-controls__lbl">Provider · Model</span>
+            <select id="coach-provider-model">
+              <option value="claude_web|opus" selected>claude_web · Opus 4.7 ⭐</option>
+              <option value="claude_web|sonnet">claude_web · Sonnet 4.6 ⭐</option>
+              <option value="claude_web|haiku">claude_web · Haiku 4.5</option>
+              <option value="chatgpt_web|thinking">chatgpt_web · Thinking</option>
+              <option value="chatgpt_web|instant">chatgpt_web · Instant</option>
+              <option value="ollama|gemma4:31b">ollama · gemma4:31b ($0)</option>
+              <option value="ollama|gemma4:26b">ollama · gemma4:26b ($0)</option>
+              <option value="anthropic|claude-sonnet-4-6">anthropic · claude-sonnet-4-6 (API)</option>
+              <option value="anthropic|claude-opus-4-7">anthropic · claude-opus-4-7 (API)</option>
+            </select>
+          </label>
+          <button type="button" class="btn btn-primary" id="coach-analyze-btn"
+                  title="Capture current chart, send to LLM, get proposed visuals (~30s).">
+            Analyze chart
+          </button>
+        </div>
+      </div>
+
+      <!-- Signal banner — actionable trade call (Long / Short / Hold)
+           with entry / stop / tp + R:R. Hidden until Analyze runs;
+           updates whenever a chat reply includes a new_signal. The
+           three trade levels are also auto-prepended to the Proposed
+           visuals list as level visuals (yellow/red/green) so the
+           trader can accept and push them to the chart in one click. -->
+      <div class="card coach-signal-card hidden" id="coach-signal-card">
+        <div class="card-head">
+          <h2>Trade signal</h2>
+          <span class="mono small" id="coach-signal-meta">—</span>
+        </div>
+        <div class="coach-signal" id="coach-signal-body">
+          <div class="coach-signal__side" id="coach-signal-side">—</div>
+          <div class="coach-signal__levels" id="coach-signal-levels"></div>
+          <div class="coach-signal__rr" id="coach-signal-rr"></div>
+          <div class="coach-signal__rationale small" id="coach-signal-rationale"></div>
+        </div>
+        <div class="coach-signal-actions">
+          <button type="button" class="btn btn-primary" id="coach-signal-accept-btn"
+                  title="Add the entry/stop/tp levels to the Sketchpad. Apply afterward to push to chart.">
+            Accept trade levels → Sketchpad
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat card — primary brainstorm surface. Visible from the start
+           with an empty-state hint; populated with the LLM's first
+           response once Analyze runs. Each chat turn replays the full
+           conversation through the same provider/model (~30s/turn but
+           stateless on the browser side). New visuals proposed during
+           chat flow into the Proposed list below. -->
+      <div class="card coach-chat-card" id="coach-chat-card">
+        <div class="card-head">
+          <h2>Brainstorm with Coach</h2>
+          <span class="mono small" id="coach-chat-meta">no thread yet · run Analyze to start</span>
+        </div>
+        <div class="coach-chat" id="coach-chat-transcript">
+          <div class="empty small coach-chat-empty">
+            <strong>Run Analyze first</strong> to capture the chart and start a chat thread.
+            Then ask follow-ups here — refine, challenge, propose alternative visuals.
+          </div>
+        </div>
+        <form class="coach-chat-form" id="coach-chat-form">
+          <textarea id="coach-chat-input" rows="3"
+                    placeholder="Ask a follow-up: 'why no level at 27,440?', 'add a vline at the EU close', 'what about the 30m structure?'  (Cmd/Ctrl+Enter to send)"
+                    spellcheck="false"></textarea>
+          <button type="submit" class="btn btn-primary coach-chat-send-btn" id="coach-chat-send"
+                  title="Cmd/Ctrl+Enter">Send</button>
+        </form>
+      </div>
+
+      <!-- Proposals card — populated after a successful analyze OR when
+           chat replies include new_visuals. Sub-surface to chat: chat is
+           where the thinking happens; this is where the artifacts land
+           for accept/reject. -->
+      <div class="card hidden" id="coach-proposals-card">
+        <div class="card-head">
+          <h2>Proposed visuals</h2>
+          <span class="mono small" id="coach-proposals-meta"></span>
+        </div>
+        <div class="coach-context muted small" id="coach-context">—</div>
+        <div class="coach-proposals" id="coach-proposals"></div>
+        <div class="coach-proposals-actions">
+          <button type="button" class="btn-ghost" id="coach-proposals-toggle-all">Toggle all</button>
+          <button type="button" class="btn btn-primary" id="coach-proposals-accept-btn">Accept selected → Sketchpad</button>
+        </div>
+      </div>
+
+      <!-- Sketchpad card — the current accepted visuals, persisted to
+           sketchpad/<sym>_<date>.json. Apply pushes them to the chart. -->
+      <div class="card" id="coach-sketchpad-card">
+        <div class="card-head">
+          <h2>Sketchpad</h2>
+          <span class="mono small" id="coach-sketchpad-meta">—</span>
+        </div>
+        <div class="coach-sketchpad" id="coach-sketchpad">
+          <div class="empty small">Empty. Run Analyze and accept visuals to populate.</div>
+        </div>
+        <div class="coach-sketchpad-actions">
+          <button type="button" class="btn-ghost danger" id="coach-sketchpad-clear-btn"
+                  title="Drop all visuals from the sketchpad. Apply afterward to scrub the chart indicator.">Clear all</button>
+          <button type="button" class="btn btn-primary" id="coach-sketchpad-apply-btn"
+                  title="Render the sketchpad to Pine and apply to the live chart (~30-60s).">Apply to chart</button>
+        </div>
+        <div class="coach-apply-status hidden mono small" id="coach-apply-status"></div>
+      </div>
+    </section>
+
     <section class="tab hidden" id="tab-audit">
       <h1>Audit</h1>
       <div class="subtitle">Live tail of today's audit log (<span class="mono">tradingview/audit/YYYY-MM-DD.jsonl</span>).</div>

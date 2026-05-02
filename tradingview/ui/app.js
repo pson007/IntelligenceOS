@@ -248,6 +248,7 @@ const TAB_GROUPS = {
   today:   { default: 'today',     subs: [] },
   plan:    { default: 'forecasts', subs: [
               { id: 'forecasts', label: 'Forecast' },
+              { id: 'coach',     label: 'Coach' },
               { id: 'profiles',  label: 'Profile' },
             ] },
   journal: { default: 'journal',   subs: [] },
@@ -296,6 +297,7 @@ function _fireTabHook(sub) {
   if (sub === 'journal') { loadJournal(); initDayArc(); }
   if (sub === 'profiles') { loadProfiles(); initProfileRun(); }
   if (sub === 'forecasts') { loadForecasts(); initForecastRun(); }
+  if (sub === 'coach') { initCoachTab(); refreshSketchpad(); }
   if (sub === 'onboarding') initWizard();
 }
 
@@ -5690,3 +5692,597 @@ function _startTodayArcPoll() {
   }, 60_000);
 }
 _startTodayArcPoll();
+
+// ======================================================================
+// Coach tab — AI Visual Coach + Sketchpad
+// ======================================================================
+//
+// Three-card tab: capture controls → proposals (after Analyze) → sketchpad.
+// Sketchpad JSON is the source of truth (`tradingview/sketchpad/<sym>_<date>.json`);
+// the Pine artifact is regenerated on every Apply.
+//
+// State is mostly DOM-resident — last-proposals lives on the proposals
+// card itself (data-attr); sketchpad is fetched fresh on each refresh.
+
+let _coachInitialized = false;
+let _coachActiveTask = null;
+let _coachPollTimer = null;
+let _coachLastProposals = null;  // last full result from /api/coach/analyze
+let _coachThreadId = null;       // active chat thread (set after Analyze)
+let _coachChatTask = null;       // in-flight chat-turn task_id
+let _coachChatPollTimer = null;
+let _coachLastSignal = null;     // last proposed signal (initial OR from chat)
+
+function _coachToday() {
+  // Local-time YYYY-MM-DD. Matches the date the sketchpad endpoints
+  // and the visual_coach forecast loader use.
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function _coachSymbol() {
+  return (document.getElementById('coach-symbol')?.value || 'MNQ1!').trim();
+}
+
+function _coachEsc(s) {
+  // Minimal HTML-escape for label / rationale text. We render visuals
+  // via innerHTML so checkbox/button hooks are easy — escaping here
+  // keeps any < / > / & / " from breaking the row.
+  return String(s ?? '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+function _coachVisualSummary(v) {
+  // One-line, type-specific summary for the per-row display.
+  if (v.type === 'level') {
+    const px = Number(v.price).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    const al = v.alert_on_cross ? ' · alert' : '';
+    return `level @ ${px}${al}`;
+  }
+  if (v.type === 'vline') return `vline @ ${v.time_et} ET`;
+  if (v.type === 'cross_alert') {
+    const px = Number(v.price).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    const arrow = v.direction === 'above' ? '↑' : '↓';
+    return `cross ${arrow} ${px}`;
+  }
+  return v.type;
+}
+
+function _coachConfidenceClass(c) {
+  return ({ high: 'coach-conf-high', med: 'coach-conf-med', low: 'coach-conf-low' })[c] || '';
+}
+
+// --- Init: bind once -------------------------------------------------
+function initCoachTab() {
+  if (_coachInitialized) return;
+  _coachInitialized = true;
+
+  document.getElementById('coach-analyze-btn')
+    ?.addEventListener('click', runCoachAnalyze);
+  document.getElementById('coach-proposals-accept-btn')
+    ?.addEventListener('click', acceptSelectedProposals);
+  document.getElementById('coach-proposals-toggle-all')
+    ?.addEventListener('click', toggleAllProposals);
+  document.getElementById('coach-sketchpad-clear-btn')
+    ?.addEventListener('click', clearSketchpad);
+  document.getElementById('coach-sketchpad-apply-btn')
+    ?.addEventListener('click', applySketchpad);
+  document.getElementById('coach-signal-accept-btn')
+    ?.addEventListener('click', acceptSignalLevels);
+
+  // Chat — submit on Send button OR Cmd/Ctrl+Enter in the textarea.
+  const chatForm = document.getElementById('coach-chat-form');
+  chatForm?.addEventListener('submit', e => { e.preventDefault(); sendCoachChat(); });
+  document.getElementById('coach-chat-input')
+    ?.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        sendCoachChat();
+      }
+    });
+}
+
+// --- Run analyze -----------------------------------------------------
+async function runCoachAnalyze() {
+  const btn = document.getElementById('coach-analyze-btn');
+  const status = document.getElementById('coach-run-status');
+  const symbol = _coachSymbol();
+  const tf = document.getElementById('coach-tf')?.value || '5m';
+  const pm = (document.getElementById('coach-provider-model')?.value || 'claude_web|opus').split('|');
+  const provider = pm[0];
+  const model = pm[1];
+
+  if (!symbol) { alert('Symbol required'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Analyzing…';
+  if (status) status.textContent = 'capturing chart…';
+
+  try {
+    const r = await api('/api/coach/analyze', {
+      method: 'POST',
+      body: { symbol, timeframe: tf, provider, model },
+    });
+    if (!r?.task_id) throw new Error('no task_id');
+    _coachActiveTask = r.task_id;
+    if (status) status.textContent = `task ${r.task_id} · running…`;
+    pollCoachTask(r.task_id);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Analyze chart';
+    if (status) status.textContent = `error: ${e.message || e}`;
+  }
+}
+
+function pollCoachTask(taskId) {
+  if (_coachPollTimer) clearInterval(_coachPollTimer);
+  const started = Date.now();
+  _coachPollTimer = setInterval(async () => {
+    try {
+      const t = await api(`/api/coach/task/${taskId}`);
+      const elapsed = Math.round((Date.now() - started) / 1000);
+      const status = document.getElementById('coach-run-status');
+      if (status) status.textContent = `${t.state || '?'} · ${elapsed}s`;
+
+      if (t.state === 'done') {
+        clearInterval(_coachPollTimer);
+        _coachPollTimer = null;
+        _coachActiveTask = null;
+        document.getElementById('coach-analyze-btn').disabled = false;
+        document.getElementById('coach-analyze-btn').textContent = 'Analyze chart';
+        _onCoachAnalyzeDone(t.result);
+      } else if (t.state === 'failed' || t.state === 'cancelled') {
+        clearInterval(_coachPollTimer);
+        _coachPollTimer = null;
+        _coachActiveTask = null;
+        document.getElementById('coach-analyze-btn').disabled = false;
+        document.getElementById('coach-analyze-btn').textContent = 'Analyze chart';
+        if (status) status.textContent = `${t.state}: ${t.error || ''}`;
+      }
+    } catch (e) {
+      // Transient — keep polling. Hard fail will surface when the task
+      // disappears (404) and we'll stop.
+    }
+  }, 1500);
+}
+
+// --- Render proposals ------------------------------------------------
+// `mergeVisuals` mode: when true, append new visuals to the list (used
+// for chat-sourced visuals). Default replaces — used for initial Analyze.
+function renderCoachProposals(result, { mergeVisuals = false } = {}) {
+  if (!result) return;
+
+  const card = document.getElementById('coach-proposals-card');
+  const ctx  = document.getElementById('coach-context');
+  const list = document.getElementById('coach-proposals');
+  const meta = document.getElementById('coach-proposals-meta');
+
+  let visuals = result.visuals || [];
+  if (mergeVisuals && _coachLastProposals?.visuals?.length) {
+    // Dedupe by id so re-emit doesn't duplicate the same row.
+    const seen = new Set(visuals.map(v => v.id));
+    const carryover = _coachLastProposals.visuals.filter(v => !seen.has(v.id));
+    visuals = [...carryover, ...visuals];
+  }
+
+  const merged = { ...result, visuals };
+  _coachLastProposals = merged;
+
+  const ctxText = result.context_read || _coachLastProposals?.context_read || '';
+  const skip = result.skip_rationale;
+
+  if (ctx) ctx.textContent = ctxText || '(no context)';
+  if (meta) {
+    const took = result.llm_elapsed_s ? `${result.llm_elapsed_s}s` : '?s';
+    meta.textContent = `${visuals.length} proposals · ${result.provider || ''} · ${result.model || ''} · ${took}`;
+  }
+
+  card.classList.remove('hidden');
+
+  if (visuals.length === 0) {
+    list.innerHTML = `<div class="empty small">${_coachEsc(skip || 'No additive visuals proposed.')}</div>`;
+    document.getElementById('coach-proposals-accept-btn').disabled = true;
+    return;
+  }
+
+  document.getElementById('coach-proposals-accept-btn').disabled = false;
+  list.innerHTML = visuals.map(v => `
+    <label class="coach-proposal" data-vid="${_coachEsc(v.id)}">
+      <input type="checkbox" class="coach-proposal__cb" checked
+             data-visual='${_coachEsc(JSON.stringify(v))}'>
+      <span class="coach-proposal__chip coach-color-${_coachEsc(v.color)}">${_coachEsc(v.type)}</span>
+      <span class="coach-proposal__label">${_coachEsc(v.label)}</span>
+      <span class="coach-proposal__summary mono small">${_coachEsc(_coachVisualSummary(v))}</span>
+      <span class="coach-proposal__conf small ${_coachConfidenceClass(v.confidence)}">${_coachEsc(v.confidence)}</span>
+      <span class="coach-proposal__rationale small muted">${_coachEsc(v.rationale)}</span>
+    </label>
+  `).join('');
+}
+
+// Update the call site after Analyze completes — render the signal
+// banner, the proposals list, and open the chat card.
+function _onCoachAnalyzeDone(result) {
+  renderCoachSignal(result?.signal || null, {
+    provider: result?.provider, model: result?.model,
+    elapsed: result?.llm_elapsed_s,
+  });
+  renderCoachProposals(result);
+  if (result?.thread_id) {
+    _coachThreadId = result.thread_id;
+    _hydrateChatCard(result);
+  }
+}
+
+// --- Signal banner --------------------------------------------------
+function renderCoachSignal(signal, extra = {}) {
+  const card = document.getElementById('coach-signal-card');
+  if (!card) return;
+  if (!signal || !signal.side) {
+    card.classList.add('hidden');
+    return;
+  }
+  _coachLastSignal = signal;
+  card.classList.remove('hidden');
+
+  const side = signal.side;
+  card.classList.remove('coach-signal-card--long',
+                        'coach-signal-card--short',
+                        'coach-signal-card--hold');
+  card.classList.add(`coach-signal-card--${side.toLowerCase()}`);
+
+  document.getElementById('coach-signal-side').textContent = side.toUpperCase();
+
+  const lvl = document.getElementById('coach-signal-levels');
+  const fmt = n => Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  if (side === 'Hold' || signal.entry == null || signal.stop == null || signal.tp == null) {
+    lvl.innerHTML = `<span class="coach-signal__hold-msg muted">No actionable trade right now</span>`;
+    document.getElementById('coach-signal-rr').textContent = '';
+    document.getElementById('coach-signal-accept-btn').disabled = true;
+  } else {
+    lvl.innerHTML = `
+      <div class="coach-signal__lvl coach-signal__lvl--entry">
+        <span class="coach-signal__lvl-name">ENTRY</span>
+        <span class="coach-signal__lvl-px mono">${_coachEsc(fmt(signal.entry))}</span>
+      </div>
+      <div class="coach-signal__lvl coach-signal__lvl--stop">
+        <span class="coach-signal__lvl-name">STOP</span>
+        <span class="coach-signal__lvl-px mono">${_coachEsc(fmt(signal.stop))}</span>
+      </div>
+      <div class="coach-signal__lvl coach-signal__lvl--tp">
+        <span class="coach-signal__lvl-name">TP</span>
+        <span class="coach-signal__lvl-px mono">${_coachEsc(fmt(signal.tp))}</span>
+      </div>
+    `;
+    const rr = signal.r_r;
+    let rrCls = 'coach-signal__rr--low';
+    if (rr != null && rr >= 2) rrCls = 'coach-signal__rr--good';
+    else if (rr != null && rr >= 1.5) rrCls = 'coach-signal__rr--ok';
+    document.getElementById('coach-signal-rr').innerHTML = rr != null
+      ? `<span class="coach-signal__rr-val ${rrCls}">${rr}R</span> · risk ${fmt(Math.abs(signal.entry - signal.stop))} · reward ${fmt(Math.abs(signal.tp - signal.entry))}`
+      : '';
+    document.getElementById('coach-signal-accept-btn').disabled = false;
+  }
+
+  document.getElementById('coach-signal-rationale').textContent = signal.rationale || '';
+
+  const meta = document.getElementById('coach-signal-meta');
+  const conf = signal.confidence ? `confidence ${signal.confidence}` : '';
+  const took = extra.elapsed ? `${extra.elapsed}s` : '';
+  const provider = extra.provider ? `${extra.provider} · ${extra.model || ''}` : '';
+  meta.textContent = [conf, provider, took].filter(Boolean).join(' · ');
+}
+
+// "Accept trade levels" — pull the entry/stop/tp visuals out of the
+// proposals list (they were synthesized server-side and prepended)
+// and POST them to the sketchpad accept endpoint as one batch.
+async function acceptSignalLevels() {
+  if (!_coachLastProposals?.visuals) return;
+  const tradeVisuals = _coachLastProposals.visuals.filter(v =>
+    ['trade_entry', 'trade_stop', 'trade_tp'].includes(v.role)
+  );
+  if (tradeVisuals.length === 0) {
+    alert('No trade-level visuals available — signal may be Hold.');
+    return;
+  }
+
+  const symbol = _coachLastProposals.symbol || _coachSymbol();
+  const date = _coachToday();
+  const btn = document.getElementById('coach-signal-accept-btn');
+  btn.disabled = true;
+  btn.textContent = 'Accepting…';
+  try {
+    const r = await api(`/api/sketchpad/${encodeURIComponent(symbol)}/${date}/accept`, {
+      method: 'POST', body: { visuals: tradeVisuals },
+    });
+    btn.textContent = `Added ${r.accepted || 0} trade levels — Apply to chart to push`;
+    setTimeout(() => {
+      btn.textContent = 'Accept trade levels → Sketchpad';
+      btn.disabled = false;
+    }, 2200);
+    refreshSketchpad();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Accept trade levels → Sketchpad';
+    alert(`Accept failed: ${e.message || e}`);
+  }
+}
+
+function _hydrateChatCard(result) {
+  const card = document.getElementById('coach-chat-card');
+  const meta = document.getElementById('coach-chat-meta');
+  const transcript = document.getElementById('coach-chat-transcript');
+  if (!card) return;
+  card.classList.remove('hidden');
+  if (meta) meta.textContent = `thread ${_coachThreadId} · ${result.provider} · ${result.model}`;
+
+  // Seed the transcript with the analyze context as the first
+  // assistant message so the user sees what the LLM "said" first.
+  const seed = result.context_read || '';
+  transcript.innerHTML = `
+    <div class="coach-msg coach-msg--assistant">
+      <div class="coach-msg__role mono small">coach</div>
+      <div class="coach-msg__body">${_coachEsc(seed) || '(analyzed)'}</div>
+    </div>
+  `;
+  transcript.scrollTop = transcript.scrollHeight;
+}
+
+// --- Chat send -------------------------------------------------------
+async function sendCoachChat() {
+  if (!_coachThreadId) {
+    alert('Run Analyze first to start a chat thread.');
+    return;
+  }
+  const inp = document.getElementById('coach-chat-input');
+  const send = document.getElementById('coach-chat-send');
+  const transcript = document.getElementById('coach-chat-transcript');
+  const message = (inp.value || '').trim();
+  if (!message) return;
+
+  // Optimistic render of the user message + a pending assistant bubble.
+  _appendChatMessage('user', message);
+  const pendingId = `coach-pending-${Date.now()}`;
+  _appendChatMessage('assistant', '…thinking', { idAttr: pendingId, pending: true });
+  inp.value = '';
+  send.disabled = true;
+  send.textContent = 'Sending…';
+
+  try {
+    const r = await api('/api/coach/chat', {
+      method: 'POST',
+      body: { thread_id: _coachThreadId, message },
+    });
+    if (!r?.task_id) throw new Error('no task_id');
+    _coachChatTask = r.task_id;
+    _pollCoachChat(r.task_id, pendingId);
+  } catch (e) {
+    _replaceChatMessage(pendingId, 'assistant', `error: ${e.message || e}`);
+    send.disabled = false;
+    send.textContent = 'Send';
+  }
+}
+
+function _pollCoachChat(taskId, pendingId) {
+  if (_coachChatPollTimer) clearInterval(_coachChatPollTimer);
+  const started = Date.now();
+  _coachChatPollTimer = setInterval(async () => {
+    try {
+      const t = await api(`/api/coach/chat/task/${taskId}`);
+      const elapsed = Math.round((Date.now() - started) / 1000);
+      const pendingEl = document.getElementById(pendingId);
+      if (pendingEl) {
+        const body = pendingEl.querySelector('.coach-msg__body');
+        if (body) body.textContent = `…thinking (${elapsed}s)`;
+      }
+
+      if (t.state === 'done') {
+        clearInterval(_coachChatPollTimer);
+        _coachChatPollTimer = null;
+        _coachChatTask = null;
+        const reply = t.result?.reply || '(empty reply)';
+        _replaceChatMessage(pendingId, 'assistant', reply);
+        const sendBtn = document.getElementById('coach-chat-send');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
+
+        // Signal updates from chat — re-render the banner. The
+        // synthesized trade-level visuals are already in new_visuals
+        // (server-side merged) so the proposals merge below picks them
+        // up automatically.
+        const newSignal = t.result?.new_signal;
+        if (newSignal) {
+          renderCoachSignal(newSignal, {
+            provider: _coachLastProposals?.provider,
+            model:    _coachLastProposals?.model,
+            elapsed:  t.result?.elapsed_s,
+          });
+        }
+
+        // New visuals from the chat reply land in the proposals panel.
+        const newVisuals = t.result?.new_visuals || [];
+        if (newVisuals.length > 0) {
+          renderCoachProposals(
+            { visuals: newVisuals,
+              context_read: _coachLastProposals?.context_read || '',
+              provider: _coachLastProposals?.provider,
+              model: _coachLastProposals?.model,
+              llm_elapsed_s: t.result?.elapsed_s },
+            { mergeVisuals: true },
+          );
+        }
+      } else if (t.state === 'failed' || t.state === 'cancelled') {
+        clearInterval(_coachChatPollTimer);
+        _coachChatPollTimer = null;
+        _coachChatTask = null;
+        _replaceChatMessage(pendingId, 'assistant', `${t.state}: ${t.error || ''}`);
+        const sendBtn = document.getElementById('coach-chat-send');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
+      }
+    } catch (e) {
+      // Transient — keep polling.
+    }
+  }, 1500);
+}
+
+function _appendChatMessage(role, text, { idAttr = '', pending = false } = {}) {
+  const transcript = document.getElementById('coach-chat-transcript');
+  if (!transcript) return;
+  // Drop the "empty state" placeholder on first append.
+  const empty = transcript.querySelector('.empty');
+  if (empty) empty.remove();
+
+  const cls = role === 'assistant' ? 'coach-msg--assistant' : 'coach-msg--user';
+  const pcls = pending ? ' coach-msg--pending' : '';
+  const idAttribute = idAttr ? ` id="${idAttr}"` : '';
+  transcript.insertAdjacentHTML('beforeend', `
+    <div class="coach-msg ${cls}${pcls}"${idAttribute}>
+      <div class="coach-msg__role mono small">${role === 'assistant' ? 'coach' : 'you'}</div>
+      <div class="coach-msg__body">${_coachEsc(text)}</div>
+    </div>
+  `);
+  transcript.scrollTop = transcript.scrollHeight;
+}
+
+function _replaceChatMessage(id, role, text) {
+  const el = document.getElementById(id);
+  if (!el) return _appendChatMessage(role, text);
+  el.classList.remove('coach-msg--pending');
+  el.querySelector('.coach-msg__body').textContent = text;
+  document.getElementById('coach-chat-transcript').scrollTop = 1e9;
+}
+
+function toggleAllProposals() {
+  const cbs = document.querySelectorAll('#coach-proposals .coach-proposal__cb');
+  const anyOff = Array.from(cbs).some(cb => !cb.checked);
+  cbs.forEach(cb => { cb.checked = anyOff; });
+}
+
+// --- Accept selected → sketchpad -------------------------------------
+async function acceptSelectedProposals() {
+  if (!_coachLastProposals) return;
+  const cbs = document.querySelectorAll('#coach-proposals .coach-proposal__cb:checked');
+  if (cbs.length === 0) { alert('No visuals selected'); return; }
+
+  const visuals = Array.from(cbs).map(cb => {
+    try { return JSON.parse(cb.dataset.visual); }
+    catch (e) { return null; }
+  }).filter(v => v && v.id);
+
+  const symbol = _coachLastProposals.symbol || _coachSymbol();
+  const date = _coachToday();
+  const btn = document.getElementById('coach-proposals-accept-btn');
+  btn.disabled = true;
+  btn.textContent = 'Accepting…';
+
+  try {
+    const r = await api(`/api/sketchpad/${encodeURIComponent(symbol)}/${date}/accept`, {
+      method: 'POST', body: { visuals },
+    });
+    btn.textContent = `Accepted ${r.accepted || 0} → Apply to chart to push`;
+    setTimeout(() => { btn.textContent = 'Accept selected → Sketchpad'; btn.disabled = false; }, 1800);
+    refreshSketchpad();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Accept selected → Sketchpad';
+    alert(`Accept failed: ${e.message || e}`);
+  }
+}
+
+// --- Sketchpad load + render -----------------------------------------
+async function refreshSketchpad() {
+  const symbol = _coachSymbol();
+  const date = _coachToday();
+  try {
+    const r = await api(`/api/sketchpad/${encodeURIComponent(symbol)}/${date}`);
+    renderSketchpad(r);
+  } catch (e) {
+    // Empty sketchpad on error — non-fatal
+    renderSketchpad({ symbol, date, visuals: [], updated_at: null });
+  }
+}
+
+function renderSketchpad(payload) {
+  const list = document.getElementById('coach-sketchpad');
+  const meta = document.getElementById('coach-sketchpad-meta');
+  const visuals = payload?.visuals || [];
+
+  if (meta) {
+    const upd = payload?.updated_at ? new Date(payload.updated_at).toLocaleTimeString() : '—';
+    meta.textContent = `${visuals.length} visual${visuals.length === 1 ? '' : 's'} · updated ${upd}`;
+  }
+
+  if (visuals.length === 0) {
+    list.innerHTML = `<div class="empty small">Empty. Run Analyze and accept visuals to populate.</div>`;
+    document.getElementById('coach-sketchpad-clear-btn').disabled = true;
+    return;
+  }
+  document.getElementById('coach-sketchpad-clear-btn').disabled = false;
+
+  list.innerHTML = visuals.map(v => `
+    <div class="coach-sketch-row" data-vid="${_coachEsc(v.id)}">
+      <span class="coach-proposal__chip coach-color-${_coachEsc(v.color)}">${_coachEsc(v.type)}</span>
+      <span class="coach-sketch-row__label">${_coachEsc(v.label)}</span>
+      <span class="coach-sketch-row__summary mono small">${_coachEsc(_coachVisualSummary(v))}</span>
+      <button type="button" class="icon-btn coach-sketch-row__rm"
+              title="Remove this visual" data-vid="${_coachEsc(v.id)}">✕</button>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.coach-sketch-row__rm').forEach(btn => {
+    btn.addEventListener('click', () => removeSketchpadVisual(btn.dataset.vid));
+  });
+}
+
+async function removeSketchpadVisual(vid) {
+  const symbol = _coachSymbol();
+  const date = _coachToday();
+  try {
+    await api(`/api/sketchpad/${encodeURIComponent(symbol)}/${date}/visual/${vid}`,
+              { method: 'DELETE' });
+    refreshSketchpad();
+  } catch (e) {
+    alert(`Remove failed: ${e.message || e}`);
+  }
+}
+
+async function clearSketchpad() {
+  if (!confirm('Clear all visuals from the sketchpad? Apply afterward to scrub the chart indicator.')) return;
+  const symbol = _coachSymbol();
+  const date = _coachToday();
+  try {
+    await api(`/api/sketchpad/${encodeURIComponent(symbol)}/${date}/clear`,
+              { method: 'POST', body: {} });
+    refreshSketchpad();
+  } catch (e) {
+    alert(`Clear failed: ${e.message || e}`);
+  }
+}
+
+async function applySketchpad() {
+  const symbol = _coachSymbol();
+  const date = _coachToday();
+  const btn = document.getElementById('coach-sketchpad-apply-btn');
+  const status = document.getElementById('coach-apply-status');
+  btn.disabled = true;
+  btn.textContent = 'Applying…';
+  if (status) {
+    status.classList.remove('hidden');
+    status.textContent = 'rendering Pine + applying to chart (~30-60s)…';
+  }
+  try {
+    const r = await api(`/api/sketchpad/${encodeURIComponent(symbol)}/${date}/apply`,
+                        { method: 'POST', body: {} });
+    if (status) {
+      status.textContent = r.ok
+        ? `applied · ${r.n_visuals} visuals · ${r.pine_path?.split('/').pop() || ''}`
+        : `apply failed (rc=${r.returncode}): ${(r.stderr_tail || r.error || '').slice(-200)}`;
+    }
+  } catch (e) {
+    if (status) status.textContent = `apply error: ${e.message || e}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Apply to chart';
+  }
+}

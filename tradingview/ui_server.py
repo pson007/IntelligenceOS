@@ -1287,6 +1287,466 @@ async def analyze_apply_pine(payload: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Visual Coach + Sketchpad — AI-proposed chart visuals composed into a
+# single Sketchpad Pine indicator that's separate from the Forecast
+# Overlay. Coach is mid-session dynamic; the forecast is morning-locked.
+# ---------------------------------------------------------------------------
+
+_SKETCHPAD_ROOT = (Path(__file__).parent / "sketchpad").resolve()
+_SKETCHPAD_KEY_RX = re.compile(r"^[A-Za-z0-9!_]+$")
+_SKETCHPAD_DATE_RX = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_SKETCHPAD_VID_RX = re.compile(r"^v_[a-f0-9]{4,16}$")
+_SKETCHPAD_VALID_PROVIDERS = {"anthropic", "ollama", "claude_web", "chatgpt_web"}
+
+_VISUAL_COACH_VALID_TYPES = {"level", "vline", "cross_alert"}
+_VISUAL_COACH_VALID_COLORS = {
+    "red", "green", "yellow", "blue", "aqua",
+    "orange", "purple", "white", "gray",
+}
+
+
+def _sketchpad_path(symbol: str, date: str) -> Path:
+    """JSON path for the sketchpad of (symbol, date). Source of truth —
+    the .pine file is regenerated from this on every apply."""
+    safe_sym = re.sub(r"[^A-Za-z0-9]+", "_", symbol)
+    return _SKETCHPAD_ROOT / f"{safe_sym}_{date}.json"
+
+
+def _read_sketchpad(symbol: str, date: str) -> dict:
+    """Load the sketchpad JSON for (symbol, date), or a fresh empty one.
+
+    Tolerant of missing files / malformed JSON — returns a valid empty
+    sketchpad either way so the UI's "current visuals" panel has
+    something to render."""
+    path = _sketchpad_path(symbol, date)
+    if not path.exists():
+        return {"symbol": symbol, "date": date,
+                "updated_at": None, "visuals": []}
+    try:
+        data = json.loads(path.read_text())
+        if not isinstance(data, dict):
+            raise ValueError("not a dict")
+        data.setdefault("symbol", symbol)
+        data.setdefault("date", date)
+        data.setdefault("updated_at", None)
+        if not isinstance(data.get("visuals"), list):
+            data["visuals"] = []
+        return data
+    except Exception as e:
+        audit.log("sketchpad.read_fail",
+                  path=str(path), err=f"{type(e).__name__}: {e}")
+        return {"symbol": symbol, "date": date,
+                "updated_at": None, "visuals": []}
+
+
+def _write_sketchpad(symbol: str, date: str, visuals: list[dict]) -> dict:
+    """Persist the sketchpad JSON. Updates `updated_at` to now."""
+    _SKETCHPAD_ROOT.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "symbol": symbol, "date": date,
+        "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
+        "visuals": visuals,
+    }
+    _sketchpad_path(symbol, date).write_text(json.dumps(payload, indent=2))
+    return payload
+
+
+def _validate_visual_for_sketchpad(raw: dict) -> dict | None:
+    """Same shape as visual_coach._sanitize_visual but preserves the
+    incoming `id` instead of minting a new one. Used when accepting
+    proposals into the sketchpad — the LLM's id is already
+    server-assigned and we want it stable across accept/render cycles.
+
+    Returns None on invalid (caller filters)."""
+    if not isinstance(raw, dict):
+        return None
+    vid = (raw.get("id") or "").strip()
+    if not _SKETCHPAD_VID_RX.match(vid):
+        return None
+    vtype = (raw.get("type") or "").strip().lower()
+    if vtype not in _VISUAL_COACH_VALID_TYPES:
+        return None
+    color = (raw.get("color") or "white").strip().lower()
+    if color not in _VISUAL_COACH_VALID_COLORS:
+        color = "white"
+    label = str(raw.get("label") or "").strip()[:60] or vtype
+    confidence = (raw.get("confidence") or "med").strip().lower()
+    if confidence not in ("low", "med", "high"):
+        confidence = "med"
+
+    visual: dict[str, Any] = {
+        "id": vid, "type": vtype, "label": label, "color": color,
+        "rationale": str(raw.get("rationale") or "").strip()[:280],
+        "confidence": confidence,
+    }
+    if vtype == "level":
+        try:
+            visual["price"] = float(raw["price"])
+        except (KeyError, TypeError, ValueError):
+            return None
+        visual["alert_on_cross"] = bool(raw.get("alert_on_cross"))
+    elif vtype == "vline":
+        time_et = (raw.get("time_et") or "").strip()
+        if not re.match(r"^\d{1,2}:\d{2}$", time_et):
+            return None
+        try:
+            hh, mm = (int(p) for p in time_et.split(":", 1))
+            if not (0 <= hh <= 23 and 0 <= mm <= 59):
+                return None
+        except ValueError:
+            return None
+        visual["time_et"] = f"{hh:02d}:{mm:02d}"
+    elif vtype == "cross_alert":
+        try:
+            visual["price"] = float(raw["price"])
+        except (KeyError, TypeError, ValueError):
+            return None
+        direction = (raw.get("direction") or "").strip().lower()
+        if direction not in ("above", "below"):
+            return None
+        visual["direction"] = direction
+    return visual
+
+
+# Coach analyze runs as a background task — same pattern as analyze_mtf
+# so the UI can poll progress and stream audit events. Holds the CDP
+# session for the screenshot, then releases (the LLM call is HTTP/web).
+@app.post("/api/coach/analyze")
+async def coach_analyze_start(payload: dict) -> dict:
+    """Capture the active chart and ask a vision LLM for additive visuals.
+
+    Body: { symbol, timeframe?, provider?, model?, base_url? }
+
+    Provider defaults to claude_web (Opus 4.7 if model unspecified —
+    `_resolve_model` upstream picks Sonnet 4.6 by default; the UI
+    dropdown sends "opus" to flip to Opus). Returns a task_id for
+    polling via /api/coach/{task_id}.
+    """
+    global _active_analyze_task
+    p = payload or {}
+    symbol = (p.get("symbol") or "").strip()
+    if not symbol:
+        raise HTTPException(400, "symbol required")
+    timeframe = (p.get("timeframe") or "").strip() or "5m"
+    provider = (p.get("provider") or "claude_web").strip()
+    if provider not in _SKETCHPAD_VALID_PROVIDERS:
+        raise HTTPException(400, f"invalid provider {provider!r}")
+
+    _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    # Reuse the analyze-task registry — Coach holds the same CDP
+    # session as analyze, so it must compete for the same slot. Adding
+    # mode="coach" lets _cdp_busy()'s caller distinguish in error UX.
+    _analyze_tasks[task_id] = {
+        "state": "running",
+        "request_id": request_id,
+        "started_at": time.time(),
+        "symbol": symbol,
+        "timeframe": timeframe,
+        "mode": "coach",
+    }
+
+    async def runner():
+        global _active_analyze_task
+        try:
+            from tv_automation import visual_coach as vc_mod
+            result = await vc_mod.analyze_chart_for_visuals(
+                symbol,
+                timeframe=timeframe,
+                provider=provider,
+                model=p.get("model") or None,
+                base_url=p.get("base_url") or None,
+            )
+            _analyze_tasks[task_id]["state"] = "done"
+            _analyze_tasks[task_id]["result"] = result
+        except asyncio.CancelledError:
+            _analyze_tasks[task_id]["state"] = "cancelled"
+            raise
+        except Exception as e:
+            if _is_cancellation_artifact(e):
+                _analyze_tasks[task_id]["state"] = "cancelled"
+                audit.log("coach.cancellation_artifact_reclassified",
+                          task_id=task_id, err=str(e)[:200])
+            else:
+                _analyze_tasks[task_id]["state"] = "failed"
+                _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _analyze_tasks[task_id]["finished_at"] = time.time()
+            if _active_analyze_task == task_id:
+                _active_analyze_task = None
+
+    _active_analyze_task = task_id
+    _analyze_tasks[task_id]["_task"] = asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.get("/api/coach/task/{task_id}")
+async def coach_status(task_id: str) -> dict:
+    """Poll a Coach analyze task — same shape as /api/analyze/{task_id}."""
+    t = _analyze_tasks.get(task_id)
+    if not t:
+        raise HTTPException(404, "unknown task")
+    out = {k: v for k, v in t.items() if k != "_task"}
+    return out
+
+
+# Chat — multi-turn brainstorm on top of a Coach analyze. Each chat
+# turn replays the full conversation through the same provider/model
+# the thread was started with. Stateless on the provider side — no
+# Playwright lifecycle to manage between requests.
+
+_chat_tasks: dict[str, dict] = {}  # task_id → {state, thread_id, ...}
+
+
+@app.get("/api/coach/thread/{thread_id}")
+async def coach_thread_get(thread_id: str) -> dict:
+    """Return a thread's full transcript + metadata. Used to rehydrate
+    the chat panel after a page reload."""
+    from tv_automation import visual_coach as vc_mod
+    t = vc_mod.get_thread(thread_id)
+    if not t:
+        raise HTTPException(404, "unknown thread")
+    return t
+
+
+@app.post("/api/coach/chat")
+async def coach_chat(payload: dict) -> dict:
+    """Send one user message into a chat thread. Long-running (~30s
+    typical for a browser-driven provider) — runs as a task so the UI
+    can poll progress.
+
+    Body: { thread_id, message }
+    Returns: { task_id }  (poll via /api/coach/chat/task/{task_id})
+    """
+    p = payload or {}
+    thread_id = (p.get("thread_id") or "").strip()
+    message = (p.get("message") or "").strip()
+    if not thread_id:
+        raise HTTPException(400, "thread_id required")
+    if not message:
+        raise HTTPException(400, "message required")
+
+    _check_not_paused()
+    # Chat reuses the existing claude.ai/chatgpt.com tab in the
+    # attached Chrome — same CDP session as the analyze flow. Keep
+    # mutual exclusion via the same _cdp_busy() guard.
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
+
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+
+    _chat_tasks[task_id] = {
+        "state": "running", "request_id": request_id,
+        "thread_id": thread_id, "started_at": time.time(),
+    }
+    # Tag in _analyze_tasks too so _cdp_busy() blocks competing starts
+    # while a chat turn is in flight (chat occupies the browser).
+    global _active_analyze_task
+    _analyze_tasks[task_id] = {
+        "state": "running", "request_id": request_id,
+        "started_at": time.time(),
+        "symbol": _chat_tasks[task_id].get("symbol", ""),
+        "mode": "coach_chat",
+    }
+
+    async def runner():
+        global _active_analyze_task
+        try:
+            from tv_automation import visual_coach as vc_mod
+            result = await vc_mod.chat_turn(thread_id, message)
+            _chat_tasks[task_id]["state"] = "done"
+            _chat_tasks[task_id]["result"] = result
+            _analyze_tasks[task_id]["state"] = "done"
+        except KeyError as e:
+            _chat_tasks[task_id]["state"] = "failed"
+            _chat_tasks[task_id]["error"] = f"thread not found: {e}"
+            _analyze_tasks[task_id]["state"] = "failed"
+        except asyncio.CancelledError:
+            _chat_tasks[task_id]["state"] = "cancelled"
+            _analyze_tasks[task_id]["state"] = "cancelled"
+            raise
+        except Exception as e:
+            if _is_cancellation_artifact(e):
+                _chat_tasks[task_id]["state"] = "cancelled"
+                _analyze_tasks[task_id]["state"] = "cancelled"
+            else:
+                _chat_tasks[task_id]["state"] = "failed"
+                _chat_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+                _analyze_tasks[task_id]["state"] = "failed"
+                _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _chat_tasks[task_id]["finished_at"] = time.time()
+            _analyze_tasks[task_id]["finished_at"] = time.time()
+            if _active_analyze_task == task_id:
+                _active_analyze_task = None
+
+    _active_analyze_task = task_id
+    _chat_tasks[task_id]["_task"] = asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id,
+            "thread_id": thread_id}
+
+
+@app.get("/api/coach/chat/task/{task_id}")
+async def coach_chat_status(task_id: str) -> dict:
+    """Poll a chat-turn task. Same poll-shape as the analyze endpoints."""
+    t = _chat_tasks.get(task_id)
+    if not t:
+        raise HTTPException(404, "unknown chat task")
+    return {k: v for k, v in t.items() if k != "_task"}
+
+
+@app.get("/api/sketchpad/{symbol}/{date}")
+async def sketchpad_get(symbol: str, date: str) -> dict:
+    """Return the current accepted-visuals sketchpad for (symbol, date).
+
+    Always 200 — empty sketchpad if the file doesn't exist yet."""
+    if not _SKETCHPAD_KEY_RX.match(symbol) or not _SKETCHPAD_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+    return _read_sketchpad(symbol, date)
+
+
+@app.post("/api/sketchpad/{symbol}/{date}/accept")
+async def sketchpad_accept(symbol: str, date: str, payload: dict) -> dict:
+    """Append accepted visuals to the sketchpad. Replaces any existing
+    visual with the same id (idempotent on re-accept).
+
+    Body: { visuals: [ {id, type, label, color, ...} ] }
+    """
+    if not _SKETCHPAD_KEY_RX.match(symbol) or not _SKETCHPAD_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+    p = payload or {}
+    incoming = p.get("visuals") or []
+    if not isinstance(incoming, list):
+        raise HTTPException(400, "visuals must be a list")
+
+    accepted: list[dict] = []
+    rejected = 0
+    for raw in incoming[:20]:  # cap one accept call to a sane batch size
+        v = _validate_visual_for_sketchpad(raw)
+        if v:
+            accepted.append(v)
+        else:
+            rejected += 1
+
+    sketch = _read_sketchpad(symbol, date)
+    by_id = {v["id"]: v for v in sketch["visuals"]}
+    for v in accepted:
+        by_id[v["id"]] = v  # last-write-wins per id
+
+    merged = list(by_id.values())
+    payload_out = _write_sketchpad(symbol, date, merged)
+    audit.log("sketchpad.accept", symbol=symbol, date=date,
+              accepted=len(accepted), rejected=rejected,
+              total=len(merged))
+    return {**payload_out, "accepted": len(accepted), "rejected": rejected}
+
+
+@app.delete("/api/sketchpad/{symbol}/{date}/visual/{visual_id}")
+async def sketchpad_remove(symbol: str, date: str, visual_id: str) -> dict:
+    """Remove one visual from the sketchpad by id. 404 if not present."""
+    if not _SKETCHPAD_KEY_RX.match(symbol) or not _SKETCHPAD_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+    if not _SKETCHPAD_VID_RX.match(visual_id):
+        raise HTTPException(400, "invalid visual_id")
+
+    sketch = _read_sketchpad(symbol, date)
+    before = len(sketch["visuals"])
+    sketch["visuals"] = [v for v in sketch["visuals"] if v.get("id") != visual_id]
+    if len(sketch["visuals"]) == before:
+        raise HTTPException(404, "visual_id not found")
+    payload = _write_sketchpad(symbol, date, sketch["visuals"])
+    audit.log("sketchpad.remove", symbol=symbol, date=date,
+              visual_id=visual_id, remaining=len(sketch["visuals"]))
+    return payload
+
+
+@app.post("/api/sketchpad/{symbol}/{date}/clear")
+async def sketchpad_clear(symbol: str, date: str) -> dict:
+    """Drop all visuals. The sketchpad JSON file remains, with an empty
+    visuals list. Apply after this to scrub the chart indicator."""
+    if not _SKETCHPAD_KEY_RX.match(symbol) or not _SKETCHPAD_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+    payload = _write_sketchpad(symbol, date, [])
+    audit.log("sketchpad.clear", symbol=symbol, date=date)
+    return payload
+
+
+@app.post("/api/sketchpad/{symbol}/{date}/apply")
+async def sketchpad_apply(symbol: str, date: str) -> dict:
+    """Render the sketchpad JSON to Pine, write to pine/generated/, and
+    apply to the live TV chart via apply_pine.py. Long-running (~30-60s).
+
+    Mirrors `forecast_apply` — same subprocess shape, same timeout."""
+    _check_not_paused()
+    if not _SKETCHPAD_KEY_RX.match(symbol) or not _SKETCHPAD_DATE_RX.match(date):
+        raise HTTPException(400, "invalid params")
+
+    sketch = _read_sketchpad(symbol, date)
+    visuals = sketch.get("visuals") or []
+
+    from tv_automation.sketchpad_pine import render_sketchpad
+    pine_text = render_sketchpad(visuals, symbol, date)
+
+    pine_dir = (Path(__file__).parent / "pine" / "generated").resolve()
+    pine_dir.mkdir(parents=True, exist_ok=True)
+    pine_path = pine_dir / f"sketchpad_{date}.pine"
+    pine_path.write_text(pine_text)
+    audit.log("sketchpad.render", symbol=symbol, date=date,
+              n_visuals=len(visuals), pine_path=str(pine_path),
+              bytes=len(pine_text))
+
+    apply_script = Path(__file__).parent / "apply_pine.py"
+    venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
+    python_exe = str(venv_python) if venv_python.exists() else "python"
+    cmd = [python_exe, str(apply_script), str(pine_path)]
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            cwd=str(Path(__file__).parent),
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        ok = proc.returncode == 0
+        stdout_text = stdout.decode("utf-8", errors="replace")
+        applied_screenshot = None
+        for line in stdout_text.splitlines():
+            if line.startswith("APPLIED_SCREENSHOT:"):
+                applied_screenshot = line.split(":", 1)[1].strip()
+                break
+        audit.log("sketchpad.apply_done", symbol=symbol, date=date,
+                  ok=ok, returncode=proc.returncode,
+                  applied_screenshot=applied_screenshot)
+        return {
+            "ok": ok, "pine_path": str(pine_path),
+            "n_visuals": len(visuals),
+            "returncode": proc.returncode,
+            "applied_screenshot": applied_screenshot,
+            "stdout_tail": stdout_text[-1500:],
+            "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
+        }
+    except asyncio.TimeoutError:
+        return {"ok": False, "pine_path": str(pine_path),
+                "error": "apply_pine timeout (120s)"}
+    except Exception as e:
+        raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
+
+
+# ---------------------------------------------------------------------------
 # Trade
 # ---------------------------------------------------------------------------
 

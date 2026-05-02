@@ -5,3 +5,9 @@
 # without the user's local ~/Desktop/TradingView/ cache.
 !tradingview/profiles/*.png
 .DS_Store
+
+# Coach Sketchpad runtime data — same lifecycle as audit/: per-day
+# user state (accepted visuals, chat threads, proposal logs). Don't
+# travel with the repo.
+tradingview/sketchpad/*.json
+tradingview/sketchpad/*.jsonl
