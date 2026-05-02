@@ -2490,6 +2490,36 @@ async def forecast_screenshot(symbol: str, date: str, stage: str):
     return FileResponse(str(resolved), media_type="image/png")
 
 
+@app.get("/api/forecasts/{symbol}/{date}/{stage}/speak")
+async def forecast_speak(symbol: str, date: str, stage: str, voice: str | None = None):
+    """Synthesize a spoken read-aloud of the forecast as 24 kHz WAV.
+
+    Routed through the local Qwen3-TTS sidecar (start with
+    ./start_qwen3_tts.sh). Default voice is the Sophia clone; override
+    with ?voice=<clone-name> from clones.json. Returns 503 if the
+    sidecar isn't running, 422 if the forecast has nothing speakable."""
+    if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
+        raise HTTPException(400, "invalid params")
+    jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
+    if not jf.exists():
+        raise HTTPException(404, "forecast not found")
+    try:
+        data = json.loads(jf.read_text())
+    except Exception as e:
+        raise HTTPException(500, f"forecast json malformed: {e}")
+    from tv_automation import tts as tts_mod
+    script = tts_mod.forecast_script(data, stage, date)
+    if not script:
+        raise HTTPException(422, "nothing speakable in this forecast")
+    try:
+        wav = await tts_mod.synthesize(script, voice=voice)
+    except tts_mod.TTSUnavailable as e:
+        raise HTTPException(503, str(e))
+    except Exception as e:
+        raise HTTPException(500, f"tts failed: {e}")
+    return Response(content=wav, media_type="audio/wav")
+
+
 # ---------------------------------------------------------------------------
 # Journal — day-arc reconciliation. Closes the loop between every forecast
 # stage and the daily profile (the 16:00 ET ground-truth artifact).

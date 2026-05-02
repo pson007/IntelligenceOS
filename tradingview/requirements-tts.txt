@@ -1,0 +1,13 @@
+# TTS deps live in a separate venv, not this one.
+#
+# The Qwen3-TTS sidecar (tts_sidecar.py) runs under
+#   ~/Library/Application Support/1runapp/qwen3-tts-venv/
+# which already provides mlx, mlx-audio, qwen_tts, fastapi, uvicorn,
+# soundfile, numpy. IntelligenceOS talks to it over localhost HTTP via
+# tv_automation/tts.py.
+#
+# Boot the sidecar with:
+#   ./start_qwen3_tts.sh
+#
+# The only thing the IntelligenceOS .venv itself needs is httpx, which
+# is already in requirements.txt.

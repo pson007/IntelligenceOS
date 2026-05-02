@@ -4992,11 +4992,13 @@ async function selectForecastDay(symbol, date) {
         <button class="btn small forecast-apply-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">▶ Apply to chart</button>
       `
       : '';
+    const speakBtn = `<button class="btn small forecast-speak-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}" title="Read this forecast aloud (Qwen3-TTS, local)">🔊 Speak</button>`;
     return `
       <div class="card forecast-stage-card">
         <div class="card-head">
           <h2>${title}</h2>
           <div class="card-head__actions">
+            ${speakBtn}
             ${pineBtns}
             <span class="mono small">${metaBits.join('  ')}</span>
           </div>
@@ -5042,6 +5044,40 @@ async function selectForecastDay(symbol, date) {
         toast(`pine generate failed: ${e.message}`, 'err');
       } finally {
         setBusy(btn, false, '⬇ Generate Pine overlay');
+      }
+    });
+  });
+
+  // Wire Speak buttons — fetch a synthesized read-aloud from the local
+  // Qwen3-TTS sidecar (start with ./start_qwen3_tts.sh) and play it
+  // inline. First click after a sidecar restart includes a one-time
+  // model-load cost (~1s on MLX); later clicks are bounded by audio
+  // length × RTF. Toast shows elapsed time on success/failure.
+  main.querySelectorAll('.forecast-speak-btn').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      ev.preventDefault();
+      const { symbol, date, stage } = btn.dataset;
+      setBusy(btn, true, '🔊 Speak');
+      const t0 = Date.now();
+      try {
+        const url = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/speak`;
+        const res = await fetch(url, { headers: { 'X-UI-Token': localStorage.getItem('ios-ui-token') || '' } });
+        if (!res.ok) {
+          let msg = `HTTP ${res.status}`;
+          try { const j = await res.json(); if (j.detail) msg = j.detail; } catch (_) {}
+          throw new Error(msg);
+        }
+        const blob = await res.blob();
+        const objUrl = URL.createObjectURL(blob);
+        const audio = new Audio(objUrl);
+        audio.addEventListener('ended', () => URL.revokeObjectURL(objUrl));
+        audio.addEventListener('error', () => URL.revokeObjectURL(objUrl));
+        await audio.play();
+        toast(`▶ playing forecast (${((Date.now() - t0) / 1000).toFixed(1)}s)`, 'ok');
+      } catch (e) {
+        toast(`speak failed: ${e.message}`, 'err');
+      } finally {
+        setBusy(btn, false, '🔊 Speak');
       }
     });
   });
