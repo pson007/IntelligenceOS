@@ -1,0 +1,85 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-30",
+  "dow": "Thu",
+  "made_at": "2026-04-30T07:39:18",
+  "thesis_summary": "Long bias remains actionable only if the open treats 27365-27390 as reclaimed support and price is back above VWAP by mid-morning.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "preopen_reclaim_support",
+      "label": "Open holds above reclaimed overnight support",
+      "rationale": "The bullish thesis depends on the overnight reclaim remaining accepted, not becoming a failed premarket squeeze.",
+      "check_type": "price_level",
+      "evaluate_at": "09:30",
+      "evaluate_after": "2026-04-30T09:30:00-0400",
+      "evaluate_before": "2026-04-30T09:35:00-0400",
+      "params": {
+        "price_above": 27365
+      },
+      "weight": 2
+    },
+    {
+      "id": "opening_pattern",
+      "label": "Opening print does not become trend-down",
+      "rationale": "An open dip is acceptable, but immediate downside continuation would align with the bearish Thursday reversal template.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-04-30T09:35:00-0400",
+      "evaluate_before": "2026-04-30T09:40:00-0400",
+      "params": {
+        "expected": "dip_then_reclaim",
+        "tolerated": [
+          "dip_then_reclaim",
+          "rotational_open",
+          "gap_and_go",
+          "inside_bar_open"
+        ]
+      },
+      "weight": 2
+    },
+    {
+      "id": "first_30_low",
+      "label": "First 30 minutes avoids deep support failure",
+      "rationale": "A break below 27340 would show the overnight reclaim is failing and would reopen the lower range.",
+      "check_type": "price_level_window",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-04-30T10:00:00-0400",
+      "evaluate_before": "2026-04-30T10:05:00-0400",
+      "params": {
+        "window": "09:30-10:00",
+        "low_of_window_above": 27340
+      },
+      "weight": 2
+    },
+    {
+      "id": "vwap_reclaim",
+      "label": "Price is above VWAP by 10:00",
+      "rationale": "Reclaim-trend days need VWAP acceptance; below-VWAP trade by 10:00 favors chop or liquidation.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-04-30T10:00:00-0400",
+      "evaluate_before": "2026-04-30T10:05:00-0400",
+      "params": {
+        "side": "above"
+      },
+      "weight": 2
+    },
+    {
+      "id": "midmorning_acceptance",
+      "label": "Price accepts above pre-open high zone",
+      "rationale": "Holding above 27475 by 10:30 confirms buyers are not just defending but extending.",
+      "check_type": "price_level",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-04-30T10:30:00-0400",
+      "evaluate_before": "2026-04-30T10:35:00-0400",
+      "params": {
+        "price_above": 27475
+      },
+      "weight": 1
+    }
+  ]
+}

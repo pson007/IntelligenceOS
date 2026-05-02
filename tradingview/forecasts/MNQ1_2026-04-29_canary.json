@@ -1,0 +1,85 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-29",
+  "dow": "Wed",
+  "made_at": "2026-04-29T09:38:37",
+  "thesis_summary": "The long bias remains actionable only if the open flush holds 27120-27160, price reclaims VWAP/27240 by late morning, and no lower-high breakdown forms under supply.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "opening_demand_hold",
+      "label": "Opening flush respects demand",
+      "rationale": "The long thesis depends on the open being a stop-hunt, not true liquidation.",
+      "check_type": "price_level_window",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-04-29T10:00:00-0400",
+      "evaluate_before": "2026-04-29T10:05:00-0400",
+      "params": {
+        "window": "09:30-10:00",
+        "low_of_window_above": 27120
+      },
+      "weight": 2
+    },
+    {
+      "id": "open_structure",
+      "label": "Open prints dip then reclaim",
+      "rationale": "A reclaim pattern confirms that sellers failed to extend below overnight demand.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-04-29T09:35:00-0400",
+      "evaluate_before": "2026-04-29T09:40:00-0400",
+      "params": {
+        "expected": "dip_then_reclaim",
+        "tolerated": [
+          "dip_then_reclaim",
+          "rotational_open",
+          "inside_bar_open"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "vwap_reclaim",
+      "label": "Price back above session VWAP",
+      "rationale": "Without VWAP reclaim, the open remains a failed bounce under supply.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-04-29T10:30:00-0400",
+      "evaluate_before": "2026-04-29T10:35:00-0400",
+      "params": {
+        "side": "above"
+      },
+      "weight": 2
+    },
+    {
+      "id": "midmorning_27240_reclaim",
+      "label": "Reclaim above 27240",
+      "rationale": "27240 is the practical pivot between lower-high rotation and upside continuation.",
+      "check_type": "price_level",
+      "evaluate_at": "11:30",
+      "evaluate_after": "2026-04-29T11:30:00-0400",
+      "evaluate_before": "2026-04-29T11:35:00-0400",
+      "params": {
+        "price_above": 27240
+      },
+      "weight": 2
+    },
+    {
+      "id": "no_supply_rejection",
+      "label": "No hard rejection under 27280",
+      "rationale": "A capped bounce under 27280 would match the bearish lower-high reference instead of the reclaim priors.",
+      "check_type": "price_level_window",
+      "evaluate_at": "12:00",
+      "evaluate_after": "2026-04-29T12:00:00-0400",
+      "evaluate_before": "2026-04-29T12:05:00-0400",
+      "params": {
+        "window": "10:30-12:00",
+        "low_of_window_above": 27180
+      },
+      "weight": 1
+    }
+  ]
+}
