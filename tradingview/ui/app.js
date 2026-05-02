@@ -422,6 +422,90 @@ setInterval(refreshKillSwitch, 8000);
 refreshKillSwitch();
 
 // ----------------------------------------------------------------------
+// Recording — wire the topbar Record / Stop / Note buttons. Polls
+// /api/recording/status every 5s while idle so the UI reflects state
+// even if recording was started from another surface (CLI, another
+// tab). While active, the counter on the Stop button shows live event
+// + note totals.
+// ----------------------------------------------------------------------
+let _recPollTimer = null;
+
+function _setRecUI(active, info) {
+  const start = document.getElementById('topbar-rec-start');
+  const stop  = document.getElementById('topbar-rec-stop');
+  const note  = document.getElementById('topbar-rec-note');
+  const lbl   = document.getElementById('topbar-rec-counter');
+  if (!start || !stop || !note) return;
+  start.classList.toggle('hidden', active);
+  stop .classList.toggle('hidden', !active);
+  note .classList.toggle('hidden', !active);
+  if (active && info) {
+    const ev = info.events ?? 0, n = info.notes ?? 0;
+    if (lbl) lbl.textContent = `REC · ${ev}e · ${n}n`;
+    stop.title = `Recording → ${info.path || ''}\n${ev} events, ${n} notes — click to stop.`;
+  }
+}
+
+async function refreshRecording() {
+  try {
+    const r = await api('/api/recording/status', { method: 'GET' });
+    _setRecUI(!!r.active, r);
+  } catch (e) { /* silent */ }
+}
+
+async function _recStart() {
+  try {
+    const r = await api('/api/recording/start', { method: 'POST', body: {} });
+    if (r.ok) {
+      toast(`recording → ${r.path.split('/').pop()}`, 'ok');
+      _setRecUI(true, { events: 0, notes: 0, path: r.path });
+      // Tighter cadence while active so the counter feels live.
+      if (_recPollTimer) clearInterval(_recPollTimer);
+      _recPollTimer = setInterval(refreshRecording, 1500);
+    }
+  } catch (e) { toast(`record start failed: ${e.message}`, 'err'); }
+}
+
+async function _recStop() {
+  try {
+    const r = await api('/api/recording/stop', { method: 'POST', body: {} });
+    if (r.ok) {
+      toast(`stopped · ${r.events} events, ${r.notes} notes`, 'ok');
+      _setRecUI(false, null);
+      if (_recPollTimer) { clearInterval(_recPollTimer); _recPollTimer = null; }
+      // Resume the lazy poll so the next external start is reflected.
+      setTimeout(refreshRecording, 1000);
+    }
+  } catch (e) { toast(`stop failed: ${e.message}`, 'err'); }
+}
+
+async function _recNote() {
+  const text = (prompt('Intent note (what are you about to do, or just did?):') || '').trim();
+  if (!text) return;
+  try {
+    const r = await api('/api/recording/note', { method: 'POST', body: { text } });
+    if (r.ok) toast(`note added (${r.notes} total)`, 'ok');
+  } catch (e) { toast(`note failed: ${e.message}`, 'err'); }
+}
+
+document.getElementById('topbar-rec-start')?.addEventListener('click', _recStart);
+document.getElementById('topbar-rec-stop' )?.addEventListener('click', _recStop);
+document.getElementById('topbar-rec-note' )?.addEventListener('click', _recNote);
+
+// Cmd/Ctrl+Shift+N — quick-note shortcut while a recording is active.
+document.addEventListener('keydown', (ev) => {
+  if (!ev.shiftKey) return;
+  if (!(ev.metaKey || ev.ctrlKey)) return;
+  if (ev.key !== 'N' && ev.key !== 'n') return;
+  if (document.getElementById('topbar-rec-stop')?.classList.contains('hidden')) return;
+  ev.preventDefault();
+  _recNote();
+});
+
+setInterval(refreshRecording, 5000);
+refreshRecording();
+
+// ----------------------------------------------------------------------
 // Custom combobox — input with clickable ▾ dropdown backed by the watchlist.
 // Used for both the Chart and Trade symbol fields. Plain <datalist> was
 // invisible in Chrome without an affordance arrow, and filtered by prefix

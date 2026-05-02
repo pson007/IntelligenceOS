@@ -5532,6 +5532,70 @@ body {
   50% { opacity: 0.35; }
 }
 
+/* Recording controls — visually parallel to the Pause cluster. The
+ * idle Record button is muted; the active state pulses red so you
+ * can't forget you're capturing. Note button only appears while
+ * a recording is live. */
+.topbar__rec {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.topbar__rec-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1;
+}
+.topbar__rec-btn:hover {
+  color: var(--text);
+  border-color: var(--red);
+  background: var(--hover);
+}
+.topbar__rec-btn--active {
+  background: color-mix(in srgb, var(--red) 14%, var(--bg));
+  border-color: var(--red);
+  color: var(--red);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.topbar__rec-btn--active:hover {
+  background: color-mix(in srgb, var(--red) 22%, var(--bg));
+}
+.topbar__rec-btn--note {
+  border-color: var(--border);
+  color: var(--muted);
+}
+.topbar__rec-btn--note:hover {
+  color: var(--text);
+  border-color: var(--accent, #4a90e2);
+}
+.topbar__rec-ico {
+  font-size: 14px;
+  line-height: 1;
+}
+.topbar__rec-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--red) 60%, transparent);
+  animation: topbar-rec-pulse 1.4s ease-in-out infinite;
+}
+@keyframes topbar-rec-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
 /* Mobile topbar — tighter, action label hides, canary score truncates. */
 @media (max-width: 768px) {
   .topbar {
@@ -5548,6 +5612,11 @@ body {
   .topbar__kill-btn { padding: 6px 9px; }
   .topbar__kill-lbl { display: none; }
   .topbar__kill-btn--paused .topbar__kill-lbl {
+    display: inline; font-size: var(--fs-xs);
+  }
+  .topbar__rec-btn { padding: 6px 9px; }
+  .topbar__rec-lbl { display: none; }
+  .topbar__rec-btn--active .topbar__rec-lbl {
     display: inline; font-size: var(--fs-xs);
   }
 }

@@ -11,3 +11,8 @@
 # travel with the repo.
 tradingview/sketchpad/*.json
 tradingview/sketchpad/*.jsonl
+
+# Action-recorder traces — captured user input on TradingView.
+# Per-session JSONL, often contains chart screenshots/URLs in the
+# clear; treat as local-only debug artifacts.
+tradingview/recordings/*.jsonl

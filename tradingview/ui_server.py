@@ -1747,6 +1747,58 @@ async def sketchpad_apply(symbol: str, date: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Recording — capture every keystroke + click on the user's TradingView
+# tab plus free-form intent notes, into one JSONL file per session.
+# Pure teaching aid: lets us study how the user actually drives Replay
+# so we can replicate the workflow in code.
+# ---------------------------------------------------------------------------
+
+
+@app.post("/api/recording/start")
+async def recording_start() -> dict:
+    """Begin recording the user's TradingView tab. Requires CDP-attach
+    mode (TV_CDP_URL set) — there's no point recording a private
+    Chromium we drive ourselves."""
+    cdp_url = os.getenv("TV_CDP_URL", "").strip()
+    if not cdp_url:
+        raise HTTPException(400, "TV_CDP_URL not set — recording needs CDP-attach mode")
+    from tv_automation import record_session as rec_mod
+    try:
+        return await rec_mod.start_recording(cdp_url)
+    except RuntimeError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.post("/api/recording/note")
+async def recording_note(payload: dict) -> dict:
+    """Append a free-form intent note to the active recording."""
+    from tv_automation import record_session as rec_mod
+    text = (payload or {}).get("text") or ""
+    res = await rec_mod.add_note(text)
+    if not res.get("ok"):
+        raise HTTPException(400, res.get("error", "note failed"))
+    return res
+
+
+@app.post("/api/recording/stop")
+async def recording_stop() -> dict:
+    """End the active recording and disconnect from Chrome."""
+    from tv_automation import record_session as rec_mod
+    res = await rec_mod.stop_recording()
+    if not res.get("ok"):
+        raise HTTPException(400, res.get("error", "stop failed"))
+    return res
+
+
+@app.get("/api/recording/status")
+async def recording_status() -> dict:
+    """Cheap probe — returns {active, path, events, notes} when
+    recording, {active: false} otherwise."""
+    from tv_automation import record_session as rec_mod
+    return rec_mod.status()
+
+
+# ---------------------------------------------------------------------------
 # Trade
 # ---------------------------------------------------------------------------
 

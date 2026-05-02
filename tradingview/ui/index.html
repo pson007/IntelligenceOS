@@ -79,6 +79,23 @@
       <span class="topbar__val mono" id="topbar-r">—</span>
     </div>
   </div>
+  <div class="topbar__rec">
+    <button type="button" id="topbar-rec-start" class="topbar__rec-btn"
+            title="Record TradingView keystrokes + clicks + free-form notes into a JSONL trace. Use to teach the workflow.">
+      <span class="topbar__rec-ico" aria-hidden="true">●</span>
+      <span class="topbar__rec-lbl">Record</span>
+    </button>
+    <button type="button" id="topbar-rec-stop" class="topbar__rec-btn topbar__rec-btn--active hidden"
+            title="Recording in progress — click to stop and write the trace.">
+      <span class="topbar__rec-dot"></span>
+      <span class="topbar__rec-lbl" id="topbar-rec-counter">REC</span>
+    </button>
+    <button type="button" id="topbar-rec-note" class="topbar__rec-btn topbar__rec-btn--note hidden"
+            title="Add an intent note to the active recording (Cmd/Ctrl+Shift+N).">
+      <span class="topbar__rec-ico" aria-hidden="true">✎</span>
+      <span class="topbar__rec-lbl">Note</span>
+    </button>
+  </div>
   <div class="topbar__kill">
     <button type="button" id="topbar-kill-pause" class="topbar__kill-btn"
             title="Pause every workflow (analyze, forecasts, profile, apply-pine, act). In-flight runs finish; new starts 503.">
