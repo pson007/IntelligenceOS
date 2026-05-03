@@ -49,6 +49,7 @@ from tv_automation import reconcile as reconcile_mod
 from tv_automation import trading as trading_mod
 from tv_automation import watchlist as watchlist_mod
 from tv_automation.lib import audit
+from tv_automation.lib.errors import NotLoggedInError
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -409,6 +410,8 @@ async def chart_set_symbol(payload: dict) -> dict:
     interval = (payload or {}).get("interval") or None
     try:
         return await chart_mod.set_symbol(symbol, interval)
+    except NotLoggedInError as e:
+        raise HTTPException(401, str(e))
     except Exception as e:
         raise HTTPException(500, str(e))
 

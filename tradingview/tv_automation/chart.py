@@ -27,6 +27,7 @@ from session import tv_context
 
 from .lib import audit
 from .lib.cli import run
+from .lib.errors import NotLoggedInError
 from .lib.guards import assert_logged_in
 from .lib.session_modal import click_reconnect_if_present
 from .lib.urls import chart_url_for
@@ -100,6 +101,18 @@ async def _find_or_open_chart(ctx: BrowserContext) -> Page:
                 return p
         except Exception:
             continue
+    # No chart tab to reuse — we'd open one and goto(CHART_URL). If the
+    # user isn't signed in, TV redirects /chart/ → /accounts/signin/ and
+    # signin self-redirects (CSRF/next-param), surfacing as a confusing
+    # "Page.goto: Navigation interrupted by another navigation" instead
+    # of NotLoggedInError. Pre-check the cookie so the failure is clean
+    # and we don't leak a stale signin tab on every retry.
+    cookies = await ctx.cookies("https://www.tradingview.com/")
+    if not any(c["name"] == "sessionid" for c in cookies):
+        raise NotLoggedInError(
+            "No TradingView sessionid cookie. Sign in to the Chromium-Automation "
+            "profile (CDP on :9222), then retry."
+        )
     page = await ctx.new_page()
     await page.goto(CHART_URL, wait_until="domcontentloaded")
     await page.wait_for_selector("canvas", state="visible", timeout=30_000)

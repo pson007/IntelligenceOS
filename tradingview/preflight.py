@@ -18,9 +18,11 @@ automation would work. That's a trip-hazard. Now scripts self-heal.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 
 import httpx
@@ -73,27 +75,59 @@ async def _has_tv_session(cdp_url: str) -> bool:
             await browser.close()
 
 
+def _existing_tv_targets(cdp_url: str) -> list[dict]:
+    """List TV tabs via the CDP HTTP API. More reliable than Playwright's
+    ctx.pages for dedup: each `connect_over_cdp` call returns a snapshot
+    that can lag behind tabs created by a previous (recently-closed)
+    connection, so rapid preflight cycles leak a fresh tab per call.
+    The /json HTTP endpoint is authoritative."""
+    base = cdp_url.rstrip("/")
+    try:
+        with urllib.request.urlopen(f"{base}/json", timeout=2) as r:
+            tabs = json.loads(r.read().decode())
+    except Exception:
+        return []
+    return [t for t in tabs
+            if t.get("type") == "page"
+            and "tradingview.com" in (t.get("url") or "")]
+
+
 async def _open_signin_and_wait(cdp_url: str, poll_interval: float = 2.0,
                                  timeout: float = 600.0) -> None:
-    """Open the TV sign-in page in automation Chromium, poll for cookie."""
-    async with async_playwright() as pw:
-        browser = await pw.chromium.connect_over_cdp(cdp_url)
+    """Direct user to sign in (reusing an existing TV tab if any),
+    poll for cookie. Never opens a tab when one already exists —
+    that's the difference from the previous version, which leaked
+    one tab per preflight invocation when the user stayed signed out
+    across a multi-stage workflow."""
+    existing = _existing_tv_targets(cdp_url)
+    if existing:
+        # Bring the existing tab to front via CDP — no Playwright
+        # connection at all, so no risk of opening a new tab.
         try:
-            ctx = browser.contexts[0]
-            # If we already have a TV tab, reuse it; otherwise open one.
-            page = next(
-                (p for p in ctx.pages if "tradingview.com" in p.url),
-                None,
-            )
-            if page is None:
+            tid = existing[0]["id"]
+            urllib.request.urlopen(
+                f"{cdp_url.rstrip('/')}/json/activate/{tid}", timeout=2,
+            ).read()
+        except Exception:
+            pass
+        target_url = existing[0].get("url") or TV_SIGNIN_URL
+        print(f"\nNot signed in to TradingView.", flush=True)
+        print(f"Sign in at the existing TradingView tab "
+              f"({target_url[:80]}).", flush=True)
+    else:
+        # No TV tab exists — open exactly one signin tab via Playwright.
+        async with async_playwright() as pw:
+            browser = await pw.chromium.connect_over_cdp(cdp_url)
+            try:
+                ctx = browser.contexts[0]
                 page = await ctx.new_page()
-            await page.goto(TV_SIGNIN_URL, wait_until="domcontentloaded")
-            await page.bring_to_front()
-        finally:
-            await browser.close()
-
-    print("\nNot signed in to TradingView.", flush=True)
-    print(f"Sign in at {TV_SIGNIN_URL} in the automation Chromium window.", flush=True)
+                await page.goto(TV_SIGNIN_URL, wait_until="domcontentloaded")
+                await page.bring_to_front()
+            finally:
+                await browser.close()
+        print(f"\nNot signed in to TradingView.", flush=True)
+        print(f"Sign in at {TV_SIGNIN_URL} in the automation Chromium window.",
+              flush=True)
     print("Waiting for sign-in (polling cookie)...", flush=True)
 
     elapsed = 0.0
