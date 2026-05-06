@@ -264,6 +264,43 @@
         </div>
       </div>
 
+      <!-- Quick run — surfaces the most-fired actions (Pre-session,
+           Capture & analyze) at the top of the run surface so they
+           don't require expanding Trade desk or switching to Plan.
+           Pre-session label updates with the resolved target date
+           via _refreshPreSessionHint() (today vs next trading day). -->
+      <div class="card today-quick">
+        <div class="today-quick__row">
+          <button type="button" class="btn btn-primary today-quick__btn" id="today-quick-pre-session"
+                  title="Pre-session forecast — captures the LIVE chart and forecasts the next RTH session.">
+            <span class="today-quick__btn-lbl">Pre-session</span>
+            <span class="today-quick__btn-hint" id="today-quick-pre-session-hint">pre-open</span>
+          </button>
+          <button type="button" class="btn today-quick__btn" id="today-quick-analyze"
+                  title="Capture the chart now and run a single-TF analysis. Opens the Trade desk.">
+            <span class="today-quick__btn-lbl">Analyze</span>
+            <span class="today-quick__btn-hint">single-TF</span>
+          </button>
+          <button type="button" class="btn today-quick__btn" id="today-quick-open-plan"
+                  title="Switch to Plan tab for full forecast controls (calendar + ad-hoc replay chain).">
+            <span class="today-quick__btn-lbl">Plan ›</span>
+            <span class="today-quick__btn-hint">full controls</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent decisions — last 3 entries from the decision log so a
+           glance shows what was called, the outcome, and the realized
+           R. Tap a row to open the journal for that decision. Hidden
+           when there are no recent decisions. Polled on tab activate. -->
+      <div class="card today-decisions hidden" id="today-decisions-card">
+        <div class="card-head">
+          <h2>Recent decisions</h2>
+          <button class="icon-btn" id="today-decisions-refresh" title="Refresh">↻</button>
+        </div>
+        <div class="today-decisions__rows" id="today-decisions-rows"></div>
+      </div>
+
       <!-- Trade desk — the in-session run tools (capture, analyze,
            quick order, positions, lessons). Collapsed by default;
            opens with a single tap. Persists open/closed state per-

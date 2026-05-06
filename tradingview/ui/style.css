@@ -5679,6 +5679,89 @@ body {
   display: none !important;
 }
 
+/* ---- Today Quick-run strip --------------------------------------------
+   Small horizontal pill row of the most-fired actions, just below the
+   day-arc and above the Trade desk. Keeps the actions on the run
+   surface itself instead of behind a tab switch or a collapsed panel. */
+.today-quick {
+  padding: 10px 12px;
+  margin-top: var(--s-3);
+}
+.today-quick__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.today-quick__btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 8px 12px;
+  flex: 1 1 auto;
+  min-width: 90px;
+}
+.today-quick__btn-lbl {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+.today-quick__btn-hint {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.today-quick__btn.btn-primary .today-quick__btn-hint {
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+/* ---- Today Recent decisions strip — last 3 entries -------------------- */
+.today-decisions {
+  margin-top: var(--s-3);
+}
+.today-decisions__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.today-decisions__row {
+  display: grid;
+  grid-template-columns: 48px 56px 50px 22px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-base) var(--ease), background-color var(--dur-base) var(--ease);
+  text-align: left;
+}
+.today-decisions__row:hover {
+  border-color: var(--border-strong, #30363d);
+  background: var(--hover);
+}
+.today-decisions__time { color: var(--muted); }
+.today-decisions__sig {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+.today-decisions__sig--long  { color: var(--green); }
+.today-decisions__sig--short { color: var(--red); }
+.today-decisions__sig--skip  { color: var(--muted); }
+.today-decisions__conf { text-align: right; }
+.today-decisions__out  { text-align: center; }
+.today-decisions__r    { text-align: right; }
+
+html.is-mobile .today-decisions__row {
+  grid-template-columns: 44px 50px 1fr 18px 56px;
+  font-size: 12px;
+  padding: 7px 9px;
+}
+
 /* ---- Today day-arc — the unified linear timeline ---------------------- */
 .today-arc {
   margin-top: 0;

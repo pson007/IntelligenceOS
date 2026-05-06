@@ -291,7 +291,7 @@ function _renderSubtabBar(group, activeSub) {
 
 function _fireTabHook(sub) {
   if (sub === 'audit') startAuditPoll(); else stopAuditPoll();
-  if (sub === 'today') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); renderTodayArc(); } else stopPositionsPoll();
+  if (sub === 'today') { startPositionsPoll(); refreshChartMeta(); refreshSessionStrip(); loadTradeLessons(); renderTodayArc(); loadTodayDecisions(); } else stopPositionsPoll();
   if (sub === 'watchlist') loadWatchlist();
   if (sub === 'alerts') loadAlerts();
   if (sub === 'journal') { loadJournal(); initDayArc(); }
@@ -4073,25 +4073,95 @@ function _preSessionTargetDate() {
   return _fmtDate(cursor);
 }
 
-// Update the Pre-session button hint so a press's target date is
-// visible at-a-glance. Called on load and every minute so the label
-// flips automatically when the clock crosses 16:00 ET.
+// Update Pre-session button hints (Plan tab + Today quick-strip) so a
+// press's target date is visible at-a-glance. Called on load and every
+// minute so the label flips automatically when the clock crosses
+// 16:00 ET. Both hint spans share the same logic; either may be absent
+// (Today quick-strip wasn't always there).
 function _refreshPreSessionHint() {
-  const hint = document.getElementById('forecast-run-pre-session-hint');
-  if (!hint) return;
   const target = _preSessionTargetDate();
   const today = _fmtDate(new Date());
+  let label;
   if (target === today) {
-    hint.textContent = 'today';
+    label = 'today';
   } else {
     const [y, m, d] = target.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
     const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()];
-    hint.textContent = `${dow} ${m}/${d}`;
+    label = `${dow} ${m}/${d}`;
+  }
+  for (const id of ['forecast-run-pre-session-hint', 'today-quick-pre-session-hint']) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
   }
 }
 _refreshPreSessionHint();
 setInterval(_refreshPreSessionHint, 60_000);
+
+// Today tab Quick-run strip — surfaces the most-fired actions at the
+// top of the run surface. Pre-session reuses the typed-forecast click
+// path, Analyze pops the Trade desk and synthesises a click on its
+// Capture button (the user always wants a fresh frame for an analysis),
+// and Plan › switches tabs.
+document.getElementById('today-quick-pre-session')?.addEventListener('click', () => {
+  onTypedForecastClick('pre_session');
+});
+document.getElementById('today-quick-analyze')?.addEventListener('click', () => {
+  const desk = document.getElementById('trade-desk');
+  if (desk && !desk.open) desk.open = true;
+  // Defer the click so the panel layout settles first; without this,
+  // the trade-bar inputs may not be ready when Capture fires.
+  setTimeout(() => document.getElementById('trade-capture')?.click(), 50);
+});
+document.getElementById('today-quick-open-plan')?.addEventListener('click', () => {
+  activateGroup('plan');
+});
+
+// Today tab Recent decisions strip — last 3 entries from the decision
+// log. Hidden when the response is empty so a clean repo doesn't show
+// a stub card. Pulls from /api/decisions/recent which already returns
+// the shape we need (signal / confidence / outcome / realized_r).
+async function loadTodayDecisions() {
+  const card = document.getElementById('today-decisions-card');
+  const rows = document.getElementById('today-decisions-rows');
+  if (!card || !rows) return;
+  try {
+    const r = await api('/api/decisions/recent?limit=3', { method: 'GET' });
+    const list = (r && r.decisions) || [];
+    if (!list.length) { card.classList.add('hidden'); return; }
+    card.classList.remove('hidden');
+    rows.innerHTML = list.map(d => {
+      const t = (d.iso_ts || '').slice(11, 16);
+      const sigCls = (d.signal || '').toLowerCase();   // long/short/skip
+      const sig = (d.signal || '—').toUpperCase();
+      const conf = d.confidence != null ? `${d.confidence}%` : '—';
+      const out = d.outcome
+        ? (d.outcome === 'win' ? '✓' : d.outcome === 'loss' ? '✗' : '·')
+        : '—';
+      const r_text = d.realized_r != null
+        ? `${d.realized_r >= 0 ? '+' : ''}${(+d.realized_r).toFixed(2)}R`
+        : '';
+      return `<button type="button" class="today-decisions__row" data-rid="${escapeHTML(d.request_id)}">
+        <span class="today-decisions__time mono">${t}</span>
+        <span class="today-decisions__sig today-decisions__sig--${sigCls}">${sig}</span>
+        <span class="today-decisions__conf mono muted">${conf}</span>
+        <span class="today-decisions__out mono">${out}</span>
+        <span class="today-decisions__r mono">${r_text}</span>
+      </button>`;
+    }).join('');
+    rows.querySelectorAll('.today-decisions__row').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rid = btn.dataset.rid;
+        // Same target as the Journal tab uses for a single decision.
+        if (rid) location.hash = `#journal/${rid}`;
+        activateGroup('journal');
+      });
+    });
+  } catch (e) {
+    card.classList.add('hidden');
+  }
+}
+document.getElementById('today-decisions-refresh')?.addEventListener('click', loadTodayDecisions);
 
 // Typed forecast runs: pre-session targets today (before 16:00 ET) or
 // the next trading day (after). Live F1/F2/F3 always target today.
