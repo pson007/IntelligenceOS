@@ -105,10 +105,14 @@ is_long = direction == "up"
 
 // ---------------------------------------------------------------------------
 // Date / session detection — explicit America/New_York anchors.
-// Avoids the classic Pine gotcha where `hour`/`minute` reflect the EXCHANGE
-// timezone (Chicago for CME), which would skew every wall-clock gate by 1h.
+// Avoids the classic Pine gotcha where bare `year`/`month`/`dayofmonth`
+// (and `hour`/`minute`) return values in the EXCHANGE timezone (Chicago
+// for CME). On the ~1h window each evening between 23:00 CT and 00:00 CT,
+// exchange day is N while NY day is already N+1 — so `dayofmonth == fday`
+// would be false despite the forecast's wall-clock day being correct,
+// and the entire indicator would render nothing.
 // ---------------------------------------------------------------------------
-in_target_day = year == fyear and month == fmonth and dayofmonth == fday
+in_target_day = year(time, "America/New_York") == fyear and month(time, "America/New_York") == fmonth and dayofmonth(time, "America/New_York") == fday
 
 t_0930 = timestamp("America/New_York", fyear, fmonth, fday, 9,  30, 0)
 t_1000 = timestamp("America/New_York", fyear, fmonth, fday, 10, 0,  0)
