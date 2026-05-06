@@ -4657,6 +4657,13 @@ document.getElementById('sb-canary-toggle')?.addEventListener('click', () => {
   _canaryFlyoutOpen = !flyout.classList.toggle('hidden');
   if (_canaryFlyoutOpen && _canaryLastData) _renderCanaryFlyout(_canaryLastData);
 });
+
+// Tap the invalidation cell on mobile to toggle full-text vs ellipsised
+// view. CSS gates the actual collapse to mobile via html.is-mobile, so
+// this is a no-op on desktop where the text already fits inline.
+document.querySelector('.session-bar__inval')?.addEventListener('click', (ev) => {
+  ev.currentTarget.classList.toggle('expanded');
+});
 document.getElementById('sb-canary-eval-btn')?.addEventListener('click', async () => {
   const today = new Date().toISOString().slice(0, 10);
   try {

@@ -3309,8 +3309,10 @@ html.is-mobile .step .step-reason {
   font-size: 11px;
 }
 
-/* Session bar — compact on mobile. The invalidation text wraps full-width
-       on its own row below the top line so the long sentence stays readable. */
+/* Session bar — compact on mobile. Invalidation text collapses to a
+   single truncated line by default to keep the day-arc above the fold;
+   tap the cell to expand the full sentence (toggles `.expanded`).
+   Pivot button goes icon-only on phones to recover horizontal space. */
 html.is-mobile .session-bar {
   padding: 10px 14px 9px;
   gap: var(--s-3) var(--s-4);
@@ -3321,15 +3323,51 @@ html.is-mobile .session-bar__cell {
   gap: 6px;
 }
 html.is-mobile .session-bar__inval {
+  /* Take its own row but collapse to a single ellipsised line. The
+     full sentence is too long for a topbar at 4xx-pt widths and pushed
+     the day-arc 60-90px down. Tap to expand. */
   flex: 1 1 100%;
   padding-top: 2px;
+  cursor: pointer;
+  position: relative;
+  min-width: 0;
 }
 html.is-mobile .session-bar__inval .session-bar__val {
-  white-space: normal;
+  display: inline-block;
+  max-width: calc(100% - 70px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
   line-height: 1.4;
+  transition: max-width var(--dur-base) var(--ease);
+}
+html.is-mobile .session-bar__inval::after {
+  content: "▾";
+  margin-left: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  transition: transform var(--dur-base) var(--ease);
+  display: inline-block;
+}
+html.is-mobile .session-bar__inval.expanded .session-bar__val {
+  white-space: normal;
+  max-width: 100%;
+}
+html.is-mobile .session-bar__inval.expanded::after {
+  transform: rotate(180deg);
 }
 html.is-mobile .session-bar__lbl {
   font-size: 9px;
+}
+/* Pivot → icon-only on phones to save horizontal room. The label
+   ("Pivot" / "Apply pivot") is visually redundant once the icon is
+   familiar; tooltip still carries the text on long-press. */
+html.is-mobile .session-bar__pivot-lbl {
+  display: none;
+}
+html.is-mobile .session-bar__pivot {
+  padding: 6px 10px;
 }
 
 /* Toast — full-width on mobile, above the bottom tab bar */
