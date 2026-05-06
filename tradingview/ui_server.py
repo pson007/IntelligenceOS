@@ -1758,11 +1758,27 @@ async def sketchpad_apply(symbol: str, date: str) -> dict:
         audit.log("sketchpad.apply_done", symbol=symbol, date=date,
                   ok=ok, returncode=proc.returncode,
                   applied_screenshot=applied_screenshot)
+
+        # Persist layout so the new study survives a chart reload —
+        # mirrors `/api/analyze/apply-pine` and the forecast apply.
+        layout_saved = False
+        if ok:
+            try:
+                await layouts_mod.save()
+                layout_saved = True
+                audit.log("sketchpad.apply.layout_saved",
+                          symbol=symbol, date=date)
+            except Exception as e:
+                audit.log("sketchpad.apply.layout_save_fail",
+                          error=f"{type(e).__name__}: {e}",
+                          symbol=symbol, date=date)
+
         return {
             "ok": ok, "pine_path": str(pine_path),
             "n_visuals": len(visuals),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
+            "layout_saved": layout_saved,
             "stdout_tail": stdout_text[-1500:],
             "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
         }
@@ -2517,11 +2533,27 @@ async def forecast_pivot_apply(
             if line.startswith("APPLIED_SCREENSHOT:"):
                 applied_screenshot = line.split(":", 1)[1].strip()
                 break
+
+        # Persist layout so the pivot overlay survives chart reload —
+        # mirrors `/api/analyze/apply-pine` and the forecast apply.
+        layout_saved = False
+        if ok:
+            try:
+                await layouts_mod.save()
+                layout_saved = True
+                audit.log("pivot_apply.layout_saved",
+                          stage=stage, date=date)
+            except Exception as e:
+                audit.log("pivot_apply.layout_save_fail",
+                          error=f"{type(e).__name__}: {e}",
+                          stage=stage, date=date)
+
         return {
             "ok": ok,
             "pine_path": str(pine_path),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
+            "layout_saved": layout_saved,
             "stdout_tail": stdout_text[-1500:],
             "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
         }
