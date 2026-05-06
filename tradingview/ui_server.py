@@ -44,6 +44,7 @@ from tv_automation import act as act_mod
 from tv_automation import analyze_mtf as analyze_mtf_mod
 from tv_automation import chart as chart_mod
 from tv_automation import decision_log as decision_log_mod
+from tv_automation import layouts as layouts_mod
 from tv_automation import orders as orders_mod
 from tv_automation import reconcile as reconcile_mod
 from tv_automation import trading as trading_mod
@@ -1274,11 +1275,26 @@ async def analyze_apply_pine(payload: dict) -> dict:
                           error=f"{type(e).__name__}: {e}",
                           request_id=request_id)
 
+        # Persist the layout after a successful apply — without this,
+        # the new study is in-memory only and gets dropped on next
+        # chart reload. Best-effort: log and continue if save fails so
+        # the caller still sees the apply result.
+        layout_saved = False
+        if ok:
+            try:
+                await layouts_mod.save()
+                layout_saved = True
+                audit.log("analyze.apply_pine.layout_saved")
+            except Exception as e:
+                audit.log("analyze.apply_pine.layout_save_fail",
+                          error=f"{type(e).__name__}: {e}")
+
         return {
             "ok": ok, "path": str(resolved),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
             "linked_to_decision": linked,
+            "layout_saved": layout_saved,
             "stdout": stdout_text[-2000:],
             "stderr": stderr.decode("utf-8", errors="replace")[-2000:],
         }

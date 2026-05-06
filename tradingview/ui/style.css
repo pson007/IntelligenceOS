@@ -3766,6 +3766,11 @@ html.is-mobile .cal-day {
 html.is-mobile .profile-run-modal,
 html.is-mobile .forecast-run-modal {
   align-items: flex-end;
+  /* Reserve space for the persistent .mobile-tabbar (Today/Plan/Journal/
+     Setup) — 54px min-height + 4px top pad + home-indicator safe-area.
+     Without this, the bottom-anchored box renders behind the tab bar and
+     the action row (Cancel / Skip / Override) is unreachable. */
+  padding-bottom: calc(58px + env(safe-area-inset-bottom));
 }
 html.is-mobile .profile-run-modal > div,
 html.is-mobile .profile-run-modal__box,
@@ -3774,7 +3779,6 @@ html.is-mobile .forecast-run-modal__box {
   max-width: none !important;
   width: 100% !important;
   border-radius: 14px 14px 0 0 !important;
-  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
 }
 
 /* PWA standalone-mode polish. Only applies when the user launched
