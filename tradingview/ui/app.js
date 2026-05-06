@@ -4047,15 +4047,61 @@ async function onForecastRunClick() {
   _dispatchForecastRun({ kind: 'adhoc', endpoint: '/api/forecasts/run', body: payload });
 }
 
-// Typed forecast runs: pre-session + live F1/F2/F3. All target today on
-// the LIVE chart (no calendar selection needed); server defaults date.
+// Resolve which trading day a pre-session run should target right now.
+// Before 16:00 ET on a weekday → today. After 16:00 ET (or weekend) →
+// the next weekday. Lets the operator press Pre-session in the evening
+// and have it forecast tomorrow without any date picker.
+function _preSessionTargetDate() {
+  const now = new Date();
+  const etParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric', hour12: false, weekday: 'short',
+  }).formatToParts(now);
+  const etHour = parseInt(etParts.find(p => p.type === 'hour').value, 10);
+  const etDow  = etParts.find(p => p.type === 'weekday').value;
+  const isWeekend = (etDow === 'Sat' || etDow === 'Sun');
+  const afterClose = (etHour >= 16);
+  if (!isWeekend && !afterClose) return _fmtDate(now);
+  const cursor = new Date(now);
+  for (let i = 0; i < 5; i++) {
+    cursor.setDate(cursor.getDate() + 1);
+    const dow = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York', weekday: 'short',
+    }).format(cursor);
+    if (dow !== 'Sat' && dow !== 'Sun') return _fmtDate(cursor);
+  }
+  return _fmtDate(cursor);
+}
+
+// Update the Pre-session button hint so a press's target date is
+// visible at-a-glance. Called on load and every minute so the label
+// flips automatically when the clock crosses 16:00 ET.
+function _refreshPreSessionHint() {
+  const hint = document.getElementById('forecast-run-pre-session-hint');
+  if (!hint) return;
+  const target = _preSessionTargetDate();
+  const today = _fmtDate(new Date());
+  if (target === today) {
+    hint.textContent = 'today';
+  } else {
+    const [y, m, d] = target.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()];
+    hint.textContent = `${dow} ${m}/${d}`;
+  }
+}
+_refreshPreSessionHint();
+setInterval(_refreshPreSessionHint, 60_000);
+
+// Typed forecast runs: pre-session targets today (before 16:00 ET) or
+// the next trading day (after). Live F1/F2/F3 always target today.
 async function onTypedForecastClick(kind) {
   if (_forecastRunPollTimer) return;  // a run is already in flight
   const today = _fmtDate(new Date());
   if (kind === 'pre_session') {
     _dispatchForecastRun({
       kind, endpoint: '/api/forecasts/pre_session',
-      body: { date: today, symbol: 'MNQ1' },
+      body: { date: _preSessionTargetDate(), symbol: 'MNQ1' },
     });
     return;
   }
