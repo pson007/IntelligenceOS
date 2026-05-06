@@ -3008,11 +3008,30 @@ async def forecast_apply(
             if line.startswith("APPLIED_SCREENSHOT:"):
                 applied_screenshot = line.split(":", 1)[1].strip()
                 break
+
+        # Persist the layout after a successful apply — without this,
+        # the new study is in-memory only and dropped on next chart
+        # reload. Best-effort: log and continue if save fails so the
+        # caller still sees the apply result. Mirrors the pattern in
+        # `/api/analyze/apply-pine`.
+        layout_saved = False
+        if ok:
+            try:
+                await layouts_mod.save()
+                layout_saved = True
+                audit.log("forecast_apply.layout_saved",
+                          stage=stage, date=date)
+            except Exception as e:
+                audit.log("forecast_apply.layout_save_fail",
+                          error=f"{type(e).__name__}: {e}",
+                          stage=stage, date=date)
+
         return {
             "ok": ok,
             "pine_path": str(pine_path),
             "returncode": proc.returncode,
             "applied_screenshot": applied_screenshot,
+            "layout_saved": layout_saved,
             "stdout_tail": stdout_text[-1500:],
             "stderr_tail": stderr.decode("utf-8", errors="replace")[-1500:],
         }
