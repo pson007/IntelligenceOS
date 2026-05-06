@@ -5018,7 +5018,51 @@ async function onForecastReconcileClick(symbol, date, existing) {
   if (existing && !confirm(`Re-run reconciliation for ${date}? Existing reconciliation file will be overwritten.`)) {
     return;
   }
+  // Reconcile requires `profiles/MNQ1_<date>.json` to exist (it's the
+  // ground-truth chart-day capture used for grading). Probe first; if
+  // missing, kick off a daily-profile run for that single date and
+  // wait before triggering reconcile. With `resume:true` this is a
+  // fast no-op when the profile exists, so the cost is paid only when
+  // there's a real gap to fill — exactly the case that tripped CLI
+  // recovery for 2026-05-05 today.
+  const key = `${symbol}_${date}`;
+  let profileExists = false;
+  try {
+    const r = await fetch(`/api/profiles/${encodeURIComponent(key)}`, {
+      headers: { 'X-UI-Token': localStorage.getItem('ios-ui-token') || '' },
+    });
+    profileExists = r.ok;
+  } catch (e) { /* fall through; treat as missing */ }
+
+  if (!profileExists) {
+    toast(`Profile missing — generating ${date} (~60s) before reconciling`, 'ok');
+    try {
+      await _runProfileAndWait({ dates: [date], symbol, resume: true });
+    } catch (e) {
+      toast(`profile gen failed: ${e.message} — reconcile not run`, 'err');
+      return;
+    }
+  }
   await _dispatchForecastReconcile({ date, symbol });
+}
+
+// Helper: kick a profile run for a list of dates and resolve when the
+// task finishes. Throws on task failure. Reuses the same polling
+// pattern the Plan tab's Run profile button uses but stays out of the
+// shared timer state so a Reconcile chain doesn't collide with a
+// user-initiated profile run.
+async function _runProfileAndWait(body) {
+  const r = await api('/api/profiles/run', { method: 'POST', body });
+  const task_id = r.task_id;
+  if (!task_id) throw new Error('no task_id in profile run response');
+  const t0 = Date.now();
+  while (true) {
+    if (Date.now() - t0 > 5 * 60 * 1000) throw new Error('profile run timeout (5m)');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const status = await api(`/api/profiles/runs/${task_id}`, { method: 'GET' });
+    if (status.state === 'done') return status;
+    if (status.state === 'failed') throw new Error(status.error || 'profile run failed');
+  }
 }
 
 async function _dispatchForecastReconcile(payload) {
