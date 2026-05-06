@@ -1,0 +1,146 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-04",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-04T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-04.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-05T23:00:01-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "morning_high_failure_midday_flush_afternoon_repair",
+    "open_approx": 27845.0,
+    "close_approx": 27779.75,
+    "hod_approx": 27935.0,
+    "lod_approx": 27645.0,
+    "net_range_pts_open_to_close": -65,
+    "net_range_pct_open_to_close": -0.23,
+    "intraday_span_pts": 290,
+    "shape_sentence": "Morning push to highs failed into a sharp mid-day liquidation, then afternoon repair held below the morning range."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 27845.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:35",
+      "price_approx": 27820.0,
+      "type": "early_dip"
+    },
+    {
+      "time_et": "10:45",
+      "price_approx": 27935.0,
+      "type": "hod_failed_upside_extension"
+    },
+    {
+      "time_et": "11:20",
+      "price_approx": 27720.0,
+      "type": "breakdown_acceleration"
+    },
+    {
+      "time_et": "12:10",
+      "price_approx": 27645.0,
+      "type": "lod_flush_low"
+    },
+    {
+      "time_et": "12:25",
+      "price_approx": 27735.0,
+      "type": "rebound_pivot"
+    },
+    {
+      "time_et": "13:25",
+      "price_approx": 27805.0,
+      "type": "afternoon_reclaim_high"
+    },
+    {
+      "time_et": "14:05",
+      "price_approx": 27815.0,
+      "type": "lower_high_stall"
+    },
+    {
+      "time_et": "14:40",
+      "price_approx": 27735.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 27795.0,
+      "type": "late_session_high_attempt"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 27779.75,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "11:00",
+      "direction": "down",
+      "note": "Sharpest directional leg was the late-morning to noon selloff from the 27900s into the 27600s."
+    },
+    "red_circles": {
+      "behavior": "Bearish behavior aligned with the failed late-morning high and breakdown/retest zones near 27850-27900."
+    },
+    "green_circles": {
+      "behavior": "Bullish behavior appeared after the noon flush low and on afternoon higher-low defenses near 27720-27750."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply was respected around 27800-27820 in the afternoon and higher near 27900-27935 from the failed morning high."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand held near 27645-27680 after the flush and later around 27720-27740 during afternoon pullbacks."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Recovery from the early dip was underway; price was pushing toward the morning upside leg around 27875-27900.",
+    "12pm_red": "Active liquidation near session lows, with expanded volatility and price pressing into the 27600s.",
+    "2pm_green": "Afternoon recovery had reached resistance near 27800-27815 and began to stall.",
+    "4pm_yellow": "Closed firm off the lows but below the open at approximately 27779.75."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "morning_high_failure_midday_flush_afternoon_repair",
+    "open_type": "rotational_open",
+    "lunch_behavior": "flush_low_then_reclaim",
+    "afternoon_drive": "recovery_attempt_below_morning_breakdown",
+    "goat_time": "11:00",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "Demand respected near 27645-27680; supply respected near 27800-27820.",
+    "banks_broken": "Morning support around 27840-27860 broke during the 11am selloff."
+  },
+  "takeaway": "Bearish failed-morning-high day with a sharp mid-day flush and controlled afternoon repair. Upside attempt rejected before lunch, demand defended after liquidation, but close failed to reclaim the open.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-05-04T09:30",
+    "end_et": "2026-05-04T16:00",
+    "open": 27854,
+    "close": 27779.75,
+    "hod": 27941,
+    "lod": 27614.25,
+    "span_pts": 326.75,
+    "net_pts": -74.25,
+    "net_pct": -0.2666,
+    "first_bar_ts": 1777901400,
+    "last_bar_ts": 1777924740
+  }
+}

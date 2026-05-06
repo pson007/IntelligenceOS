@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-05",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260505_231659.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "06:00:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-05T23:17:35",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-05, ~12:00 ET\n\nBars observed so far this session: ~151 one-minute RTH bars, 09:30\u201312:00 ET\n\nWhat has happened so far: Before the cursor, MNQ ripped higher from the 09:30 open, absorbed a sharp 10:15\u201310:25 pullback, reclaimed highs, then held a tight elevated range into noon.\n\nRANKED SIMILAR ARCHETYPES\n\nMorning impulse \u2192 midday high-base \u2192 afternoon continuation \u2014 Strong 09:30 expansion held above the breakout base instead of fully mean-reverting.\n\nFailed intraday breakdown / reclaim trend-up \u2014 The 10:15\u201310:25 selloff tested demand but was quickly reclaimed before noon.\n\nControlled grind-up trend day \u2014 Higher lows and shallow pullbacks dominate, but the noon tape is not yet showing runaway volume expansion.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect sideways-to-slightly-up consolidation above 28,105\u201328,120, with attempts to retest 28,140\u201328,155.\n\nBetween next marker and 14:00: Bias for a higher-low hold and gradual push toward fresh HOD if 28,100 is not lost.\n\nBetween 14:00 and 16:00: Afternoon continuation likely; expect grind rather than vertical squeeze unless volume expands after 14:00.\n\nProjected close price range: 28,155\u201328,205\n\nRest-of-day HOD range: 28,180\u201328,230\n\nRest-of-day LOD range: 28,075\u201328,110\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained break below 28,075, especially if followed by lower highs under 28,105\n\nPreferred entry zone: Pullback into 28,105\u201328,125, ideally holding above the noon base\n\nR:R logic: Longs near 28,110\u201328,120 can risk toward 28,075\u201328,085 for upside into 28,180\u201328,220, giving roughly 2:1+ if the high-base resolves upward.\n\nKEY LEVELS\n\nOverhead supply: 28,145\u201328,160, then 28,190\u201328,230\n\nUnderlying demand: 28,105\u201328,120, then 28,075\u201328,090\n\nPivot-to-watch: 28,125 \u2014 holding above keeps pressure upward; losing it shifts noon into a failed high-base.\n\nPREDICTION TAGS\n\ndirection: up / 68%\n\nstructure: failed_breakdown_midday_reclaim_trend_up / 63%\n\nlunch_behavior: high-base consolidation / 66%\n\nafternoon_drive: grind higher / 61%\n\ngoat_direction: up / 70%\n\nclose_near_extreme: yes, near upper quartile / 58%"
+}

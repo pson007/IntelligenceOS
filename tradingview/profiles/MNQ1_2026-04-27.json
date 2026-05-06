@@ -1,0 +1,136 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-27",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-27T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-04-27.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:30:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-05T22:54:32-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "morning_flush_afternoon_reversal_trend",
+    "open_approx": 27418.0,
+    "close_approx": 27444.75,
+    "hod_approx": 27458.0,
+    "lod_approx": 27312.0,
+    "net_range_pts_open_to_close": 27,
+    "net_range_pct_open_to_close": 0.1,
+    "intraday_span_pts": 146,
+    "shape_sentence": "Early RTH liquidation into late-morning LOD, then steady afternoon trend recovery into a near-HOD close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 27418.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:55",
+      "price_approx": 27335.0,
+      "type": "morning_flush_low"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 27372.0,
+      "type": "lower_high_failed_bounce"
+    },
+    {
+      "time_et": "11:25",
+      "price_approx": 27312.0,
+      "type": "lod_bullish_reversal_pivot"
+    },
+    {
+      "time_et": "12:05",
+      "price_approx": 27375.0,
+      "type": "reclaim_higher_high_push"
+    },
+    {
+      "time_et": "13:35",
+      "price_approx": 27442.0,
+      "type": "afternoon_breakout_high"
+    },
+    {
+      "time_et": "14:35",
+      "price_approx": 27402.0,
+      "type": "pullback_higher_low"
+    },
+    {
+      "time_et": "15:45",
+      "price_approx": 27458.0,
+      "type": "hod_late_drive_peak"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 27444.75,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "11:25",
+      "direction": "up",
+      "note": "Standout move was the reversal from late-morning LOD near 27312 into the afternoon breakout above 27440."
+    },
+    "red_circles": {
+      "behavior": "Most effective early during the morning selloff; later bearish pivots produced only pauses or shallow pullbacks."
+    },
+    "green_circles": {
+      "behavior": "Improved after the 11:25 LOD, marking higher lows and continuation pivots during the afternoon reversal."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 27435-27450 initially capped price, then was broken during the late-day upside drive."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 27310-27330 held at the late-morning low; later demand migrated higher toward 27400."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Bearish discovery phase after the open, trading near morning lows around 27345-27360.",
+    "12pm_red": "Bullish reversal underway with price reclaiming from LOD and forming higher lows near 27365-27380.",
+    "2pm_green": "Upper-range bullish consolidation near 27425-27435 after the afternoon trend flip.",
+    "4pm_yellow": "Green close near HOD around 27444.75 after late-day breakout."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "morning_flush_afternoon_reversal_trend",
+    "open_type": "gap_down_drive",
+    "lunch_behavior": "bullish_reclaim_and_higher_lows",
+    "afternoon_drive": "steady_uptrend_with_late_breakout",
+    "goat_time": "11:25",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "late_morning_demand_held",
+    "banks_broken": "upper_supply_broke_late_day"
+  },
+  "takeaway": "Bullish reversal trend day: early sell pressure into defended demand, followed by a controlled afternoon reclaim and late breakout through supply into a near-HOD close.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-04-27T09:30",
+    "end_et": "2026-04-27T16:00",
+    "open": 27410,
+    "close": 27444.75,
+    "hod": 27452.25,
+    "lod": 27298,
+    "span_pts": 154.25,
+    "net_pts": 34.75,
+    "net_pct": 0.1268,
+    "first_bar_ts": 1777296600,
+    "last_bar_ts": 1777319940
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-29",
+  "dow": "Wed",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-29T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-04-29.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-05T22:56:55-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "opening_flush_late_bullish_reclaim",
+    "open_approx": 27215.0,
+    "close_approx": 27334.75,
+    "hod_approx": 27338.0,
+    "lod_approx": 27118.0,
+    "net_range_pts_open_to_close": 120,
+    "net_range_pct_open_to_close": 0.44,
+    "intraday_span_pts": 220,
+    "shape_sentence": "Bullish recovery/trend day after an opening flush, with lunch weakness absorbed and a late-day drive into the high."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 27215.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:33",
+      "price_approx": 27118.0,
+      "type": "opening_flush_lod"
+    },
+    {
+      "time_et": "10:40",
+      "price_approx": 27310.0,
+      "type": "morning_drive_high"
+    },
+    {
+      "time_et": "11:55",
+      "price_approx": 27205.0,
+      "type": "midday_sell_pivot"
+    },
+    {
+      "time_et": "12:40",
+      "price_approx": 27150.0,
+      "type": "lunch_low_demand_hold"
+    },
+    {
+      "time_et": "14:40",
+      "price_approx": 27190.0,
+      "type": "higher_low_launch"
+    },
+    {
+      "time_et": "15:15",
+      "price_approx": 27335.0,
+      "type": "afternoon_breakout_high"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 27275.0,
+      "type": "pullback_support"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 27334.75,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "14:40",
+      "direction": "up",
+      "note": "Late-afternoon upside drive from roughly 27190 into the closing high zone near 27335."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots produced pullbacks but failed to create sustained downside continuation after lunch."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots were strongest after failed lows, especially the opening flush recovery and late-afternoon higher-low launch."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 27300-27340 capped late morning and early afternoon, then broke into the close."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 27120-27155 and 27185-27205 was respected and repeatedly defended."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Recovered from the opening flush and rotating upward near 27200-27230.",
+    "12pm_red": "Sellers pressing lower from the late-morning range near 27205.",
+    "2pm_green": "Choppy hold above lunch low, with demand still intact before the later reclaim.",
+    "4pm_yellow": "Close at/near HOD after a final upside push through prior supply."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "opening_flush_late_bullish_reclaim",
+    "open_type": "gap_down_flush_reversal",
+    "lunch_behavior": "selloff_into_defended_demand",
+    "afternoon_drive": "late_breakout_to_hod",
+    "goat_time": "14:40",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "demand_27120_27155_and_27185_27205",
+    "banks_broken": "supply_27300_27340_broken_late"
+  },
+  "takeaway": "Bullish reversal/trend day: opening flush into demand, midday weakness absorbed, then late-afternoon reclaim through supply into a close near HOD.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-04-29T09:30",
+    "end_et": "2026-04-29T16:00",
+    "open": 27206.75,
+    "close": 27334.75,
+    "hod": 27338.25,
+    "lod": 27124.25,
+    "span_pts": 214.0,
+    "net_pts": 128.0,
+    "net_pct": 0.4705,
+    "first_bar_ts": 1777469400,
+    "last_bar_ts": 1777492740
+  }
+}

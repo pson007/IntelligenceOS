@@ -1,0 +1,141 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-04-30",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-04-30T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-04-30.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-05T22:57:58-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "opening_flush_to_afternoon_reclaim",
+    "open_approx": 27500.0,
+    "close_approx": 27578.0,
+    "hod_approx": 27621.0,
+    "lod_approx": 27175.0,
+    "net_range_pts_open_to_close": 78,
+    "net_range_pct_open_to_close": 0.28,
+    "intraday_span_pts": 446,
+    "shape_sentence": "Early liquidation flush into a deep morning low, then persistent stair-step recovery into an afternoon trend-up close near highs."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 27500.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 27270.0,
+      "type": "bearish_impulse_low"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 27175.0,
+      "type": "lod_bullish_pivot"
+    },
+    {
+      "time_et": "11:30",
+      "price_approx": 27430.0,
+      "type": "recovery_high"
+    },
+    {
+      "time_et": "12:05",
+      "price_approx": 27350.0,
+      "type": "midday_pullback"
+    },
+    {
+      "time_et": "13:00",
+      "price_approx": 27370.0,
+      "type": "higher_low"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 27565.0,
+      "type": "afternoon_breakout"
+    },
+    {
+      "time_et": "15:00",
+      "price_approx": 27545.0,
+      "type": "higher_low_retest"
+    },
+    {
+      "time_et": "15:40",
+      "price_approx": 27621.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 27578.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:35",
+      "direction": "down",
+      "note": "Opening liquidation flush was the highest-velocity standout move."
+    },
+    "red_circles": {
+      "behavior": "Bearish signals were most effective during the opening flush; later downside attempts were absorbed into higher lows."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots improved after the 10:30 low and worked on pullbacks during the recovery trend."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 27420-27460 initially slowed price but was broken; final upper supply near 27580-27620 capped the close."
+    },
+    "blue_banks_demand": {
+      "behavior": "Major demand held around 27175-27220; later support migrated higher to 27350-27380 and 27540-27560."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Still in opening selloff/recovery volatility near 27230-27280, well below the open.",
+    "12pm_red": "Midday rotation near 27380-27410; recovery intact but not yet in strong expansion.",
+    "2pm_green": "Upside breakout near 27560 after clearing lunch resistance.",
+    "4pm_yellow": "Bullish close near 27578, below HOD but near the upper end of the RTH range."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "opening_flush_to_afternoon_reclaim",
+    "open_type": "gap_up_failed_open_flush",
+    "lunch_behavior": "sideways_higher_low_build",
+    "afternoon_drive": "sustained_upside_reclaim",
+    "goat_time": "09:35",
+    "goat_direction": "down",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "early demand near 27175-27220; late higher demand near 27540-27560",
+    "banks_broken": "midday supply near 27420-27460"
+  },
+  "takeaway": "Bullish reversal-trend day after a violent opening liquidation. Early bear-trap flush into defended demand, followed by lunch consolidation and afternoon upside continuation.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-04-30T09:30",
+    "end_et": "2026-04-30T16:00",
+    "open": 27486.5,
+    "close": 27578.25,
+    "hod": 27624.5,
+    "lod": 27163,
+    "span_pts": 461.5,
+    "net_pts": 91.75,
+    "net_pct": 0.3338,
+    "first_bar_ts": 1777555800,
+    "last_bar_ts": 1777579140
+  }
+}

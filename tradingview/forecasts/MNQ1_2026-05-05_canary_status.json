@@ -1,0 +1,71 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-05",
+  "evaluated_at": "2026-05-05T23:19:41-0400",
+  "aggregate": {
+    "state": "passing",
+    "recommended_action": "trade_half_size",
+    "pass_weight": 4,
+    "fail_weight": 0,
+    "pending_weight": 0,
+    "evaluate_failed_weight": 5,
+    "snoozed_weight": 0,
+    "total_weight": 9,
+    "pass_ratio": 1.0,
+    "failing_check_ids": []
+  },
+  "results": [
+    {
+      "id": "preopen_breakout_posture",
+      "status": "pass",
+      "evidence": {
+        "close": 28302,
+        "threshold": 28120,
+        "comparison": ">",
+        "bar_time_epoch": 1778037540
+      },
+      "evaluated_at": "2026-05-05T23:19:41-0400"
+    },
+    {
+      "id": "open_structure",
+      "status": "evaluate_failed",
+      "evidence": {
+        "reason": "no bars in 09:30-09:35 window",
+        "n_bars": 0
+      },
+      "evaluated_at": "2026-05-05T23:19:41-0400"
+    },
+    {
+      "id": "first_30_low",
+      "status": "evaluate_failed",
+      "evidence": {
+        "reason": "no bars in window",
+        "window": "09:30-10:00",
+        "n_bars": 0
+      },
+      "evaluated_at": "2026-05-05T23:19:41-0400"
+    },
+    {
+      "id": "midmorning_reclaim",
+      "status": "pass",
+      "evidence": {
+        "close": 28302,
+        "threshold": 28240,
+        "comparison": ">",
+        "bar_time_epoch": 1778037540
+      },
+      "evaluated_at": "2026-05-05T23:19:41-0400"
+    },
+    {
+      "id": "vwap_control",
+      "status": "evaluate_failed",
+      "evidence": {
+        "reason": "no VWAP indicator on chart or value unavailable"
+      },
+      "evaluated_at": "2026-05-05T23:19:41-0400"
+    }
+  ],
+  "auto_pause_engaged": false,
+  "auto_pause_payload": null,
+  "canary_summary": "Long bias remains valid only if the opening pullback holds above breakout demand and price reclaims VWAP/28240 by mid-morning."
+}
