@@ -1,0 +1,138 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-06",
+  "dow": "Wed",
+  "stage": "pre_session_forecast",
+  "mode": "live_prerth",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_presession_20260505_234104.png",
+  "based_on_priors": [
+    "2026-05-04",
+    "2026-05-01",
+    "2026-04-30",
+    "2026-04-29",
+    "2026-04-28"
+  ],
+  "same_dow_refs": [
+    "2026-04-29",
+    "2026-04-22",
+    "2026-04-15"
+  ],
+  "lessons_injected": true,
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-05T23:41:47",
+  "raw_response": "REGIME READ\n\nCurrent regime is bullish rotational-to-trending, not clean one-way continuation. Recent priors favor upside after early weakness: 04-29, 04-30, and 04-28 all absorbed morning downside and repaired higher, while 05-01 showed a gap-up drive that later balanced under supply. 05-04 is the main warning: upside can fail into a midday flush if morning highs reject. Today's overnight posture is materially stronger than those priors, with MNQ trading around 28,327, above the recent 27,780\u201327,935 reference area, so the first forecast should lean up, but only if the gap does not immediately reject. \n\nPasted text\n\nSAME-DOW REFERENCES\n\n2026-04-29: Opening flush, lunch absorption, late bullish reclaim; supports a buy-the-reclaim framework rather than chasing the first print.\n\n2026-04-22: Stop-hunt reclaim into afternoon grind; closest tactical analog if the open sweeps lower but quickly regains VWAP.\n\n2026-04-15: Early dip-reclaim trend day with a noon reset; supports upside continuation if midday pullback holds above the morning base.\n\nPREDICTIONS\n\nDirection: up, confidence med\n\nOpen type: gap_up_rotational_reclaim\n\nStructure: gap_up_open_dip_then_reclaim_afternoon_grind\n\nExpected move size: medium\n\nNet pct range: +0.10% to +0.55%\n\nIntraday span range: 180\u2013320 pts\n\nTIME WINDOW EXPECTATIONS\n\n10:00: Opening gap likely tests lower first; long thesis needs reclaim above 28,300 or firm VWAP hold.\n\n12:00: Expect two-way balance above 28,240\u201328,270 if buyers are still in control.\n\n14:00: If above 28,330\u201328,360, afternoon grind toward HOD becomes favored.\n\n16:00: Close favored upper-half / near-HOD unless the morning gap fully fails.\n\nPROBABLE GOAT\n\nDirection: long\n\nTime window: opening/morning\n\nRationale: Best risk/reward is likely after a gap-up pullback holds demand and reclaims VWAP, not on an immediate chase.\n\nTACTICAL BIAS\n\nPrimary bias: buy_dips_on_reclaim\n\nInvalidation conditions: 09:30\u201310:00 cannot reclaim 28,300; first 30-min low breaks and accepts below 28,220; 10:00 close remains below session VWAP after a failed gap-up push.\n\nPREDICTION TAGS\n\ndirection: up\n\nstructure: gap_up_open_dip_then_reclaim_afternoon_grind\n\nopen_type: gap_up_rotational_reclaim\n\nlunch_behavior: higher_low_balance_above_morning_base\n\nafternoon_drive: upside_grind_if_above_breakout_base\n\ngoat_direction: up\n\nclose_near_extreme: yes_closer_to_HOD\n\nCONFIDENCE NOTES\n\nThe main risk is a gap-up exhaustion fade: overnight already traveled far, so RTH buyers may refuse to extend above 28,350\u201328,400. The least certain piece is whether the open drives immediately or flushes first. The most likely invalidation trigger is a failed reclaim of 28,300 by 10:00.\n\nCANARY THESIS\n\nThe long bias is valid only if the gap holds above pre-session demand and any early flush quickly reclaims 28,300/VWAP.\n\nJSON\n{\n  \"regime_read\": \"Current regime is bullish rotational-to-trending, not clean one-way continuation. Recent priors favor upside after early weakness: 04-29, 04-30, and 04-28 all absorbed morning downside and repaired higher, while 05-01 showed a gap-up drive that later balanced under supply. 05-04 is the main warning: upside can fail into a midday flush if morning highs reject. Today's overnight posture is materially stronger than those priors, with MNQ trading around 28327, above the recent 27780-27935 reference area, so the first forecast should lean up, but only if the gap does not immediately reject.\",\n  \"same_dow_references\": [\n    \"2026-04-29: Opening flush, lunch absorption, late bullish reclaim; supports a buy-the-reclaim framework rather than chasing the first print.\",\n    \"2026-04-22: Stop-hunt reclaim into afternoon grind; closest tactical analog if the open sweeps lower but quickly regains VWAP.\",\n    \"2026-04-15: Early dip-reclaim trend day with a noon reset; supports upside continuation if midday pullback holds above the morning base.\"\n  ],\n  \"predictions\": {\n    \"direction\": \"up\",\n    \"direction_confidence\": \"med\",\n    \"open_type\": \"gap_up_rotational_reclaim\",\n    \"structure\": \"gap_up_open_dip_then_reclaim_afternoon_grind\",\n    \"expected_move_size\": \"med\",\n    \"predicted_net_pct_lo\": 0.1,\n    \"predicted_net_pct_hi\": 0.55,\n    \"predicted_intraday_span_lo_pts\": 180,\n    \"predicted_intraday_span_hi_pts\": 320\n  },\n  \"time_window_expectations\": {\n    \"10am\": \"Opening gap likely tests lower first; long thesis needs reclaim above 28300 or firm VWAP hold.\",\n    \"12pm\": \"Expect two-way balance above 28240-28270 if buyers are still in control.\",\n    \"2pm\": \"If above 28330-28360, afternoon grind toward HOD becomes favored.\",\n    \"4pm\": \"Close favored upper-half / near-HOD unless the morning gap fully fails.\"\n  },\n  \"probable_goat\": {\n    \"direction\": \"long\",\n    \"time_window\": \"opening/morning\",\n    \"rationale\": \"Best risk/reward is likely after a gap-up pullback holds demand and reclaims VWAP, not on an immediate chase.\"\n  },\n  \"tactical_bias\": {\n    \"bias\": \"buy_dips_on_reclaim\",\n    \"invalidation\": \"Invalid if 09:30-10:00 cannot reclaim 28300, first 30-min low breaks and accepts below 28220, or 10:00 close remains below session VWAP after a failed gap-up push.\"\n  },\n  \"prediction_tags\": {\n    \"direction\": \"up\",\n    \"structure\": \"gap_up_open_dip_then_reclaim_afternoon_grind\",\n    \"open_type\": \"gap_up_rotational_reclaim\",\n    \"lunch_behavior\": \"higher_low_balance_above_morning_base\",\n    \"afternoon_drive\": \"upside_grind_if_above_breakout_base\",\n    \"goat_direction\": \"up\",\n    \"close_near_extreme\": \"yes_closer_to_HOD\"\n  },\n  \"confidence_notes\": \"The main risk is a gap-up exhaustion fade: overnight already traveled far, so RTH buyers may refuse to extend above 28350-28400. The least certain piece is whether the open drives immediately or flushes first. The most likely invalidation trigger is a failed reclaim of 28300 by 10:00.\",\n  \"canary\": {\n    \"thesis_summary\": \"The long bias is valid only if the gap holds above pre-session demand and any early flush quickly reclaims 28300/VWAP.\",\n    \"default_action_if_passing\": \"trade_half_size\",\n    \"default_action_if_partial\": \"trade_smallest\",\n    \"default_action_if_failing\": \"stand_down\",\n    \"auto_pause_if_failing\": true,\n    \"checks\": [\n      {\n        \"id\": \"gap_hold\",\n        \"label\": \"Gap holds above lower demand\",\n        \"rationale\": \"A break below 28220 would convert the gap from acceptance into rejection.\",\n        \"check_type\": \"price_level_window\",\n        \"evaluate_at\": \"10:00\",\n        \"params\": {\n          \"window\": \"09:30-10:00\",\n          \"low_of_window_above\": 28220\n        },\n        \"weight\": 2\n      },\n      {\n        \"id\": \"open_structure\",\n        \"label\": \"Open is reclaimable, not failed gap\",\n        \"rationale\": \"The bullish setup needs either immediate acceptance or a fast dip-then-reclaim.\",\n        \"check_type\": \"open_pattern\",\n        \"evaluate_at\": \"09:35\",\n        \"params\": {\n          \"expected\": \"dip_then_reclaim\",\n          \"tolerated\": [\n            \"dip_then_reclaim\",\n            \"rotational_open\",\n            \"gap_and_go\"\n          ]\n        },\n        \"weight\": 1\n      },\n      {\n        \"id\": \"ten_oclock_reclaim\",\n        \"label\": \"10:00 close above 28300\",\n        \"rationale\": \"Reclaiming 28300 confirms buyers are defending the overnight breakout area.\",\n        \"check_type\": \"price_level\",\n        \"evaluate_at\": \"10:00\",\n        \"params\": {\n          \"price_above\": 28300\n        },\n        \"weight\": 2\n      },\n      {\n        \"id\": \"vwap_control\",\n        \"label\": \"Price above session VWAP by mid-morning\",\n        \"rationale\": \"A gap-up long thesis should not remain below VWAP after the first rotation.\",\n        \"check_type\": \"vwap_relationship\",\n        \"evaluate_at\": \"10:30\",\n        \"params\": {\n          \"side\": \"above\"\n        },\n        \"weight\": 2\n      },\n      {\n        \"id\": \"lunch_base\",\n        \"label\": \"Lunch holds above breakout base\",\n        \"rationale\": \"Holding above 28270 by noon keeps the afternoon grind setup alive.\",\n        \"check_type\": \"price_level\",\n        \"evaluate_at\": \"12:00\",\n        \"params\": {\n          \"price_above\": 28270\n        },\n        \"weight\": 1\n      }\n    ]\n  }\n}",
+  "regime_read": "Current regime is bullish rotational-to-trending, not clean one-way continuation. Recent priors favor upside after early weakness: 04-29, 04-30, and 04-28 all absorbed morning downside and repaired higher, while 05-01 showed a gap-up drive that later balanced under supply. 05-04 is the main warning: upside can fail into a midday flush if morning highs reject. Today's overnight posture is materially stronger than those priors, with MNQ trading around 28327, above the recent 27780-27935 reference area, so the first forecast should lean up, but only if the gap does not immediately reject.",
+  "same_dow_references": [
+    "2026-04-29: Opening flush, lunch absorption, late bullish reclaim; supports a buy-the-reclaim framework rather than chasing the first print.",
+    "2026-04-22: Stop-hunt reclaim into afternoon grind; closest tactical analog if the open sweeps lower but quickly regains VWAP.",
+    "2026-04-15: Early dip-reclaim trend day with a noon reset; supports upside continuation if midday pullback holds above the morning base."
+  ],
+  "predictions": {
+    "direction": "up",
+    "direction_confidence": "med",
+    "open_type": "gap_up_rotational_reclaim",
+    "structure": "gap_up_open_dip_then_reclaim_afternoon_grind",
+    "expected_move_size": "med",
+    "predicted_net_pct_lo": 0.1,
+    "predicted_net_pct_hi": 0.55,
+    "predicted_intraday_span_lo_pts": 180,
+    "predicted_intraday_span_hi_pts": 320
+  },
+  "time_window_expectations": {
+    "10am": "Opening gap likely tests lower first; long thesis needs reclaim above 28300 or firm VWAP hold.",
+    "12pm": "Expect two-way balance above 28240-28270 if buyers are still in control.",
+    "2pm": "If above 28330-28360, afternoon grind toward HOD becomes favored.",
+    "4pm": "Close favored upper-half / near-HOD unless the morning gap fully fails."
+  },
+  "probable_goat": {
+    "direction": "long",
+    "time_window": "opening/morning",
+    "rationale": "Best risk/reward is likely after a gap-up pullback holds demand and reclaims VWAP, not on an immediate chase."
+  },
+  "tactical_bias": {
+    "bias": "buy_dips_on_reclaim",
+    "invalidation": "Invalid if 09:30-10:00 cannot reclaim 28300, first 30-min low breaks and accepts below 28220, or 10:00 close remains below session VWAP after a failed gap-up push."
+  },
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "gap_up_open_dip_then_reclaim_afternoon_grind",
+    "open_type": "gap_up_rotational_reclaim",
+    "lunch_behavior": "higher_low_balance_above_morning_base",
+    "afternoon_drive": "upside_grind_if_above_breakout_base",
+    "goat_direction": "up",
+    "close_near_extreme": "yes_closer_to_HOD"
+  },
+  "confidence_notes": "The main risk is a gap-up exhaustion fade: overnight already traveled far, so RTH buyers may refuse to extend above 28350-28400. The least certain piece is whether the open drives immediately or flushes first. The most likely invalidation trigger is a failed reclaim of 28300 by 10:00.",
+  "canary": {
+    "thesis_summary": "The long bias is valid only if the gap holds above pre-session demand and any early flush quickly reclaims 28300/VWAP.",
+    "default_action_if_passing": "trade_half_size",
+    "default_action_if_partial": "trade_smallest",
+    "default_action_if_failing": "stand_down",
+    "auto_pause_if_failing": true,
+    "checks": [
+      {
+        "id": "gap_hold",
+        "label": "Gap holds above lower demand",
+        "rationale": "A break below 28220 would convert the gap from acceptance into rejection.",
+        "check_type": "price_level_window",
+        "evaluate_at": "10:00",
+        "params": {
+          "window": "09:30-10:00",
+          "low_of_window_above": 28220
+        },
+        "weight": 2
+      },
+      {
+        "id": "open_structure",
+        "label": "Open is reclaimable, not failed gap",
+        "rationale": "The bullish setup needs either immediate acceptance or a fast dip-then-reclaim.",
+        "check_type": "open_pattern",
+        "evaluate_at": "09:35",
+        "params": {
+          "expected": "dip_then_reclaim",
+          "tolerated": [
+            "dip_then_reclaim",
+            "rotational_open",
+            "gap_and_go"
+          ]
+        },
+        "weight": 1
+      },
+      {
+        "id": "ten_oclock_reclaim",
+        "label": "10:00 close above 28300",
+        "rationale": "Reclaiming 28300 confirms buyers are defending the overnight breakout area.",
+        "check_type": "price_level",
+        "evaluate_at": "10:00",
+        "params": {
+          "price_above": 28300
+        },
+        "weight": 2
+      },
+      {
+        "id": "vwap_control",
+        "label": "Price above session VWAP by mid-morning",
+        "rationale": "A gap-up long thesis should not remain below VWAP after the first rotation.",
+        "check_type": "vwap_relationship",
+        "evaluate_at": "10:30",
+        "params": {
+          "side": "above"
+        },
+        "weight": 2
+      },
+      {
+        "id": "lunch_base",
+        "label": "Lunch holds above breakout base",
+        "rationale": "Holding above 28270 by noon keeps the afternoon grind setup alive.",
+        "check_type": "price_level",
+        "evaluate_at": "12:00",
+        "params": {
+          "price_above": 28270
+        },
+        "weight": 1
+      }
+    ]
+  },
+  "parsed_structured": true,
+  "canary_emitted": true
+}
