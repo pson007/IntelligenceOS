@@ -167,6 +167,12 @@ _active_profile_run: str | None = None
 _forecast_run_tasks: dict[str, dict] = {}
 _active_forecast_run: str | None = None
 
+# Apply-pine subprocesses are short (~30-60s) but they own the Pine Editor
+# exclusively — two parallel applies race on focus/save and one returns
+# non-zero. Track a single in-flight apply so /apply endpoints can 409
+# concurrent starts. Set to a small dict on entry, cleared in finally.
+_apply_in_flight: dict | None = None
+
 
 def _prune_act_tasks() -> None:
     """Remove finished tasks older than TTL. Called opportunistically on
@@ -244,6 +250,8 @@ def _cdp_busy() -> dict | None:
             return {"kind": "forecast_run", "task_id": _active_forecast_run,
                     "started_at": t.get("started_at"),
                     "date": t.get("date"), "symbol": t.get("symbol")}
+    if _apply_in_flight:
+        return {"kind": "apply_pine", **_apply_in_flight}
     return None
 
 
@@ -2944,6 +2952,17 @@ async def forecast_apply(
     `/api/analyze/apply-pine`. UI should disable the button while
     waiting."""
     _check_not_paused()
+    # Guard against concurrent applies — multiple parallel Playwright
+    # subprocesses driving the same Pine Editor will race and at least
+    # one will return non-zero. Observed when the iOS PWA double-fires
+    # /apply (Safari's POST retry on a slow response). Return 409 so
+    # the caller can show a clean "another run in progress" message
+    # instead of the opaque "apply returned not-ok".
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
     if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
         raise HTTPException(400, "invalid params")
     jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
@@ -2969,6 +2988,12 @@ async def forecast_apply(
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
     cmd = [python_exe, str(apply_script), str(pine_path)]
+    global _apply_in_flight
+    _apply_in_flight = {
+        "started_at": time.time(),
+        "source": "forecast_apply",
+        "stage": stage, "date": date, "symbol": symbol,
+    }
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -2996,6 +3021,8 @@ async def forecast_apply(
                 "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
+    finally:
+        _apply_in_flight = None
 
 
 @app.get("/api/forecasts/{symbol}/{date}/{stage}/screenshot")

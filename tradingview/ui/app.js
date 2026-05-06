@@ -5241,6 +5241,12 @@ async function selectForecastDay(symbol, date) {
       const { symbol, date, stage } = btn.dataset;
       const card = btn.closest('.forecast-stage-card');
       const pineBtn = card?.querySelector('.forecast-pine-btn');
+      // Block re-entry on the SAME button while one apply is in flight.
+      // The server now 409s concurrent applies, but client-side de-dupe
+      // avoids the round-trip and the resulting confusing 409 toast on
+      // a double-tap.
+      if (btn.dataset.applying === '1') return;
+      btn.dataset.applying = '1';
       setBusy(btn, true, '▶ Apply to chart');
       if (pineBtn) pineBtn.disabled = true;
       toast('Applying to chart… (~30-60s)', 'ok');
@@ -5250,15 +5256,30 @@ async function selectForecastDay(symbol, date) {
           const fname = r.pine_path?.split('/').pop() || 'pine';
           toast(`applied: ${fname}`, 'ok');
         } else {
-          toast(`apply returned not-ok: ${r.error || 'see stdout'}`, 'err');
+          // Surface the actual subprocess error so iOS PWA users can
+          // diagnose without dev tools. Tail of stderr (or stdout if
+          // stderr is empty) is the highest-signal slice. Cap at 200
+          // chars so the toast stays usable.
+          const tail = (r.stderr_tail && r.stderr_tail.trim())
+                     || (r.stdout_tail && r.stdout_tail.trim())
+                     || r.error || 'see stdout';
+          const msg = tail.split('\n').filter(Boolean).pop() || tail;
+          toast(`apply failed: ${msg.slice(0, 200)}`, 'err');
           console.warn('apply stdout tail:', r.stdout_tail);
           console.warn('apply stderr tail:', r.stderr_tail);
         }
       } catch (e) {
-        toast(`apply failed: ${e.message}`, 'err');
+        // 409 from the server arrives here with a structured body. Map
+        // to a clean "another run in progress" message.
+        if (e.status === 409 || /409/.test(e.message || '')) {
+          toast('another apply is already running — wait a moment', 'err');
+        } else {
+          toast(`apply failed: ${e.message}`, 'err');
+        }
       } finally {
         setBusy(btn, false, '▶ Apply to chart');
         if (pineBtn) pineBtn.disabled = false;
+        btn.dataset.applying = '0';
       }
     });
   });
