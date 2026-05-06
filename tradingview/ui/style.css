@@ -5680,25 +5680,13 @@ body {
 }
 
 /* ---- Today tab visual order ------------------------------------------
-   User-preferred reading order: the Trade desk run-tool group first
-   (Trade desk header + session-strip + analyze-card + lessons + quick-
-   order + positions — the surfaces actually fired during a trade),
-   then Day arc / Quick-run / Recent decisions.
-
-   Implementation note: the trade-desk `<details>` is followed by its
-   sibling tool cards in markup, which means "trade desk first" really
-   means "trade-desk + every sibling NOT in the arc/quick/decisions
-   group, first." Easier to express by demoting the three glance-only
-   cards to a high `order` and leaving the run tools at the default
-   order:0 — they render in markup order, before anything explicitly
-   ordered higher. */
-#tab-today {
-  display: flex;
-  flex-direction: column;
-}
-#tab-today > #today-arc-card      { order: 10; }
-#tab-today > .today-quick         { order: 11; }
-#tab-today > #today-decisions-card{ order: 12; }
+   Reverted from "trade-desk first" — that placement buried the canary
+   below the fold, and the canary is the most-watched live surface
+   (592 polls in 14d of audit data vs ~70 chart.screenshot fires).
+   Reading order is now: day-arc + quick-run + decisions on top
+   (glance + 1-tap actions), then trade-desk and the deeper run tools
+   below for when the operator actually wants to drive the chart.
+   Markup-order rendering — the section behaves as plain block flow. */
 
 /* ---- Today Quick-run strip --------------------------------------------
    Small horizontal pill row of the most-fired actions, just below the
