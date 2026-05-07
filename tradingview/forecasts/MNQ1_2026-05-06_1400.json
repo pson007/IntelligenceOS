@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-06",
+  "cursor_time": "14:00",
+  "stage": "F3",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f31400_20260506_185746.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "02:00:00",
+    "session_last": "14:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-06T18:58:35",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-06 ~14:00 ET from BarDate/green marker area.\n\nBars observed so far this session: ~270 one-minute RTH bars, 09:30\u201314:00 ET.\n\nWhat has happened so far in 1 sentence: MNQ opened with a 09:30 stop-hunt/flush, reclaimed above VWAP/value by ~10:00, then held higher lows through lunch into a near-HOD 14:00 continuation setup.\n\nRANKED SIMILAR ARCHETYPES\n\nstop-hunt-reclaim trend-up \u2014 Opening weakness failed, price reclaimed value, then buyers defended every pullback.\n\nlunch higher-low continuation \u2014 From ~12:00 to ~14:00, price held above the breakout base instead of rotating back into morning value.\n\nlate-day near-HOD grind \u2014 Structure favors controlled upside extension more than a sharp reversal, unless 28,535\u201328,500 fails.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect shallow pullbacks above 28,560\u201328,535, then a push into/above 28,630 supply.\n\nBetween next marker and 14:00: Cursor is already near 14:00; evidence before cursor shows bullish compression, not reversal.\n\nBetween 14:00 and 16:00 close: Bias toward grind-up / near-HOD close; likely one pullback, but dips should be bought if 28,535 holds.\n\nProjected close price range: 28,635\u201328,690\n\nRest-of-day HOD range: 28,665\u201328,725\n\nRest-of-day LOD range: 28,535\u201328,575\n\nTACTICAL BIAS\n\nPrimary bias: Long, 72% confidence\n\nKey level to invalidate the bias: Below 28,500; stronger invalidation below 28,455\n\nPreferred entry zone: 28,555\u201328,585 on pullback/reclaim\n\nR:R logic: Risk ~35\u201355 pts below 28,535/28,500; target 28,665\u201328,725 gives roughly 1.5R\u20133R if entry is not chased.\n\nKEY LEVELS\n\nOverhead supply: 28,630\u201328,675, then 28,700\u201328,725\n\nUnderlying demand: 28,555\u201328,535, then 28,480\u201328,455\n\nPivot-to-watch: 28,600\n\nPREDICTION TAGS\n\ndirection: up / 72%\n\nstructure: failed_breakdown_midday_reclaim_trend_up / 76%\n\nlunch_behavior: higher-low hold above value / 74%\n\nafternoon_drive: grind-up continuation / 68%\n\ngoat_direction: long / 73%\n\nclose_near_extreme: yes, near HOD / 70%"
+}

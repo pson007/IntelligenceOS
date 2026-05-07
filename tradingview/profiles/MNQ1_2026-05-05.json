@@ -1,0 +1,151 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-05",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-05T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-05.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "15:30:00"
+  },
+  "profiled_at": "2026-05-06T19:49:18-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "morning_drive_lunch_flush_afternoon_high_late_pullback",
+    "open_approx": 27975.0,
+    "close_approx": 28135.0,
+    "hod_approx": 28190.0,
+    "lod_approx": 27965.0,
+    "net_range_pts_open_to_close": 160,
+    "net_range_pct_open_to_close": 0.57,
+    "intraday_span_pts": 225,
+    "shape_sentence": "Bullish drive off the open, midday consolidation, afternoon continuation to new highs, then late selloff into a higher close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 27975.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 28095.0,
+      "type": "morning_drive_goat"
+    },
+    {
+      "time_et": "10:18",
+      "price_approx": 28045.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "10:32",
+      "price_approx": 28135.0,
+      "type": "breakout_continuation"
+    },
+    {
+      "time_et": "11:05",
+      "price_approx": 28095.0,
+      "type": "higher_low"
+    },
+    {
+      "time_et": "11:50",
+      "price_approx": 28150.0,
+      "type": "midday_high"
+    },
+    {
+      "time_et": "12:28",
+      "price_approx": 28095.0,
+      "type": "lunch_flush_low"
+    },
+    {
+      "time_et": "13:18",
+      "price_approx": 28115.0,
+      "type": "reclaim_higher_low"
+    },
+    {
+      "time_et": "14:18",
+      "price_approx": 28185.0,
+      "type": "afternoon_high_push"
+    },
+    {
+      "time_et": "15:08",
+      "price_approx": 28190.0,
+      "type": "hod_retest"
+    },
+    {
+      "time_et": "15:50",
+      "price_approx": 28110.0,
+      "type": "late_selloff_low"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 28135.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:35",
+      "direction": "up",
+      "note": "Clean opening expansion from the RTH low area into the first major upside level near 28095."
+    },
+    "red_circles": {
+      "behavior": "No clearly visible red-circle labels on the frame; bearish behavior concentrated at the late rejection from 28180-28190 supply."
+    },
+    "green_circles": {
+      "behavior": "No clearly visible green-circle labels on the frame; bullish pivot behavior appeared at the open low, 10:18 pullback, 12:28 flush, and 13:18 reclaim."
+    },
+    "orange_banks_supply": {
+      "behavior": "No visible orange bank icons; functional supply near 28180-28190 was respected into the close."
+    },
+    "blue_banks_demand": {
+      "behavior": "No visible blue bank icons; functional demand held near 27965-27980, 28045, and 28095."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Price was already extended from the open, holding the first upside drive around 28085-28105.",
+    "12pm_red": "Market was in a sideways-to-higher lunch range near 28135-28145 before the 12:30 flush.",
+    "2pm_green": "Afternoon continuation was active, pressing toward the high zone around 28165-28180.",
+    "4pm_yellow": "Closed after a late pullback, above the open but below the afternoon highs."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "morning_drive_lunch_flush_afternoon_high_late_pullback",
+    "open_type": "gap_up_drive",
+    "lunch_behavior": "range_then_flush_and_reclaim",
+    "afternoon_drive": "steady_upside_continuation_into_high_zone",
+    "goat_time": "09:35",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "open_low_demand_and_late_high_supply_respected",
+    "banks_broken": "morning_supply_broken_during_open_drive"
+  },
+  "takeaway": "Bullish RTH trend day with the best opportunity in the opening drive, followed by lunch compression, afternoon continuation, and a late rejection from supply.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-05-05T09:30",
+    "end_et": "2026-05-05T16:00",
+    "open": 27988,
+    "close": 28135,
+    "hod": 28189,
+    "lod": 27970.5,
+    "span_pts": 218.5,
+    "net_pts": 147,
+    "net_pct": 0.5252,
+    "first_bar_ts": 1777987800,
+    "last_bar_ts": 1778011140
+  }
+}

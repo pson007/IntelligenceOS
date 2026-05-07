@@ -1,0 +1,59 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-01",
+  "dow": "Fri",
+  "stage": "reconciliation",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-01.png",
+  "forecasts_graded": [
+    "pre_session"
+  ],
+  "ground_truth_profile": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-01.json",
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-06T19:47:22",
+  "raw_response": "ACTUAL OUTCOME\n\nOpened ~27,632.50, closed 27,836.75, HOD 27,917.50, LOD 27,615.00: strong gap-up/opening-drive session into late-morning highs, then broad high-balance rotation and a late fade that still preserved a bullish close.\n\nSTAGE GRADES\npre_session_forecast\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 actual close missed high end by ~10.85 pts\n\nHOD captured: \u2713\n\nLOD captured: \u2717 \u2014 forecast expected a dip toward 27,540\u201327,560; actual LOD held much higher at 27,615\n\nTags correct: direction up, goat_direction up, close_near_extreme yes_closer_to_HOD\n\nTags wrong: open_dip_then_reclaim, stop_hunt_reclaim_then_afternoon_grind, bullish_hold_above_reclaim_zone, controlled_upside_grind\n\nBias profitable if traded: \u2713\n\nInvalidation check: Correct. The named invalidations did not fire: price did not accept below 27,560, was not below VWAP after 10:15, and did not fail 27,625 back below 27,590.\n\nOverall score: 5/7\n\nFORECAST EVOLUTION\n\nOnly the pre-session forecast was provided. It caught the key directional signal and the early GOAT long correctly, but misread the path: this was not a stop-hunt/dip-reclaim day. It was a gap-up drive that already had buyers in control from the open, followed by balance below late-morning supply.\n\nLESSONS\n\nWhen MNQ gaps above the reclaim shelf and immediately accepts higher, switch the open tag from open_dip_then_reclaim to gap_up_drive; do not wait for a dip that never comes.\n\nIf the first 15 minutes expands more than 150 pts upward without losing VWAP, prioritize opening-drive continuation over \"buy dips on reclaim.\"\n\nFor strong opening drives, separate morning opportunity from afternoon structure: after HOD forms before noon, tag the rest as high_balance_rotation unless price keeps making clean impulse highs.\n\nDo not project LOD back into overnight demand when RTH opens above it and never tests it; raise the LOD band to the first defended RTH pullback zone.\n\nKeep controlled_upside_grind only when afternoon price steadily expands; if price rotates below supply and fades late, use failed_late_push_then_fade.\n\nJSON\n{\n  \"actual_summary\": {\n    \"direction\": \"up\",\n    \"open_approx\": 27632.5,\n    \"close_approx\": 27836.75,\n    \"hod_approx\": 27917.5,\n    \"lod_approx\": 27615.0,\n    \"net_range_pct_open_to_close\": 0.7392,\n    \"intraday_span_pts\": 302.5\n  },\n  \"grades\": {\n    \"pre_session_forecast\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 10.85,\n      \"hod_in_band\": true,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 55.0,\n      \"tags_correct\": [\n        \"direction: up\",\n        \"goat_direction: up\",\n        \"close_near_extreme: yes_closer_to_HOD\"\n      ],\n      \"tags_wrong\": [\n        \"structure: stop_hunt_reclaim_then_afternoon_grind\",\n        \"open_type: open_dip_then_reclaim\",\n        \"lunch_behavior: bullish_hold_above_reclaim_zone\",\n        \"afternoon_drive: controlled_upside_grind\"\n      ],\n      \"bias_profitable\": true,\n      \"invalidation_correct\": true,\n      \"overall_score\": 5,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"The forecast expected a dip/reclaim and afternoon grind, but the actual session was an immediate gap-up opening drive followed by high-balance rotation and a late fade.\"\n    }\n  },\n  \"evolution\": \"Only the pre-session forecast was available. It caught the bullish direction and opening long opportunity, but did not identify the true session structure: immediate gap-up drive into late-morning HOD, then rotational balance below supply.\",\n  \"summary\": \"The forecast was directionally useful and tactically profitable, with invalidation logic behaving correctly. Its main error was path classification: it looked for stop-hunt/reclaim mechanics instead of recognizing clean opening-drive acceptance.\",\n  \"lessons\": [\n    \"When MNQ gaps above the reclaim shelf and immediately accepts higher, switch the open tag from open_dip_then_reclaim to gap_up_drive.\",\n    \"If the first 15 minutes expands more than 150 pts upward without losing VWAP, prioritize opening-drive continuation over buy-dips-on-reclaim.\",\n    \"After a strong morning HOD forms before noon, classify the afternoon as high-balance rotation unless price keeps making clean impulse highs.\",\n    \"Do not anchor LOD to overnight demand if RTH opens above it and never tests it; raise the LOD band to the first defended RTH pullback zone.\",\n    \"Use failed_late_push_then_fade when afternoon price rotates below supply and fades into close instead of expanding steadily.\"\n  ]\n}",
+  "actual_summary": {
+    "direction": "up",
+    "open_approx": 27632.5,
+    "close_approx": 27836.75,
+    "hod_approx": 27917.5,
+    "lod_approx": 27615.0,
+    "net_range_pct_open_to_close": 0.7392,
+    "intraday_span_pts": 302.5
+  },
+  "grades": {
+    "pre_session_forecast": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 10.85,
+      "hod_in_band": true,
+      "lod_in_band": false,
+      "lod_miss_pts": 55.0,
+      "tags_correct": [
+        "direction: up",
+        "goat_direction: up",
+        "close_near_extreme: yes_closer_to_HOD"
+      ],
+      "tags_wrong": [
+        "structure: stop_hunt_reclaim_then_afternoon_grind",
+        "open_type: open_dip_then_reclaim",
+        "lunch_behavior: bullish_hold_above_reclaim_zone",
+        "afternoon_drive: controlled_upside_grind"
+      ],
+      "bias_profitable": true,
+      "invalidation_correct": true,
+      "overall_score": 5,
+      "overall_max": 7,
+      "biggest_miss": "The forecast expected a dip/reclaim and afternoon grind, but the actual session was an immediate gap-up opening drive followed by high-balance rotation and a late fade."
+    }
+  },
+  "evolution": "Only the pre-session forecast was available. It caught the bullish direction and opening long opportunity, but did not identify the true session structure: immediate gap-up drive into late-morning HOD, then rotational balance below supply.",
+  "summary": "The forecast was directionally useful and tactically profitable, with invalidation logic behaving correctly. Its main error was path classification: it looked for stop-hunt/reclaim mechanics instead of recognizing clean opening-drive acceptance.",
+  "lessons": [
+    "When MNQ gaps above the reclaim shelf and immediately accepts higher, switch the open tag from open_dip_then_reclaim to gap_up_drive.",
+    "If the first 15 minutes expands more than 150 pts upward without losing VWAP, prioritize opening-drive continuation over buy-dips-on-reclaim.",
+    "After a strong morning HOD forms before noon, classify the afternoon as high-balance rotation unless price keeps making clean impulse highs.",
+    "Do not anchor LOD to overnight demand if RTH opens above it and never tests it; raise the LOD band to the first defended RTH pullback zone.",
+    "Use failed_late_push_then_fade when afternoon price rotates below supply and fades into close instead of expanding steadily."
+  ],
+  "parsed_structured": true
+}

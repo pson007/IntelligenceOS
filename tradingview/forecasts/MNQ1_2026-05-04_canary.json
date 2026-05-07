@@ -1,0 +1,84 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-04",
+  "dow": "Mon",
+  "made_at": "2026-05-06T19:43:48",
+  "thesis_summary": "Long bias remains actionable only if the open absorbs the gap, holds the 28500 area, and reclaims VWAP by mid-morning.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "overnight_posture",
+      "label": "Opening posture holds above upper demand",
+      "rationale": "The long thesis needs the large overnight advance to avoid immediate acceptance back below the breakout base.",
+      "check_type": "price_level",
+      "evaluate_at": "09:30",
+      "evaluate_after": "2026-05-04T09:30:00-0400",
+      "evaluate_before": "2026-05-04T09:35:00-0400",
+      "params": {
+        "price_above": 28500
+      },
+      "weight": 2
+    },
+    {
+      "id": "open_structure",
+      "label": "Open prints dip then reclaim or controlled rotation",
+      "rationale": "Chasing a gap is lower quality; the forecast depends on absorption and reclaim, not pure continuation.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-05-04T09:35:00-0400",
+      "evaluate_before": "2026-05-04T09:40:00-0400",
+      "params": {
+        "expected": "dip_then_reclaim",
+        "tolerated": [
+          "dip_then_reclaim",
+          "rotational_open",
+          "inside_bar_open"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "first_30_low",
+      "label": "First 30 minutes avoid deeper liquidation",
+      "rationale": "A break below 28450 would suggest the overnight markup is being sold, not absorbed.",
+      "check_type": "price_level_window",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-05-04T10:00:00-0400",
+      "evaluate_before": "2026-05-04T10:05:00-0400",
+      "params": {
+        "window": "09:30-10:00",
+        "low_of_window_above": 28450
+      },
+      "weight": 2
+    },
+    {
+      "id": "vwap_reclaim",
+      "label": "Mid-morning close above VWAP",
+      "rationale": "Reclaim-trend days require price to recover VWAP before lunch; otherwise the day becomes fade/balance.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-05-04T10:30:00-0400",
+      "evaluate_before": "2026-05-04T10:35:00-0400",
+      "params": {
+        "side": "above"
+      },
+      "weight": 2
+    },
+    {
+      "id": "midday_acceptance",
+      "label": "Price accepts above 28620 by noon",
+      "rationale": "Holding above 28620 confirms the morning dip was absorption and keeps upper-range close odds alive.",
+      "check_type": "price_level",
+      "evaluate_at": "12:00",
+      "evaluate_after": "2026-05-04T12:00:00-0400",
+      "evaluate_before": "2026-05-04T12:05:00-0400",
+      "params": {
+        "price_above": 28620
+      },
+      "weight": 1
+    }
+  ]
+}

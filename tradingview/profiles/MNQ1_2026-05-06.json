@@ -1,0 +1,146 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-06",
+  "dow": "Wed",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-06T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-06.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-06T20:15:28-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "early_flush_reclaim_trend_up_close",
+    "open_approx": 28420.0,
+    "close_approx": 28710.0,
+    "hod_approx": 28725.0,
+    "lod_approx": 28370.0,
+    "net_range_pts_open_to_close": 290,
+    "net_range_pct_open_to_close": 1.02,
+    "intraday_span_pts": 355,
+    "shape_sentence": "Bullish trend day: early dip, sharp morning reclaim, midday consolidation, then steady afternoon continuation into a near-HOD close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 28420.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:38",
+      "price_approx": 28370.0,
+      "type": "lod_bullish_reversal_base"
+    },
+    {
+      "time_et": "10:05",
+      "price_approx": 28420.0,
+      "type": "higher_low_reclaim"
+    },
+    {
+      "time_et": "10:35",
+      "price_approx": 28535.0,
+      "type": "morning_breakout_leg_high"
+    },
+    {
+      "time_et": "11:25",
+      "price_approx": 28580.0,
+      "type": "late_morning_high"
+    },
+    {
+      "time_et": "13:00",
+      "price_approx": 28525.0,
+      "type": "midday_pullback_higher_low"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 28605.0,
+      "type": "afternoon_continuation_trigger"
+    },
+    {
+      "time_et": "14:35",
+      "price_approx": 28660.0,
+      "type": "breakout_above_midday_range"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 28680.0,
+      "type": "late_session_pullback_held"
+    },
+    {
+      "time_et": "15:58",
+      "price_approx": 28725.0,
+      "type": "hod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 28710.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:15",
+      "direction": "up",
+      "note": "Cleanest expansion after the 10:00 reclaim, lifting from roughly 28,420 into 28,530+."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots mostly marked shallow pauses; early downside failed and later red signals did not create durable reversal."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots aligned with defended higher lows, especially the early reversal base and the 13:00 midday pullback."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 28,500\u201328,535 broke in the morning; 28,580\u201328,600 capped briefly before being cleared after 14:00."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 28,370\u201328,420 was respected early; higher demand near 28,525\u201328,550 held through lunch."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Recovering from the early low and beginning the upside reclaim near 28,410\u201328,430.",
+    "12pm_red": "Bullish but consolidating near 28,560\u201328,580 after the morning drive.",
+    "2pm_green": "Pressing upward from the 13:00 higher low and starting the afternoon continuation near 28,600.",
+    "4pm_yellow": "Closed near the session high around 28,710 after a late push into 28,725."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "early_flush_reclaim_trend_up_close",
+    "open_type": "rotational_open_then_drive",
+    "lunch_behavior": "sideways_high_base_with_higher_low",
+    "afternoon_drive": "steady_stair_step_continuation",
+    "goat_time": "10:15",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "early_demand_and_midday_higher_low_demand",
+    "banks_broken": "morning_supply_then_afternoon_upper_supply"
+  },
+  "takeaway": "Bullish trend day with early downside rejection, morning reclaim, lunch higher-low base, and sustained afternoon continuation into a near-HOD close.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-05-06T09:30",
+    "end_et": "2026-05-06T16:00",
+    "open": 28389.25,
+    "close": 28710.5,
+    "hod": 28725.75,
+    "lod": 28336.5,
+    "span_pts": 389.25,
+    "net_pts": 321.25,
+    "net_pct": 1.1316,
+    "first_bar_ts": 1778074200,
+    "last_bar_ts": 1778097540
+  }
+}

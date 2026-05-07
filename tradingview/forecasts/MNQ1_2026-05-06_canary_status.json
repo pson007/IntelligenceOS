@@ -1,0 +1,77 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-06",
+  "evaluated_at": "2026-05-06T11:02:27-0400",
+  "aggregate": {
+    "state": "partial",
+    "recommended_action": "trade_smallest",
+    "pass_weight": 5,
+    "fail_weight": 0,
+    "pending_weight": 1,
+    "evaluate_failed_weight": 2,
+    "snoozed_weight": 0,
+    "total_weight": 8,
+    "pass_ratio": 1.0,
+    "failing_check_ids": []
+  },
+  "results": [
+    {
+      "id": "gap_hold",
+      "status": "pass",
+      "evidence": {
+        "actual_low": 28336.5,
+        "threshold": 28220,
+        "comparison": ">",
+        "window": "09:30-10:00",
+        "n_bars": 29
+      },
+      "evaluated_at": "2026-05-06T11:02:27-0400"
+    },
+    {
+      "id": "open_structure",
+      "status": "pass",
+      "evidence": {
+        "observed": "dip_then_reclaim",
+        "expected": "dip_then_reclaim",
+        "tolerated": [
+          "dip_then_reclaim",
+          "rotational_open",
+          "gap_and_go"
+        ],
+        "n_bars": 5
+      },
+      "evaluated_at": "2026-05-06T11:02:27-0400"
+    },
+    {
+      "id": "ten_oclock_reclaim",
+      "status": "pass",
+      "evidence": {
+        "close": 28541.75,
+        "threshold": 28300,
+        "comparison": ">",
+        "bar_time_epoch": 1778079720
+      },
+      "evaluated_at": "2026-05-06T11:02:27-0400"
+    },
+    {
+      "id": "vwap_control",
+      "status": "evaluate_failed",
+      "evidence": {
+        "reason": "no VWAP indicator on chart or value unavailable"
+      },
+      "evaluated_at": "2026-05-06T11:02:27-0400"
+    },
+    {
+      "id": "lunch_base",
+      "status": "not_yet_evaluable",
+      "evidence": {
+        "evaluate_after": "2026-05-06T12:00:00-0400",
+        "now": "2026-05-06T11:02:27-0400"
+      },
+      "evaluated_at": "2026-05-06T11:02:27-0400"
+    }
+  ],
+  "auto_pause_engaged": false,
+  "auto_pause_payload": null,
+  "canary_summary": "The long bias is valid only if the gap holds above pre-session demand and any early flush quickly reclaims 28300/VWAP."
+}

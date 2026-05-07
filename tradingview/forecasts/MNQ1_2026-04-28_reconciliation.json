@@ -1,0 +1,100 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-04-28",
+  "dow": "Tue",
+  "stage": "reconciliation",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-04-28.png",
+  "forecasts_graded": [
+    "pre_session",
+    "1000",
+    "invalidation_1039"
+  ],
+  "ground_truth_profile": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-04-28.json",
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-06T19:45:25",
+  "raw_response": "ACTUAL OUTCOME\n\nOpen 27,161.25 / Close 27,169.50 / HOD 27,250.75 / LOD 27,006.25. Shape: early failed high, morning liquidation into late-morning lows, then steady afternoon reclaim that closed slightly green but not near HOD. \n\nPasted text (3)\n\nSTAGE GRADES\npre_session_forecast\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 missed by ~39.8 pts below implied +0.20% lower band\n\nHOD captured: \u2717\n\nLOD captured: \u2717 \u2014 missed by ~123.8 pts below 27,130 demand thesis\n\nTags correct: direction up, rotational-to-bullish reclaim, defended demand theme, afternoon recovery\n\nTags wrong: open_dip_then_reclaim, stop_hunt_reclaim_then_afternoon_grind, bullish_hold_above_demand, goat_direction up, close_near_extreme yes\n\nBias profitable if traded: \u2717\n\nInvalidation check: \u2713 \u2014 failed 27,210 reclaim / VWAP rejection correctly invalidated the original long plan\n\nOverall score: 3/7\n\nF1\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 missed by ~190.5 pts below 27,360 lower band\n\nHOD captured: \u2717 \u2014 missed by ~149.3 pts below 27,400 lower band\n\nLOD captured: \u2717 \u2014 missed by ~28.8 pts below 27,035 lower band\n\nTags correct: direction up, failed_breakdown/value_reclaim risk, supply rejection risk\n\nTags wrong: stop-hunt-reclaim trend-up, lunch hold above reclaim base, upside continuation, close near upper third/HOD\n\nBias profitable if traded: \u2717\n\nInvalidation check: \u2717 \u2014 stop/invalid zone was too tight; price undercut 27,035 before the real reversal\n\nOverall score: 3/7\n\ninvalidation_1039\n\nClassification: \u2713 \u2014 REVERSAL short was correct after the failed reclaim/VWAP rejection\n\nLevel quality: \u2713 \u2014 27,069\u201327,090 failed-retest short, stop 27,130, target 27,020 was workable\n\nTarget before stop: \u2713 \u2014 27,020/27,000 area traded before the afternoon reclaim\n\nRevised-invalidation check: \u2713 \u2014 reclaim above 27,090/27,130 came later, after target opportunity\n\nBias profitable if traded: \u2713\n\nOverall score: 5/5\n\nFORECAST EVOLUTION\n\nPre-session got the final green direction but underestimated the morning liquidation and overcalled close strength. F1 saw the failed-breakdown template but still forced an upside trend-day projection, badly overshooting close/HOD and placing the LOD band too high. The 10:39 pivot caught the first truly tradable signal: failed reclaim \u2192 VWAP rejection \u2192 short continuation into the eventual LOD.\n\nLESSONS\n\nWhen 27,210 fails before 10:00 and VWAP rejects, downgrade any \"close near HOD\" forecast immediately; this day closed green but ~81 pts below HOD.\n\nAt 10:00, do not anchor LOD to the first flush low. Keep room for a second sweep; actual LOD was 27,006.25, ~29 pts below F1's lower LOD band.\n\nSeparate final direction from executable bias. The day closed up, but early long plans were stopped before the valid afternoon recovery.\n\nAfter a morning high fails near supply, cap HOD expectations unless price reclaims and holds above that high with expanding volume.\n\nLabel this as early_failed_high_late_reclaim, not clean stop-hunt-reclaim trend-up; the key feature was failed morning supply followed by late recovery.\n\nJSON\n{\n  \"actual_summary\": {\n    \"direction\": \"up\",\n    \"open_approx\": 27161.25,\n    \"close_approx\": 27169.5,\n    \"hod_approx\": 27250.75,\n    \"lod_approx\": 27006.25,\n    \"net_range_pct_open_to_close\": 0.0304,\n    \"intraday_span_pts\": 244.5\n  },\n  \"grades\": {\n    \"pre_session_forecast\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 39.8,\n      \"hod_in_band\": false,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 123.75,\n      \"tags_correct\": [\n        \"direction up\",\n        \"rotational-to-bullish reclaim\",\n        \"defended demand theme\",\n        \"afternoon recovery\"\n      ],\n      \"tags_wrong\": [\n        \"open_dip_then_reclaim\",\n        \"stop_hunt_reclaim_then_afternoon_grind\",\n        \"bullish_hold_above_demand\",\n        \"goat_direction up\",\n        \"close_near_extreme yes\"\n      ],\n      \"bias_profitable\": false,\n      \"invalidation_correct\": true,\n      \"overall_score\": 3,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"Correct final direction but invalidated early; underestimated liquidation below 27130 and overestimated close strength.\"\n    },\n    \"F1\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 190.5,\n      \"hod_in_band\": false,\n      \"hod_miss_pts\": 149.25,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 28.75,\n      \"tags_correct\": [\n        \"direction up\",\n        \"failed_breakdown/value_reclaim risk\",\n        \"supply rejection risk\"\n      ],\n      \"tags_wrong\": [\n        \"stop-hunt-reclaim trend-up\",\n        \"lunch hold above reclaim base\",\n        \"upside continuation\",\n        \"close near upper third/HOD\"\n      ],\n      \"bias_profitable\": false,\n      \"invalidation_correct\": false,\n      \"overall_score\": 3,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"Overprojected trend-day upside and kept the LOD band too high despite failed supply and weak reclaim.\"\n    },\n    \"invalidation_1039\": {\n      \"classification_correct\": true,\n      \"level_quality\": true,\n      \"target_before_stop\": true,\n      \"reclaim_check\": null,\n      \"flat_discipline\": null,\n      \"revised_invalidation_correct\": true,\n      \"bias_profitable\": true,\n      \"overall_score\": 5,\n      \"overall_max\": 5,\n      \"biggest_miss\": \"No major miss; the short was tactical, not a full-day bearish call.\"\n    }\n  },\n  \"evolution\": \"Forecasts improved tactically only after the 10:39 invalidation. Pre-session and F1 were directionally right on the final close but wrong on path, close strength, HOD, and tradable long execution. The pivot caught the real actionable signal first: failed reclaim, VWAP rejection, and downside continuation into the late-morning LOD.\",\n  \"summary\": \"The day reconciles as a green close after a bearish morning failure, not as a clean bullish trend day. The best forecast was the 10:39 pivot because it respected the broken reclaim and produced a workable short before the afternoon recovery.\",\n  \"lessons\": [\n    \"When 27210 fails before 10:00 and VWAP rejects, downgrade any close-near-HOD forecast immediately.\",\n    \"At 10:00, keep the LOD band wide enough for a second sweep below the first flush low.\",\n    \"Separate final direction from executable bias; a green close can still stop out early long plans.\",\n    \"After a morning high fails near supply, cap HOD expectations unless price reclaims that high with expanding volume.\",\n    \"Use early_failed_high_late_reclaim for this structure, not clean stop_hunt_reclaim trend-up.\"\n  ]\n}",
+  "actual_summary": {
+    "direction": "up",
+    "open_approx": 27161.25,
+    "close_approx": 27169.5,
+    "hod_approx": 27250.75,
+    "lod_approx": 27006.25,
+    "net_range_pct_open_to_close": 0.0304,
+    "intraday_span_pts": 244.5
+  },
+  "grades": {
+    "pre_session_forecast": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 39.8,
+      "hod_in_band": false,
+      "lod_in_band": false,
+      "lod_miss_pts": 123.75,
+      "tags_correct": [
+        "direction up",
+        "rotational-to-bullish reclaim",
+        "defended demand theme",
+        "afternoon recovery"
+      ],
+      "tags_wrong": [
+        "open_dip_then_reclaim",
+        "stop_hunt_reclaim_then_afternoon_grind",
+        "bullish_hold_above_demand",
+        "goat_direction up",
+        "close_near_extreme yes"
+      ],
+      "bias_profitable": false,
+      "invalidation_correct": true,
+      "overall_score": 3,
+      "overall_max": 7,
+      "biggest_miss": "Correct final direction but invalidated early; underestimated liquidation below 27130 and overestimated close strength."
+    },
+    "F1": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 190.5,
+      "hod_in_band": false,
+      "hod_miss_pts": 149.25,
+      "lod_in_band": false,
+      "lod_miss_pts": 28.75,
+      "tags_correct": [
+        "direction up",
+        "failed_breakdown/value_reclaim risk",
+        "supply rejection risk"
+      ],
+      "tags_wrong": [
+        "stop-hunt-reclaim trend-up",
+        "lunch hold above reclaim base",
+        "upside continuation",
+        "close near upper third/HOD"
+      ],
+      "bias_profitable": false,
+      "invalidation_correct": false,
+      "overall_score": 3,
+      "overall_max": 7,
+      "biggest_miss": "Overprojected trend-day upside and kept the LOD band too high despite failed supply and weak reclaim."
+    },
+    "invalidation_1039": {
+      "classification_correct": true,
+      "level_quality": true,
+      "target_before_stop": true,
+      "reclaim_check": null,
+      "flat_discipline": null,
+      "revised_invalidation_correct": true,
+      "bias_profitable": true,
+      "overall_score": 5,
+      "overall_max": 5,
+      "biggest_miss": "No major miss; the short was tactical, not a full-day bearish call."
+    }
+  },
+  "evolution": "Forecasts improved tactically only after the 10:39 invalidation. Pre-session and F1 were directionally right on the final close but wrong on path, close strength, HOD, and tradable long execution. The pivot caught the real actionable signal first: failed reclaim, VWAP rejection, and downside continuation into the late-morning LOD.",
+  "summary": "The day reconciles as a green close after a bearish morning failure, not as a clean bullish trend day. The best forecast was the 10:39 pivot because it respected the broken reclaim and produced a workable short before the afternoon recovery.",
+  "lessons": [
+    "When 27210 fails before 10:00 and VWAP rejects, downgrade any close-near-HOD forecast immediately.",
+    "At 10:00, keep the LOD band wide enough for a second sweep below the first flush low.",
+    "Separate final direction from executable bias; a green close can still stop out early long plans.",
+    "After a morning high fails near supply, cap HOD expectations unless price reclaims that high with expanding volume.",
+    "Use early_failed_high_late_reclaim for this structure, not clean stop_hunt_reclaim trend-up."
+  ],
+  "parsed_structured": true
+}
