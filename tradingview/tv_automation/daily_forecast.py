@@ -41,7 +41,7 @@ _ET = ZoneInfo("America/New_York")
 
 from playwright.async_api import Page
 
-from . import replay, replay_api
+from . import layout_guard, replay, replay_api
 from . import lessons as lessons_mod
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
@@ -587,6 +587,12 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
     skipped_stages: list[dict] = []
     saved_stages: list[dict] = []
     async with chart_session() as (_ctx, page):
+        # Fail fast (~5s) when the active chart is not Money Print —
+        # otherwise the bare `/chart/` URL has no warmed history and
+        # `replay.navigate_to` hangs at `replay.history_loaded
+        # {batches: 0}` indefinitely. Same vulnerability that ate ~1h
+        # in `daily_profile` on 2026-05-05.
+        await layout_guard.assert_money_print(page)
         landed = await replay_api.set_symbol_in_place(
             page, symbol=_symbol_for_api(symbol), interval="1",
         )

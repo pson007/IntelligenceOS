@@ -1209,6 +1209,11 @@ async def analyze_apply_pine(payload: dict) -> dict:
     `pine/generated/` directory, never an arbitrary file.
     """
     _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
     p = payload or {}
     path = (p.get("path") or "").strip()
     if not path:
@@ -1232,6 +1237,12 @@ async def analyze_apply_pine(payload: dict) -> dict:
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
     cmd = [python_exe, str(apply_script), str(resolved)]
+    global _apply_in_flight
+    _apply_in_flight = {
+        "started_at": time.time(),
+        "source": "analyze_apply_pine",
+        "path": str(resolved),
+    }
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -1311,6 +1322,8 @@ async def analyze_apply_pine(payload: dict) -> dict:
                 "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
+    finally:
+        _apply_in_flight = None
 
 
 # ---------------------------------------------------------------------------
@@ -1720,6 +1733,11 @@ async def sketchpad_apply(symbol: str, date: str) -> dict:
 
     Mirrors `forecast_apply` — same subprocess shape, same timeout."""
     _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
     if not _SKETCHPAD_KEY_RX.match(symbol) or not _SKETCHPAD_DATE_RX.match(date):
         raise HTTPException(400, "invalid params")
 
@@ -1741,6 +1759,12 @@ async def sketchpad_apply(symbol: str, date: str) -> dict:
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
     cmd = [python_exe, str(apply_script), str(pine_path)]
+    global _apply_in_flight
+    _apply_in_flight = {
+        "started_at": time.time(),
+        "source": "sketchpad_apply",
+        "symbol": symbol, "date": date,
+    }
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -1787,6 +1811,8 @@ async def sketchpad_apply(symbol: str, date: str) -> dict:
                 "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
+    finally:
+        _apply_in_flight = None
 
 
 # ---------------------------------------------------------------------------
@@ -2495,6 +2521,11 @@ async def forecast_pivot_apply(
     apply_pine.py subprocess. Long-running (~30-60s). Applies to
     whatever layout is currently active."""
     _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {
+            "detail": f"another {busy['kind']} run is in progress", **busy,
+        })
     if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date):
         raise HTTPException(400, "invalid params")
     pivot_jf = _latest_pivot_path(symbol, date)
@@ -2519,6 +2550,12 @@ async def forecast_pivot_apply(
     venv_python = Path(__file__).parent / ".venv" / "bin" / "python"
     python_exe = str(venv_python) if venv_python.exists() else "python"
     cmd = [python_exe, str(apply_script), str(pine_path)]
+    global _apply_in_flight
+    _apply_in_flight = {
+        "started_at": time.time(),
+        "source": "pivot_apply",
+        "symbol": symbol, "date": date, "stage": stage,
+    }
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -2562,6 +2599,8 @@ async def forecast_pivot_apply(
                 "error": "apply_pine timeout (120s)"}
     except Exception as e:
         raise HTTPException(500, f"apply_pine failed: {type(e).__name__}: {e}")
+    finally:
+        _apply_in_flight = None
 
 
 @app.post("/api/forecasts/pivot")
