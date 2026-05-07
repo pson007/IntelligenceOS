@@ -158,8 +158,15 @@ Generated from `forecast_pine.py::PINE_TEMPLATE`. Current ~635 lines. Structure:
 - `hour` and `minute` return the bar's time in **exchange timezone** by default.
   For CME symbols like MNQ, that's `America/Chicago`. A check like `hour == 9`
   fires at 10:00 ET, not 09:30 ET — silently off by one hour.
+- **Same gotcha applies to** `year`, `month`, `dayofmonth`, `dayofweek`,
+  `weekofyear`, `time_close`, `time_tradingday`, `second`. ALL bare time-component
+  identifiers default to exchange tz. The 2026-05-05 evening `dayofmonth` bug
+  (forecast indicator rendered nothing for ~1h each night because exchange day
+  N+1 hadn't arrived yet) shipped because the earlier sweep only covered
+  `hour`/`minute`. Use `year(time, "America/New_York")` etc. for all of them.
 - **Fix**: always compare `time` against explicit `timestamp("America/New_York", ...)`
-  anchors. Never use raw `hour`/`minute` for wall-clock gates.
+  anchors for wall-clock gates, and always pass `(time, "America/New_York")` to
+  the time-component functions when reading the date components themselves.
 
 ### Variable scoping in functions
 
