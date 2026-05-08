@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
@@ -2820,6 +2820,289 @@ async def forecast_live_stage_start(payload: dict) -> dict:
             from tv_automation.live_forecast import run_live_stage
             result = await run_live_stage(
                 stage, symbol=symbol, date_str=date, force=force,
+            )
+            _forecast_run_tasks[task_id]["state"] = "done"
+            _forecast_run_tasks[task_id]["result"] = result
+        except Exception as e:
+            _forecast_run_tasks[task_id]["state"] = "failed"
+            _forecast_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _forecast_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_forecast_run == task_id:
+                _active_forecast_run = None
+
+    _active_forecast_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+# ---------------------------------------------------------------------------
+# Manual screenshot uploads — bypass automated capture for any of the four
+# analysis pipelines (Trade single-TF, Trade deep, pre-session forecast,
+# live F1/F2/F3 forecast). Each pipeline still runs through the same
+# LLM-call + parse + save core; only the chart-capture step is replaced
+# with a file the operator picked from disk.
+# ---------------------------------------------------------------------------
+
+_UPLOADS_ROOT = (Path.home() / "Desktop" / "TradingView" / "uploads").resolve()
+_MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB ceiling per file
+
+
+async def _save_upload(file: UploadFile, kind: str) -> Path:
+    """Persist an UploadFile to `~/Desktop/TradingView/uploads/` and
+    return the path. Validates content-type prefix and total size; on
+    violation raises HTTPException so the caller's task handler doesn't
+    create a half-state task entry."""
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(400, f"file must be an image; got content-type {file.content_type!r}")
+    body = await file.read()
+    if not body:
+        raise HTTPException(400, "uploaded file is empty")
+    if len(body) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(413, f"file exceeds {_MAX_UPLOAD_BYTES // (1024*1024)} MB ceiling")
+    _UPLOADS_ROOT.mkdir(parents=True, exist_ok=True)
+    ext = ".png"
+    if file.filename and "." in file.filename:
+        candidate = "." + file.filename.rsplit(".", 1)[1].lower()
+        if candidate in {".png", ".jpg", ".jpeg", ".webp"}:
+            ext = candidate
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = _UPLOADS_ROOT / f"upload_{kind}_{ts}{ext}"
+    path.write_bytes(body)
+    audit.log("upload.saved", kind=kind, path=str(path), bytes=len(body))
+    return path
+
+
+@app.post("/api/analyze/upload")
+async def analyze_upload(
+    file: UploadFile = File(...),
+    symbol: str = Form(...),
+    timeframe: str = Form(""),
+    provider: str = Form("chatgpt_web"),
+    model: str = Form(""),
+) -> dict:
+    """Single-TF analyze against an uploaded screenshot. Same return
+    shape as /api/analyze — kicks off a background task, returns
+    {task_id, request_id}, poll /api/analyze/{task_id}."""
+    global _active_analyze_task
+    if not symbol.strip():
+        raise HTTPException(400, "symbol required")
+    _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {"detail": f"another {busy['kind']} run is in progress", **busy})
+
+    image_path = await _save_upload(file, "analyze")
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+    _analyze_tasks[task_id] = {
+        "state": "running", "request_id": request_id,
+        "started_at": time.time(),
+        "symbol": symbol.strip(), "timeframe": timeframe.strip() or None,
+        "source": "upload", "image_path": str(image_path),
+    }
+
+    async def runner():
+        global _active_analyze_task
+        try:
+            kwargs = {
+                "provider": provider or "chatgpt_web",
+                "model": model.strip() or None,
+                "image_path": str(image_path),
+            }
+            if timeframe.strip():
+                kwargs["timeframe"] = timeframe.strip()
+            result = await analyze_mtf_mod.analyze_chart(symbol.strip(), **kwargs)
+            _analyze_tasks[task_id]["state"] = "done"
+            _analyze_tasks[task_id]["result"] = result
+        except asyncio.CancelledError:
+            _analyze_tasks[task_id]["state"] = "cancelled"
+            raise
+        except Exception as e:
+            _analyze_tasks[task_id]["state"] = "failed"
+            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _analyze_tasks[task_id]["finished_at"] = time.time()
+            if _active_analyze_task == task_id:
+                _active_analyze_task = None
+
+    _active_analyze_task = task_id
+    _analyze_tasks[task_id]["_task"] = asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.post("/api/analyze/deep/upload")
+async def analyze_deep_upload(
+    files: list[UploadFile] = File(...),
+    timeframes: str = Form(...),  # comma-separated, paired with files in order
+    symbol: str = Form(...),
+    provider: str = Form("chatgpt_web"),
+    model: str = Form(""),
+) -> dict:
+    """Deep analyze against N uploaded screenshots. `timeframes` is a
+    comma-separated string (e.g. "5m,15m,1h,4h,1D") whose order matches
+    the file upload order. Min 2 files; deep prompt assumes multi-image."""
+    global _active_analyze_task
+    if not symbol.strip():
+        raise HTTPException(400, "symbol required")
+    tfs = [t.strip() for t in timeframes.split(",") if t.strip()]
+    if len(tfs) != len(files):
+        raise HTTPException(400, f"timeframe count ({len(tfs)}) != file count ({len(files)})")
+    if len(files) < 2:
+        raise HTTPException(400, "deep analyze needs at least 2 timeframes")
+    _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {"detail": f"another {busy['kind']} run is in progress", **busy})
+
+    saved: list[dict] = []
+    for f, tf in zip(files, tfs):
+        path = await _save_upload(f, f"deep_{tf}")
+        saved.append({"tf": tf, "path": str(path)})
+
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+    _analyze_tasks[task_id] = {
+        "state": "running", "request_id": request_id,
+        "started_at": time.time(), "mode": "deep",
+        "symbol": symbol.strip(), "timeframes": tfs,
+        "source": "upload",
+    }
+
+    async def runner():
+        global _active_analyze_task
+        try:
+            result = await analyze_mtf_mod.analyze_deep(
+                symbol.strip(),
+                provider=provider or "chatgpt_web",
+                model=model.strip() or None,
+                uploaded_images=saved,
+            )
+            _analyze_tasks[task_id]["state"] = "done"
+            _analyze_tasks[task_id]["result"] = result
+        except asyncio.CancelledError:
+            _analyze_tasks[task_id]["state"] = "cancelled"
+            raise
+        except Exception as e:
+            _analyze_tasks[task_id]["state"] = "failed"
+            _analyze_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _analyze_tasks[task_id]["finished_at"] = time.time()
+            if _active_analyze_task == task_id:
+                _active_analyze_task = None
+
+    _active_analyze_task = task_id
+    _analyze_tasks[task_id]["_task"] = asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.post("/api/forecasts/pre_session/upload")
+async def forecast_pre_session_upload(
+    file: UploadFile = File(...),
+    date: str = Form(""),
+    symbol: str = Form("MNQ1"),
+) -> dict:
+    """Pre-session forecast against an uploaded screenshot. Same return
+    shape as /api/forecasts/pre_session — poll /api/forecasts/runs/{task_id}.
+    Date defaults to today."""
+    global _active_forecast_run
+    date = date.strip() or datetime.now().strftime("%Y-%m-%d")
+    symbol = symbol.strip() or "MNQ1"
+    if not _PROFILE_DATE_RX.match(date):
+        raise HTTPException(400, "date must be YYYY-MM-DD")
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+    _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {"detail": f"another {busy['kind']} run is in progress", **busy})
+
+    image_path = await _save_upload(file, "pre_session")
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+    _forecast_run_tasks[task_id] = {
+        "state": "running", "request_id": request_id,
+        "started_at": time.time(),
+        "date": date, "symbol": symbol, "kind": "pre_session",
+        "source": "upload", "image_path": str(image_path),
+    }
+
+    async def runner():
+        global _active_forecast_run
+        try:
+            from tv_automation.pre_session_forecast import run_pre_session
+            result = await run_pre_session(
+                symbol=symbol, date_str=date, image_path=str(image_path),
+            )
+            _forecast_run_tasks[task_id]["state"] = "done"
+            _forecast_run_tasks[task_id]["result"] = result
+        except Exception as e:
+            _forecast_run_tasks[task_id]["state"] = "failed"
+            _forecast_run_tasks[task_id]["error"] = f"{type(e).__name__}: {e}"
+        finally:
+            _forecast_run_tasks[task_id]["finished_at"] = time.time()
+            if _active_forecast_run == task_id:
+                _active_forecast_run = None
+
+    _active_forecast_run = task_id
+    asyncio.create_task(runner())
+    return {"task_id": task_id, "request_id": request_id}
+
+
+@app.post("/api/forecasts/live/upload")
+async def forecast_live_upload(
+    file: UploadFile = File(...),
+    stage: str = Form(...),  # F1, F2, or F3
+    date: str = Form(""),
+    symbol: str = Form("MNQ1"),
+    force: str = Form("true"),  # form fields are strings; default to bypassed staleness
+) -> dict:
+    """Live F1/F2/F3 forecast against an uploaded screenshot. Same shape as
+    /api/forecasts/live. Defaults `force=true` because by definition an
+    upload is being run by hand off-schedule — the staleness guard would
+    only get in the way."""
+    global _active_forecast_run
+    stage = stage.strip().upper()
+    if stage not in ("F1", "F2", "F3"):
+        raise HTTPException(400, "stage must be F1, F2, or F3")
+    date = date.strip() or None
+    if date and not _PROFILE_DATE_RX.match(date):
+        raise HTTPException(400, "date must be YYYY-MM-DD")
+    symbol = symbol.strip() or "MNQ1"
+    if not _PROFILE_SYMBOL_RX.match(symbol):
+        raise HTTPException(400, "invalid symbol")
+    force_bool = force.strip().lower() in ("1", "true", "yes")
+    _check_not_paused()
+    busy = _cdp_busy()
+    if busy:
+        raise HTTPException(409, {"detail": f"another {busy['kind']} run is in progress", **busy})
+
+    image_path = await _save_upload(file, f"live_{stage.lower()}")
+    _prune_act_tasks()
+    task_id = secrets.token_hex(6)
+    request_id = audit.new_request_id()
+    audit.current_request_id.set(request_id)
+    _forecast_run_tasks[task_id] = {
+        "state": "running", "request_id": request_id,
+        "started_at": time.time(),
+        "stage": stage, "date": date, "symbol": symbol,
+        "kind": f"live_{stage.lower()}",
+        "source": "upload", "image_path": str(image_path),
+    }
+
+    async def runner():
+        global _active_forecast_run
+        try:
+            from tv_automation.live_forecast import run_live_stage
+            result = await run_live_stage(
+                stage, symbol=symbol, date_str=date, force=force_bool,
+                image_path=str(image_path),
             )
             _forecast_run_tasks[task_id]["state"] = "done"
             _forecast_run_tasks[task_id]["result"] = result

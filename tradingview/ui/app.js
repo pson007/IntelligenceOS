@@ -6449,3 +6449,177 @@ async function applySketchpad() {
     btn.textContent = 'Apply to chart';
   }
 }
+
+// ----------------------------------------------------------------------
+// Upload card — manual screenshot → any of the four analysis pipelines.
+// Sibling to the live Capture flow on the Trade tab. The user picks
+// which pipeline (Trade Analyze / Deep / Pre-session / F1 / F2 / F3),
+// supplies the metadata that pipeline needs, and uploads a PNG.
+// ----------------------------------------------------------------------
+(function initUpload() {
+  const card = $('upload-card'); if (!card) return;
+  const pipelineSel = $('upload-pipeline');
+  const symbolEl = $('upload-symbol');
+  const tfEl = $('upload-tf'), tfWrap = $('upload-tf-wrap');
+  const dateEl = $('upload-date'), dateWrap = $('upload-date-wrap');
+  const tfsEl = $('upload-tfs'), tfsWrap = $('upload-tfs-wrap');
+  const fileEl = $('upload-file');
+  const runBtn = $('upload-run');
+  const statusEl = $('upload-status');
+  const progress = $('upload-progress');
+  const phaseEl = $('upload-phase');
+  const eventsEl = $('upload-events');
+  const resultEl = $('upload-result');
+
+  // Default Date input to today (ET-resolved). Pre-session/live both
+  // need a date; auto-fill so the operator only types if the upload is
+  // for a different day.
+  dateEl.value = _fmtDate(new Date());
+
+  // Show/hide field rows based on pipeline. Each pipeline needs a
+  // different metadata shape — TF for analyze, Date for forecasts,
+  // multi-TF list for deep, file-multi for deep too.
+  function applyPipeline() {
+    const k = pipelineSel.value;
+    const isAnalyze = (k === 'analyze');
+    const isDeep = (k === 'deep');
+    const isForecast = k.startsWith('pre_session') || k.startsWith('live_');
+    tfWrap.classList.toggle('hidden', !isAnalyze);
+    dateWrap.classList.toggle('hidden', !isForecast);
+    tfsWrap.classList.toggle('hidden', !isDeep);
+    fileEl.multiple = isDeep;
+    fileEl.accept = 'image/*';
+    runBtn.textContent = isDeep ? 'Run deep upload' : 'Run';
+  }
+  pipelineSel.addEventListener('change', applyPipeline);
+  applyPipeline();
+
+  let pollTimer = null, seenEvents = 0;
+
+  function streamEvent(ent) {
+    const li = document.createElement('li');
+    const t = (ent.ts || '').slice(11, 19);
+    li.textContent = `${t}  ${ent.event || ''}`;
+    if (/parse_fail|\.fail|\.error/.test(ent.event || '')) li.className = 'ev-fail';
+    else if (/\.complete|\.done|saved/.test(ent.event || '')) li.className = 'ev-done';
+    eventsEl.prepend(li);
+  }
+
+  async function poll(taskId, requestId, kind) {
+    const taskUrl = (kind === 'analyze' || kind === 'deep')
+      ? `/api/analyze/${taskId}`
+      : `/api/forecasts/runs/${taskId}`;
+    let status, entries = [];
+    try {
+      [status, entries] = await Promise.all([
+        api(taskUrl),
+        api(`/api/audit/tail?n=200&request_id=${encodeURIComponent(requestId)}`)
+          .then(r => r.entries || []).catch(() => []),
+      ]);
+    } catch (e) {
+      statusEl.textContent = `poll error: ${e.message}`;
+      return;
+    }
+    entries.slice(seenEvents).forEach(streamEvent);
+    seenEvents = entries.length;
+    const latest = entries[entries.length - 1];
+    if (latest) phaseEl.textContent = latest.event;
+    if (status.state === 'done' || status.state === 'failed' || status.state === 'cancelled') {
+      clearInterval(pollTimer); pollTimer = null;
+      runBtn.disabled = false;
+      if (status.state === 'done') {
+        statusEl.textContent = 'done';
+        renderResult(status.result, kind);
+      } else {
+        statusEl.textContent = status.state;
+        phaseEl.textContent = `Error: ${status.error || status.state}`;
+      }
+    }
+  }
+
+  function renderResult(result, kind) {
+    if (!result) return;
+    resultEl.classList.remove('hidden');
+    if (kind === 'analyze' || kind === 'deep') {
+      const sig = (result.signal || '—').toString().toUpperCase();
+      const conf = result.confidence != null ? `${result.confidence}%` : '—';
+      const entry = result.entry ?? '—', stop = result.stop ?? '—', tp = result.tp ?? '—';
+      const optTf = kind === 'deep' && result.optimal_tf ? ` · optimal=${result.optimal_tf}` : '';
+      resultEl.innerHTML = `
+        <div class="upload-result__head">${escapeHTML(sig)} · ${conf}${optTf}</div>
+        <div class="upload-result__levels mono small">entry ${entry} · stop ${stop} · tp ${tp}</div>
+        <div class="upload-result__rationale small">${escapeHTML(result.rationale || '')}</div>`;
+    } else {
+      // forecast — show the structured bias + invalidation
+      const tb = result.tactical_bias || {};
+      const preds = result.predictions || {};
+      const dir = preds.direction || result.direction || '—';
+      const conf = preds.direction_confidence || '—';
+      resultEl.innerHTML = `
+        <div class="upload-result__head">${escapeHTML(dir)} · ${escapeHTML(conf)}</div>
+        <div class="upload-result__levels small">${escapeHTML(tb.bias || '')}</div>
+        <div class="upload-result__rationale small"><b>Invalidation:</b> ${escapeHTML(tb.invalidation || '—')}</div>`;
+    }
+  }
+
+  runBtn.addEventListener('click', async () => {
+    const file = fileEl.files && fileEl.files[0];
+    if (!file && pipelineSel.value !== 'deep') {
+      statusEl.textContent = 'pick a file first'; return;
+    }
+    if (pipelineSel.value === 'deep' && (!fileEl.files || fileEl.files.length < 2)) {
+      statusEl.textContent = 'deep upload needs ≥2 files'; return;
+    }
+    runBtn.disabled = true;
+    statusEl.textContent = 'uploading…';
+    eventsEl.innerHTML = ''; seenEvents = 0;
+    progress.classList.remove('hidden');
+    resultEl.classList.add('hidden');
+
+    const k = pipelineSel.value;
+    const fd = new FormData();
+    let url = '', kind = '';
+    try {
+      if (k === 'analyze') {
+        fd.append('file', file);
+        fd.append('symbol', symbolEl.value.trim());
+        fd.append('timeframe', tfEl.value.trim());
+        url = '/api/analyze/upload'; kind = 'analyze';
+      } else if (k === 'deep') {
+        Array.from(fileEl.files).forEach(f => fd.append('files', f));
+        const tfs = tfsEl.value.trim();
+        if (!tfs) throw new Error('timeframes required for deep');
+        fd.append('timeframes', tfs);
+        fd.append('symbol', symbolEl.value.trim());
+        url = '/api/analyze/deep/upload'; kind = 'deep';
+      } else if (k === 'pre_session') {
+        fd.append('file', file);
+        fd.append('date', dateEl.value);
+        fd.append('symbol', symbolEl.value.trim() || 'MNQ1');
+        url = '/api/forecasts/pre_session/upload'; kind = 'forecast';
+      } else if (k.startsWith('live_')) {
+        const stage = k.replace('live_', '').toUpperCase();
+        fd.append('file', file);
+        fd.append('stage', stage);
+        fd.append('date', dateEl.value);
+        fd.append('symbol', symbolEl.value.trim() || 'MNQ1');
+        url = '/api/forecasts/live/upload'; kind = 'forecast';
+      }
+      const headers = { 'X-UI': '1' };
+      const tok = localStorage.getItem('ios-ui-token') || '';
+      if (tok) headers['X-UI-Token'] = tok;
+      const res = await fetch(url, { method: 'POST', headers, body: fd });
+      const text = await res.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch {}
+      if (!res.ok) throw new Error((data && (data.detail || data.error)) || `HTTP ${res.status}`);
+      const { task_id, request_id } = data;
+      statusEl.textContent = `running (task ${task_id.slice(0,6)})`;
+      pollTimer = setInterval(() => poll(task_id, request_id, kind), 1500);
+      poll(task_id, request_id, kind);
+    } catch (e) {
+      runBtn.disabled = false;
+      statusEl.textContent = `error: ${e.message || e}`;
+    }
+  });
+})();

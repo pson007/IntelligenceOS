@@ -446,7 +446,15 @@ def _split_response(text: str) -> tuple[str, dict | None]:
 
 async def run_pre_session(
     *, symbol: str = "MNQ1", date_str: str | None = None,
+    image_path: str | None = None,
 ) -> dict:
+    """Run a pre-session forecast for `date_str` (defaults to today).
+
+    `image_path` (optional): bypass automated chart capture and run the
+    forecast against a pre-existing PNG. Skips the chart_session/Replay
+    setup entirely — useful for backfilling missed mornings or running
+    against a screenshot taken on a different layout (e.g. mobile).
+    """
     target_date = (
         datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else date.today()
     )
@@ -464,6 +472,20 @@ async def run_pre_session(
     audit.log("pre_session.priors",
               recent=[p.get("date") for p in recent],
               same_dow=[p.get("date") for p in same_dow])
+
+    if image_path:
+        # Upload path — skip chart_session entirely. The screenshot is
+        # already on disk (FastAPI saved the upload there); we only need
+        # to run the LLM call and persist the artifacts.
+        audit.log("pre_session.chart_skipped_uploaded", image_path=image_path)
+        with audit.timed("pre_session.run", date=date_str, source="upload") as ac:
+            screenshot = Path(image_path)
+            ac["screenshot"] = str(screenshot)
+            return await _pre_session_llm_and_save(
+                ac=ac, screenshot=screenshot, symbol=symbol, date_str=date_str,
+                dow=dow, recent=recent, same_dow=same_dow,
+                md_path=md_path, json_path=json_path,
+            )
 
     async with chart_session() as (_ctx, page):
         await replay.exit_replay(page)
@@ -483,97 +505,112 @@ async def run_pre_session(
                 ),
             )
             ac["screenshot"] = str(screenshot)
-
-            parts = [f"# FORECAST TARGET: {symbol}! {date_str} ({dow})", ""]
-            parts.append("## RECENT PRIORS (most recent last-N completed days)")
-            parts.append(json.dumps([_compact_profile(p) for p in recent], indent=2))
-            parts.append("")
-            parts.append(f"## SAME-DOW REFERENCES (last {SAME_DOW_LOOKBACK_DAYS} days, matching {dow})")
-            if same_dow:
-                parts.append(json.dumps([_compact_profile(p) for p in same_dow], indent=2))
-            else:
-                parts.append("(none in lookback window)")
-            parts.append("")
-            parts.append(
-                f"Forecast today's RTH session. The attached screenshot shows the live chart "
-                f"right now (pre-open or early-session globex). Follow the output format in the "
-                f"system prompt exactly, ending with the fenced JSON block."
+            return await _pre_session_llm_and_save(
+                ac=ac, screenshot=screenshot, symbol=symbol, date_str=date_str,
+                dow=dow, recent=recent, same_dow=same_dow,
+                md_path=md_path, json_path=json_path,
             )
-            user_prompt = "\n".join(parts)
 
-            system_prompt = _PRE_SESSION_SYSTEM.replace(
-                "{ACCUMULATED_LESSONS}", _render_lessons_block()
-            )
-            text, _, _ = await analyze_via_chatgpt_web(
-                image_path=str(screenshot),
-                system_prompt=system_prompt,
-                user_text=user_prompt,
-                model="Thinking",
-                timeout_s=300,
-            )
-            ac["response_chars"] = len(text)
 
-            narrative, structured = _split_response(text)
-            if structured is None:
-                _PARSE_FAIL_ROOT.mkdir(parents=True, exist_ok=True)
-                dump = _PARSE_FAIL_ROOT / f"pre_session_{symbol}_{date_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                dump.write_text(text)
-                audit.log("pre_session.parse_fail", dump_path=str(dump))
+async def _pre_session_llm_and_save(
+    *, ac: dict, screenshot: Path, symbol: str, date_str: str, dow: str,
+    recent: list[dict], same_dow: list[dict],
+    md_path: Path, json_path: Path,
+) -> dict:
+    """Shared LLM-call + parse + save core, used by both the live-chart
+    and uploaded-screenshot paths. `ac` is the audit timed-context dict
+    so per-run latency/response-chars/parse-success metrics roll up to
+    the same `pre_session.run` event regardless of source."""
+    parts = [f"# FORECAST TARGET: {symbol}! {date_str} ({dow})", ""]
+    parts.append("## RECENT PRIORS (most recent last-N completed days)")
+    parts.append(json.dumps([_compact_profile(p) for p in recent], indent=2))
+    parts.append("")
+    parts.append(f"## SAME-DOW REFERENCES (last {SAME_DOW_LOOKBACK_DAYS} days, matching {dow})")
+    if same_dow:
+        parts.append(json.dumps([_compact_profile(p) for p in same_dow], indent=2))
+    else:
+        parts.append("(none in lookback window)")
+    parts.append("")
+    parts.append(
+        f"Forecast today's RTH session. The attached screenshot shows the live chart "
+        f"right now (pre-open or early-session globex). Follow the output format in the "
+        f"system prompt exactly, ending with the fenced JSON block."
+    )
+    user_prompt = "\n".join(parts)
 
-            fm = "\n".join([
-                "---",
-                f"symbol: {symbol}",
-                f"date: {date_str}",
-                f"dow: {dow}",
-                "stage: pre_session_forecast",
-                "mode: live_prerth",
-                f"screenshot: {screenshot}",
-                f"based_on_priors: {[p.get('date') for p in recent]}",
-                f"same_dow_refs: {[p.get('date') for p in same_dow]}",
-                "model: chatgpt_thinking",
-                f"made_at: {datetime.now().isoformat(timespec='seconds')}",
-                "---",
-                "",
-            ])
-            md_path.write_text(fm + text.strip() + "\n")
+    system_prompt = _PRE_SESSION_SYSTEM.replace(
+        "{ACCUMULATED_LESSONS}", _render_lessons_block()
+    )
+    text, _, _ = await analyze_via_chatgpt_web(
+        image_path=str(screenshot),
+        system_prompt=system_prompt,
+        user_text=user_prompt,
+        model="Thinking",
+        timeout_s=300,
+    )
+    ac["response_chars"] = len(text)
 
-            saved = {
-                "symbol": f"{symbol}!",
-                "date": date_str,
-                "dow": dow,
-                "stage": "pre_session_forecast",
-                "mode": "live_prerth",
-                "screenshot_path": str(screenshot),
-                "based_on_priors": [p.get("date") for p in recent],
-                "same_dow_refs": [p.get("date") for p in same_dow],
-                "lessons_injected": bool(_render_lessons_block()),
-                "model": "chatgpt_thinking",
-                "made_at": datetime.now().isoformat(timespec="seconds"),
-                "raw_response": text,
-            }
-            if structured:
-                saved.update(structured)
-                saved["parsed_structured"] = True
-            else:
-                saved["parsed_structured"] = False
+    narrative, structured = _split_response(text)
+    if structured is None:
+        _PARSE_FAIL_ROOT.mkdir(parents=True, exist_ok=True)
+        dump = _PARSE_FAIL_ROOT / f"pre_session_{symbol}_{date_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        dump.write_text(text)
+        audit.log("pre_session.parse_fail", dump_path=str(dump))
 
-            # Split the canary block into its own artifact. Lifecycle
-            # is different from pre_session — the canary's *status*
-            # mutates throughout the morning (status.json updates as
-            # checks evaluate), but the canary itself is immutable
-            # once written. Resolve `evaluate_at: "HH:MM"` → absolute
-            # ISO with today's date in ET so canary.py can compare
-            # against datetime.now() without re-doing the date math.
-            canary_block = (structured or {}).get("canary") if structured else None
-            if canary_block:
-                _write_canary_artifact(canary_block, symbol, date_str, dow)
-                saved["canary_emitted"] = True
-            else:
-                saved["canary_emitted"] = False
+    fm = "\n".join([
+        "---",
+        f"symbol: {symbol}",
+        f"date: {date_str}",
+        f"dow: {dow}",
+        "stage: pre_session_forecast",
+        "mode: live_prerth",
+        f"screenshot: {screenshot}",
+        f"based_on_priors: {[p.get('date') for p in recent]}",
+        f"same_dow_refs: {[p.get('date') for p in same_dow]}",
+        "model: chatgpt_thinking",
+        f"made_at: {datetime.now().isoformat(timespec='seconds')}",
+        "---",
+        "",
+    ])
+    md_path.write_text(fm + text.strip() + "\n")
 
-            json_path.write_text(json.dumps(saved, indent=2))
-            ac["saved_to"] = str(json_path)
-            return saved
+    saved = {
+        "symbol": f"{symbol}!",
+        "date": date_str,
+        "dow": dow,
+        "stage": "pre_session_forecast",
+        "mode": "live_prerth",
+        "screenshot_path": str(screenshot),
+        "based_on_priors": [p.get("date") for p in recent],
+        "same_dow_refs": [p.get("date") for p in same_dow],
+        "lessons_injected": bool(_render_lessons_block()),
+        "model": "chatgpt_thinking",
+        "made_at": datetime.now().isoformat(timespec="seconds"),
+        "raw_response": text,
+    }
+    if structured:
+        saved.update(structured)
+        saved["parsed_structured"] = True
+    else:
+        saved["parsed_structured"] = False
+
+    # Split the canary block into its own artifact. Lifecycle
+    # is different from pre_session — the canary's *status*
+    # mutates throughout the morning (status.json updates as
+    # checks evaluate), but the canary itself is immutable
+    # once written. Resolve `evaluate_at: "HH:MM"` → absolute
+    # ISO with today's date in ET so canary.py can compare
+    # against datetime.now() without re-doing the date math.
+    canary_block = (structured or {}).get("canary") if structured else None
+    if canary_block:
+        _write_canary_artifact(canary_block, symbol, date_str, dow)
+        saved["canary_emitted"] = True
+    else:
+        saved["canary_emitted"] = False
+
+    json_path.write_text(json.dumps(saved, indent=2))
+    ac["saved_to"] = str(json_path)
+    return saved
 
 
 def _main() -> None:

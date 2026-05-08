@@ -966,6 +966,7 @@ async def analyze_chart(
     provider: str = "chatgpt_web",
     model: str | None = None,
     base_url: str | None = None,
+    image_path: str | None = None,
 ) -> dict:
     """Run a single-timeframe analysis and return the structured result.
 
@@ -980,6 +981,10 @@ async def analyze_chart(
         your Max subscription (no API key), ~20-30s
       * ``anthropic`` — Claude API, requires ANTHROPIC_API_KEY, ~10s
       * ``ollama`` — local, $0, ~85s on gemma4:31b
+
+    `image_path` (optional): bypass automated capture and analyze a
+    pre-existing PNG instead. Indicator values and user-drawing context
+    are unavailable in this mode, so the LLM works from pixels alone.
     """
     if provider not in ("anthropic", "ollama", "claude_web", "chatgpt_web"):
         raise ValueError(
@@ -992,10 +997,18 @@ async def analyze_chart(
     audit.log(
         "analyze.start", symbol=symbol, timeframe=tf,
         provider=provider, model=resolved_model,
+        source="upload" if image_path else "live",
     )
     t0 = time.time()
 
-    cap = await _capture(symbol, tf)
+    if image_path:
+        cap = {
+            "path": image_path, "tf": tf,
+            "indicator_values": None, "user_drawings": None,
+        }
+        audit.log("analyze.capture_uploaded", path=image_path)
+    else:
+        cap = await _capture(symbol, tf)
 
     audit.log(
         "analyze.llm_request", provider=provider, model=resolved_model,
@@ -1122,6 +1135,7 @@ async def analyze_deep(
     provider: str = "chatgpt_web",
     model: str | None = None,
     base_url: str | None = None,
+    uploaded_images: list[dict] | None = None,
 ) -> dict:
     """Run a 10-timeframe deep analysis and return the integrated result.
 
@@ -1133,38 +1147,57 @@ async def analyze_deep(
     Defaults to chatgpt_web — same provider as single-TF Analyze, so
     the deck doesn't flip backends between the two modes. Override via
     the UI's provider dropdown or by passing `provider=` explicitly.
-    """
+
+    `uploaded_images` (optional): list of {tf, path} dicts to bypass
+    automated capture. The order of `timeframes` must match the order
+    of uploaded images so the prompt aligns labels with pixels."""
     if provider not in ("anthropic", "ollama", "claude_web", "chatgpt_web"):
         raise ValueError(
             f"unknown provider {provider!r}; "
             "valid: anthropic, ollama, claude_web, chatgpt_web"
         )
-    tfs = timeframes or DEFAULT_DEEP_TIMEFRAMES
+    if uploaded_images:
+        # When uploading, derive the TF list from the upload payload so
+        # caller can't desync labels from images.
+        tfs = [c["tf"] for c in uploaded_images]
+    else:
+        tfs = timeframes or DEFAULT_DEEP_TIMEFRAMES
     resolved_model = _resolve_model(provider, model)
 
     audit.log(
         "analyze.start", symbol=symbol, timeframes=tfs,
         provider=provider, model=resolved_model, mode="deep",
+        source="upload" if uploaded_images else "live",
     )
     t0 = time.time()
 
-    # Capture all TFs sequentially — all through the same CDP session,
-    # so parallelism isn't possible without a second Chrome instance.
-    captures: list[dict] = []
-    for idx, tf in enumerate(tfs):
+    if uploaded_images:
+        captures = [
+            {"tf": c["tf"], "path": c["path"], "symbol": symbol, "interval": c["tf"]}
+            for c in uploaded_images
+        ]
         audit.log(
-            "analyze.capture_start", symbol=symbol, tf=tf,
-            index=idx + 1, total=len(tfs),
+            "analyze.capture_uploaded", n_images=len(captures),
+            tfs=[c["tf"] for c in captures], mode="deep",
         )
-        shot = await chart.screenshot(symbol, tf, None, area="chart")
-        captures.append({
-            "tf": tf, "path": shot["path"],
-            "symbol": shot.get("symbol"), "interval": shot.get("interval"),
-        })
-        audit.log(
-            "analyze.captured", symbol=symbol, tf=tf,
-            index=idx + 1, total=len(tfs), path=shot["path"],
-        )
+    else:
+        # Capture all TFs sequentially — all through the same CDP session,
+        # so parallelism isn't possible without a second Chrome instance.
+        captures = []
+        for idx, tf in enumerate(tfs):
+            audit.log(
+                "analyze.capture_start", symbol=symbol, tf=tf,
+                index=idx + 1, total=len(tfs),
+            )
+            shot = await chart.screenshot(symbol, tf, None, area="chart")
+            captures.append({
+                "tf": tf, "path": shot["path"],
+                "symbol": shot.get("symbol"), "interval": shot.get("interval"),
+            })
+            audit.log(
+                "analyze.captured", symbol=symbol, tf=tf,
+                index=idx + 1, total=len(tfs), path=shot["path"],
+            )
 
     audit.log(
         "analyze.llm_request", n_images=len(captures),

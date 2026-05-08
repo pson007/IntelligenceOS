@@ -147,9 +147,14 @@ def _forecast_file_paths(symbol: str, date_str: str, stage_label: str) -> tuple[
 
 async def run_live_stage(
     stage: str, *, symbol: str = "MNQ1", date_str: str | None = None,
-    force: bool = False,
+    force: bool = False, image_path: str | None = None,
 ) -> dict:
-    """Run one live forecast stage (F1/F2/F3) against the current live chart."""
+    """Run one live forecast stage (F1/F2/F3) against the current live chart.
+
+    `image_path` (optional): bypass automated capture and run the LLM
+    against a pre-existing PNG. Skips chart_session entirely. The
+    staleness guard still applies — `force=True` bypasses it the same
+    way as the live-chart path."""
     if stage not in STAGE_CURSOR:
         raise ValueError(f"stage must be one of F1/F2/F3, got {stage!r}")
     cursor_time = STAGE_CURSOR[stage]
@@ -169,6 +174,21 @@ async def run_live_stage(
     if json_path.exists():
         audit.log("live_forecast.skip_existing", stage=stage, path=str(json_path))
         return {"skipped": True, "path": str(json_path)}
+
+    if image_path:
+        audit.log("live_forecast.chart_skipped_uploaded", image_path=image_path, stage=stage)
+        with audit.timed("live_forecast.stage", stage=stage, date=date_str, source="upload") as ac:
+            screenshot = Path(image_path)
+            ac["screenshot"] = str(screenshot)
+            gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)
+            ac["gate_ok"] = gate.ok
+            ac["gate_reason"] = gate.reason
+            return await _live_forecast_llm_and_save(
+                ac=ac, screenshot=screenshot, gate=gate,
+                stage=stage, symbol=symbol, date_str=date_str,
+                cursor_time=cursor_time, now=now,
+                md_path=md_path, json_path=json_path,
+            )
 
     async with chart_session() as (_ctx, page):
         await replay.exit_replay(page)
@@ -193,55 +213,68 @@ async def run_live_stage(
             gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)
             ac["gate_ok"] = gate.ok
             ac["gate_reason"] = gate.reason
-
-            user_prompt = (
-                f"Forecast remainder of {symbol}! {date_str} RTH session. "
-                f"LIVE chart at ~{cursor_time.strftime('%H:%M')} ET (fired by scheduler at "
-                f"{now.strftime('%H:%M:%S')} local). All visible bars are real — no Replay masking."
+            return await _live_forecast_llm_and_save(
+                ac=ac, screenshot=screenshot, gate=gate,
+                stage=stage, symbol=symbol, date_str=date_str,
+                cursor_time=cursor_time, now=now,
+                md_path=md_path, json_path=json_path,
             )
-            system_prompt = _LIVE_FORECAST_SYSTEM.replace("{ACCUMULATED_LESSONS}", _render_lessons_block())
-            text, _, _ = await analyze_via_chatgpt_web(
-                image_path=str(screenshot),
-                system_prompt=system_prompt,
-                user_text=user_prompt,
-                model="Thinking",
-                timeout_s=300,
-            )
-            ac["response_chars"] = len(text)
 
-            fm = "\n".join([
-                "---",
-                f"symbol: {symbol}",
-                f"date: {date_str}",
-                f"cursor_time: {cursor_time.strftime('%H:%M')} ET",
-                f"stage: {stage}",
-                "mode: live",
-                f"screenshot: {screenshot}",
-                f"gate_ok: {gate.ok}",
-                f"gate_reason: {gate.reason}",
-                "model: chatgpt_thinking",
-                f"made_at: {datetime.now().isoformat(timespec='seconds')}",
-                "---",
-                "",
-            ])
-            md_path.write_text(fm + text.strip() + "\n")
-            saved = {
-                "symbol": symbol,
-                "date": date_str,
-                "cursor_time": cursor_time.strftime("%H:%M"),
-                "stage": stage,
-                "mode": "live",
-                "screenshot_path": str(screenshot),
-                "gate": {"ok": gate.ok, "reason": gate.reason,
-                         "session_first": str(gate.session_first) if gate.session_first else None,
-                         "session_last": str(gate.session_last) if gate.session_last else None},
-                "model": "chatgpt_thinking",
-                "made_at": datetime.now().isoformat(timespec="seconds"),
-                "raw_response": text,
-            }
-            json_path.write_text(json.dumps(saved, indent=2))
-            ac["saved_to"] = str(json_path)
-            return saved
+
+async def _live_forecast_llm_and_save(
+    *, ac: dict, screenshot, gate, stage: str, symbol: str, date_str: str,
+    cursor_time, now: datetime, md_path, json_path,
+) -> dict:
+    """LLM call + parse + persist core. Shared between the live-chart
+    capture and uploaded-screenshot paths."""
+    user_prompt = (
+        f"Forecast remainder of {symbol}! {date_str} RTH session. "
+        f"LIVE chart at ~{cursor_time.strftime('%H:%M')} ET (fired by scheduler at "
+        f"{now.strftime('%H:%M:%S')} local). All visible bars are real — no Replay masking."
+    )
+    system_prompt = _LIVE_FORECAST_SYSTEM.replace("{ACCUMULATED_LESSONS}", _render_lessons_block())
+    text, _, _ = await analyze_via_chatgpt_web(
+        image_path=str(screenshot),
+        system_prompt=system_prompt,
+        user_text=user_prompt,
+        model="Thinking",
+        timeout_s=300,
+    )
+    ac["response_chars"] = len(text)
+
+    fm = "\n".join([
+        "---",
+        f"symbol: {symbol}",
+        f"date: {date_str}",
+        f"cursor_time: {cursor_time.strftime('%H:%M')} ET",
+        f"stage: {stage}",
+        "mode: live",
+        f"screenshot: {screenshot}",
+        f"gate_ok: {gate.ok}",
+        f"gate_reason: {gate.reason}",
+        "model: chatgpt_thinking",
+        f"made_at: {datetime.now().isoformat(timespec='seconds')}",
+        "---",
+        "",
+    ])
+    md_path.write_text(fm + text.strip() + "\n")
+    saved = {
+        "symbol": symbol,
+        "date": date_str,
+        "cursor_time": cursor_time.strftime("%H:%M"),
+        "stage": stage,
+        "mode": "live",
+        "screenshot_path": str(screenshot),
+        "gate": {"ok": gate.ok, "reason": gate.reason,
+                 "session_first": str(gate.session_first) if gate.session_first else None,
+                 "session_last": str(gate.session_last) if gate.session_last else None},
+        "model": "chatgpt_thinking",
+        "made_at": datetime.now().isoformat(timespec="seconds"),
+        "raw_response": text,
+    }
+    json_path.write_text(json.dumps(saved, indent=2))
+    ac["saved_to"] = str(json_path)
+    return saved
 
 
 def _main() -> None:

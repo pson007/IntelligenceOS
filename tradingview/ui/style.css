@@ -4318,6 +4318,38 @@ html.is-mobile .profiles-layout {
   color: var(--accent, #58a6ff);
 }
 
+/* Upload card — manual screenshot → any analysis pipeline. Reuses
+   `.profile-run-events` for the audit-event stream (so .ev-fail /
+   .ev-done colors apply identically) and the standard `.card` chrome. */
+.upload-card .upload-card__body {
+  display: flex; flex-direction: column; gap: var(--s-3);
+  padding-top: var(--s-3);
+}
+.upload-card .upload-row {
+  display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: end;
+}
+.upload-card label {
+  display: flex; flex-direction: column; gap: 2px; min-width: 140px;
+}
+.upload-card label > span {
+  font-size: 11px;
+}
+.upload-card select, .upload-card input[type="text"], .upload-card input[type="date"] {
+  padding: 6px 8px; background: var(--bg-3); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 4px;
+}
+.upload-card input[type="file"] { flex: 1 1 auto; }
+.upload-card .upload-progress {
+  border: 1px solid var(--border); border-radius: 4px; padding: var(--s-3);
+}
+.upload-card .upload-result {
+  border: 1px solid var(--border); border-radius: 4px; padding: var(--s-3);
+  background: var(--bg-2);
+}
+.upload-card .upload-result__head { font-weight: 600; }
+.upload-card .upload-result__levels { color: var(--muted); margin-top: 4px; }
+.upload-card .upload-result__rationale { color: var(--fg); margin-top: 6px; }
+
 .compare-pane {
   margin-top: var(--s-2);
 }

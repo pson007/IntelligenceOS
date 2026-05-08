@@ -542,6 +542,57 @@
       </div>
 
 
+      <!-- Upload card — bypass the automated capture step and run any
+           of the four analysis pipelines against a screenshot picked
+           from disk (or pasted from the clipboard on a touch device). -->
+      <details class="card upload-card" id="upload-card">
+        <summary class="card-head">
+          <h2>Upload screenshot</h2>
+          <span class="card-head__actions mono small">manual analysis · skips chart automation</span>
+        </summary>
+        <div class="upload-card__body">
+          <div class="upload-row">
+            <label class="upload-pipeline">
+              <span class="muted small">Pipeline</span>
+              <select id="upload-pipeline">
+                <option value="analyze" selected>Trade Analyze (single TF)</option>
+                <option value="deep">Trade Deep (multi-TF)</option>
+                <option value="pre_session">Forecast — Pre-session</option>
+                <option value="live_f1">Forecast — F1 (live 10:00)</option>
+                <option value="live_f2">Forecast — F2 (live 12:00)</option>
+                <option value="live_f3">Forecast — F3 (live 14:00)</option>
+              </select>
+            </label>
+            <label class="upload-symbol">
+              <span class="muted small">Symbol</span>
+              <input type="text" id="upload-symbol" value="MNQ1" />
+            </label>
+            <label class="upload-tf" id="upload-tf-wrap">
+              <span class="muted small">Timeframe</span>
+              <input type="text" id="upload-tf" placeholder="e.g. 1m, 5m, 1h, 1D" value="1m" />
+            </label>
+            <label class="upload-date hidden" id="upload-date-wrap">
+              <span class="muted small">Date</span>
+              <input type="date" id="upload-date" />
+            </label>
+            <label class="upload-tfs hidden" id="upload-tfs-wrap">
+              <span class="muted small">Timeframes (one per file, in order)</span>
+              <input type="text" id="upload-tfs" placeholder="e.g. 5m,15m,1h,4h,1D" />
+            </label>
+          </div>
+          <div class="upload-row">
+            <input type="file" id="upload-file" accept="image/*" />
+            <button class="primary" id="upload-run">Run</button>
+            <span class="mono small" id="upload-status"></span>
+          </div>
+          <div class="upload-progress hidden" id="upload-progress">
+            <div class="profile-run-phase" id="upload-phase">Starting…</div>
+            <ul class="profile-run-events mono small" id="upload-events"></ul>
+          </div>
+          <div class="upload-result hidden" id="upload-result"></div>
+        </div>
+      </details>
+
       <!-- Contextual current-symbol position — only rendered when the
            selected chart symbol matches an open position. This is the
            highest-value piece of info right before a buy/sell click. -->
