@@ -880,34 +880,12 @@
             <div class="card-head">
               <h2>Run profile</h2>
               <div class="card-head__actions">
-                <div class="profile-run-mode" role="tablist">
-                  <button type="button" class="btn-mode" data-mode="day">Day</button>
-                  <button type="button" class="btn-mode active" data-mode="week">Week</button>
-                </div>
                 <span class="mono small" id="profile-run-status"></span>
               </div>
             </div>
 
-            <div class="profile-cal">
-              <div class="profile-cal__head">
-                <button type="button" class="btn-ghost" id="profile-cal-prev">‹</button>
-                <div class="profile-cal__title" id="profile-cal-title">—</div>
-                <button type="button" class="btn-ghost" id="profile-cal-next">›</button>
-              </div>
-              <div class="profile-cal__dow mono small">
-                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
-                <span>Fri</span><span>Sat</span><span>Sun</span>
-              </div>
-              <div class="profile-cal__grid" id="profile-cal-grid"></div>
-              <div class="profile-cal__legend mono small">
-                <span><span class="dot dot-profiled"></span> already profiled</span>
-                <span><span class="dot dot-selected"></span> selected</span>
-                <span class="hint">click to toggle — multi-select</span>
-              </div>
-            </div>
-
             <div class="profile-run-footer">
-              <div class="profile-run-summary" id="profile-run-summary">Pick a date to get started</div>
+              <select id="profile-date-select" class="mono profile-date-select"></select>
               <button class="btn btn-primary" id="profile-run-go" disabled>Run</button>
             </div>
 

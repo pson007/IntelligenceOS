@@ -80,6 +80,42 @@ async def synthesize(text: str, voice: str | None = None) -> bytes:
     return r.content
 
 
+async def synthesize_stream(text: str, voice: str | None = None):
+    """Async generator yielding raw int16 PCM chunks from the sidecar.
+
+    Each chunk is a bytes object of little-endian int16 samples at 24 kHz.
+    The caller (StreamingResponse) forwards these to the browser where
+    Web Audio API decodes and schedules them for progressive playback."""
+    text = (text or "").strip()
+    if not text:
+        raise ValueError("empty text")
+    voice = voice or DEFAULT_VOICE
+    audit.log("tts.stream.start", chars=len(text), voice=voice, sidecar=SIDECAR_URL)
+    client = httpx.AsyncClient(timeout=httpx.Timeout(connect=5.0, read=SYNTH_TIMEOUT, write=5.0, pool=5.0))
+    try:
+        async with client.stream(
+            "POST",
+            f"{SIDECAR_URL}/speak/stream",
+            json={"text": text, "voice": voice},
+        ) as resp:
+            if resp.status_code != 200:
+                body = await resp.aread()
+                raise RuntimeError(f"sidecar HTTP {resp.status_code}: {body.decode(errors='replace')}")
+            async for chunk in resp.aiter_bytes(chunk_size=8192):
+                yield chunk
+    except httpx.ConnectError as e:
+        audit.log("tts.stream.unavailable", error=str(e))
+        raise TTSUnavailable(
+            f"qwen3-tts sidecar not reachable at {SIDECAR_URL} — start with ./start_qwen3_tts.sh"
+        ) from e
+    except httpx.RequestError as e:
+        audit.log("tts.stream.error", error=str(e))
+        raise TTSUnavailable(f"qwen3-tts sidecar error: {e}") from e
+    finally:
+        await client.aclose()
+    audit.log("tts.stream.done", chars=len(text), voice=voice)
+
+
 async def list_voices() -> list[str]:
     """Read the registered clone names from the sidecar."""
     try:

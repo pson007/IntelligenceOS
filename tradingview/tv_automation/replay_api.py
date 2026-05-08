@@ -192,8 +192,20 @@ async def select_replay_date(
     # Await the promise selectDate may return — without this we race
     # the polling loop against TV's still-loading chart state and
     # occasionally see stale `currentDate()` until the next tick.
-    await _eval(page, f"{_REPLAY_API}.selectDate({target_ms})",
-                await_promise=True)
+    # Timeout guards against TV never settling the promise (observed
+    # for current-day dates where the replay controller treats the
+    # session as still "live").
+    try:
+        await asyncio.wait_for(
+            _eval(page, f"{_REPLAY_API}.selectDate({target_ms})",
+                  await_promise=True),
+            timeout=10.0,
+        )
+    except asyncio.TimeoutError:
+        raise RuntimeError(
+            f"selectDate({target_ms}) promise did not settle within 10s "
+            f"— TV may not support replay for this date yet"
+        )
 
     for _ in range(max_polls):
         cur = await current_replay_date(page)

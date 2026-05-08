@@ -3933,27 +3933,19 @@ html.is-mobile .profiles-layout {
   gap: var(--s-3);
 }
 
-.profile-run-mode {
-  display: inline-flex;
-  gap: 2px;
-  padding: 2px;
+.profile-date-select {
+  flex: 1;
   background: var(--bg-3);
+  color: var(--fg);
   border: 1px solid var(--border);
   border-radius: 6px;
-}
-.profile-run-mode .btn-mode {
-  background: transparent;
-  border: 0;
-  color: var(--muted);
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
   cursor: pointer;
-  font-size: 11px;
-  font-family: var(--mono);
 }
-.profile-run-mode .btn-mode.active {
-  background: var(--bg-2);
-  color: var(--fg);
+.profile-date-select:focus {
+  outline: none;
+  border-color: var(--accent, #58a6ff);
 }
 
 .btn-ghost {

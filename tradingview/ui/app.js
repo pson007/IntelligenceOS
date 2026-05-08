@@ -3267,34 +3267,19 @@ async function loadProfiles() {
 let _profileRunInited = false;
 let _profileRunPollTimer = null;
 let _profileRunSeenEvents = 0;
-const _profileCal = {
-  viewYear: 0, viewMonth: 0,  // currently-displayed month
-  mode: 'week',               // 'day' | 'week'
-  selected: [],               // array of YYYY-MM-DD strings (sorted)
-};
 
 function initProfileRun() {
   if (_profileRunInited) return;
   _profileRunInited = true;
-  const today = new Date();
-  _profileCal.viewYear = today.getFullYear();
-  _profileCal.viewMonth = today.getMonth();
 
-  document.getElementById('profile-cal-prev').addEventListener('click', () => _gotoMonth(-1));
-  document.getElementById('profile-cal-next').addEventListener('click', () => _gotoMonth(+1));
-  document.querySelectorAll('.profile-run-mode .btn-mode').forEach(btn => {
-    btn.addEventListener('click', () => _setProfileMode(btn.dataset.mode));
-  });
+  document.getElementById('profile-date-select').addEventListener('change', _refreshSelectionSummary);
   document.getElementById('profile-run-go').addEventListener('click', onProfileRunClick);
 
-  // Modal wiring
   document.getElementById('profile-run-modal-cancel').addEventListener('click', _hideProfileModal);
   document.getElementById('profile-run-modal-skip').addEventListener('click', () => _confirmProfileModal('skip'));
   document.getElementById('profile-run-modal-override').addEventListener('click', () => _confirmProfileModal('override'));
 
-  // Default selection = this week's Mon–Fri if in range.
-  _selectThisWeek();
-  renderProfileCalendar();
+  _populateDateDropdown();
   _refreshSelectionSummary();
 }
 
@@ -3303,178 +3288,48 @@ function _fmtDate(d) {
 }
 
 function _profiledDates() {
-  // Set of YYYY-MM-DD strings from _profilesCache.
   const out = new Set();
   (_profilesCache || []).forEach(p => { if (p.date) out.add(p.date); });
   return out;
 }
 
-function _gotoMonth(delta) {
-  let m = _profileCal.viewMonth + delta;
-  let y = _profileCal.viewYear;
-  while (m < 0) { m += 12; y -= 1; }
-  while (m > 11) { m -= 12; y += 1; }
-  _profileCal.viewYear = y;
-  _profileCal.viewMonth = m;
-  renderProfileCalendar();
-}
-
-function _setProfileMode(mode) {
-  if (mode !== 'day' && mode !== 'week') return;
-  _profileCal.mode = mode;
-  document.querySelectorAll('.profile-run-mode .btn-mode').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.mode === mode);
-  });
-  // Collapse existing selection to a single representative day so the
-  // mode change doesn't leave a stale multi-day highlight (week→day
-  // would leave 5 highlighted; day→week would leave 1 isolated).
-  if (_profileCal.selected.length > 0) {
-    const anchor = _profileCal.selected[0];
-    _profileCal.selected = [];
-    _toggleDate(anchor);
-  }
-  renderProfileCalendar();
-  _refreshSelectionSummary();
-}
-
-function _selectThisWeek() {
-  const today = new Date();
-  _toggleDate(_fmtDate(today));
-}
-
-function _weekdayRange(anchorStr) {
-  // Return Mon–Fri strings for the ISO week containing `anchorStr`.
-  const [y, m, d] = anchorStr.split('-').map(Number);
-  const anchor = new Date(y, m - 1, d);
-  const dow = (anchor.getDay() + 6) % 7;  // Mon=0..Sun=6
-  const mon = new Date(anchor);
-  mon.setDate(anchor.getDate() - dow);
-  const out = [];
-  for (let i = 0; i < 5; i++) {
-    const x = new Date(mon);
-    x.setDate(mon.getDate() + i);
-    out.push(_fmtDate(x));
-  }
-  return out;
-}
-
-function _toggleDate(dateStr) {
-  // Click-to-toggle multi-select. Day mode toggles a single date in/out;
-  // Week mode toggles the entire Mon–Fri block of the picked week. The
-  // selection list is the source of truth — sorted on read so the
-  // backend gets dates in chronological order regardless of click order.
-  if (!dateStr) return;
-  const sel = new Set(_profileCal.selected);
-  const targets = _profileCal.mode === 'day'
-    ? [dateStr]
-    : _weekdayRange(dateStr);
-  // If every target is already selected, treat the click as "remove";
-  // otherwise treat it as "add". Mixed-state weeks lean toward add so a
-  // partial week becomes whole on the next click.
-  const allPresent = targets.every(t => sel.has(t));
-  if (allPresent) {
-    targets.forEach(t => sel.delete(t));
-  } else {
-    targets.forEach(t => sel.add(t));
-  }
-  _profileCal.selected = Array.from(sel).sort();
-}
-
-function renderProfileCalendar() {
-  const grid = document.getElementById('profile-cal-grid');
-  const title = document.getElementById('profile-cal-title');
-  const y = _profileCal.viewYear;
-  const m = _profileCal.viewMonth;
-  title.textContent = new Date(y, m, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
-
-  const firstOfMonth = new Date(y, m, 1);
-  const firstDow = (firstOfMonth.getDay() + 6) % 7;  // Mon=0..Sun=6
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const gridStart = new Date(y, m, 1 - firstDow);
-
+function _populateDateDropdown() {
+  const select = document.getElementById('profile-date-select');
   const profiledSet = _profiledDates();
-  const selectedSet = new Set(_profileCal.selected);
   const todayStr = _fmtDate(new Date());
-
-  const cells = [];
-  for (let i = 0; i < 42; i++) {  // 6 weeks × 7 days
-    const d = new Date(gridStart);
-    d.setDate(gridStart.getDate() + i);
+  const dates = [];
+  const d = new Date();
+  while (dates.length < 20) {
     const ds = _fmtDate(d);
-    const otherMonth = (d.getMonth() !== m);
-    const dow = (d.getDay() + 6) % 7;
-    const isWeekend = dow >= 5;
-    const isFuture = ds > todayStr;
-    const disabled = isFuture || (isWeekend && _profileCal.mode === 'day');
-
-    const classes = ['cal-day'];
-    if (otherMonth) classes.push('other-month');
-    if (disabled) classes.push('disabled');
-    if (isWeekend) classes.push('weekend');
-    if (ds === todayStr) classes.push('today');
-    if (profiledSet.has(ds)) classes.push('profiled');
-    if (selectedSet.has(ds)) classes.push('selected');
-
-    cells.push(`<div class="${classes.join(' ')}" data-date="${ds}">${d.getDate()}</div>`);
+    const dow = d.getDay();
+    if (dow >= 1 && dow <= 5 && ds <= todayStr) dates.push(ds);
+    d.setDate(d.getDate() - 1);
   }
-  grid.innerHTML = cells.join('');
-  grid.querySelectorAll('.cal-day:not(.disabled)').forEach(el => {
-    el.addEventListener('click', () => {
-      _toggleDate(el.dataset.date);
-      renderProfileCalendar();
-      _refreshSelectionSummary();
-    });
+  select.innerHTML = '<option value="">— select date —</option>';
+  dates.forEach(ds => {
+    const profiled = profiledSet.has(ds);
+    const opt = document.createElement('option');
+    opt.value = ds;
+    const dayName = new Date(ds + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short' });
+    opt.textContent = `${ds}  ${dayName}${profiled ? '  ✓' : ''}`;
+    select.appendChild(opt);
   });
 }
 
 function _refreshSelectionSummary() {
-  const summary = document.getElementById('profile-run-summary');
   const go = document.getElementById('profile-run-go');
-  const sel = _profileCal.selected;
-  if (!sel.length) {
-    summary.textContent = 'Pick a date to get started';
-    go.disabled = true;
-    return;
-  }
-  const profiledSet = _profiledDates();
-  const overlap = sel.filter(d => profiledSet.has(d));
-  // Detect contiguous-weekday run: every selected date is one weekday
-  // after the previous (skipping weekends). If so, render as range;
-  // otherwise list count + first/last to keep multi-week picks legible.
-  const isContiguousWeekdays = sel.length === 1 || sel.every((d, i) => {
-    if (i === 0) return true;
-    const prev = new Date(sel[i - 1]);
-    const cur = new Date(d);
-    const diffDays = Math.round((cur - prev) / 86400000);
-    // Mon→Tue/Tue→Wed/Wed→Thu/Thu→Fri = 1; Fri→Mon = 3.
-    return diffDays === 1 || diffDays === 3;
-  });
-  let head;
-  if (sel.length === 1) {
-    head = sel[0];
-  } else if (isContiguousWeekdays) {
-    head = `${sel[0]} → ${sel[sel.length - 1]}  (${sel.length} days)`;
-  } else {
-    head = `${sel.length} days  (${sel[0]} … ${sel[sel.length - 1]})`;
-  }
-  let overlapLine = '';
-  if (overlap.length === sel.length) {
-    overlapLine = `<span class="overlap">All ${sel.length} day(s) already profiled — Run will ask: skip or override.</span>`;
-  } else if (overlap.length > 0) {
-    overlapLine = `<span class="overlap">${overlap.length} of ${sel.length} already profiled — Run will ask: skip or override.</span>`;
-  }
-  summary.innerHTML = `${head}${overlapLine}`;
-  if (!_profileRunPollTimer) go.disabled = false;
+  const ds = document.getElementById('profile-date-select').value;
+  go.disabled = !ds || !!_profileRunPollTimer;
 }
 
 // ------- Override modal -------
 let _pendingRun = null;
 
-function _showProfileModal({ overlap, total }) {
+function _showProfileModal() {
+  const ds = document.getElementById('profile-date-select').value;
   const body = document.getElementById('profile-run-modal-body');
   const modal = document.getElementById('profile-run-modal');
-  body.textContent = `${overlap} of ${total} selected day(s) are already profiled. `
-    + `Skip existing = profile only new days. Override all = re-profile existing days (each takes ~3–5 min and one ChatGPT Thinking call).`;
+  body.textContent = `${ds} is already profiled. Override re-profiles the day (~3–5 min + one ChatGPT Thinking call).`;
   modal.classList.remove('hidden');
 }
 
@@ -3488,22 +3343,16 @@ function _confirmProfileModal(choice) {
   const pending = _pendingRun;
   _pendingRun = null;
   document.getElementById('profile-run-modal').classList.add('hidden');
-  // skip = resume:true (CLI's --resume skips existing); override = resume:false.
   _dispatchProfileRun({ ...pending, resume: choice === 'skip' });
 }
 
 async function onProfileRunClick() {
-  const sel = _profileCal.selected;
-  if (!sel.length) return;
-  const profiledSet = _profiledDates();
-  const overlap = sel.filter(d => profiledSet.has(d)).length;
-  // Always send the explicit `dates` list — the backend profiles
-  // exactly these days, so non-contiguous picks (Mon+Wed+Fri, two
-  // separate weeks) work without expanding to fill the gaps.
-  const payload = { dates: [...sel], symbol: 'MNQ1', resume: true };
-  if (overlap > 0) {
+  const ds = document.getElementById('profile-date-select').value;
+  if (!ds) return;
+  const payload = { dates: [ds], symbol: 'MNQ1', resume: true };
+  if (_profiledDates().has(ds)) {
     _pendingRun = payload;
-    _showProfileModal({ overlap, total: sel.length });
+    _showProfileModal();
     return;
   }
   _dispatchProfileRun(payload);
@@ -3607,10 +3456,8 @@ async function _pollProfileRun(task_id, request_id) {
       const n = (status.results || []).length;
       statusEl.textContent = `done — ${n} day(s)`;
       phaseEl.textContent = `Complete: ${n} day(s) processed. Refreshing list…`;
-      // Refresh the sidebar list AND re-render the calendar so newly-
-      // profiled days flip to the profiled style.
       await loadProfiles();
-      renderProfileCalendar();
+      _populateDateDropdown();
     } else {
       statusEl.textContent = 'failed';
       phaseEl.textContent = `Error: ${status.error || 'unknown'}`;
@@ -5301,34 +5148,78 @@ async function selectForecastDay(symbol, date) {
     });
   });
 
-  // Wire Speak buttons — fetch a synthesized read-aloud from the local
-  // Qwen3-TTS sidecar (start with ./start_qwen3_tts.sh) and play it
-  // inline. First click after a sidecar restart includes a one-time
-  // model-load cost (~1s on MLX); later clicks are bounded by audio
-  // length × RTF. Toast shows elapsed time on success/failure.
+  // Wire Speak buttons — stream raw PCM from the local Qwen3-TTS
+  // sidecar and play progressively via Web Audio API. First audio
+  // arrives in ~3s instead of waiting 60s+ for the full WAV.
   main.querySelectorAll('.forecast-speak-btn').forEach(btn => {
     btn.addEventListener('click', async ev => {
       ev.preventDefault();
       const { symbol, date, stage } = btn.dataset;
       setBusy(btn, true, '🔊 Speak');
       const t0 = Date.now();
+      let audioCtx = null;
       try {
-        const url = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/speak`;
+        const url = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/speak?stream=1`;
         const res = await fetch(url, { headers: { 'X-UI-Token': localStorage.getItem('ios-ui-token') || '' } });
         if (!res.ok) {
           let msg = `HTTP ${res.status}`;
           try { const j = await res.json(); if (j.detail) msg = j.detail; } catch (_) {}
           throw new Error(msg);
         }
-        const blob = await res.blob();
-        const objUrl = URL.createObjectURL(blob);
-        const audio = new Audio(objUrl);
-        audio.addEventListener('ended', () => URL.revokeObjectURL(objUrl));
-        audio.addEventListener('error', () => URL.revokeObjectURL(objUrl));
-        await audio.play();
-        toast(`▶ playing forecast (${((Date.now() - t0) / 1000).toFixed(1)}s)`, 'ok');
+        const sampleRate = parseInt(res.headers.get('X-TTS-Sample-Rate') || '24000');
+        audioCtx = new AudioContext({ sampleRate });
+        const reader = res.body.getReader();
+        let nextTime = 0;
+        let started = false;
+        let leftover = new Uint8Array(0);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          // Combine with any leftover byte from chunk boundary
+          let data;
+          if (leftover.length > 0) {
+            data = new Uint8Array(leftover.length + value.length);
+            data.set(leftover);
+            data.set(value, leftover.length);
+            leftover = new Uint8Array(0);
+          } else {
+            data = value;
+          }
+          const usable = data.length & ~1;
+          if (usable < data.length) leftover = data.slice(usable);
+          if (usable === 0) continue;
+
+          // Copy into aligned buffer, convert int16 → float32
+          const aligned = new ArrayBuffer(usable);
+          new Uint8Array(aligned).set(data.subarray(0, usable));
+          const int16 = new Int16Array(aligned);
+          const float32 = new Float32Array(int16.length);
+          for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
+
+          const buf = audioCtx.createBuffer(1, float32.length, sampleRate);
+          buf.getChannelData(0).set(float32);
+          const src = audioCtx.createBufferSource();
+          src.buffer = buf;
+          src.connect(audioCtx.destination);
+
+          if (!started) {
+            nextTime = audioCtx.currentTime + 0.05;
+            started = true;
+            toast(`▶ playing forecast (${((Date.now() - t0) / 1000).toFixed(1)}s to first audio)`, 'ok');
+          }
+          if (nextTime < audioCtx.currentTime) nextTime = audioCtx.currentTime + 0.02;
+          src.start(nextTime);
+          nextTime += buf.duration;
+        }
+
+        // Close AudioContext after last buffer finishes
+        const remaining = Math.max(0, (nextTime || 0) - (audioCtx?.currentTime || 0));
+        setTimeout(() => { if (audioCtx) audioCtx.close(); }, (remaining + 0.5) * 1000);
       } catch (e) {
         toast(`speak failed: ${e.message}`, 'err');
+        if (audioCtx) audioCtx.close();
       } finally {
         setBusy(btn, false, '🔊 Speak');
       }

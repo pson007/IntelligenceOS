@@ -688,6 +688,9 @@ async def run_profile_range(start: str, end: str | None, *,
     return await run_profile_dates(dates, symbol=symbol, resume=resume)
 
 
+_PER_DAY_TIMEOUT = 900  # 15 min — ChatGPT Thinking alone can take ~10 min
+
+
 async def run_profile_dates(dates: list[str], *,
                             symbol: str = "MNQ1",
                             resume: bool = False) -> list[dict]:
@@ -697,13 +700,26 @@ async def run_profile_dates(dates: list[str], *,
     `run_profile_range` delegates to this. The UI calendar's multi-select
     sends the explicit list so picks like "this week minus Wednesday" or
     "two non-adjacent weeks" profile exactly the chosen days instead of
-    the contiguous span between min and max."""
+    the contiguous span between min and max.
+
+    Each day is capped at `_PER_DAY_TIMEOUT` (15 min) so one stuck
+    Replay navigation can't block the whole batch."""
     results: list[dict] = []
     for d in dates:
         with audit.timed("daily_profile.range_day", date=d):
             try:
-                r = await run_profile_day(d, symbol=symbol, resume=resume)
+                r = await asyncio.wait_for(
+                    run_profile_day(d, symbol=symbol, resume=resume),
+                    timeout=_PER_DAY_TIMEOUT,
+                )
                 results.append(r)
+            except asyncio.TimeoutError:
+                audit.log("daily_profile.range_day.timeout",
+                          date=d, timeout_s=_PER_DAY_TIMEOUT)
+                results.append({
+                    "symbol": symbol, "date": d,
+                    "error": f"timed out after {_PER_DAY_TIMEOUT}s",
+                })
             except Exception as e:
                 audit.log("daily_profile.range_day.error", date=d, err=str(e))
                 results.append({"symbol": symbol, "date": d, "error": str(e)})

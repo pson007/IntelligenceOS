@@ -34,7 +34,7 @@ from typing import Any
 import numpy as np
 import soundfile as sf
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
 
@@ -95,6 +95,27 @@ class SpeakRequest(BaseModel):
     voice: str | None = None
 
 
+def _resolve_voice(voice: str, clones: dict) -> dict[str, Any]:
+    gen_kwargs: dict[str, Any] = {}
+    if voice in clones:
+        clone = clones[voice]
+        ref_audio = clone.get("ref_audio_path")
+        ref_text = clone.get("ref_text") or None
+        if not ref_audio or not Path(ref_audio).exists():
+            raise HTTPException(500, f"voice '{voice}' ref_audio missing: {ref_audio}")
+        gen_kwargs["ref_audio"] = ref_audio
+        gen_kwargs["ref_text"] = ref_text
+    elif voice.lower() in _BUILTIN_SPEAKERS:
+        gen_kwargs["voice"] = voice.lower()
+    else:
+        raise HTTPException(
+            404,
+            f"voice '{voice}' not found — clones: {sorted(clones.keys())}; "
+            f"builtins: {sorted(_BUILTIN_SPEAKERS)}",
+        )
+    return gen_kwargs
+
+
 app = FastAPI(title="qwen3-tts-sidecar")
 
 
@@ -122,28 +143,7 @@ def speak(req: SpeakRequest):
         raise HTTPException(400, "empty text")
 
     voice = req.voice or DEFAULT_VOICE
-    clones = _load_clones()
-
-    # Resolve the voice into a generate() kwarg shape:
-    #   - Cloned voice (matches a name in clones.json) → ICL with ref_audio + ref_text
-    #   - Built-in speaker name → pass as `voice=` kwarg
-    gen_kwargs: dict[str, Any] = {}
-    if voice in clones:
-        clone = clones[voice]
-        ref_audio = clone.get("ref_audio_path")
-        ref_text = clone.get("ref_text") or None
-        if not ref_audio or not Path(ref_audio).exists():
-            raise HTTPException(500, f"voice '{voice}' ref_audio missing: {ref_audio}")
-        gen_kwargs["ref_audio"] = ref_audio
-        gen_kwargs["ref_text"] = ref_text
-    elif voice.lower() in _BUILTIN_SPEAKERS:
-        gen_kwargs["voice"] = voice.lower()
-    else:
-        raise HTTPException(
-            404,
-            f"voice '{voice}' not found — clones: {sorted(clones.keys())}; "
-            f"builtins: {sorted(_BUILTIN_SPEAKERS)}",
-        )
+    gen_kwargs = _resolve_voice(voice, _load_clones())
 
     _ensure_model()
     model = _state["model"]
@@ -190,6 +190,55 @@ def speak(req: SpeakRequest):
             "X-TTS-Synth-Seconds": f"{dur_synth:.2f}",
             "X-TTS-RTF": f"{rtf:.3f}",
         },
+    )
+
+
+@app.post("/speak/stream")
+def speak_stream(req: SpeakRequest):
+    """Stream raw int16 PCM chunks as they're generated.
+
+    First audio arrives within one streaming_interval (~2s of audio),
+    so the caller can begin playback in ~3s instead of waiting for the
+    full synthesis to complete."""
+    text = (req.text or "").strip()
+    if not text:
+        raise HTTPException(400, "empty text")
+
+    voice = req.voice or DEFAULT_VOICE
+    gen_kwargs = _resolve_voice(voice, _load_clones())
+    _ensure_model()
+    model = _state["model"]
+
+    def pcm_gen():
+        sample_rate = 24_000
+        t0 = time.time()
+        total_samples = 0
+        for result in model.generate(
+            text=text,
+            stream=True,
+            streaming_interval=STREAM_INTERVAL,
+            **gen_kwargs,
+        ):
+            sr = result.sample_rate or sample_rate
+            sample_rate = sr
+            arr = np.asarray(result.audio, dtype=np.float32).squeeze()
+            if arr.size:
+                pcm = (np.clip(arr, -1.0, 1.0) * 32767).astype(np.int16)
+                total_samples += pcm.size
+                yield pcm.tobytes()
+        dur_audio = total_samples / sample_rate
+        dur_synth = time.time() - t0
+        print(
+            f"[qwen3-tts] stream voice={voice} chars={len(text)} "
+            f"audio={dur_audio:.1f}s synth={dur_synth:.2f}s "
+            f"rtf={dur_synth / max(dur_audio, 1e-6):.2f}",
+            flush=True,
+        )
+
+    return StreamingResponse(
+        pcm_gen(),
+        media_type="application/octet-stream",
+        headers={"X-TTS-Sample-Rate": "24000", "X-TTS-Voice": voice},
     )
 
 

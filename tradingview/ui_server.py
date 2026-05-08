@@ -3139,13 +3139,15 @@ async def forecast_screenshot(symbol: str, date: str, stage: str):
 
 
 @app.get("/api/forecasts/{symbol}/{date}/{stage}/speak")
-async def forecast_speak(symbol: str, date: str, stage: str, voice: str | None = None):
-    """Synthesize a spoken read-aloud of the forecast as 24 kHz WAV.
+async def forecast_speak(
+    symbol: str, date: str, stage: str,
+    voice: str | None = None, stream: bool = False,
+):
+    """Synthesize a spoken read-aloud of the forecast as 24 kHz audio.
 
-    Routed through the local Qwen3-TTS sidecar (start with
-    ./start_qwen3_tts.sh). Default voice is the Sophia clone; override
-    with ?voice=<clone-name> from clones.json. Returns 503 if the
-    sidecar isn't running, 422 if the forecast has nothing speakable."""
+    Default returns a complete WAV. With ?stream=1, returns chunked
+    raw int16 PCM (application/octet-stream) for progressive Web Audio
+    playback — first audio arrives in ~3s instead of 60s+."""
     if not _PROFILE_KEY_RX.match(symbol) or not _FORECAST_DATE_RX.match(date) or not _FORECAST_STAGE_RX.match(stage):
         raise HTTPException(400, "invalid params")
     jf = _FORECASTS_ROOT / f"{symbol}_{date}_{stage}.json"
@@ -3159,6 +3161,19 @@ async def forecast_speak(symbol: str, date: str, stage: str, voice: str | None =
     script = tts_mod.forecast_script(data, stage, date)
     if not script:
         raise HTTPException(422, "nothing speakable in this forecast")
+
+    if stream:
+        from starlette.responses import StreamingResponse
+        try:
+            gen = tts_mod.synthesize_stream(script, voice=voice)
+        except tts_mod.TTSUnavailable as e:
+            raise HTTPException(503, str(e))
+        return StreamingResponse(
+            gen,
+            media_type="application/octet-stream",
+            headers={"X-TTS-Sample-Rate": "24000"},
+        )
+
     try:
         wav = await tts_mod.synthesize(script, voice=voice)
     except tts_mod.TTSUnavailable as e:
