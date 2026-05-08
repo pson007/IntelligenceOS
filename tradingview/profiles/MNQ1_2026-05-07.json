@@ -1,0 +1,146 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-07",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-07T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/.claude/worktrees/beautiful-edison-a2c148/tradingview/profiles/MNQ1_2026-05-07.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "00:00:00",
+    "last": "15:30:00"
+  },
+  "profiled_at": "2026-05-08T00:07:47-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "morning_drive_midday_failure_afternoon_balance",
+    "open_approx": 28750.25,
+    "close_approx": 28684.5,
+    "hod_approx": 28920.0,
+    "lod_approx": 28575.0,
+    "net_range_pts_open_to_close": -65.75,
+    "net_range_pct_open_to_close": -0.23,
+    "intraday_span_pts": 345,
+    "shape_sentence": "Morning upside drive failed into a midday breakdown, followed by afternoon balance and a modest late reclaim that closed below the open."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 28750.25,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 28760.0,
+      "type": "early_bullish_reclaim"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 28805.0,
+      "type": "upside_breakout"
+    },
+    {
+      "time_et": "10:55",
+      "price_approx": 28920.0,
+      "type": "hod_morning_exhaustion"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 28800.0,
+      "type": "goat_rollover_zone"
+    },
+    {
+      "time_et": "12:15",
+      "price_approx": 28708.0,
+      "type": "breakdown"
+    },
+    {
+      "time_et": "12:25",
+      "price_approx": 28725.0,
+      "type": "long_trap_failed_reclaim"
+    },
+    {
+      "time_et": "13:30",
+      "price_approx": 28575.0,
+      "type": "lod_liquidation_low"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 28675.0,
+      "type": "balance_probe"
+    },
+    {
+      "time_et": "14:40",
+      "price_approx": 28610.0,
+      "type": "secondary_low_attempt"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 28684.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "12:00",
+      "direction": "down",
+      "note": "Marked as midday LONG, but the actual reference behavior was a failed reclaim into downside continuation."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots appeared at failed reclaims, especially around the noon break below 28,708 and afternoon resistance."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots appeared after flushes but mostly produced traps or partial recoveries rather than a full trend reversal."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply near 28,790-28,900 was broken during the morning drive, then became overhead resistance after the midday failure."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand near 28,708 was broken after noon; lower demand around 28,575-28,610 helped form the afternoon base."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Above VWAP and breaking higher, confirming the morning bullish drive.",
+    "12pm_red": "Rollover from the morning range; GOAT marker aligned with the transition into downside pressure.",
+    "2pm_green": "Controlled balance below broken support after the 13:30 washout.",
+    "4pm_yellow": "Late recovery attempt into the close, but still below the open and well below the morning HOD."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "morning_drive_midday_failure_afternoon_balance",
+    "open_type": "bullish_reclaim_open",
+    "lunch_behavior": "failed_reclaim_into_breakdown",
+    "afternoon_drive": "lower_value_balance_with_late_reclaim_attempt",
+    "goat_time": "12:00",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "lower_demand_near_28575_28610",
+    "banks_broken": "midday_demand_near_28708"
+  },
+  "takeaway": "Bearish reversal day after a strong morning drive: upside breakout failed into a noon breakdown, then price built lower afternoon value with only a partial late reclaim.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-05-07T09:30",
+    "end_et": "2026-05-07T16:00",
+    "open": 28750.25,
+    "close": 28684.5,
+    "hod": 28945,
+    "lod": 28553.5,
+    "span_pts": 391.5,
+    "net_pts": -65.75,
+    "net_pct": -0.2287,
+    "first_bar_ts": 1778160600,
+    "last_bar_ts": 1778183940
+  }
+}
