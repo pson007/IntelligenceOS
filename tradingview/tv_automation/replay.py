@@ -388,10 +388,18 @@ async def _reload_to_clear_replay(page: Page) -> bool:
     """Last-resort recovery — reload the chart URL. Kills any stuck
     Replay state in TV's internal state machine. Preserves layout
     because the URL carries the layout id. Returns True when the
-    canvas is visible post-reload."""
+    canvas is visible post-reload.
+
+    Uses `page.reload()` rather than `page.goto(page.url)` — both go
+    over the same CDP channel, but `reload` doesn't re-resolve the URL
+    which avoids one extra round-trip on a CDP-attached browser. When
+    the underlying transport has already dropped (handler closed,
+    websocket gone), the call raises and the caller's tier loop must
+    abort rather than continue — the next tier's `wait_for_timeout`
+    will raise the same way and just delay the inevitable."""
     audit.log("replay.recover.reload", url=page.url[:120])
     try:
-        await page.goto(page.url, wait_until="domcontentloaded")
+        await page.reload(wait_until="domcontentloaded")
         await page.wait_for_selector("canvas", state="visible", timeout=30_000)
         # Hydration buffer — indicators/legend mount after canvas paints.
         await page.wait_for_timeout(2000)
@@ -399,6 +407,20 @@ async def _reload_to_clear_replay(page: Page) -> bool:
     except Exception as e:
         audit.log("replay.recover.reload.fail", err=str(e))
         return False
+
+
+def _is_transport_dead(err: Exception) -> bool:
+    """Detect CDP-transport-dropped errors. When the transport is gone,
+    no further `page.*` call will succeed — the recovery ladder must
+    abort rather than retry against a closed handler."""
+    msg = str(err).lower()
+    return (
+        "connection closed" in msg
+        or "handler is closed" in msg
+        or "target closed" in msg
+        or "writeunixtransport closed" in msg
+        or "browser has been closed" in msg
+    )
 
 
 def _within_tolerance(
@@ -511,6 +533,16 @@ async def navigate_to(
             last_err = e
             audit.log("replay.navigate_to.tier_fail",
                       tier=attempt, err=str(e))
+            if _is_transport_dead(e):
+                # CDP websocket gone — every subsequent tier will raise
+                # the same way. Abort fast so the caller surfaces a
+                # meaningful error instead of grinding through 3 more
+                # tier failures and the diagnostic-collection block.
+                audit.log("replay.navigate_to.transport_dead", tier=attempt)
+                raise RuntimeError(
+                    f"CDP transport dropped at tier {attempt} during "
+                    f"navigate_to({when.isoformat()}). Original error: {e}"
+                ) from e
             continue
 
         # Settle, then confirm via API → BarDate fallback.
@@ -558,7 +590,11 @@ async def navigate_to(
               })
 
     hint = ""
-    if diag.get("strip_text", "").lower().strip() == "select date":
+    # `strip_text` is None when the strip is missing entirely — coerce to ""
+    # so the .lower() call doesn't AttributeError. The ad-hoc dict.get default
+    # only triggers on missing keys; it's bypassed when the key is present and
+    # the value is None, which is exactly what _read_strip_date returns.
+    if (diag.get("strip_text") or "").lower().strip() == "select date":
         hint = (" Replay strip shows 'Select date' — TV refused our "
                 "date pick. Likely cause: chart's saved-layout URL "
                 "is restoring a corrupted Replay state on every reload. "
@@ -594,10 +630,17 @@ async def open_date_picker(page: Page) -> None:
     """Click the `Select date` button to open the date picker modal.
     Assumes Replay is already active. Uses `wait_visible` because the
     strip container can appear before its inner controls hydrate (TV
-    renders a placeholder, then populates)."""
+    renders a placeholder, then populates).
+
+    Timeout is generous (8s) because tier-2 recovery just toggled
+    Replay off→on; the inner controls can take 4–6s to repaint on a
+    saved-layout chart with several indicators. The 3s timeout that
+    was here previously caused the 2026-05-07 23:53 cascade where a
+    transiently-empty strip was treated as selector drift, escalating
+    to Tier 3 reload which killed the CDP transport."""
     if not await is_active(page):
         raise SelectorDriftError("not_active", "replay", [_STRIP])
-    btn = await wait_visible(page, _SELECT_DATE, timeout_ms=3000)
+    btn = await wait_visible(page, _SELECT_DATE, timeout_ms=8000)
     if btn is None:
         raise SelectorDriftError("select_date", "replay", [_SELECT_DATE])
     await btn.click()

@@ -44,6 +44,9 @@ from playwright.async_api import Page
 from . import layout_guard, replay, replay_api
 from . import lessons as lessons_mod
 from .chatgpt_web import analyze_via_chatgpt_web
+from .forecast_capture import (
+    frame_full_session, frame_partial_session, hide_widget_panel,
+)
 from .lib import audit
 from .lib.capture_invariants import (
     CaptureExpect, CaptureInvariantError, assert_capture_ready,
@@ -223,47 +226,14 @@ async def _read_cursor(page: Page) -> datetime | None:
     return _bardate_to_datetime(text)
 
 
-async def _frame_session_view(page: Page) -> None:
-    """Frame the chart so roughly one full RTH session is visible, with the
-    cursor's day dominant in the view.
-
-    Reused from the Replay Analysis Daily Profile Workflow. The recipe is
-    pixel-position-dependent — tuned for a ~1728x996 viewport. Re-tune the
-    mouse.move coordinates if running on a different screen size."""
-    await page.bring_to_front()
-    # Zoom out anchored left so more of the session's morning bars come in
-    await page.mouse.move(200, 852)
-    await page.wait_for_timeout(150)
-    for _ in range(2):
-        await page.mouse.wheel(0, 120)
-        await page.wait_for_timeout(100)
-    # Slight zoom in at center to hide previous-day sliver
-    await page.mouse.move(828, 852)
-    await page.mouse.wheel(0, -120)
-    await page.wait_for_timeout(200)
-    await page.keyboard.press("End")
-    await page.wait_for_timeout(400)
-
-
-async def _frame_with_cursor_right(page: Page) -> None:
-    """Frame variant for forecast stages — zooms in on the right portion
-    so the cursor's partial day dominates the view and pushes prior-day
-    bars off the left edge."""
-    await page.bring_to_front()
-    await page.mouse.move(1300, 852)
-    await page.wait_for_timeout(150)
-    for _ in range(5):
-        await page.mouse.wheel(0, -120)
-        await page.wait_for_timeout(80)
-    await page.keyboard.press("End")
-    await page.wait_for_timeout(400)
-
-
 async def _capture(
     page: Page, symbol: str, stage_label: str,
     *, expect: CaptureExpect | None = None,
 ) -> Path:
-    """Screenshot the chart, return the path."""
+    """Screenshot the chart, return the path. Hides the right-sidebar
+    widget panel first so the chart canvas takes the full viewport
+    width — keeps captures consistent across stages and across runs."""
+    await hide_widget_panel(page)
     if expect is not None:
         await assert_capture_ready(page, expect)
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
@@ -320,7 +290,7 @@ async def _run_forecast_stage(
     we skip the ChatGPT call and do NOT write any files, so bad-frame
     artifacts don't pollute the forecast store or confuse --resume."""
     with audit.timed("daily_forecast.stage", stage=stage_label, cursor=str(cursor_time)) as ac:
-        await _frame_with_cursor_right(page)
+        await frame_partial_session(page)
         target_dt = datetime.combine(
             datetime.strptime(date_str, "%Y-%m-%d").date(), cursor_time,
         )
@@ -429,7 +399,7 @@ async def _run_reconciliation(
 ) -> dict:
     """Grade F1/F2/F3 against the actual day outcome."""
     with audit.timed("daily_forecast.reconciliation", date=date_str) as ac:
-        await _frame_session_view(page)
+        await frame_full_session(page)
         close_target = datetime.strptime(date_str, "%Y-%m-%d").replace(
             hour=16, minute=0, second=0, microsecond=0,
         )

@@ -34,6 +34,7 @@ from playwright.async_api import Page
 
 from . import lessons as lessons_mod, replay, replay_api
 from .chatgpt_web import analyze_via_chatgpt_web
+from .forecast_capture import frame_partial_session, hide_widget_panel
 from .lib import audit
 from .lib.capture_invariants import CaptureExpect, assert_capture_ready
 from .lib.context import chart_session
@@ -122,25 +123,13 @@ def _render_lessons_block() -> str:
     return "## ACCUMULATED LESSONS (from prior reconciliations — apply these)\n" + body
 
 
-async def _frame_live_session(page: Page) -> None:
-    """Frame the chart so the current RTH session dominates the view.
-
-    Scroll to right edge (current bar) + tighten zoom around it. Uses the
-    same pixel-tuned gestures as daily_forecast._frame_with_cursor_right."""
-    await page.bring_to_front()
-    await page.mouse.move(1300, 852)
-    await page.wait_for_timeout(150)
-    for _ in range(5):
-        await page.mouse.wheel(0, -120)
-        await page.wait_for_timeout(80)
-    await page.keyboard.press("End")
-    await page.wait_for_timeout(400)
-
-
 async def _capture(
     page: Page, symbol: str, stage_label: str,
     *, expect: CaptureExpect | None = None,
 ) -> Path:
+    """Hides the right-sidebar widget panel before capture so the chart
+    canvas takes the full viewport width."""
+    await hide_widget_panel(page)
     if expect is not None:
         await assert_capture_ready(page, expect)
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
@@ -190,7 +179,7 @@ async def run_live_stage(
             raise RuntimeError("set_symbol_in_place failed before live forecast")
         audit.log("live_forecast.chart_pinned", landed=landed)
         with audit.timed("live_forecast.stage", stage=stage, date=date_str) as ac:
-            await _frame_live_session(page)
+            await frame_partial_session(page)
             screenshot = await _capture(
                 page, symbol, stage.lower() + stage_tag,
                 expect=CaptureExpect(

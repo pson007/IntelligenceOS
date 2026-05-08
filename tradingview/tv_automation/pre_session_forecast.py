@@ -29,6 +29,7 @@ from playwright.async_api import Page
 
 from . import lessons as lessons_mod, replay, replay_api
 from .chatgpt_web import analyze_via_chatgpt_web
+from .forecast_capture import hide_widget_panel
 from .lib import audit
 from .lib.capture_invariants import CaptureExpect, assert_capture_ready
 from .lib.context import chart_session
@@ -391,6 +392,7 @@ async def _capture_premarket(
         await page.bring_to_front()
         await page.keyboard.press("End")
     await page.wait_for_timeout(400)
+    await hide_widget_panel(page)
     if expect is not None:
         await assert_capture_ready(page, expect)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
