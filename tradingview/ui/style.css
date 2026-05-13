@@ -4645,8 +4645,44 @@ html.is-mobile .forecasts-layout {
   height: auto;
   display: block;
 }
+/* Narrative typography — tighten line length + bump font/line-height
+   for readable long-form prose. The LLM output is dense paragraphs;
+   without a max-width the lines stretch the full card width and the
+   eye loses track between line endings. 65ch hits the sweet spot for
+   text comprehension on screens. */
 .forecast-stage-card .profile-narrative {
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 72ch;
+  color: var(--text);
+}
+.forecast-stage-card .profile-narrative p {
+  margin: 0.6em 0;
+}
+.forecast-stage-card .profile-narrative h3 {
+  /* Section headers (REGIME READ / PREDICTIONS / etc) get distinct
+     visual weight — a slight accent colour + extra top margin so each
+     section breathes from the previous one without needing a divider. */
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent, #58a6ff);
+  margin: 1.4em 0 0.4em;
+  padding-top: 0.6em;
+  border-top: 1px solid var(--border);
+}
+.forecast-stage-card .profile-narrative h3:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Sticky stage-nav banner offset — when a chip-click triggers
+   scrollIntoView, the target card lands flush with the viewport top,
+   which puts it under the sticky banner. scroll-margin-top reserves
+   space above each card so the card's title isn't covered. */
+.forecast-stage-card {
+  scroll-margin-top: 88px;
 }
 
 /* -- Accuracy tiers (shared by list pill, calendar cell, recon table) -- */

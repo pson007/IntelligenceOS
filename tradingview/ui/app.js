@@ -3553,6 +3553,23 @@ function renderProfileTags(tags) {
 // Minimal markdown-to-HTML. Handles headings (##, ###), **bold**, *italic*,
 // bullet lists (- item), pipe-tables, and fenced paragraphs. Good enough
 // for the profile narratives we generate — no external lib needed.
+// Heuristic: is this a section-title line emitted by the LLM in
+// all-caps without # markers? Examples: "REGIME READ",
+// "SAME-DOW REFERENCES", "PREDICTIONS", "TIME WINDOW EXPECTATIONS".
+// Require: trimmed line is non-empty, has no lowercase letters, is
+// reasonably short (so we don't promote sentences that happen to be
+// shouted), and contains at least one letter (to skip price lines
+// like "29,200.00").
+function _isAllCapsSection(ln) {
+  const t = (ln || '').trim();
+  if (!t || t.length > 60) return false;
+  if (/[a-z]/.test(t)) return false;
+  if (!/[A-Z]/.test(t)) return false;
+  // Skip pure-digit/symbol lines that survived the lowercase test.
+  if (!/[A-Z]{2,}/.test(t)) return false;
+  return true;
+}
+
 function renderProfileMarkdown(md) {
   if (!md) return '<div class="empty">No narrative.</div>';
   // Strip frontmatter
@@ -3589,6 +3606,14 @@ function renderProfileMarkdown(md) {
       const m = ln.match(/^(#+) (.*)$/);
       const level = Math.min(m[1].length + 1, 6);  // bump one level so our h1 stays the page title
       out.push(`<h${level}>${renderInline(m[2])}</h${level}>`);
+    } else if (_isAllCapsSection(ln)) {
+      // LLM forecasts emit section titles like "REGIME READ" or
+      // "SAME-DOW REFERENCES" without # markers. Detect short
+      // all-caps lines (no lowercase, ≥2 words or specific known
+      // keywords) and promote them to h3 so they render as proper
+      // section headers instead of flat paragraphs.
+      if (inList) { out.push('</ul>'); inList = false; }
+      out.push(`<h3>${renderInline(ln.trim())}</h3>`);
     } else if (/^\s*-\s+/.test(ln)) {
       if (!inList) { out.push('<ul>'); inList = true; }
       out.push(`<li>${renderInline(ln.replace(/^\s*-\s+/, ''))}</li>`);
@@ -5203,7 +5228,12 @@ async function selectForecastDay(symbol, date) {
       const href = chip.getAttribute('href') || '';
       const target = href.startsWith('#') ? document.getElementById(href.slice(1)) : null;
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        // block:'start' resets vertical scroll so the card lands at
+        // the top of the viewport (offset by the card's
+        // scroll-margin-top to clear the sticky banner). Without this
+        // a chip-click only nudges the carousel horizontally and the
+        // user lands mid-narrative wherever they last scrolled.
+        target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'start' });
       }
     });
   });
