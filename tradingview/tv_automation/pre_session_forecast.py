@@ -448,7 +448,7 @@ def _split_response(text: str) -> tuple[str, dict | None]:
 
 async def run_pre_session(
     *, symbol: str = "MNQ1", date_str: str | None = None,
-    image_path: str | None = None,
+    image_path: str | None = None, force: bool = False,
 ) -> dict:
     """Run a pre-session forecast for `date_str` (defaults to today).
 
@@ -466,7 +466,7 @@ async def run_pre_session(
     _FORECASTS_ROOT.mkdir(parents=True, exist_ok=True)
     base = _FORECASTS_ROOT / f"{symbol}_{date_str}_pre_session"
     md_path, json_path = base.with_suffix(".md"), base.with_suffix(".json")
-    if json_path.exists():
+    if json_path.exists() and not force:
         audit.log("pre_session.skip_existing", path=str(json_path))
         return {"skipped": True, "path": str(json_path)}
 

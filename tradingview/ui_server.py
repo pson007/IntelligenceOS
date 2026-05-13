@@ -2730,13 +2730,16 @@ async def forecast_reconcile_start(payload: dict) -> dict:
 async def forecast_pre_session_start(payload: dict) -> dict:
     """Run the pre-session forecast for a given date (default: today).
 
-    Body: {date?: "YYYY-MM-DD", symbol?: "MNQ1"}
+    Body: {date?: "YYYY-MM-DD", symbol?: "MNQ1", force?: bool}
     Returns {task_id, request_id}. Poll /api/forecasts/runs/{task_id}
-    and /api/audit/tail?request_id=... as usual."""
+    and /api/audit/tail?request_id=... as usual. `force` (default false)
+    overrides the skip-existing guard — used by the Regenerate button on
+    the stage card to refresh a stale capture."""
     global _active_forecast_run
     p = payload or {}
     date = (p.get("date") or "").strip() or datetime.now().strftime("%Y-%m-%d")
     symbol = (p.get("symbol") or "MNQ1").strip()
+    force = bool(p.get("force", False))
 
     if not _PROFILE_DATE_RX.match(date):
         raise HTTPException(400, "date must be YYYY-MM-DD")
@@ -2766,7 +2769,7 @@ async def forecast_pre_session_start(payload: dict) -> dict:
         global _active_forecast_run
         try:
             from tv_automation.pre_session_forecast import run_pre_session
-            result = await run_pre_session(symbol=symbol, date_str=date)
+            result = await run_pre_session(symbol=symbol, date_str=date, force=force)
             _forecast_run_tasks[task_id]["state"] = "done"
             _forecast_run_tasks[task_id]["result"] = result
         except Exception as e:

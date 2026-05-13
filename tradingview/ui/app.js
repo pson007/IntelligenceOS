@@ -5246,13 +5246,29 @@ async function selectForecastDay(symbol, date) {
     });
   });
 
-  // Wire Regenerate buttons — re-render Pine from the saved forecast JSON
-  // and overwrite pine/generated/forecast_overlay_{date}.pine, without
-  // running the Apply subprocess. Sub-second round-trip, no sibling lock.
+  // Wire Regenerate buttons.
+  //
+  // pre_session stage: rerun the whole pipeline (capture + LLM + save).
+  // Routes through _dispatchForecastRun so the user sees the same status
+  // bar + audit stream as a fresh start, and so _cdp_busy serializes us
+  // against concurrent runs. The card itself doesn't auto-refresh after
+  // completion — tap the day again to re-render with the fresh screenshot.
+  //
+  // Other stages (1000/1200/1400/reconciliation): keep the legacy Pine-
+  // only regen for now — those stages don't have a force-rerun endpoint
+  // yet, and the Ad-hoc button on the Plan tab is the right escape hatch.
   main.querySelectorAll('.forecast-regen-btn').forEach(btn => {
     btn.addEventListener('click', async ev => {
       ev.preventDefault();
       const { symbol, date, stage } = btn.dataset;
+      if (stage === 'pre_session') {
+        _dispatchForecastRun({
+          kind: 'pre_session',
+          endpoint: '/api/forecasts/pre_session',
+          body: { date, symbol, force: true },
+        });
+        return;
+      }
       setBusy(btn, true, '↻ Regenerate');
       try {
         const r = await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/regenerate`, { method: 'POST', body: {} });
