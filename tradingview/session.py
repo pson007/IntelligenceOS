@@ -91,7 +91,15 @@ async def tv_context(headless: bool | None = None) -> AsyncIterator[BrowserConte
             finally:
                 # IMPORTANT: do not call ctx.close() — that closes Chrome.
                 # Just disconnect our CDP transport; the browser keeps running.
-                await browser.close()
+                # Tolerate a dead transport: if Chrome already terminated the
+                # CDP socket (user quit Chrome, tab crashed, network blip on
+                # tailnet), browser.close() raises "WriteUnixTransport closed"
+                # which masks the real outcome. We just want to release our
+                # end of the pipe; if Chrome's end is already gone, success.
+                try:
+                    await browser.close()
+                except Exception:
+                    pass
             return
 
         # ---- LAUNCH MODE (original behavior) -------------------------------
