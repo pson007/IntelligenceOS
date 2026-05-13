@@ -4528,6 +4528,55 @@ html.is-mobile .forecasts-layout {
   max-height: 80vh;
 }
 
+/* Stage-nav strip — sticky-ish row of jump-to-card chips that lives
+   between the accuracy panel and the first stage card. Each chip's
+   dot is filled when a capture exists, hollow when missing — so the
+   four-stage status is visible at a glance without scrolling. */
+.stage-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-3) 0;
+  padding: var(--s-2);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: sticky;
+  top: var(--topbar-h, 56px);
+  z-index: 10;
+}
+.stage-nav__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.stage-nav__chip:hover {
+  border-color: var(--accent, #58a6ff);
+  color: var(--accent, #58a6ff);
+}
+.stage-nav__chip--empty {
+  color: var(--muted);
+}
+.stage-nav__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: inline-block;
+}
+.stage-nav__dot--filled {
+  background: var(--green, #3fb950);
+  border-color: var(--green, #3fb950);
+}
+
 /* Speak button progress state — used during synthesis + audio download.
    Renders a linear-gradient fill behind the label, driven by a
    --progress custom property set from JS (0%–100%). The base button

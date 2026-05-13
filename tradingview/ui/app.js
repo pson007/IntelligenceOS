@@ -5113,22 +5113,26 @@ async function selectForecastDay(symbol, date) {
     return '';
   };
 
+  // Stable per-card id so the stage-nav strip can scroll to each one.
+  const _stageCardId = stage => `stage-card-${stage.replace(/[^a-z0-9_-]/gi, '')}`;
+
   const sections = present.map(r => {
     const title = titleFor(r.stage);
+    const cardId = _stageCardId(r.stage);
     if (r.error) {
       // 404 → friendly "Not captured yet" placeholder with a hint.
       // Anything else → surface the raw error so transport bugs are
       // visible rather than masked as "missing."
       if (_is404(r.error)) {
         const hint = _captureHintFor(r.stage);
-        return `<div class="card forecast-stage-card forecast-stage-card--empty">
+        return `<div id="${cardId}" class="card forecast-stage-card forecast-stage-card--empty">
           <div class="card-head"><h2>${title}</h2>
             <div class="card-head__actions"><span class="mono small muted">no capture on file</span></div>
           </div>
           <div class="empty muted">${hint || 'Not captured yet for this day.'}</div>
         </div>`;
       }
-      return `<div class="card"><div class="card-head"><h2>${title}</h2></div><div class="empty err">${r.error}</div></div>`;
+      return `<div id="${cardId}" class="card"><div class="card-head"><h2>${title}</h2></div><div class="empty err">${r.error}</div></div>`;
     }
     const j = r.json || {};
     const metaBits = [];
@@ -5146,7 +5150,7 @@ async function selectForecastDay(symbol, date) {
       : '';
     const speakBtn = `<button class="btn small forecast-speak-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}" title="Read this forecast aloud (Qwen3-TTS, local)">🔊 Speak</button>`;
     return `
-      <div class="card forecast-stage-card">
+      <div id="${cardId}" class="card forecast-stage-card">
         <div class="card-head">
           <h2>${title}</h2>
           <div class="card-head__actions">
@@ -5165,9 +5169,27 @@ async function selectForecastDay(symbol, date) {
     `;
   });
 
+  // Stage-nav strip — chip per stage with a status dot (filled = has
+  // capture, hollow = missing). Click scrolls the page to that card.
+  // Sits right under the accuracy panel so the operator sees the full
+  // stage chain without scrolling past the first card.
+  const _stageNavStrip = (() => {
+    if (present.length <= 1) return '';
+    const chipFor = r => {
+      const t = titleFor(r.stage);
+      const has = !r.error;
+      const dotClass = has ? 'stage-nav__dot stage-nav__dot--filled' : 'stage-nav__dot';
+      return `<a class="stage-nav__chip${has ? '' : ' stage-nav__chip--empty'}"
+                 href="#${_stageCardId(r.stage)}">
+        <span class="${dotClass}"></span>${t}
+      </a>`;
+    };
+    return `<nav class="stage-nav">${present.map(chipFor).join('')}</nav>`;
+  })();
+
   main.innerHTML =
     `<button type="button" class="mobile-back-btn" data-target="forecasts-layout">‹ Back to list</button>`
-    + accuracyHtml + sections.join('');
+    + accuracyHtml + _stageNavStrip + sections.join('');
 
   // Wire Pine-download buttons.
   main.querySelectorAll('.forecast-pine-btn').forEach(btn => {
