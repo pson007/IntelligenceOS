@@ -4520,6 +4520,12 @@ html.is-mobile .forecasts-layout {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
+  /* Grid items default to min-width:auto (= min-content). A wide
+     chart screenshot inside the carousel was blowing up that
+     min-content, expanding the 1fr column past viewport and
+     overflowing buttons/cards on the right. Zero it so the column
+     stays at exactly 1fr regardless of inner intrinsic widths. */
+  min-width: 0;
 }
 .forecast-stage-card .compare-img {
   /* No height cap — the previous max-height:80vh combined with
@@ -4550,6 +4556,10 @@ html.is-mobile .forecasts-layout {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scroll-padding-left: 0;
+  /* Same min-width:0 reason as .forecasts-main — without it the carousel
+     itself can expand past its parent if a child's content is wider than
+     the cell, defeating the whole point of the scroll rail. */
+  min-width: 0;
   /* Hide native horizontal scrollbar — the chips above + snap behaviour
      are the navigation; a thin bar would chrome up the bottom of the
      tallest card for no signal. */
