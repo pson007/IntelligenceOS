@@ -3459,14 +3459,35 @@ async def forecast_speak(
 
     if stream:
         from starlette.responses import StreamingResponse
+        # Pre-synth so we can advertise the total PCM size in the
+        # response headers — the UI uses it to render a real progress
+        # bar during the download phase instead of an estimate. The
+        # synth-blocking TTFB stays the same (~10s for ~600 chars on
+        # M3 Max); only the body iterator changes.
         try:
-            gen = tts_mod.synthesize_stream(script, voice=voice)
+            wav = await tts_mod.synthesize(script, voice=voice)
         except tts_mod.TTSUnavailable as e:
             raise HTTPException(503, str(e))
+        except Exception as e:
+            raise HTTPException(500, f"tts failed: {e}")
+        idx = wav.find(b"data")
+        if idx < 0:
+            raise HTTPException(500, "WAV from sidecar has no 'data' chunk")
+        pcm = wav[idx + 8:]
+
+        async def chunks():
+            chunk_size = 8192
+            for i in range(0, len(pcm), chunk_size):
+                yield pcm[i:i + chunk_size]
+
         return StreamingResponse(
-            gen,
+            chunks(),
             media_type="application/octet-stream",
-            headers={"X-TTS-Sample-Rate": "24000"},
+            headers={
+                "X-TTS-Sample-Rate": "24000",
+                "X-PCM-Total-Bytes": str(len(pcm)),
+                "X-TTS-Char-Count": str(len(script)),
+            },
         )
 
     try:

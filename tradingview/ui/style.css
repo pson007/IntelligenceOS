@@ -4527,6 +4527,19 @@ html.is-mobile .forecasts-layout {
      viewport cap keeps very tall displays bounded. */
   max-height: 80vh;
 }
+
+/* Speak button progress state — used during synthesis + audio download.
+   Renders a linear-gradient fill behind the label, driven by a
+   --progress custom property set from JS (0%–100%). The base button
+   keeps its border/padding; the gradient sits at the background layer. */
+.forecast-speak-btn.speak-progressing {
+  background: linear-gradient(
+    to right,
+    var(--accent-bg, rgba(88, 166, 255, 0.25)) var(--progress, 0%),
+    var(--bg-3) var(--progress, 0%)
+  );
+  transition: none;
+}
 .forecast-stage-card .compare-img img {
   width: 100%;
   height: auto;

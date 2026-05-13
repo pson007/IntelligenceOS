@@ -5168,80 +5168,145 @@ async function selectForecastDay(symbol, date) {
     });
   });
 
-  // Wire Speak buttons — stream raw PCM from the local Qwen3-TTS
-  // sidecar and play progressively via Web Audio API. First audio
-  // arrives in ~3s instead of waiting 60s+ for the full WAV.
+  // Wire Speak buttons — four-state machine on a single button:
+  //   idle         "🔊 Speak"           → click triggers synth
+  //   synthesizing "Synthesizing… NN%"  → progress bar inside button
+  //   ready        "▶ Play"             → click starts playback
+  //   playing      "⏸ Stop"             → click stops playback
+  //
+  // Synth dominates wall-clock time (~10s for a typical pre-session
+  // forecast). The first 0–90% of the bar is a time-based estimate
+  // since the server can't report intra-synth progress; once the
+  // response headers arrive we know X-PCM-Total-Bytes and the last
+  // 10% reflects real bytes-received. Audio is buffered into a single
+  // AudioBuffer rather than scheduled chunk-by-chunk so the user has
+  // an explicit Play gesture (required for autoplay reliability on
+  // iOS) and so Stop is straightforward to wire up.
   main.querySelectorAll('.forecast-speak-btn').forEach(btn => {
+    const initialHTML = btn.innerHTML;
+    let state = 'idle';
+    let audioCtx = null;
+    let audioBuf = null;
+    let source = null;
+    let progressTimer = null;
+
+    function setSpeakState(next, htmlOrPct) {
+      state = next;
+      btn.classList.remove('speak-progressing');
+      if (next === 'idle') {
+        btn.innerHTML = initialHTML;
+        btn.style.removeProperty('--progress');
+        btn.disabled = false;
+      } else if (next === 'synthesizing' || next === 'loading') {
+        const pct = Math.max(0, Math.min(100, Math.round(htmlOrPct || 0)));
+        btn.classList.add('speak-progressing');
+        btn.style.setProperty('--progress', pct + '%');
+        btn.innerHTML = next === 'synthesizing'
+          ? `<span class="mono small">Synthesizing… ${pct}%</span>`
+          : `<span class="mono small">Loading audio… ${pct}%</span>`;
+        btn.disabled = false;  // keep clickable for cancel in a future iteration
+        btn.style.pointerEvents = 'none';
+      } else if (next === 'ready') {
+        btn.innerHTML = '▶ Play';
+        btn.style.removeProperty('--progress');
+        btn.style.pointerEvents = '';
+        btn.disabled = false;
+      } else if (next === 'playing') {
+        btn.innerHTML = '⏸ Stop';
+        btn.style.removeProperty('--progress');
+        btn.style.pointerEvents = '';
+        btn.disabled = false;
+      }
+    }
+
     btn.addEventListener('click', async ev => {
       ev.preventDefault();
+
+      // State-routed click. Synthesizing/loading is non-interactive
+      // (pointer-events:none on the button), so this branch never
+      // fires in those states — left here for clarity.
+      if (state === 'playing') {
+        source?.stop();
+        return;  // onended swaps state back to 'ready'
+      }
+      if (state === 'ready') {
+        // Start playback. AudioBuffer is already decoded; just wire
+        // a new BufferSource (sources are single-shot).
+        source = audioCtx.createBufferSource();
+        source.buffer = audioBuf;
+        source.connect(audioCtx.destination);
+        source.onended = () => { setSpeakState('ready'); source = null; };
+        source.start();
+        setSpeakState('playing');
+        return;
+      }
+      if (state !== 'idle') return;
+
+      // ---- idle → synthesizing → loading → ready ----
       const { symbol, date, stage } = btn.dataset;
-      setBusy(btn, true, '🔊 Speak');
       const t0 = Date.now();
-      let audioCtx = null;
+      // Rough estimate — pre-session forecasts ~600 chars synth in
+      // ~12s on M3 Max. We don't know the script length client-side
+      // until the response headers arrive, so use a fixed seed.
+      const EXPECTED_SYNTH_MS = 12000;
+      setSpeakState('synthesizing', 0);
+      progressTimer = setInterval(() => {
+        const pct = Math.min(90, ((Date.now() - t0) / EXPECTED_SYNTH_MS) * 90);
+        setSpeakState('synthesizing', pct);
+      }, 120);
+
       try {
         const url = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/speak?stream=1`;
         const res = await fetch(url, { headers: { 'X-UI-Token': localStorage.getItem('ios-ui-token') || '' } });
+        clearInterval(progressTimer);
+        progressTimer = null;
         if (!res.ok) {
           let msg = `HTTP ${res.status}`;
           try { const j = await res.json(); if (j.detail) msg = j.detail; } catch (_) {}
           throw new Error(msg);
         }
         const sampleRate = parseInt(res.headers.get('X-TTS-Sample-Rate') || '24000');
-        audioCtx = new AudioContext({ sampleRate });
-        const reader = res.body.getReader();
-        let nextTime = 0;
-        let started = false;
-        let leftover = new Uint8Array(0);
+        const totalBytes = parseInt(res.headers.get('X-PCM-Total-Bytes') || '0');
 
+        // Switch to byte-based progress for the download phase.
+        setSpeakState('loading', 0);
+
+        // Drain the body, tracking bytes received against the
+        // advertised total for an accurate progress bar.
+        const reader = res.body.getReader();
+        const parts = [];
+        let received = 0;
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
-          // Combine with any leftover byte from chunk boundary
-          let data;
-          if (leftover.length > 0) {
-            data = new Uint8Array(leftover.length + value.length);
-            data.set(leftover);
-            data.set(value, leftover.length);
-            leftover = new Uint8Array(0);
-          } else {
-            data = value;
-          }
-          const usable = data.length & ~1;
-          if (usable < data.length) leftover = data.slice(usable);
-          if (usable === 0) continue;
-
-          // Copy into aligned buffer, convert int16 → float32
-          const aligned = new ArrayBuffer(usable);
-          new Uint8Array(aligned).set(data.subarray(0, usable));
-          const int16 = new Int16Array(aligned);
-          const float32 = new Float32Array(int16.length);
-          for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
-
-          const buf = audioCtx.createBuffer(1, float32.length, sampleRate);
-          buf.getChannelData(0).set(float32);
-          const src = audioCtx.createBufferSource();
-          src.buffer = buf;
-          src.connect(audioCtx.destination);
-
-          if (!started) {
-            nextTime = audioCtx.currentTime + 0.05;
-            started = true;
-            toast(`▶ playing forecast (${((Date.now() - t0) / 1000).toFixed(1)}s to first audio)`, 'ok');
-          }
-          if (nextTime < audioCtx.currentTime) nextTime = audioCtx.currentTime + 0.02;
-          src.start(nextTime);
-          nextTime += buf.duration;
+          parts.push(value);
+          received += value.length;
+          const pct = totalBytes > 0 ? (received / totalBytes) * 100 : 50;
+          setSpeakState('loading', Math.min(99, pct));
         }
 
-        // Close AudioContext after last buffer finishes
-        const remaining = Math.max(0, (nextTime || 0) - (audioCtx?.currentTime || 0));
-        setTimeout(() => { if (audioCtx) audioCtx.close(); }, (remaining + 0.5) * 1000);
+        // Concat into one buffer, snap to even length (int16 = 2 bytes).
+        const merged = new Uint8Array(received);
+        let off = 0;
+        for (const p of parts) { merged.set(p, off); off += p.length; }
+        const usable = merged.length & ~1;
+        const int16 = new Int16Array(merged.buffer, 0, usable / 2);
+        const float32 = new Float32Array(int16.length);
+        for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
+
+        if (audioCtx) try { audioCtx.close(); } catch (_) {}
+        audioCtx = new AudioContext({ sampleRate });
+        audioBuf = audioCtx.createBuffer(1, float32.length, sampleRate);
+        audioBuf.getChannelData(0).set(float32);
+
+        const synthSec = ((Date.now() - t0) / 1000).toFixed(1);
+        const audioSec = (audioBuf.duration).toFixed(1);
+        toast(`ready (synth ${synthSec}s · audio ${audioSec}s) — tap ▶ to play`, 'ok');
+        setSpeakState('ready');
       } catch (e) {
+        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
         toast(`speak failed: ${e.message}`, 'err');
-        if (audioCtx) audioCtx.close();
-      } finally {
-        setBusy(btn, false, '🔊 Speak');
+        setSpeakState('idle');
       }
     });
   });
