@@ -5453,7 +5453,7 @@ async function _wizardRunCapture() {
   try {
     const r = await api('/api/chart/screenshot', {
       method: 'POST',
-      body: JSON.stringify({ symbol: 'MNQ1!', interval: '1D' }),
+      body: { symbol: 'MNQ1!', interval: '1D' },
     });
     if (!r || !r.path) throw new Error('no path returned');
     // Server inlines the PNG as a data: URI so <img> loads work even
