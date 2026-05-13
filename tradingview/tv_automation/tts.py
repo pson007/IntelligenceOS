@@ -81,38 +81,31 @@ async def synthesize(text: str, voice: str | None = None) -> bytes:
 
 
 async def synthesize_stream(text: str, voice: str | None = None):
-    """Async generator yielding raw int16 PCM chunks from the sidecar.
+    """Async generator yielding raw int16 PCM chunks at 24 kHz.
 
-    Each chunk is a bytes object of little-endian int16 samples at 24 kHz.
-    The caller (StreamingResponse) forwards these to the browser where
-    Web Audio API decodes and schedules them for progressive playback."""
-    text = (text or "").strip()
-    if not text:
-        raise ValueError("empty text")
+    The qwen3-tts sidecar currently exposes only the full-synth /speak
+    endpoint (returns a complete 24 kHz mono int16 WAV). The old
+    /speak/stream path is gone, which used to feed the browser
+    progressively in ~3s. For now we synthesize the whole utterance,
+    strip the WAV header, and yield the PCM in 8 KB chunks so the
+    Web Audio consumer in the UI stays unchanged. First audio arrives
+    after full synth (~10s for a typical 600-char forecast) instead of
+    incrementally — acceptable trade-off until the sidecar regains a
+    streaming endpoint."""
+    wav = await synthesize(text, voice=voice)
     voice = voice or DEFAULT_VOICE
-    audit.log("tts.stream.start", chars=len(text), voice=voice, sidecar=SIDECAR_URL)
-    client = httpx.AsyncClient(timeout=httpx.Timeout(connect=5.0, read=SYNTH_TIMEOUT, write=5.0, pool=5.0))
-    try:
-        async with client.stream(
-            "POST",
-            f"{SIDECAR_URL}/speak/stream",
-            json={"text": text, "voice": voice},
-        ) as resp:
-            if resp.status_code != 200:
-                body = await resp.aread()
-                raise RuntimeError(f"sidecar HTTP {resp.status_code}: {body.decode(errors='replace')}")
-            async for chunk in resp.aiter_bytes(chunk_size=8192):
-                yield chunk
-    except httpx.ConnectError as e:
-        audit.log("tts.stream.unavailable", error=str(e))
-        raise TTSUnavailable(
-            f"qwen3-tts sidecar not reachable at {SIDECAR_URL} — start with ./start_qwen3_tts.sh"
-        ) from e
-    except httpx.RequestError as e:
-        audit.log("tts.stream.error", error=str(e))
-        raise TTSUnavailable(f"qwen3-tts sidecar error: {e}") from e
-    finally:
-        await client.aclose()
+    # Walk the WAV chunks until we find "data" — header is usually 44
+    # bytes, but extra chunks (LIST/INFO from some encoders) push it
+    # further. find() handles both.
+    idx = wav.find(b"data")
+    if idx < 0:
+        raise RuntimeError("WAV from sidecar has no 'data' chunk")
+    pcm = wav[idx + 8:]  # skip "data" tag (4) + size field (4)
+    audit.log("tts.stream.start", chars=len(text), voice=voice,
+              sidecar=SIDECAR_URL, pcm_bytes=len(pcm))
+    chunk_size = 8192
+    for i in range(0, len(pcm), chunk_size):
+        yield pcm[i:i + chunk_size]
     audit.log("tts.stream.done", chars=len(text), voice=voice)
 
 
