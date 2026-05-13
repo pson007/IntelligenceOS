@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-11",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260512_191021.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:15:00",
+    "session_last": "10:05:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-12T19:10:57",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-11 ~10:00 ET\n\nBars observed so far this session: ~31 one-minute RTH bars, 09:30\u201310:00 ET\n\nWhat has happened so far: MNQ opened with a sharp upside drive above 29400, failed quickly, made a lower high near 09:48, then sold back into VWAP/open-drive base by 10:00.\n\nRANKED SIMILAR ARCHETYPES\n\ngap_up_drive_then_reversal \u2014 The open spike cleared 29400 but failed within minutes and could not sustain value above the first impulse high.\n\nfailed_open_drive_to_VWAP_retest \u2014 Price has already round-tripped most of the opening strength and is pressing the VWAP/base zone at 10:00.\n\nearly_range_expansion_then_lower_high_balance \u2014 The 09:39\u201309:48 bounce held below the opening high, suggesting supply is active above 29400.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect continued pressure into the 29280\u201329300 base; a weak bounce is possible, but reclaim failure below 29345 keeps sellers in control.\n\nBetween next marker and 14:00: Likely two-sided but bearish-leaning rotation, with risk of a secondary flush if 29280 breaks cleanly.\n\nBetween 14:00 and 16:00: Base case is lower balance or late downside continuation; bullish reversal requires acceptance back above 29370\u201329390.\n\nProjected close price range: 29220\u201329310\n\nRest-of-day HOD range: 29355\u201329415\n\nRest-of-day LOD range: 29160\u201329245\n\nTACTICAL BIAS\n\nPrimary bias: short, confidence 62%\n\nKey level to invalidate the bias: 29385\u201329410 acceptance\n\nPreferred entry zone: 29325\u201329360 failed bounce\n\nR:R logic: Shorting a bounce into failed VWAP/open-drive reclaim targets 29240 first, then 29180; risk should sit above 29385 or tighter above the failed bounce high.\n\nKEY LEVELS\n\nOverhead supply: 29355\u201329385, then 29405\u201329435\n\nUnderlying demand: 29280\u201329300, then 29225\u201329245\n\nPivot-to-watch: 29318\u201329330 VWAP/open-drive base\n\nPREDICTION TAGS\n\ndirection: down / bearish, 62%\n\nstructure: gap_up_drive_then_reversal_to_lower_balance, 58%\n\nlunch_behavior: weak bounce / lower-high chop, 55%\n\nafternoon_drive: downside continuation attempt, 52%\n\ngoat_direction: bearish, 54%\n\nclose_near_extreme: moderate chance near lower third, 57%"
+}

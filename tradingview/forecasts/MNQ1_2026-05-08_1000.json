@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-08",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260512_192641.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:56:00",
+    "session_last": "10:09:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-12T19:27:17",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-08 ~10:00 ET. BarDate label is not clearly readable in the screenshot; using the provided cursor time.\n\nBars observed so far this session: ~30 one-minute RTH bars elapsed, 09:30\u201309:59 ET. Visible evidence shows 4 bars before cursor: 09:56\u201309:59 ET.\n\nWhat has happened so far in 1 sentence: MNQ has pushed sharply higher into 10:00, with the 09:59 pre-cursor bar breaking above the prior tight range and printing near 29,110.\n\nRANKED SIMILAR ARCHETYPES\n\nBullish open-drive trend day \u2014 Early price is accepting higher and the 09:59 bar shows impulse, not rejection.\n\nGap-up continuation / supply absorption \u2014 The move is already above nearby early resistance, so upside bands should be widened.\n\nEarly breakout into high-level consolidation \u2014 The next likely behavior is pause/pullback near 10:00, then continuation if buyers defend 29,070\u201329,090.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect a brief 10:00 digestion/pullback, likely holding above 29,070\u201329,085 before another probe higher.\n\nBetween next marker and 14:00: Bullish continuation or high-level balance; if 29,110\u201329,125 accepts, target expansion toward 29,180\u201329,240.\n\nBetween 14:00 and 16:00: Favor afternoon grind higher or consolidation near highs; late fade risk rises only if price loses 29,060 and fails to reclaim.\n\nProjected close price range: 29,190\u201329,285\n\nRest-of-day HOD range: 29,230\u201329,340\n\nRest-of-day LOD range: 29,045\u201329,085\n\nTACTICAL BIAS\n\nPrimary bias: Long, confidence 68%\n\nKey level to invalidate the bias: 29,040\n\nPreferred entry zone: 29,070\u201329,095 on pullback/hold, or 29,120+ on clean acceptance breakout.\n\nR:R logic: Risk below 29,040 against upside toward 29,230\u201329,340 gives acceptable asymmetric continuation if buyers defend the breakout shelf.\n\nKEY LEVELS\n\nOverhead supply: 29,120\u201329,140, then 29,230\u201329,340\n\nUnderlying demand: 29,070\u201329,095, then 29,040\u201329,055\n\nPivot-to-watch: 29,110\u201329,120\n\nPREDICTION TAGS\n\ndirection: bullish 68%\n\nstructure: bullish_open_drive_trend_day 61%\n\nlunch_behavior: high_level_consolidation 58%\n\nafternoon_drive: grind_higher 55%\n\ngoat_direction: upside 64%\n\nclose_near_extreme: near_HOD 57%"
+}

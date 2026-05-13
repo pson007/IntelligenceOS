@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-07",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260512_192812.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:58:00",
+    "session_last": "10:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-12T19:28:44",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-07 ~10:00 AM ET from BarDate/time-marker context.\n\nBars observed so far this session: ~30 one-minute bars, 09:30\u201310:00 ET. Bars after 10:00 are un-replayed future and not used.\n\nWhat has happened so far in 1 sentence: MNQ opened in a tight-to-bullish early range, held above lower demand, and is pressing near the early HOD around 28,788 while still lacking a confirmed trend extension.\n\nRANKED SIMILAR ARCHETYPES\n\nEarly balance near highs \u2192 trend continuation attempt\nPrice is holding near the upper edge of the observed range with no meaningful bearish rejection before the cursor.\n\nBullish open hold with shallow pullback\nThe early LOD near 28,770 held quickly, and price reclaimed/held around 28,781\u201328,788.\n\nHigh balance before 10:00 expansion\nThe first 30 minutes are compressed; 10:00 often decides whether this becomes continuation or mean-reversion.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect a 10:00 expansion attempt above 28,788\u201328,795. If buyers fail to accept above that zone, pullback toward 28,770\u201328,755 is likely.\n\nBetween next marker and 14:00: Base case is bullish-to-neutral drift, with higher-low formation above 28,745\u201328,755. Acceptance above 28,800 opens continuation toward 28,850+.\n\nBetween 14:00 and 16:00: If price is still holding above 28,780 by 14:00, expect afternoon continuation or high-level consolidation into the close. If 28,745 fails, expect rotation lower and a weaker close.\n\nProjected close price range: 28,835\u201328,910\n\nRest-of-day HOD range: 28,875\u201328,965\n\nRest-of-day LOD range: 28,715\u201328,755\n\nTACTICAL BIAS\n\nPrimary bias: Long, 62% confidence\n\nKey level to invalidate the bias: 28,745 acceptance below\n\nPreferred entry zone: 28,755\u201328,775 on pullback hold, or 28,795\u201328,805 on clean breakout/retest\n\nR:R logic: Risk below 28,745; upside target 28,875\u201328,950 gives roughly 2:1+ if entry is near 28,765\u201328,780. Avoid chasing if breakout fails back under 28,780.\n\nKEY LEVELS\n\nOverhead supply: 28,788\u201328,805, then 28,875\u201328,965\n\nUnderlying demand: 28,755\u201328,770, then 28,715\u201328,745\n\nPivot-to-watch: 28,781\u201328,788\n\nPREDICTION TAGS\n\ndirection: up / bullish continuation, 62%\n\nstructure: early_high_balance_to_trend_attempt, 58%\n\nlunch_behavior: hold-above-value / shallow pullback, 55%\n\nafternoon_drive: upside continuation if above 28,780, 57%\n\ngoat_direction: bullish, 60%\n\nclose_near_extreme: near upper third, 56%"
+}

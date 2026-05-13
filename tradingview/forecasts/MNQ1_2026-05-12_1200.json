@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-12",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260512_184128.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "10:15:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-12T18:42:09",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-12 ~12:00 ET.\n\nBars observed so far this session: ~150 one-minute RTH bars, ~09:30\u201312:00 ET. Bars after 12:00 are not used.\n\nSo far: MNQ opened near 29,212.75, made an early high near 29,295.75, then sold off in persistent lower-high structure into the 28,840 area by noon.\n\nRANKED SIMILAR ARCHETYPES\n\nTrend-down / failed-opening-drive liquidation \u2014 Strong early high failed, rallies stayed below declining supply, and price has not reclaimed value.\n\nLower-high grind with midday bear control \u2014 Multiple bounces before cursor failed at lower highs, keeping sellers in control into lunch.\n\nPotential lunch-capitulation trap \u2014 Price is extended lower by noon, so a 13:00 demand-hold reversal branch must stay open, but only if sellers fail to extend.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect weak sideways-to-lower trade; rallies into 28,890\u201328,940 likely meet supply.\n\nBetween next marker and 14:00: Next marker is 14:00, so this is effectively the same window; watch whether price accepts below 28,830 or reclaims 28,925.\n\nBetween 14:00 and 16:00: Base case is bearish continuation or low-side balance. A squeeze only becomes credible above 28,975\u201329,025.\n\nProjected close price range: 28,650\u201328,820\n\nRest-of-day HOD range: 28,920\u201329,020\n\nRest-of-day LOD range: 28,520\u201328,700\n\nTACTICAL BIAS\n\nPrimary bias: Short, 68% confidence\n\nKey level to invalidate the bias: Sustained reclaim above 29,025, stronger invalidation above 29,075\n\nPreferred entry zone: Short failed bounces into 28,900\u201328,970\n\nR:R logic: Risk above 29,025/29,075; target first 28,760, then 28,650, with extension potential toward 28,520 if trend-day liquidation accelerates.\n\nKEY LEVELS\n\nOverhead supply: 28,920\u201328,970; 29,020\u201329,075; 29,168\u201329,213; 29,275\u201329,300\n\nUnderlying demand: 28,820\u201328,840; 28,650\u201328,700; 28,520\u201328,580\n\nPivot-to-watch: 28,925 \u2014 below it, sellers retain control; above it, lunch squeeze risk increases.\n\nPREDICTION TAGS\n\ndirection: down / 68%\n\nstructure: trend_down_lower_highs / 64%\n\nlunch_behavior: weak_balance_or_minor_bounce / 58%\n\nafternoon_drive: sell_continuation / 61%\n\ngoat_direction: bearish / 66%\n\nclose_near_extreme: near_low / 59%"
+}

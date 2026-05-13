@@ -1,0 +1,138 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-08",
+  "dow": "Fri",
+  "stage": "pre_session_forecast",
+  "mode": "live_prerth",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_presession_20260508_082447.png",
+  "based_on_priors": [
+    "2026-05-07",
+    "2026-05-06",
+    "2026-05-05",
+    "2026-05-04",
+    "2026-05-01"
+  ],
+  "same_dow_refs": [
+    "2026-05-01",
+    "2026-04-24",
+    "2026-04-17"
+  ],
+  "lessons_injected": true,
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-08T08:25:28",
+  "raw_response": "REGIME READ\n\nCurrent regime is bullish rotational-to-continuation, not clean trend. The last five priors show higher-value migration overall, but with frequent failed highs and midday liquidation risk: 2026-05-06 was a clean early-flush-reclaim trend-up day, 2026-05-05 and 2026-05-01 were bullish opening-drive days with later rotation/pullback, while 2026-05-07 warned that upside drives can fail into midday breakdowns. Today's Globex is firm above prior close and prior open, pressing near prior HOD/supply, so the forecast should lean up, but not assume a clean close-at-HOD without post-15:00 confirmation. \n\nPasted text\n\nSAME-DOW REFERENCES\n\n2026-05-01: Bullish Friday gap-up drive that made the best long early, then balanced below supply; suggests opening strength can hold even if late follow-through fades.\n\n2026-04-24: Bullish Friday pullback/reclaim trend-up; suggests a morning dip into demand can become the better long than chasing the first print.\n\n2026-04-17: Bullish Friday gap-go with midday shelf and afternoon shakeout/reclaim; suggests trend can survive one sharp liquidation if VWAP and higher lows recover.\n\nPREDICTIONS\n\nDirection: up, confidence med\n\nOpen type: gap_up_pullback_reclaim\n\nStructure: gap_up_pullback_reclaim_then_high_balance\n\nExpected move size: medium\n\nNet pct range: +0.25% to +0.80%\n\nIntraday span range: 260\u2013390 pts\n\nTIME WINDOW EXPECTATIONS\n\n10:00: Opening test likely checks whether 28840\u201328860 holds; reclaim above 28890 keeps bullish control.\n\n12:00: If above VWAP, expect higher-value balance under/around 28950 rather than full reversal.\n\n14:00: Watch for compression near HOD; acceptance above 28950 can open continuation, while rejection risks rotation.\n\n16:00: Favor upper-half close, but not necessarily HOD close; late fade risk remains if 28950\u201328980 rejects.\n\nPROBABLE GOAT\n\nDirection: long\n\nTime window: opening/morning\n\nRationale: Strong overnight posture above prior value favors buying the first defended RTH pullback rather than chasing an extended gap into supply.\n\nTACTICAL BIAS\n\nPrimary bias: buy_pullback_reclaim_above_prior_high_zone\n\nInvalidation conditions: 09:30\u201310:00 drive fails below 28820; price accepts below VWAP after first reclaim; 28790 breaks and cannot reclaim by 10:30.\n\nPREDICTION TAGS\n\ndirection: up\n\nstructure: gap_up_pullback_reclaim_then_high_balance\n\nopen_type: gap_up_pullback_reclaim\n\nlunch_behavior: high_balance_with_vwap_hold\n\nafternoon_drive: attempted_continuation_then_late_pullback_risk\n\ngoat_direction: up\n\nclose_near_extreme: no_mid_upper_range\n\nCONFIDENCE NOTES\n\nThe main risk is that price is opening into prior failed-high supply rather than from clean demand. The least certain piece is whether 28950 breaks or caps the day. The most likely invalidation trigger is an early push above 28920\u201328950 that fails back below VWAP, repeating 2026-05-07's failed-drive behavior.\n\nCANARY THESIS\n\nThe bullish bias remains actionable only if the gap holds above prior upper value and RTH pullbacks reclaim quickly instead of accepting below 28790\u201328820.\n\nJSON\n{\n  \"regime_read\": \"Current regime is bullish rotational-to-continuation, not clean trend. The last five priors show higher-value migration overall, but with frequent failed highs and midday liquidation risk: 2026-05-06 was a clean early-flush-reclaim trend-up day, 2026-05-05 and 2026-05-01 were bullish opening-drive days with later rotation/pullback, while 2026-05-07 warned that upside drives can fail into midday breakdowns. Today's Globex is firm above prior close and prior open, pressing near prior HOD/supply, so the forecast should lean up, but not assume a clean close-at-HOD without post-15:00 confirmation.\",\n  \"same_dow_references\": [\n    \"2026-05-01: Bullish Friday gap-up drive that made the best long early, then balanced below supply; suggests opening strength can hold even if late follow-through fades.\",\n    \"2026-04-24: Bullish Friday pullback/reclaim trend-up; suggests a morning dip into demand can become the better long than chasing the first print.\",\n    \"2026-04-17: Bullish Friday gap-go with midday shelf and afternoon shakeout/reclaim; suggests trend can survive one sharp liquidation if VWAP and higher lows recover.\"\n  ],\n  \"predictions\": {\n    \"direction\": \"up\",\n    \"direction_confidence\": \"med\",\n    \"open_type\": \"gap_up_pullback_reclaim\",\n    \"structure\": \"gap_up_pullback_reclaim_then_high_balance\",\n    \"expected_move_size\": \"med\",\n    \"predicted_net_pct_lo\": 0.25,\n    \"predicted_net_pct_hi\": 0.8,\n    \"predicted_intraday_span_lo_pts\": 260,\n    \"predicted_intraday_span_hi_pts\": 390\n  },\n  \"time_window_expectations\": {\n    \"10am\": \"Opening test likely checks whether 28840-28860 holds; reclaim above 28890 keeps bullish control.\",\n    \"12pm\": \"If above VWAP, expect higher-value balance under/around 28950 rather than full reversal.\",\n    \"2pm\": \"Watch for compression near HOD; acceptance above 28950 can open continuation, while rejection risks rotation.\",\n    \"4pm\": \"Favor upper-half close, but not necessarily HOD close; late fade risk remains if 28950-28980 rejects.\"\n  },\n  \"probable_goat\": {\n    \"direction\": \"long\",\n    \"time_window\": \"opening/morning\",\n    \"rationale\": \"Strong overnight posture above prior value favors buying the first defended RTH pullback rather than chasing an extended gap into supply.\"\n  },\n  \"tactical_bias\": {\n    \"bias\": \"buy_pullback_reclaim_above_prior_high_zone\",\n    \"invalidation\": \"Invalid if 09:30-10:00 drive fails below 28820, price accepts below VWAP after first reclaim, or 28790 breaks and cannot reclaim by 10:30.\"\n  },\n  \"prediction_tags\": {\n    \"direction\": \"up\",\n    \"structure\": \"gap_up_pullback_reclaim_then_high_balance\",\n    \"open_type\": \"gap_up_pullback_reclaim\",\n    \"lunch_behavior\": \"high_balance_with_vwap_hold\",\n    \"afternoon_drive\": \"attempted_continuation_then_late_pullback_risk\",\n    \"goat_direction\": \"up\",\n    \"close_near_extreme\": \"no_mid_upper_range\"\n  },\n  \"confidence_notes\": \"The main risk is that price is opening into prior failed-high supply rather than from clean demand. The least certain piece is whether 28950 breaks or caps the day. The most likely invalidation trigger is an early push above 28920-28950 that fails back below VWAP, repeating 2026-05-07's failed-drive behavior.\",\n  \"canary\": {\n    \"thesis_summary\": \"Bullish bias requires the gap to hold above prior upper value and for any opening dip to reclaim quickly rather than accept below 28790-28820.\",\n    \"default_action_if_passing\": \"trade_half_size\",\n    \"default_action_if_partial\": \"trade_smallest\",\n    \"default_action_if_failing\": \"stand_down\",\n    \"auto_pause_if_failing\": true,\n    \"checks\": [\n      {\n        \"id\": \"overnight_posture\",\n        \"label\": \"RTH opens above prior high-zone support\",\n        \"rationale\": \"The long thesis depends on Globex strength not being fully rejected at the RTH open.\",\n        \"check_type\": \"price_level\",\n        \"evaluate_at\": \"09:30\",\n        \"params\": {\n          \"price_above\": 28820\n        },\n        \"weight\": 2\n      },\n      {\n        \"id\": \"open_structure\",\n        \"label\": \"Opening print avoids hard gap failure\",\n        \"rationale\": \"A tolerated dip-then-reclaim or gap-and-go keeps the bullish Friday analogs valid; trend_break_down would align more with 2026-05-07 failure.\",\n        \"check_type\": \"open_pattern\",\n        \"evaluate_at\": \"09:35\",\n        \"params\": {\n          \"expected\": \"dip_then_reclaim\",\n          \"tolerated\": [\n            \"dip_then_reclaim\",\n            \"gap_and_go\",\n            \"rotational_open\"\n          ]\n        },\n        \"weight\": 2\n      },\n      {\n        \"id\": \"first_30_low\",\n        \"label\": \"First 30 minutes defend 28790\",\n        \"rationale\": \"28790 is the nearby pre-session demand/TP1 zone; breaking it early would imply the gap is being sold rather than accepted.\",\n        \"check_type\": \"price_level_window\",\n        \"evaluate_at\": \"10:00\",\n        \"params\": {\n          \"window\": \"09:30-10:00\",\n          \"low_of_window_above\": 28790\n        },\n        \"weight\": 2\n      },\n      {\n        \"id\": \"vwap_control\",\n        \"label\": \"Price holds above session VWAP by mid-morning\",\n        \"rationale\": \"The bullish structure needs higher-value acceptance after the open, not only a pre-market gap.\",\n        \"check_type\": \"vwap_relationship\",\n        \"evaluate_at\": \"10:30\",\n        \"params\": {\n          \"side\": \"above\"\n        },\n        \"weight\": 1\n      },\n      {\n        \"id\": \"morning_reclaim\",\n        \"label\": \"Mid-morning reclaim above 28890\",\n        \"rationale\": \"A close above 28890 by 11:00 confirms buyers are still controlling the upper half of the Globex range.\",\n        \"check_type\": \"price_level\",\n        \"evaluate_at\": \"11:00\",\n        \"params\": {\n          \"price_above\": 28890\n        },\n        \"weight\": 1\n      }\n    ]\n  }\n}",
+  "regime_read": "Current regime is bullish rotational-to-continuation, not clean trend. The last five priors show higher-value migration overall, but with frequent failed highs and midday liquidation risk: 2026-05-06 was a clean early-flush-reclaim trend-up day, 2026-05-05 and 2026-05-01 were bullish opening-drive days with later rotation/pullback, while 2026-05-07 warned that upside drives can fail into midday breakdowns. Today's Globex is firm above prior close and prior open, pressing near prior HOD/supply, so the forecast should lean up, but not assume a clean close-at-HOD without post-15:00 confirmation.",
+  "same_dow_references": [
+    "2026-05-01: Bullish Friday gap-up drive that made the best long early, then balanced below supply; suggests opening strength can hold even if late follow-through fades.",
+    "2026-04-24: Bullish Friday pullback/reclaim trend-up; suggests a morning dip into demand can become the better long than chasing the first print.",
+    "2026-04-17: Bullish Friday gap-go with midday shelf and afternoon shakeout/reclaim; suggests trend can survive one sharp liquidation if VWAP and higher lows recover."
+  ],
+  "predictions": {
+    "direction": "up",
+    "direction_confidence": "med",
+    "open_type": "gap_up_pullback_reclaim",
+    "structure": "gap_up_pullback_reclaim_then_high_balance",
+    "expected_move_size": "med",
+    "predicted_net_pct_lo": 0.25,
+    "predicted_net_pct_hi": 0.8,
+    "predicted_intraday_span_lo_pts": 260,
+    "predicted_intraday_span_hi_pts": 390
+  },
+  "time_window_expectations": {
+    "10am": "Opening test likely checks whether 28840-28860 holds; reclaim above 28890 keeps bullish control.",
+    "12pm": "If above VWAP, expect higher-value balance under/around 28950 rather than full reversal.",
+    "2pm": "Watch for compression near HOD; acceptance above 28950 can open continuation, while rejection risks rotation.",
+    "4pm": "Favor upper-half close, but not necessarily HOD close; late fade risk remains if 28950-28980 rejects."
+  },
+  "probable_goat": {
+    "direction": "long",
+    "time_window": "opening/morning",
+    "rationale": "Strong overnight posture above prior value favors buying the first defended RTH pullback rather than chasing an extended gap into supply."
+  },
+  "tactical_bias": {
+    "bias": "buy_pullback_reclaim_above_prior_high_zone",
+    "invalidation": "Invalid if 09:30-10:00 drive fails below 28820, price accepts below VWAP after first reclaim, or 28790 breaks and cannot reclaim by 10:30."
+  },
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "gap_up_pullback_reclaim_then_high_balance",
+    "open_type": "gap_up_pullback_reclaim",
+    "lunch_behavior": "high_balance_with_vwap_hold",
+    "afternoon_drive": "attempted_continuation_then_late_pullback_risk",
+    "goat_direction": "up",
+    "close_near_extreme": "no_mid_upper_range"
+  },
+  "confidence_notes": "The main risk is that price is opening into prior failed-high supply rather than from clean demand. The least certain piece is whether 28950 breaks or caps the day. The most likely invalidation trigger is an early push above 28920-28950 that fails back below VWAP, repeating 2026-05-07's failed-drive behavior.",
+  "canary": {
+    "thesis_summary": "Bullish bias requires the gap to hold above prior upper value and for any opening dip to reclaim quickly rather than accept below 28790-28820.",
+    "default_action_if_passing": "trade_half_size",
+    "default_action_if_partial": "trade_smallest",
+    "default_action_if_failing": "stand_down",
+    "auto_pause_if_failing": true,
+    "checks": [
+      {
+        "id": "overnight_posture",
+        "label": "RTH opens above prior high-zone support",
+        "rationale": "The long thesis depends on Globex strength not being fully rejected at the RTH open.",
+        "check_type": "price_level",
+        "evaluate_at": "09:30",
+        "params": {
+          "price_above": 28820
+        },
+        "weight": 2
+      },
+      {
+        "id": "open_structure",
+        "label": "Opening print avoids hard gap failure",
+        "rationale": "A tolerated dip-then-reclaim or gap-and-go keeps the bullish Friday analogs valid; trend_break_down would align more with 2026-05-07 failure.",
+        "check_type": "open_pattern",
+        "evaluate_at": "09:35",
+        "params": {
+          "expected": "dip_then_reclaim",
+          "tolerated": [
+            "dip_then_reclaim",
+            "gap_and_go",
+            "rotational_open"
+          ]
+        },
+        "weight": 2
+      },
+      {
+        "id": "first_30_low",
+        "label": "First 30 minutes defend 28790",
+        "rationale": "28790 is the nearby pre-session demand/TP1 zone; breaking it early would imply the gap is being sold rather than accepted.",
+        "check_type": "price_level_window",
+        "evaluate_at": "10:00",
+        "params": {
+          "window": "09:30-10:00",
+          "low_of_window_above": 28790
+        },
+        "weight": 2
+      },
+      {
+        "id": "vwap_control",
+        "label": "Price holds above session VWAP by mid-morning",
+        "rationale": "The bullish structure needs higher-value acceptance after the open, not only a pre-market gap.",
+        "check_type": "vwap_relationship",
+        "evaluate_at": "10:30",
+        "params": {
+          "side": "above"
+        },
+        "weight": 1
+      },
+      {
+        "id": "morning_reclaim",
+        "label": "Mid-morning reclaim above 28890",
+        "rationale": "A close above 28890 by 11:00 confirms buyers are still controlling the upper half of the Globex range.",
+        "check_type": "price_level",
+        "evaluate_at": "11:00",
+        "params": {
+          "price_above": 28890
+        },
+        "weight": 1
+      }
+    ]
+  },
+  "parsed_structured": true,
+  "canary_emitted": true
+}

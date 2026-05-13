@@ -1,0 +1,141 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-11",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-11T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-11.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-12T07:15:32-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "early_flush_to_midday_trend_then_upper_balance",
+    "open_approx": 29373.0,
+    "close_approx": 29429.0,
+    "hod_approx": 29478.0,
+    "lod_approx": 29310.0,
+    "net_range_pts_open_to_close": 56,
+    "net_range_pct_open_to_close": 0.19,
+    "intraday_span_pts": 168,
+    "shape_sentence": "Wide two-way RTH session with early volatility, a strong late-morning upside trend, upper balance through early afternoon, a 15:00 selloff, then late recovery into the close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 29373.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:34",
+      "price_approx": 29433.0,
+      "type": "opening_spike_high"
+    },
+    {
+      "time_et": "10:03",
+      "price_approx": 29310.0,
+      "type": "morning_pullback_low"
+    },
+    {
+      "time_et": "10:34",
+      "price_approx": 29330.0,
+      "type": "secondary_flush_reversal_base"
+    },
+    {
+      "time_et": "11:33",
+      "price_approx": 29440.0,
+      "type": "midday_breakout_reclaim"
+    },
+    {
+      "time_et": "12:10",
+      "price_approx": 29478.0,
+      "type": "hod_upper_extension"
+    },
+    {
+      "time_et": "13:02",
+      "price_approx": 29370.0,
+      "type": "lunch_pullback_low"
+    },
+    {
+      "time_et": "13:50",
+      "price_approx": 29475.0,
+      "type": "afternoon_retest_high"
+    },
+    {
+      "time_et": "15:02",
+      "price_approx": 29380.0,
+      "type": "late_selloff_low"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 29429.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:34",
+      "direction": "up",
+      "note": "Standout move was the reversal from the 10:30 washout into the 11:30 reclaim near 29440."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots clustered near failed pushes into the 29460-29478 supply band and into the 15:00 breakdown."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots formed after washouts into 29310-29335 and later near 29375-29390."
+    },
+    "orange_banks_supply": {
+      "behavior": "Primary supply zone near 29460-29478 was repeatedly tested and briefly swept, but not cleanly accepted above."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand near 29310-29335 and 29375-29390 was respected after flushes."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "First major downside rotation after the opening spike, trading near 29320-29340.",
+    "12pm_red": "Pressing the upper range near 29465-29475 after the strongest bullish drive.",
+    "2pm_green": "Upper balance retest of 29460-29475 without clean continuation.",
+    "4pm_yellow": "Closed near 29429 after late recovery from the 15:00 selloff, below HOD but above session midpoint."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "early_flush_to_midday_trend_then_upper_balance",
+    "open_type": "gap_up_drive_then_reversal",
+    "lunch_behavior": "upper_balance_after_trend",
+    "afternoon_drive": "failed_breakdown_late_reclaim",
+    "goat_time": "10:34",
+    "goat_direction": "up",
+    "peak_hour": 12,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "demand_29310_29335_and_29375_29390",
+    "banks_broken": "no_clean_break_of_29460_29478_supply"
+  },
+  "takeaway": "Bullish recovery day with an early volatility flush, a clean late-morning trend leg, afternoon upper balance, and a failed 15:00 breakdown that reclaimed into the close.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-05-11T09:30",
+    "end_et": "2026-05-11T16:00",
+    "open": 29305,
+    "close": 29429,
+    "hod": 29480.5,
+    "lod": 29247,
+    "span_pts": 233.5,
+    "net_pts": 124,
+    "net_pct": 0.4231,
+    "first_bar_ts": 1778506200,
+    "last_bar_ts": 1778529540
+  }
+}

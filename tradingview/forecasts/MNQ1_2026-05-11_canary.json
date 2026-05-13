@@ -1,0 +1,84 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-11",
+  "dow": "Mon",
+  "made_at": "2026-05-10T20:50:26",
+  "thesis_summary": "Bullish gap continuation remains actionable only if the open holds above premarket demand, reclaims early rotation, and stays above VWAP into late morning.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "premarket_demand_hold",
+      "label": "Open holds above upper premarket demand",
+      "rationale": "A bullish gap should not accept back below the first defended demand shelf.",
+      "check_type": "price_level_window",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-05-11T10:00:00-0400",
+      "evaluate_before": "2026-05-11T10:05:00-0400",
+      "params": {
+        "window": "09:30-10:00",
+        "low_of_window_above": 29240
+      },
+      "weight": 2
+    },
+    {
+      "id": "open_structure",
+      "label": "Open is rotational or dip-then-reclaim, not liquidation",
+      "rationale": "The long thesis needs early selling to be absorbed rather than accepted.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-05-11T09:35:00-0400",
+      "evaluate_before": "2026-05-11T09:40:00-0400",
+      "params": {
+        "expected": "dip_then_reclaim",
+        "tolerated": [
+          "dip_then_reclaim",
+          "rotational_open",
+          "gap_and_go"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "vwap_reclaim",
+      "label": "Price above VWAP by late morning",
+      "rationale": "A valid gap continuation should regain or hold VWAP before lunch.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-05-11T10:30:00-0400",
+      "evaluate_before": "2026-05-11T10:35:00-0400",
+      "params": {
+        "side": "above"
+      },
+      "weight": 2
+    },
+    {
+      "id": "lower_demand_not_broken",
+      "label": "No acceptance below lower premarket demand",
+      "rationale": "Breaking 29120 would turn the setup from bullish pullback into gap-fade risk.",
+      "check_type": "price_level",
+      "evaluate_at": "11:00",
+      "evaluate_after": "2026-05-11T11:00:00-0400",
+      "evaluate_before": "2026-05-11T11:05:00-0400",
+      "params": {
+        "price_above": 29120
+      },
+      "weight": 2
+    },
+    {
+      "id": "noon_continuation_check",
+      "label": "Noon holds above 29300",
+      "rationale": "Prior lessons require a continuation check before carrying long bias through lunch.",
+      "check_type": "price_level",
+      "evaluate_at": "12:00",
+      "evaluate_after": "2026-05-11T12:00:00-0400",
+      "evaluate_before": "2026-05-11T12:05:00-0400",
+      "params": {
+        "price_above": 29300
+      },
+      "weight": 2
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-12",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260512_184045.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "07:00:00",
+    "session_last": "10:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-12T18:41:26",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-12 ~10:00 ET\n\nBars observed so far this session: ~31 one-minute RTH bars, 09:30\u201310:00 ET\n\nWhat has happened so far: MNQ opened near 29,210, squeezed hard into overhead supply near 29,280\u201329,295 before cursor, then failed sharply back below VWAP/open into 29,130s before cursor.\n\nRANKED SIMILAR ARCHETYPES\n\nGap/drive up \u2192 supply rejection \u2192 liquidation reversal \u2014 the 09:35\u201309:45 push failed at stored supply and reversed almost the full move before cursor.\n\nFailed opening squeeze into trend-down risk \u2014 price could not hold above VWAP/open after the upside burst, which shifts control to sellers.\n\nWide morning range \u2192 lower-value balance \u2014 if 29,120\u201329,130 demand holds, the day may balance lower instead of trending cleanly.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect continuation pressure or a weak bounce that fails below 29,170\u201329,205. A clean break under 29,120 likely accelerates toward 29,085\u201329,050.\n\nBetween next marker and 14:00: Base case is lower-value chop below VWAP, with sellers defending 29,180\u201329,220. Watch for a capitulation trap only if price reclaims 29,205+ and holds.\n\nBetween 14:00 and 16:00 (close): Likely either late bearish continuation toward new lows or a failed-breakdown reclaim into the 29,170\u201329,210 area; close probably below the 09:30 open unless 29,240 is reclaimed.\n\nProjected close price (range): 29,055\u201329,175\n\nRest-of-day HOD (range): 29,185\u201329,245\n\nRest-of-day LOD (range): 29,000\u201329,080\n\nTACTICAL BIAS\n\nPrimary bias: Short, 63% confidence\n\nKey level to invalidate the bias: Sustained reclaim above 29,205\u201329,220; hard invalidation above 29,245\n\nPreferred entry zone: 29,165\u201329,205 failed bounce / VWAP underside\n\nR:R logic: Risk above 29,220\u201329,245; target 29,085 first, then 29,020\u201329,050 if 29,120 breaks. Favor shorts only after weak bounces, not into the immediate 10:00 flush low.\n\nKEY LEVELS\n\nOverhead supply: 29,205\u201329,220, 29,240\u201329,255, 29,275\u201329,295\n\nUnderlying demand: 29,120\u201329,130, 29,085\u201329,100, 29,020\u201329,050\n\nPivot-to-watch: 29,170\u201329,180\n\nPREDICTION TAGS\n\ndirection: down / 63%\n\nstructure: failed_opening_drive_to_lower_value / 58%\n\nlunch_behavior: lower-balance, weak bounces / 55%\n\nafternoon_drive: sell-side extension or failed-breakdown reclaim / 52%\n\ngoat_direction: short / 60%\n\nclose_near_extreme: near lower third / 57%"
+}

@@ -1,0 +1,84 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-12",
+  "dow": "Tue",
+  "made_at": "2026-05-12T07:17:21",
+  "thesis_summary": "Bearish bias remains actionable only if RTH accepts below prior-day low and VWAP acts as resistance rather than support.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "prior_low_rejection",
+      "label": "Price remains below prior RTH low",
+      "rationale": "The bearish thesis depends on prior-day demand near 29310 staying broken.",
+      "check_type": "price_level",
+      "evaluate_at": "09:30",
+      "evaluate_after": "2026-05-12T09:30:00-0400",
+      "evaluate_before": "2026-05-12T09:35:00-0400",
+      "params": {
+        "price_below": 29310
+      },
+      "weight": 2
+    },
+    {
+      "id": "open_structure",
+      "label": "Open confirms downside acceptance",
+      "rationale": "A gap-down open must either drive lower or reject upside quickly; a dip-then-reclaim would warn of liquidation trap.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-05-12T09:35:00-0400",
+      "evaluate_before": "2026-05-12T09:40:00-0400",
+      "params": {
+        "expected": "trend_break_down",
+        "tolerated": [
+          "trend_break_down",
+          "gap_and_go",
+          "rotational_open"
+        ]
+      },
+      "weight": 2
+    },
+    {
+      "id": "first_hour_supply_cap",
+      "label": "First-hour high stays below reclaim zone",
+      "rationale": "If 29240 is not reclaimed in the first hour, broken overnight support is acting as supply.",
+      "check_type": "price_level_window",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-05-12T10:30:00-0400",
+      "evaluate_before": "2026-05-12T10:35:00-0400",
+      "params": {
+        "window": "09:30-10:30",
+        "high_of_window_below": 29240
+      },
+      "weight": 2
+    },
+    {
+      "id": "vwap_resistance",
+      "label": "Price remains below session VWAP",
+      "rationale": "Below-VWAP acceptance confirms sellers control value rather than just an opening flush.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-05-12T10:30:00-0400",
+      "evaluate_before": "2026-05-12T10:35:00-0400",
+      "params": {
+        "side": "below"
+      },
+      "weight": 1
+    },
+    {
+      "id": "midmorning_no_full_reclaim",
+      "label": "No reclaim of prior-day low by late morning",
+      "rationale": "A reclaim above 29310 would neutralize the gap-down breakdown and shift the day toward failed breakdown reclaim.",
+      "check_type": "price_level",
+      "evaluate_at": "12:00",
+      "evaluate_after": "2026-05-12T12:00:00-0400",
+      "evaluate_before": "2026-05-12T12:05:00-0400",
+      "params": {
+        "price_below": 29310
+      },
+      "weight": 2
+    }
+  ]
+}
