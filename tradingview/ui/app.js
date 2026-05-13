@@ -10,6 +10,15 @@
       localStorage.setItem('ios-ui-token', decodeURIComponent(m[1]));
       history.replaceState(null, '', location.pathname + location.search);
     }
+    // Mirror the token into a same-origin cookie so plain browser
+    // requests (<img>, <a href>) authenticate under Tailscale Serve.
+    // fetch() still sets X-UI-Token explicitly; this only covers the
+    // requests JS can't attach a header to. SameSite=Strict blocks CSRF.
+    const tok = localStorage.getItem('ios-ui-token');
+    if (tok) {
+      const secure = location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = `ios-ui-token=${encodeURIComponent(tok)}; path=/; SameSite=Strict; max-age=31536000${secure}`;
+    }
   } catch (e) {}
 })();
 

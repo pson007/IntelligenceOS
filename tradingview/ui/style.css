@@ -4522,7 +4522,16 @@ html.is-mobile .forecasts-layout {
   gap: var(--s-3);
 }
 .forecast-stage-card .compare-img {
-  max-height: 360px;
+  /* No fixed cap — the chart screenshot needs its full vertical extent
+     so price axis (top) and time axis (bottom) are both visible. Soft
+     viewport cap keeps very tall displays bounded. */
+  max-height: 80vh;
+}
+.forecast-stage-card .compare-img img {
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
 }
 .forecast-stage-card .profile-narrative {
   font-size: 12px;

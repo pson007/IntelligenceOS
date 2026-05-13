@@ -102,7 +102,16 @@ async def guard(request: Request, call_next):
         if _UI_TOKEN:
             client_host = (request.client.host if request.client else "") or ""
             if client_host not in _LOOPBACK_HOSTS:
-                sent = request.headers.get("X-UI-Token") or ""
+                # Header is the primary path (JS fetch()), cookie is the
+                # fallback so plain <img>/<a href> requests authenticate
+                # under Tailscale Serve — browsers won't attach custom
+                # headers to those, but they always send same-origin
+                # cookies. SameSite=Strict on the cookie blocks CSRF.
+                sent = (
+                    request.headers.get("X-UI-Token")
+                    or request.cookies.get("ios-ui-token")
+                    or ""
+                )
                 if not secrets.compare_digest(sent, _UI_TOKEN):
                     return JSONResponse({"detail": "auth: bad or missing X-UI-Token"}, status_code=401)
     return await call_next(request)
