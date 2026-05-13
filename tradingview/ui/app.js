@@ -223,10 +223,12 @@ function applySidebarCollapsed(collapsed) {
   _sidebarToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 }
 
-// Always start expanded so mobile users see the nav strip on every load.
-// Collapse is session-only (toggle button) — not persisted, so a refresh
-// always brings the side panel back into view.
-applySidebarCollapsed(false);
+// Mobile starts collapsed — the bottom .mobile-tabbar already exposes the
+// same primary nav, so the expanded sidebar strip is just duplicated nav
+// + a "connected" status row eating ~120pt of precious vertical space on a
+// phone. Desktop still starts expanded since there's no replacement nav.
+// Session-only either way; the toggle button flips it within a tab.
+applySidebarCollapsed(_mobileMQ.matches || _IS_MOBILE_DEVICE);
 try { localStorage.removeItem('ios-sidebar-collapsed'); } catch (e) {}
 
 _sidebarToggle.addEventListener('click', () => {

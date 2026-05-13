@@ -6428,3 +6428,71 @@ html.is-mobile .today-decisions__row {
   .coach-chat-form textarea { min-height: 60px; }
   .coach-chat-send-btn { min-width: 70px; padding: 0 12px; }
 }
+
+/* ==========================================================================
+   iPhone polish — forecast stage cards.
+
+   Before this block the stage card head crammed [title][Speak][Generate
+   Pine overlay][Regenerate][Apply][meta] into a single flex row. On a 430pt
+   viewport the buttons get squeezed until "Generate Pine overlay" wraps to
+   three lines and the title gets pushed off. Stack head vertically, let
+   buttons wrap as their own row, ban inner text-wrap, and bump tap targets
+   to 44pt-ish. Also make the chart screenshot full-bleed since the card
+   horizontal padding wastes precious pixels on a phone.
+   ========================================================================== */
+@media (max-width: 768px) {
+  .forecast-stage-card {
+    padding-left: var(--s-3);
+    padding-right: var(--s-3);
+  }
+  .forecast-stage-card .card-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--s-2);
+    margin-bottom: var(--s-3);
+  }
+  .forecast-stage-card .card-head h2 {
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  .forecast-stage-card .card-head__actions {
+    margin-left: 0;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    justify-content: flex-start;
+  }
+  /* Buttons stay readable on a single line, with 44pt-min tap targets. */
+  .forecast-stage-card .card-head__actions .btn.small {
+    white-space: nowrap;
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  /* Meta ("made YYYY-MM-DDTHH:MM:SS") wraps onto its own row. */
+  .forecast-stage-card .card-head__actions .mono.small {
+    flex: 1 1 100%;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  /* Edge-to-edge chart image — pull out of the card's horizontal padding
+     so the screenshot uses the full viewport width. Without this the
+     chart squeezes inside ~370pt and labels become unreadable. */
+  .forecast-stage-card .compare-img {
+    margin-left: calc(var(--s-3) * -1);
+    margin-right: calc(var(--s-3) * -1);
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    max-height: none;
+  }
+  .forecast-stage-card .compare-img img {
+    max-height: none;
+    width: 100%;
+  }
+  /* Tap-to-zoom hint — pointer cursor + slight tap feedback. */
+  .forecast-stage-card .compare-img img {
+    cursor: zoom-in;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  }
+}
