@@ -4522,10 +4522,18 @@ html.is-mobile .forecasts-layout {
   gap: var(--s-3);
 }
 .forecast-stage-card .compare-img {
-  /* No fixed cap — the chart screenshot needs its full vertical extent
-     so price axis (top) and time axis (bottom) are both visible. Soft
-     viewport cap keeps very tall displays bounded. */
-  max-height: 80vh;
+  /* No height cap — the previous max-height:80vh combined with
+     object-fit:contain produced horizontal grey letterboxing on wide
+     landscape screenshots: the image height clamped to 80vh, width
+     contracted to preserve aspect, and the container kept its full
+     card width — exposing the .compare-img background colour on either
+     side. Letting the image dictate the box height keeps the chart
+     cleanly cropped on every viewport, and zeroing the background +
+     border means any residual letterbox case is invisible. */
+  max-height: none;
+  min-height: 0;
+  background: transparent;
+  border: none;
 }
 
 /* Stage carousel — horizontal scroll-snap container for the four
@@ -4620,10 +4628,12 @@ html.is-mobile .forecasts-layout {
   transition: none;
 }
 .forecast-stage-card .compare-img img {
+  /* Natural-aspect render at the card width. No max-height + no
+     object-fit means the rendered height is whatever (image_height *
+     card_width / image_width) gives — no letterbox by construction. */
   width: 100%;
   height: auto;
-  max-height: 80vh;
-  object-fit: contain;
+  display: block;
 }
 .forecast-stage-card .profile-narrative {
   font-size: 12px;
