@@ -5189,7 +5189,24 @@ async function selectForecastDay(symbol, date) {
 
   main.innerHTML =
     `<button type="button" class="mobile-back-btn" data-target="forecasts-layout">‹ Back to list</button>`
-    + accuracyHtml + _stageNavStrip + sections.join('');
+    + accuracyHtml + _stageNavStrip
+    + `<div class="stage-carousel">${sections.join('')}</div>`;
+
+  // Hook nav chips to scroll the carousel horizontally instead of doing
+  // an anchor jump on the page (anchor jumps scroll the page vertically
+  // and don't move overflow-scrolled containers — we need scrollIntoView
+  // with inline:'start' to align the card to the left edge of the
+  // carousel viewport).
+  main.querySelectorAll('.stage-nav__chip').forEach(chip => {
+    chip.addEventListener('click', ev => {
+      ev.preventDefault();
+      const href = chip.getAttribute('href') || '';
+      const target = href.startsWith('#') ? document.getElementById(href.slice(1)) : null;
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      }
+    });
+  });
 
   // Wire Pine-download buttons.
   main.querySelectorAll('.forecast-pine-btn').forEach(btn => {
