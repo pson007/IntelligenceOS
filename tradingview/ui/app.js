@@ -5081,8 +5081,18 @@ async function selectForecastDay(symbol, date) {
     }
   }));
 
-  // Drop stages that 404'd (missing for this day) so we don't render empty cards.
-  const present = results.filter(r => !r.error || (r.error && !r.error.includes('404') && !r.error.includes('not found')));
+  // Always render the four core stages — pre_session + F1/F2/F3 — even
+  // when missing, so the operator can see at-a-glance which stages have
+  // captures on file and which don't. Reconciliation variants stay
+  // conditional (no card when 404) since their presence depends on the
+  // day having ended + a profile existing.
+  const _CORE_STAGES = new Set(['pre_session', '1000', '1200', '1400']);
+  const _is404 = msg => msg && (msg.includes('404') || msg.includes('not found'));
+  const present = results.filter(r => {
+    if (!r.error) return true;
+    if (_CORE_STAGES.has(r.stage)) return true;  // keep placeholder for core stages
+    return !_is404(r.error);                     // optional stages: drop 404
+  });
 
   const titleFor = stage => {
     if (stage === 'pre_session') return 'Pre-Session Forecast';
@@ -5092,11 +5102,33 @@ async function selectForecastDay(symbol, date) {
     if (idx >= 0) return `F${idx+1} @ ${stage.slice(0,2)}:${stage.slice(2)}`;
     return stage;
   };
+  // Hint for missing-stage placeholders — points the user at the right
+  // capture surface. pre_session has its own button on the Plan tab;
+  // intraday stages run via Ad-hoc (or the live F1/F2/F3 buttons today).
+  const _captureHintFor = stage => {
+    if (stage === 'pre_session') return 'Tap Pre-session at the top of the Plan tab to capture.';
+    if (['1000','1200','1400'].includes(stage)) {
+      return 'Tap Ad-hoc at the top of the Plan tab to capture F1/F2/F3 for this day.';
+    }
+    return '';
+  };
 
   const sections = present.map(r => {
     const title = titleFor(r.stage);
     if (r.error) {
-      return `<div class="card"><div class="card-head"><h2>${title}</h2></div><div class="empty muted">${r.error}</div></div>`;
+      // 404 → friendly "Not captured yet" placeholder with a hint.
+      // Anything else → surface the raw error so transport bugs are
+      // visible rather than masked as "missing."
+      if (_is404(r.error)) {
+        const hint = _captureHintFor(r.stage);
+        return `<div class="card forecast-stage-card forecast-stage-card--empty">
+          <div class="card-head"><h2>${title}</h2>
+            <div class="card-head__actions"><span class="mono small muted">no capture on file</span></div>
+          </div>
+          <div class="empty muted">${hint || 'Not captured yet for this day.'}</div>
+        </div>`;
+      }
+      return `<div class="card"><div class="card-head"><h2>${title}</h2></div><div class="empty err">${r.error}</div></div>`;
     }
     const j = r.json || {};
     const metaBits = [];
