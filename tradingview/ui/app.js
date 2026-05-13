@@ -5034,6 +5034,15 @@ function _renderAccuracyCard(day) {
 
 async function selectForecastDay(symbol, date) {
   _forecastsSelectedKey = `${symbol}|${date}`;
+  // Keep the calendar selection in lockstep so the Ad-hoc / Pre-session
+  // run buttons target the same day shown in the accuracy panel. Without
+  // this, the day-card list and the calendar grid drift apart and Ad-hoc
+  // always re-runs today.
+  _forecastCal.selected = date;
+  const [y, m] = date.split('-').map(Number);
+  _forecastCal.viewYear = y;
+  _forecastCal.viewMonth = m - 1;
+  renderForecastCalendar();
   renderForecastsList();
   // Mobile drill-in: switch the layout into detail-only view so the
   // user sees the full forecast chain without a tiny side strip.
