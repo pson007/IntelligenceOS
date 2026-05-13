@@ -43,6 +43,7 @@ from playwright.async_api import Page
 
 from . import layout_guard, replay, replay_api
 from . import lessons as lessons_mod
+from .chart import ensure_auto_scale
 from .chatgpt_web import analyze_via_chatgpt_web
 from .forecast_capture import (
     frame_full_session, frame_partial_session, hide_widget_panel,
@@ -239,6 +240,7 @@ async def _capture(
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_forecast_{stage_label}_{ts}.png"
+    await ensure_auto_scale(page)
     await page.screenshot(path=str(path))
     return path
 

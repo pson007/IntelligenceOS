@@ -37,6 +37,7 @@ from zoneinfo import ZoneInfo
 from playwright.async_api import Page
 
 from . import bar_reader, replay, replay_api
+from .chart import ensure_auto_scale
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
 from .lib.capture_invariants import (
@@ -277,6 +278,7 @@ async def _capture(
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_profile_{tag}_{ts}.png"
+    await ensure_auto_scale(page)
     await page.screenshot(path=str(path))
     return path
 

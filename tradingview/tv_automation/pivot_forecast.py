@@ -28,6 +28,7 @@ from zoneinfo import ZoneInfo
 from playwright.async_api import Page
 
 from . import lessons as lessons_mod, replay, replay_api
+from .chart import ensure_auto_scale
 from .chatgpt_web import analyze_via_chatgpt_web
 from .lib import audit
 from .lib.capture_invariants import CaptureExpect, assert_capture_ready
@@ -178,6 +179,7 @@ async def _capture_current(
         await assert_capture_ready(page, expect)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_pivot_{ts}.png"
+    await ensure_auto_scale(page)
     await page.screenshot(path=str(path))
     return path
 

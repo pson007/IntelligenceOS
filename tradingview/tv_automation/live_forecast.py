@@ -33,6 +33,7 @@ from pathlib import Path
 from playwright.async_api import Page
 
 from . import lessons as lessons_mod, replay, replay_api
+from .chart import ensure_auto_scale
 from .chatgpt_web import analyze_via_chatgpt_web
 from .forecast_capture import frame_partial_session, hide_widget_panel
 from .lib import audit
@@ -135,6 +136,7 @@ async def _capture(
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = _SCREENSHOT_ROOT / f"{symbol}_live_{stage_label}_{ts}.png"
+    await ensure_auto_scale(page)
     await page.screenshot(path=str(path))
     return path
 

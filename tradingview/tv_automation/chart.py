@@ -306,6 +306,36 @@ async def set_symbol(symbol: str, interval: str | None = None) -> dict:
         return meta
 
 
+async def ensure_auto_scale(page: Page) -> None:
+    """Ensure the price scale's "A" (Auto) button is activated.
+
+    Without Auto mode, TV leaves the scale stretched across far-away
+    TP/SL order rays or drawings — squashing recent price action into
+    a near-flat line at the top of the visible range. That's useless
+    for the operator and worse for the vision LLM, which then reads
+    garbage.
+
+    Idempotent: no-op when Auto is already on (~5ms class probe).
+    Selector breakage is non-fatal — logged and skipped so a TV DOM
+    rename doesn't take down the capture. The active state is
+    signalled by a class with the `priceScaleModeButton_activated`
+    prefix; the suffix is a content hash that changes per TV build.
+    """
+    try:
+        scale_btn = page.locator('button[aria-label="Toggle auto scale"]').first
+        already_auto = await scale_btn.evaluate(
+            "el => Array.from(el.classList).some("
+            "c => c.startsWith('priceScaleModeButton_activated'))"
+        )
+        if not already_auto:
+            await scale_btn.click()
+            # Brief settle for the price-scale re-render before capture.
+            await page.wait_for_timeout(150)
+            audit.log("chart.auto_scale_engaged")
+    except Exception as e:
+        audit.log("chart.auto_scale_skip", err=str(e))
+
+
 async def screenshot(
     symbol: str | None,
     interval: str | None,
@@ -373,26 +403,7 @@ async def screenshot(
             audit.log("chart.screenshot.dismissed_overlays",
                       **overlay_state)
 
-        # Ensure the price scale is in Auto mode — without this, TV can
-        # leave the scale stretched across far-away TP/SL orders or
-        # drawings, squashing recent price action into a near-flat line
-        # that's useless for both the operator and the vision LLM. The
-        # "Toggle auto scale" button's activated state is signalled by a
-        # class with the `priceScaleModeButton_activated` prefix.
-        try:
-            scale_btn = page.locator('button[aria-label="Toggle auto scale"]').first
-            already_auto = await scale_btn.evaluate(
-                "el => Array.from(el.classList).some("
-                "c => c.startsWith('priceScaleModeButton_activated'))"
-            )
-            if not already_auto:
-                await scale_btn.click()
-                # Brief settle for the price-scale re-render before capture.
-                await page.wait_for_timeout(150)
-                audit.log("chart.screenshot.auto_scale_engaged")
-        except Exception as e:
-            # Selector breakage shouldn't kill the capture — log and continue.
-            audit.log("chart.screenshot.auto_scale_skip", err=str(e))
+        await ensure_auto_scale(page)
 
         captured_area = area
         fell_back = False
