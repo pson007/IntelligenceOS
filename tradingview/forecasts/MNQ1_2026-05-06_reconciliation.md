@@ -1,225 +1,94 @@
 ---
 symbol: MNQ1
 date: 2026-05-06
-dow: Wed
 stage: reconciliation
-screenshot: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-06.png
-forecasts_graded: ['pre_session', '1000', '1200', '1400']
+screenshot: /Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260513_213208.png
+forecasts_graded: ['F1', 'F2', 'F3']
 ground_truth_profile: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-06.json
-made_at: 2026-05-06T20:16:23
+made_at: 2026-05-13T21:32:36
 ---
 ACTUAL OUTCOME
 
-Open 28,389.25 / Close 28,710.50 / HOD 28,725.75 / LOD 28,336.50. Shape: bullish trend day with early flush, fast reclaim, midday higher-low base, and steady afternoon continuation into a near-HOD close.
+Open 28,420 / Close 28,710 / HOD 28,725 / LOD 28,370 / Shape: Bullish trend day with early dip, morning reclaim, midday higher-low consolidation, and steady afternoon continuation into a near-HOD close.
 
-STAGE GRADES
-pre_session_forecast
-
-Direction: ✓
-
-Close range hit: ✗ — close overshot implied +0.55% upper band by ~165 pts
-
-HOD captured: ✗ — upside extension exceeded expected span
-
-LOD captured: ✓ — early flush/reclaim thesis was directionally right
-
-Tags correct: direction up, dip/reclaim, higher-low lunch, afternoon grind, GOAT up, close near HOD
-
-Tags wrong: gap_up_rotational_reclaim; actual was more rotational_open_then_drive
-
-Bias profitable if traded: ✓
-
-Invalidation check: ✓ — 28,300 reclaimed; no acceptance below 28,220; VWAP control restored
-
-Overall score: 5/7
-
-F1
+F1 GRADE (made at 10:00)
 
 Direction: ✓
 
-Close range hit: ✓
+Close range hit: ✗ (28,710 vs 28,485–28,535, miss 175 pts high)
 
-HOD captured: ✓
+HOD captured: ✗ (28,725 vs 28,510–28,565, miss 160 pts high)
 
-LOD captured: ✓
+LOD captured: ✗ (28,370 vs 28,385–28,425, miss 15 pts low)
 
-Tags correct: stop-hunt reclaim, trend up, higher-low lunch, bullish continuation, GOAT up, close near extreme
+Tags correct: bullish direction, rotational_morning_to_afternoon_breakout, higher balance above demand, long GOAT direction, close near upper third
 
-Tags wrong: failed_breakdown_midday_reclaim was slightly too dramatic; no real midday breakdown
+Tags wrong: controlled_upside_continuation understated the strength; HOD/close bands far too low
 
 Bias profitable if traded: ✓
 
-Invalidation check: ✓ — no sustained acceptance below 28,335–28,360
+Overall score: 3/6
 
-Overall score: 7/7
+Biggest miss: F1 caught the bullish thesis but dramatically underpriced the size of the trend day.
 
-F2
+F2 GRADE (made at 12:00)
 
 Direction: ✓
 
-Close range hit: ✗ — missed by ~0.5 pts above 28,710 upper band
+Close range hit: ✗ (28,710 vs 28,540–28,590, miss 120 pts high)
 
-HOD captured: ✓
+HOD captured: ✗ (28,725 vs 28,575–28,625, miss 100 pts high)
 
-LOD captured: ✗ — rest-of-day LOD band was too low; midday pullback held higher
+LOD captured: ✗ (28,370 vs 28,395–28,425, miss 25 pts low)
 
-Tags correct: up, digestion, afternoon continuation, GOAT up, near upper quartile close
+Tags correct: bullish direction, rotational_morning_to_afternoon_breakout, early flush to trend, higher balance, long GOAT direction, close near extreme
 
-Tags wrong: failed_breakdown_midday_reclaim overstated the weakness
+Tags wrong: controlled_upside_drive still too conservative; failed to upgrade to full trend-up close
 
 Bias profitable if traded: ✓
 
-Invalidation check: ✓ — no sustained acceptance below ~28,390
+Overall score: 4/6
 
-Overall score: 5/7
+Biggest miss: F2 improved structure recognition but still capped the afternoon extension too early.
 
-F3
+F3 GRADE (made at 14:00)
 
 Direction: ✓
 
-Close range hit: ✗ — close overshot upper band by ~20.5 pts
+Close range hit: ✗ (28,710 vs 28,595–28,635, miss 75 pts high)
 
-HOD captured: ✓ — 28,725.75 was effectively at the top of the 28,665–28,725 band
+HOD captured: ✗ (28,725 vs 28,625–28,665, miss 60 pts high)
 
-LOD captured: ✗ — pullback risk was overstated; price held firmer after 14:00
+LOD captured: ✓/partial (post-14:00 pullbacks stayed shallow; full-session LOD was already behind the forecast)
 
-Tags correct: stop-hunt reclaim, lunch higher-low continuation, late near-HOD grind, close near HOD
+Tags correct: bullish continuation, high balance, shallow pullback, controlled upside probe, long GOAT direction, close near upper 25%
 
-Tags wrong: none material
+Tags wrong: upper-balance breakout attempt understated the late expansion; should have allowed trend-up close / full completion
 
 Bias profitable if traded: ✓
 
-Invalidation check: ✓ — 28,500 / 28,455 never failed
+Overall score: 5/6
 
-Overall score: 5/7
+Biggest miss: F3 saw continuation but still treated 28,650–28,670 as likely containment rather than a launch zone.
 
 FORECAST EVOLUTION
 
-Forecasts improved sharply at F1. The pre-session read caught the core direction and reclaim logic but undersized the day. F1 was the first stage to catch the real signal cleanly: opening flush rejected, demand held, and the day shifted into stop-hunt-reclaim trend-up. F2 and F3 stayed directionally correct but became too conservative on final upside and too pessimistic on pullback depth.
+Forecasts improved as the day progressed.
+
+F1 correctly preserved the bullish thesis after the early dip, but its projected close/HOD bands were too narrow. It saw "breakout potential" but not a full trend-day expansion.
+
+F2 improved by recognizing the reclaim and higher-low structure, but still framed the afternoon as controlled continuation instead of breakout-drive potential.
+
+F3 was the best forecast: it identified high balance, shallow pullbacks, and long continuation. Its main error was assuming the upper supply test would cap price near 28,665 instead of breaking into 28,700+.
 
 LESSONS
 
-After a 09:30 flush reclaims by 10:00 and holds above the opening sweep, upgrade from "dip/reclaim" to "stop-hunt-reclaim trend day"; do not leave it as generic gap-up rotation.
+When early demand holds and price reclaims the open quickly, widen HOD/close bands by at least one additional extension zone.
 
-When early LOD is already set and lunch holds higher lows, raise rest-of-day LOD bands; F2/F3 kept pullback bands too low versus the actual 13:00 higher-low base.
+Do not cap bullish MNQ forecasts at first upper supply when price keeps forming higher lows above a rising demand shelf.
 
-If price holds above VWAP through lunch and compresses near HOD by 14:00, widen close/HOD upside bands instead of capping the day at nearby supply.
+After midday pullback holds as a clean higher low, upgrade from "controlled continuation" to "trend-day continuation."
 
-Keep "failed_breakdown" tags only for real acceptance below demand; today had an early sweep and reclaim, not a sustained breakdown.
+At 14:00, if price is consolidating near highs without meaningful rejection, include a late squeeze branch.
 
-The pre-session model needs larger upside-span allowance on strong overnight posture plus early RTH reclaim; actual span was 389.25 pts versus the 180–320 pt forecast.
-
-JSON
-{
-  "actual_summary": {
-    "direction": "up",
-    "open_approx": 28389.25,
-    "close_approx": 28710.5,
-    "hod_approx": 28725.75,
-    "lod_approx": 28336.5,
-    "net_range_pct_open_to_close": 1.1316,
-    "intraday_span_pts": 389.25
-  },
-  "grades": {
-    "pre_session_forecast": {
-      "direction_hit": true,
-      "close_in_band": false,
-      "close_miss_pts": 165,
-      "hod_in_band": false,
-      "lod_in_band": true,
-      "lod_miss_pts": 0,
-      "tags_correct": [
-        "direction up",
-        "dip_then_reclaim",
-        "higher_low_lunch",
-        "afternoon_grind",
-        "goat_direction_up",
-        "close_near_extreme"
-      ],
-      "tags_wrong": [
-        "gap_up_rotational_reclaim"
-      ],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 5,
-      "overall_max": 7,
-      "biggest_miss": "Upside was materially undersized; close and HOD exceeded the implied range."
-    },
-    "F1": {
-      "direction_hit": true,
-      "close_in_band": true,
-      "close_miss_pts": 0,
-      "hod_in_band": true,
-      "lod_in_band": true,
-      "lod_miss_pts": 0,
-      "tags_correct": [
-        "stop_hunt_reclaim",
-        "trend_up",
-        "higher_low_lunch",
-        "bullish_continuation",
-        "goat_direction_up",
-        "close_near_extreme"
-      ],
-      "tags_wrong": [
-        "failed_breakdown_midday_reclaim_overstated"
-      ],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 7,
-      "overall_max": 7,
-      "biggest_miss": "Minor structure wording only; the forecast captured the session well."
-    },
-    "F2": {
-      "direction_hit": true,
-      "close_in_band": false,
-      "close_miss_pts": 0.5,
-      "hod_in_band": true,
-      "lod_in_band": false,
-      "lod_miss_pts": 65,
-      "tags_correct": [
-        "direction up",
-        "sideways_to_up_digestion",
-        "afternoon_continuation",
-        "goat_direction_up",
-        "near_upper_quartile_close"
-      ],
-      "tags_wrong": [
-        "failed_breakdown_midday_reclaim_overstated"
-      ],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 5,
-      "overall_max": 7,
-      "biggest_miss": "Rest-of-day downside band was too low after buyers had already established a higher-low base."
-    },
-    "F3": {
-      "direction_hit": true,
-      "close_in_band": false,
-      "close_miss_pts": 20.5,
-      "hod_in_band": true,
-      "lod_in_band": false,
-      "lod_miss_pts": 20,
-      "tags_correct": [
-        "stop_hunt_reclaim",
-        "lunch_higher_low_continuation",
-        "late_day_near_HOD_grind",
-        "close_near_HOD"
-      ],
-      "tags_wrong": [],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 5,
-      "overall_max": 7,
-      "biggest_miss": "The forecast capped the close too low and expected a deeper pullback than occurred."
-    }
-  },
-  "evolution": "The pre-session forecast had the right bullish framework but undersized the move. F1 caught the true signal first by identifying the opening flush as a failed sell attempt and projecting continuation. F2 and F3 preserved the bullish bias but did not fully adapt to the strength of the higher-low structure and late-day stair-step continuation.",
-  "summary": "The forecast suite was directionally strong, with F1 the cleanest and most actionable forecast. The main error was not direction but magnitude: later forecasts kept close and pullback bands too conservative for a full bullish trend day.",
-  "lessons": [
-    "After a 09:30 flush reclaims by 10:00 and holds above the opening sweep, upgrade from dip/reclaim to stop-hunt-reclaim trend day.",
-    "When lunch holds higher lows above VWAP, raise rest-of-day LOD bands instead of anchoring to the morning flush.",
-    "If price compresses near HOD into 14:00, widen the close/HOD upside band rather than capping at nearby supply.",
-    "Use failed_breakdown only when price accepts below demand; today was a sweep and reclaim, not a true breakdown.",
-    "On strong overnight posture plus early RTH reclaim, allow larger intraday span than the default 180–320 pt medium-move band."
-  ]
-}
+Separate "likely pause zone" from "terminal HOD zone"; 28,650–28,670 was resistance, not necessarily the day's cap.

@@ -2,93 +2,103 @@
 symbol: MNQ1
 date: 2026-05-12
 stage: reconciliation
-screenshot: /Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260512_184226.png
-forecasts_graded: ['F1', 'F2']
+screenshot: /Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260513_214640.png
+forecasts_graded: ['F1', 'F2', 'F3']
 ground_truth_profile: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-12.json
-made_at: 2026-05-12T18:42:59
+made_at: 2026-05-13T21:47:17
 ---
 ACTUAL OUTCOME
 
-Open ~29,170 / Close ~29,174 / HOD ~29,290 / LOD ~28,745 / Shape: opening spike rejection into heavy selloff, then 13:00 capitulation low produced a full afternoon V-reversal back near the open.
+Open 29,170 / Close 29,174 / HOD 29,290 / LOD 28,745 / Shape: opening spike failed into a deep selloff, then a 13:00 LOD launched a full afternoon V-reversal back near the open and upper session.
 
 F1 GRADE (made at 10:00)
 
-Direction: ✗
+Direction: ✓
 
-Close range hit: ✓ (actual 29,174 vs predicted 29,055–29,175, miss 0 pts)
+Close range hit: ✗ (29,174 vs 29,250–29,330, miss 76 pts below)
 
-HOD captured: ✗ (actual 29,290 vs predicted 29,185–29,245, miss 45 pts)
+HOD captured: ✗ (29,290 vs 29,300–29,370, miss 10 pts below)
 
-LOD captured: ✗ (actual 28,745 vs predicted 29,000–29,080, miss 255 pts)
+LOD captured: ✗ (28,745 vs 29,165–29,205, miss 420 pts below)
 
-Tags correct: failed opening drive, supply rejection, downside liquidation risk, possible failed-breakdown reclaim
+Tags correct: direction: up, partial goat_direction: long, partial close_near_extreme: moderately_near_high
 
-Tags wrong: direction down, lower-value balance, near lower-third close, sell-side continuation
+Tags wrong: rotational_morning_to_afternoon_breakout, higher_balance_or_shallow_pullback, upside_extension_if_above_value
 
-Bias profitable if traded: ✓
+Bias profitable if traded: ✗
 
-Overall score: 2.5/6
+Overall score: 2/6
 
-Biggest miss: It correctly identified the failed open and short setup, but badly under-forecast the selloff depth and missed the full afternoon V-reversal.
+Biggest miss: F1 saw bullish continuation but completely missed the morning high failure and 545-point intraday liquidation.
 
 F2 GRADE (made at 12:00)
 
 Direction: ✗
 
-Close range hit: ✗ (actual 29,174 vs predicted 28,650–28,820, miss 354 pts above range)
+Close range hit: ✗ (29,174 vs 28,700–28,820, miss 354 pts above)
 
-HOD captured: ✗ (actual rest-of-day high ~29,180 vs predicted 28,920–29,020, miss ~160 pts)
+HOD captured: ✗ (29,290 full-day HOD; post-noon high also exceeded 28,900–28,960 by roughly 214+ pts)
 
-LOD captured: ✗ (actual 28,745 vs predicted 28,520–28,700, miss 45 pts above lower edge / below upper edge not captured)
+LOD captured: ✗ (28,745 vs 28,620–28,740, miss 5 pts above)
 
-Tags correct: trend-down lower highs into lunch, potential lunch-capitulation trap, 13:00 demand-hold reversal branch mentioned
+Tags correct: morning_high_failure_midday_flush, partial weak balance / shallow bounce, partial goat_direction: down only for the morning selloff
 
-Tags wrong: direction down, sell continuation, weak/minor bounce, near-low close, bearish GOAT direction
+Tags wrong: direction: down, bearish continuation, near low
 
-Bias profitable if traded: ✓
+Bias profitable if traded: ✗
 
 Overall score: 2/6
 
-Biggest miss: It named the capitulation-trap risk but failed to upgrade it once sellers could not extend after 13:00.
+Biggest miss: F2 correctly identified the morning breakdown, but failed to anticipate the 13:00 demand hold and full V-reversal.
 
 F3 GRADE (made at 14:00)
 
-Direction: N/A
+Direction: ✗
 
-Close range hit: N/A
+Close range hit: ✗ (29,174 vs 28,780–28,880, miss 294 pts above)
 
-HOD captured: N/A
+HOD captured: ✗ (29,290 full-day HOD; post-14:00 high also exceeded 28,930–28,975 by roughly 200+ pts)
 
-LOD captured: N/A
+LOD captured: ✓ (28,745 vs 28,700–28,760)
 
-Tags correct: N/A
+Tags correct: midday_low_then_corrective_bounce, partial afternoon_repair
 
-Tags wrong: N/A
+Tags wrong: direction: down, afternoon_repair_then_rejection, controlled_selloff_or_range_lower, goat_direction: down, moderate downside close
 
-Bias profitable if traded: N/A
+Bias profitable if traded: ✗
 
-Overall score: N/A/6
+Overall score: 1.5/6
 
-Biggest miss: No F3 forecast was provided, so it cannot be graded.
+Biggest miss: F3 treated the 13:00 reversal as corrective repair into resistance instead of a valid demand-pivot breakout.
 
 FORECAST EVOLUTION
 
-F1 was directionally wrong for the full day but tactically useful: it caught the failed opening squeeze and short opportunity, yet underestimated both the downside flush and the later recovery.
+The forecasts did not improve cleanly.
 
-F2 got worse as a full-day forecast. It overfit the noon trend-down state and treated the 13:00 reversal branch as secondary. The key missed signal was failure to extend below the lunch selloff after 13:00, followed by reclaim of lower supply near 29,000.
+F1 had the correct final direction but the wrong path. It expected shallow bullish continuation, not a failed opening spike into a deep liquidation leg.
 
-No F3 was supplied, so improvement after 14:00 cannot be judged.
+F2 adapted well to the morning selloff and caught the correct downside structure up to noon, but overstayed the bearish read. The key miss was not upgrading once price held demand near 13:00.
+
+F3 had the most information but performed worst tactically. By 14:00, the LOD was likely already in and price was repairing with strength. The forecast kept a short bias instead of recognizing V-reversal risk.
 
 LESSONS
 
-After a strong morning liquidation, require a formal 13:00 demand-hold reversal branch with higher probability if price stops extending lower.
+After a deep morning flush, treat a clean 13:00 demand hold as a major regime-change candidate, not merely a bounce.
 
-Do not keep bearish close forecasts after sellers fail to break fresh lows post-lunch.
+If price reclaims lower supply and holds above the reversal ribbon/value, downgrade shorts quickly.
 
-Separate profitable morning short from accurate full-day bearish forecast.
+Separate "morning structure" from "afternoon control." A correct bearish morning read can become invalid after a strong LOD pivot.
 
-Increase range width on failed-opening-pop days; this session's 545-point span exceeded both forecasts.
+At 14:00, require confirmation before projecting renewed downside: failed reclaim, lower high, or loss of reversal base.
 
-Once 28,925–29,025 reclaimed after 13:00, F2 should have flipped from sell-continuation to capitulation-to-V-reversal.
+Add a V-reversal branch whenever:
 
-Add a late-day target branch: reclaim 29,000 → grind to open/VWAP → possible close near upper session.
+HOD forms early,
+
+liquidation exceeds 300–400 pts,
+
+LOD forms near 13:00,
+
+reclaim accelerates through prior lower-high zones.
+
+Do not score bearish continuation as base case once afternoon price accepts above reclaimed supply.

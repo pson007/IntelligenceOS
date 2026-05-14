@@ -1,195 +1,98 @@
 ---
 symbol: MNQ1
 date: 2026-05-05
-dow: Tue
 stage: reconciliation
-screenshot: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-05.png
-forecasts_graded: ['pre_session', '1000', '1200', '1400']
+screenshot: /Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260513_212845.png
+forecasts_graded: ['F1', 'F2', 'F3']
 ground_truth_profile: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-05.json
-made_at: 2026-05-06T19:50:12
+made_at: 2026-05-13T21:29:14
 ---
 ACTUAL OUTCOME
 
-Open 27,988 / Close 28,135 / HOD 28,189 / LOD 27,970.5. Shape: bullish opening drive, midday consolidation and flush/reclaim, afternoon continuation to new high, then late pullback into a higher close.
+Open 27,975 / Close 28,135 / HOD 28,190 / LOD 27,965 / Shape: bullish open drive, midday consolidation/flush, afternoon continuation to new highs, then late pullback while still closing higher.
 
-STAGE GRADES
-
-Pre-session
+F1 GRADE (made at 10:00)
 
 Direction: ✓
 
-Close range hit: ✓
+Close range hit: ✓ (actual 28,135 vs predicted 28,105–28,145, miss 0 pts)
 
-HOD captured: ✗
+HOD captured: ✗ (actual 28,190 vs predicted 28,125–28,175, miss 15 pts)
 
-LOD captured: ✗
+LOD captured: ✗ (actual 27,965 vs predicted 28,015–28,040, miss 50 pts)
 
-Tags correct: direction up, afternoon continuation, GOAT up
+Tags correct: bullish direction, long GOAT, early drive, upper-balance/continuation, afternoon upside extension
 
-Tags wrong: gap_up_pullback_reclaim, opening_dip_then_afternoon_trend_up, bullish_hold_above_breakout_base, close_near_extreme
-
-Bias profitable if traded: ✓, but only if treating the actual open as drive-first and buying pullbacks
-
-Invalidation check: ✗ — 28,240 reclaim condition was too high and would have invalidated a correct long thesis
-
-Overall score: 4/7
-
-F1 — 10:00 ET
-
-Direction: ✓
-
-Close range hit: ✓
-
-HOD captured: ✓
-
-LOD captured: ✓
-
-Tags correct: opening drive trend-up, breakout-and-hold, afternoon continuation, GOAT up
-
-Tags wrong: close_near_extreme / near-HOD close
+Tags wrong: close_near_extreme=yes; lunch behavior missed the flush/reclaim
 
 Bias profitable if traded: ✓
 
-Invalidation check: ✓ — sustained trade below 28,000 did not occur after cursor
+Overall score: 4/6
 
-Overall score: 6/7
+Biggest miss: The bullish thesis was right, but the downside band was too shallow and the HOD ceiling was 15 pts too low.
 
-F2 — 12:00 ET
+F2 GRADE (made at 12:00)
 
 Direction: ✓
 
-Close range hit: ✗ — missed by 20 pts below 28,155
+Close range hit: ✓ (actual 28,135 vs predicted 28,135–28,175, miss 0 pts)
 
-HOD captured: ✓
+HOD captured: ✓ (actual 28,190 vs predicted 28,160–28,195, miss 0 pts)
 
-LOD captured: ✓
+LOD captured: ✗ (actual 27,965 vs predicted 28,045–28,085, miss 80 pts)
 
-Tags correct: direction up, failed breakdown/reclaim trend-up, afternoon grind higher, GOAT up
+Tags correct: bullish direction, open-drive continuation, dip-buy behavior, bullish breakout/high grind, long GOAT
 
-Tags wrong: high-base consolidation, close_near_extreme
+Tags wrong: close_near_extreme=yes_high_close; did not explicitly tag lunch flush/reclaim
 
 Bias profitable if traded: ✓
 
-Invalidation check: ✓ — sustained break below 28,075 did not occur
+Overall score: 5/6
 
-Overall score: 6/7
+Biggest miss: Excellent upside targeting, but the forecast under-modeled the full-day LOD and late non-extreme close.
 
-F3 — 14:00 ET
+F3 GRADE (made at 14:00)
 
 Direction: ✓
 
-Close range hit: ✗ — missed by 30 pts below 28,165
+Close range hit: ✗ (actual 28,135 vs predicted 28,145–28,180, miss 10 pts)
 
-HOD captured: ✓
+HOD captured: ✓ (actual 28,190 vs predicted 28,165–28,200, miss 0 pts)
 
-LOD captured: ✓
+LOD captured: ✗ (actual 27,965 vs predicted 28,075–28,105, miss 110 pts)
 
-Tags correct: direction up, upward continuation, bullish GOAT, late HOD attempt
+Tags correct: bullish direction, rotational morning to afternoon breakout, long GOAT, afternoon breakout attempt
 
-Tags wrong: close_near_extreme, no meaningful reversal
+Tags wrong: close_near_extreme=yes_upper_third; lunch_behavior missed range-then-flush-and-reclaim
 
-Bias profitable if traded: ✓, if avoiding chase above 28,185 as stated
+Bias profitable if traded: ✓
 
-Invalidation check: ✓ — sustained break below 28,095 did not occur
+Overall score: 4/6
 
-Overall score: 6/7
+Biggest miss: It correctly anticipated the afternoon high zone but overestimated the close and failed to account for the late pullback away from highs.
 
 FORECAST EVOLUTION
 
-Forecasts improved immediately at F1. Pre-session caught the broad up direction but used the wrong open template and unusable 28,240+ reclaim levels. F1 caught the real signal first: opening-drive trend-up with pullbacks holding and continuation favored. F2 and F3 refined the continuation path well, but both overestimated the close by missing the late supply rejection.
+The forecasts improved from F1 to F2, then slightly worsened in F3.
+
+F1 caught the core bullish open-drive thesis early, but its HOD and LOD bands were too tight. F2 was the best forecast: it nailed direction, close, HOD, and long bias, while correctly expanding the upside range. F3 kept the right bullish structure and captured the HOD, but became too optimistic on the close and did not price in enough late pullback risk.
+
+Key signal caught: higher lows above demand after the open drive.
+
+Key signal missed: lunch/late-session flush-reclaim behavior meant the day was not a clean high-close trend day.
 
 LESSONS
 
-When the first 15–30 minutes is an immediate upside drive, change gap_up_pullback_reclaim to gap_up_drive; do not wait for a reclaim that never needs to happen.
+Keep bullish bias active when MNQ holds above opening demand after an early drive.
 
-Do not use a reclaim level above the actual session's reachable range as a validity gate. Today, 28,240 invalidated a correct long thesis even though HOD was only 28,189.
+At 10:00, widen both HOD and LOD bands on open-drive days; shallow pullback assumptions were too narrow.
 
-After noon, separate "high-base" from "range-then-flush-and-reclaim." Today's 12:28 flush to ~28,095 mattered and should be tagged explicitly.
+After price accepts near highs, expand HOD projections faster.
 
-Near-HOD close needs confirmation after 15:00. If price rejects late supply and closes 54 pts below HOD, mark late_pullback, not close_near_extreme.
+Separate "afternoon breakout likely" from "close near highs likely."
 
-For post-10:00 forecasts, grade LOD against post-cursor tradeable lows; F1 correctly raised LOD toward the defended 10:18 pullback zone.
+Add a late-pullback branch when price reaches upper supply after a long upside grind.
 
-JSON
-{
-  "actual_summary": {
-    "direction": "up",
-    "open_approx": 27988.0,
-    "close_approx": 28135.0,
-    "hod_approx": 28189.0,
-    "lod_approx": 27970.5,
-    "net_range_pct_open_to_close": 0.5252,
-    "intraday_span_pts": 218.5
-  },
-  "grades": {
-    "pre_session_forecast": {
-      "direction_hit": true,
-      "close_in_band": true,
-      "close_miss_pts": 0,
-      "hod_in_band": false,
-      "lod_in_band": false,
-      "lod_miss_pts": 79.5,
-      "tags_correct": ["direction_up", "afternoon_continuation", "goat_direction_up"],
-      "tags_wrong": ["gap_up_pullback_reclaim", "opening_dip_then_afternoon_trend_up", "bullish_hold_above_breakout_base", "close_near_extreme"],
-      "bias_profitable": true,
-      "invalidation_correct": false,
-      "overall_score": 4,
-      "overall_max": 7,
-      "biggest_miss": "The 28240 reclaim gate was too high and would have mechanically invalidated a correct bullish day."
-    },
-    "F1": {
-      "direction_hit": true,
-      "close_in_band": true,
-      "close_miss_pts": 0,
-      "hod_in_band": true,
-      "lod_in_band": true,
-      "lod_miss_pts": 0,
-      "tags_correct": ["opening_drive_trend_up", "breakout_and_hold", "afternoon_continuation", "goat_direction_up"],
-      "tags_wrong": ["close_near_extreme"],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 6,
-      "overall_max": 7,
-      "biggest_miss": "It expected an upper-quadrant or near-HOD close, but late supply pulled price back to 28135."
-    },
-    "F2": {
-      "direction_hit": true,
-      "close_in_band": false,
-      "close_miss_pts": 20,
-      "hod_in_band": true,
-      "lod_in_band": true,
-      "lod_miss_pts": 0,
-      "tags_correct": ["direction_up", "failed_breakdown_midday_reclaim_trend_up", "afternoon_grind_higher", "goat_direction_up"],
-      "tags_wrong": ["high_base_consolidation", "close_near_extreme"],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 6,
-      "overall_max": 7,
-      "biggest_miss": "Close band was too high because it underweighted the late pullback risk."
-    },
-    "F3": {
-      "direction_hit": true,
-      "close_in_band": false,
-      "close_miss_pts": 30,
-      "hod_in_band": true,
-      "lod_in_band": true,
-      "lod_miss_pts": 0,
-      "tags_correct": ["direction_up", "upward_continuation", "bullish_goat", "late_hod_attempt"],
-      "tags_wrong": ["close_near_extreme", "no_meaningful_reversal"],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 6,
-      "overall_max": 7,
-      "biggest_miss": "It saw the afternoon continuation but missed the late rejection from supply."
-    }
-  },
-  "evolution": "The forecasts improved sharply from pre-session to F1. Pre-session had the right directional lean but wrong open template and bad reclaim levels. F1 caught the real signal first by identifying opening-drive trend-up; F2 and F3 kept the bullish continuation call but both overestimated the close because they did not price in the late pullback.",
-  "summary": "The day was a clean bullish trend session with the best long opportunity in the opening drive and later continuation after lunch reclaim. The main forecasting error was not direction, but structure precision: the models repeatedly overstated near-HOD close odds and under-tagged the late supply rejection.",
-  "lessons": [
-    "When the first 15–30 minutes is an immediate upside drive, switch the open tag to gap_up_drive instead of waiting for gap_up_pullback_reclaim.",
-    "Reject reclaim thresholds above the live session's plausible range; 28240 was unusable when actual HOD was 28189.",
-    "Tag lunch as range_then_flush_and_reclaim when a midday dip tests the lower intraday range and recovers, instead of generic high-base consolidation.",
-    "Require post-15:00 confirmation before forecasting close_near_extreme; a 54-point rejection from HOD is late_pullback behavior.",
-    "For intraday forecasts, grade LOD against post-cursor actionable lows and raise the LOD band to the first defended RTH pullback zone."
-  ]
-}
+Tag lunch behavior more precisely: this was not just high balance; it was range → flush → reclaim.
+
+Do not let correct direction hide range error: LOD bands were consistently too high.

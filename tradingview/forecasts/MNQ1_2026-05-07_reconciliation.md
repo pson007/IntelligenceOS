@@ -1,101 +1,98 @@
 ---
 symbol: MNQ1
 date: 2026-05-07
-dow: Thu
 stage: reconciliation
-screenshot: /Users/pson/Desktop/IntelligenceOS/.claude/worktrees/beautiful-edison-a2c148/tradingview/profiles/MNQ1_2026-05-07.png
-forecasts_graded: ['pre_session']
+screenshot: /Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260513_213536.png
+forecasts_graded: ['F1', 'F2', 'F3']
 ground_truth_profile: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-07.json
-made_at: 2026-05-08T08:38:19
+made_at: 2026-05-13T21:36:04
 ---
 ACTUAL OUTCOME
 
-Open 28,750.25 / Close 28,684.50 / HOD 28,945.00 / LOD 28,553.50. Shape: morning upside drive failed into a noon breakdown, then lower-value afternoon balance with a modest late reclaim that still closed below the open. 
+Open 28,750.25 / Close 28,684.50 / HOD 28,920.00 / LOD 28,575.00 / Shape: Morning upside drive failed into a midday breakdown, then afternoon lower-value balance produced only a modest late reclaim below the open.
 
-Pasted text
-
-STAGE GRADES
-pre_session_forecast
+F1 GRADE (made at 10:00)
 
 Direction: ✗
 
-Close range hit: ✗ — missed below by 108.9 pts
+Close range hit: ✗ (actual 28,684.50 vs predicted 28,790–28,825, miss 105.5 pts below)
 
-HOD captured: ✗
+HOD captured: ✗ (actual 28,920 vs predicted 28,815–28,850, miss 70 pts above)
 
-LOD captured: ✗ — missed below invalidation floor by 81.5 pts
+LOD captured: ✗ (actual 28,575 vs predicted 28,720–28,740, miss 145 pts below)
 
-Tags correct: bullish_reclaim_open partial, morning_push partial, close_near_extreme=no
+Tags correct: early bullish reclaim/open strength, failed breakout risk noted
 
-Tags wrong: direction=up, dip_reclaim_continuation, sideways_higher_low_build, controlled_upside_probe_or_balance, goat_direction=up
+Tags wrong: direction up, rotational_morning_to_afternoon_breakout, higher_balance, upside_continuation, goat_direction long, close_near_extreme upper
 
 Bias profitable if traded: ✗
 
-Invalidation check: Partly correct. The 28,635 downside invalidation eventually fired, but the forecast's primary early read stayed bullish after the 10:00 reclaim and did not identify the noon failed-reclaim/breakdown as the real regime shift.
+Overall score: 0.5/6
 
-Overall score: 2/7
+Biggest miss: F1 treated early strength as constructive instead of a morning drive vulnerable to failure and midday breakdown.
+
+F2 GRADE (made at 12:00)
+
+Direction: ✗
+
+Close range hit: ✗ (actual 28,684.50 vs predicted 28,860–28,940, miss 175.5 pts below)
+
+HOD captured: ✗ (actual 28,920 vs predicted 28,925–28,985, miss 5 pts below)
+
+LOD captured: ✗ (actual 28,575 vs predicted 28,720–28,790, miss 145 pts below)
+
+Tags correct: morning squeeze / upper supply interaction partially recognized
+
+Tags wrong: direction up, early_flush_to_midday_trend_then_upper_balance, high balance / shallow pullback, controlled upside continuation, goat_direction long, moderate-high close
+
+Bias profitable if traded: ✗
+
+Overall score: 0.5/6
+
+Biggest miss: F2 failed to recognize that the 28,900 area was exhaustion/supply, not continuation acceptance.
+
+F3 GRADE (made at 14:00)
+
+Direction: ✓
+
+Close range hit: ✗ (actual 28,684.50 vs predicted 28,575–28,660, miss 24.5 pts above)
+
+HOD captured: ✗ (actual 28,920 vs predicted 28,710–28,765, miss 155 pts below)
+
+LOD captured: ✗ (actual 28,575 vs predicted 28,510–28,565, miss 10 pts above)
+
+Tags correct: direction down, midday_downtrend/lower-high retest, weak bounce under value, goat_direction short, failed-reclaim risk
+
+Tags wrong: sell_continuation_to_lower_low_attempt, close_near_extreme/moderate weakness, insufficient late-reclaim weighting
+
+Bias profitable if traded: ✓
+
+Overall score: 3/6
+
+Biggest miss: F3 correctly flipped bearish but expected a fresh lower-low continuation instead of lower-value balance and late reclaim.
 
 FORECAST EVOLUTION
 
-Only the pre-session forecast was provided, so there was no forecast evolution to grade. It caught the early bullish reclaim and morning push, but misclassified that strength as continuation instead of exhaustion. The real signal first appeared around 12:00–12:25, when the morning drive failed, 28,708 broke, and the reclaim attempt near 28,725 turned into a long trap.
+The forecasts improved materially by F3.
+
+F1 caught early bullish pressure but overextended it into a bullish close thesis. It missed the risk that the morning drive was exhausting into overhead supply.
+
+F2 was worse tactically because it reinforced the long thesis near the actual HOD zone. It nearly captured HOD numerically but misread its meaning: 28,900–28,920 was rejection, not launch.
+
+F3 caught the key regime shift: failed morning drive, bearish midday structure, short bias. Its miss was overestimating downside completion after 14:00 and underweighting the late reclaim attempt.
 
 LESSONS
 
-When a bullish pre-session thesis gets the morning drive right but price stalls near HOD before noon, require a 12:00 continuation check before carrying the long bias into lunch.
+After a morning push into major supply, require acceptance above the high before projecting afternoon upside.
 
-Treat a break of the first defended midday demand zone — here 28,708 — as a regime-change trigger, not merely as a dip to buy.
+Near 12:00, treat failure from HOD plus loss of 28,800 as a regime change, not a shallow pullback.
 
-If the forecast explicitly cites a "morning rally can fail into lunch liquidation" analog, convert that risk into a hard tactical branch with downside targets.
+Separate "HOD likely set" from "continuation likely." F2 nearly nailed HOD but assigned the wrong directional implication.
 
-Do not let a valid 10:00 reclaim override later VWAP loss and failed reclaim behavior; the active bias must update after the noon structure changes.
+For F3, once LOD is already deeply extended and demand near 28,575–28,610 reacts, widen the close band upward.
 
-For continuation days, HOD extension is acceptable only if lunch holds higher lows. Here lunch failed, so the forecast should have flipped from "controlled upside probe" to "lower-value balance."
+Add an afternoon-balance branch after midday breakdowns: lower_value_balance_with_late_reclaim_attempt.
 
-JSON
-{
-  "actual_summary": {
-    "direction": "down",
-    "open_approx": 28750.25,
-    "close_approx": 28684.5,
-    "hod_approx": 28945.0,
-    "lod_approx": 28553.5,
-    "net_range_pct_open_to_close": -0.2287,
-    "intraday_span_pts": 391.5
-  },
-  "grades": {
-    "pre_session_forecast": {
-      "direction_hit": false,
-      "close_in_band": false,
-      "close_miss_pts": 108.9,
-      "hod_in_band": false,
-      "lod_in_band": false,
-      "lod_miss_pts": 81.5,
-      "tags_correct": [
-        "bullish_reclaim_open partial",
-        "morning_push partial",
-        "close_near_extreme=no"
-      ],
-      "tags_wrong": [
-        "direction=up",
-        "dip_reclaim_morning_push_lunch_balance_afternoon_probe",
-        "sideways_higher_low_build",
-        "controlled_upside_probe_or_balance",
-        "goat_direction=up"
-      ],
-      "bias_profitable": false,
-      "invalidation_correct": true,
-      "overall_score": 2,
-      "overall_max": 7,
-      "biggest_miss": "Forecast treated the early reclaim and morning drive as bullish continuation instead of recognizing the noon failed reclaim and breakdown into lower afternoon value."
-    }
-  },
-  "evolution": "Only the pre-session forecast was provided. It partially captured the early bullish open and morning push, but no later stage corrected the bias after the 12:00 rollover and 12:15 breakdown. The real signal first appeared around 12:00-12:25, when the upside drive failed and the 28708-28725 zone became a long trap.",
-  "summary": "The forecast got the opening/morning behavior partially right but missed the completed-day direction and the lunch regime shift. Its invalidation framework contained a useful downside floor, but the actionable failure was the midday demand break well before the final LOD.",
-  "lessons": [
-    "When a bullish pre-session thesis gets the morning drive right but price stalls near HOD before noon, require a 12:00 continuation check before carrying the long bias into lunch.",
-    "Treat a break of the first defended midday demand zone — here 28708 — as a regime-change trigger, not merely as a dip to buy.",
-    "If the forecast explicitly cites a morning-rally-fails-into-lunch-liquidation analog, convert that risk into a hard tactical branch with downside targets.",
-    "Do not let a valid 10:00 reclaim override later VWAP loss and failed reclaim behavior; the active bias must update after the noon structure changes.",
-    "For continuation days, HOD extension is acceptable only if lunch holds higher lows. Here lunch failed, so the forecast should have flipped from controlled upside probe to lower-value balance."
-  ]
-}
+Do not keep long bias active after midday demand near 28,708 breaks with acceptance.
+
+When price closes below the open but off lows, avoid close_near_extreme; use lower_value_close_with_reclaim_attempt.

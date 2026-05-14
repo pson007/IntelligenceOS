@@ -1,143 +1,96 @@
 ---
 symbol: MNQ1
 date: 2026-05-13
-dow: Wed
 stage: reconciliation
-screenshot: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-13.png
-forecasts_graded: ['pre_session', '1000']
+screenshot: /Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260513_215010.png
+forecasts_graded: ['F1', 'F2', 'F3']
 ground_truth_profile: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-13.json
-made_at: 2026-05-13T18:31:40
+made_at: 2026-05-13T21:50:39
 ---
 ACTUAL OUTCOME
 
-MNQ opened around 29,317.25, closed 29,475.50, made HOD 29,565.25 and LOD 29,281.50. Shape: bullish reclaim/trend day with early chop/dip, noon reclaim, decisive 14:00 breakout, then late pullback into a still-bullish close.
+Open 29,286.50 / Close 29,475.50 / HOD 29,557.75 / LOD 29,265.00 / Shape: bullish reclaim/trend day with early chop, noon reclaim, 14:00 breakout drive, then late pullback into a still-bullish close.
 
-STAGE GRADES
-PRE-SESSION
+F1 GRADE (made at 10:00)
+
+Direction: ✗
+
+Close range hit: ✗ (29,475.50 vs 29,075–29,170, miss 305.50 pts high)
+
+HOD captured: ✗ (29,557.75 vs 29,260–29,335, miss 222.75 pts high)
+
+LOD captured: ✗ (29,265.00 vs 29,020–29,085, miss 180.00 pts high)
+
+Tags correct: early rotation/chop risk
+
+Tags wrong: direction down, morning_high_failure_midday_flush, weak lunch, downside continuation, short GOAT, close near lower third
+
+Bias profitable if traded: ✗
+
+Overall score: 0.5/6
+
+Biggest miss: It treated the early dip as bearish breakdown instead of a shallow demand hold before reclaim.
+
+F2 GRADE (made at 12:00)
 
 Direction: ✓
 
-Close range hit: ✓
+Close range hit: ✓ (29,475.50 vs 29,405–29,515, miss 0 pts)
 
-HOD captured: ✗
+HOD captured: ✓ (29,557.75 vs 29,470–29,565, miss 0 pts)
 
-LOD captured: ✗ — LOD undercut the key 29,340 invalidation zone by 58.50 pts
+LOD captured: ✗ (29,265.00 vs 29,170–29,220, miss 45.00 pts high)
 
-Tags correct: direction up, goat_direction up, buy_dips_on_reclaim, upper-half close, afternoon continuation watch
+Tags correct: direction up, rotational_morning_to_afternoon_breakout, higher_balance, breakout_drive_potential, long GOAT, close near upper extreme
 
-Tags wrong: open_dip_then_reclaim, early_pullback_reclaim_to_upper_balance, close_near_extreme no_mid_upper_range, controlled_continuation_or_failed_breakout_balance
-
-Bias profitable if traded: ✓, but only if the trader did not overreact to the 29,340 break
-
-Invalidation check: ✗. The stated first-hour acceptance below 29,340 / VWAP weakness risked invalidating a thesis that later worked. The hard invalidation was too tight for the actual morning dip.
-
-Overall score: 4/7
-
-F1 — 10:00 ET
-
-Direction: ✓
-
-Close range hit: ✓
-
-HOD captured: ✓
-
-LOD captured: ✓
-
-Tags correct: bullish direction, high-level consolidation / buyable dip, afternoon continuation higher, upper-third close
-
-Tags wrong: open_drive_trend_to_upper_balance, opening LONG as GOAT timing
+Tags wrong: LOD too low; underweighted strength of reclaim
 
 Bias profitable if traded: ✓
 
-Invalidation check: ✓. Sustained loss of 29,240–29,250 did not occur; LOD held well above it.
+Overall score: 5/6
 
-Overall score: 6/7
+Biggest miss: It still expected a deeper pullback than the market allowed after reclaim.
+
+F3 GRADE (made at 14:00)
+
+Direction: ✓
+
+Close range hit: ✓ (29,475.50 vs 29,455–29,525, miss 0 pts)
+
+HOD captured: ✓ (29,557.75 vs 29,500–29,565, miss 0 pts)
+
+LOD captured: ✓/partial (post-14:00 pullback held roughly above its 29,385–29,430 risk area; full-session LOD was already set earlier)
+
+Tags correct: bullish continuation, higher-low grind, held higher balance after noon reclaim, squeeze risk, long GOAT, near upper quartile close
+
+Tags wrong: "controlled continuation" understated the actual 14:15 breakout drive
+
+Bias profitable if traded: ✓
+
+Overall score: 5.5/6
+
+Biggest miss: It had the right long thesis but slightly undersold the violence/timing of the 14:15 expansion.
 
 FORECAST EVOLUTION
 
-Forecast quality improved sharply from pre-session to F1. The pre-session forecast had the correct bullish direction and dip-buy idea, but its invalidation level was too tight and its structure undercalled the afternoon breakout. F1 caught the real signal first: the broader LOD band, higher close band, HOD band, and 29,240–29,250 invalidation all matched the completed session much better.
+The forecasts improved sharply.
+
+F1 failed because it mechanically overtrusted early weakness and projected a downside flush even though price had not broken the broader demand shelf.
+
+F2 caught the key signal: failed selloff, reclaim, higher lows, and likely afternoon breakout. It was directionally and tactically correct.
+
+F3 was the cleanest forecast. It correctly identified the higher-low structure into 14:00 and the squeeze risk through 29,505. Its only weakness was framing the move as "controlled" when the actual GOAT move became a stronger breakout drive around 14:15.
 
 LESSONS
 
-Do not invalidate a bullish MNQ thesis on a shallow first-hour break of a nearby level unless price sustains below it; today broke below 29,340 but never lost the broader 29,240–29,250 demand zone.
+Do not short MNQ solely because the first 30–60 minutes reject supply; require sustained break below true demand.
 
-When the open is rotational but lows hold above the true demand shelf, classify as rotational_morning_to_afternoon_breakout, not open-drive or simple upper balance.
+Once noon reclaim holds, upgrade from "repair rally" to "breakout-drive candidate."
 
-At 10:00, widen HOD and close bands when price holds near early highs without losing the open; F1 correctly allowed 29,500–29,610.
+If price builds higher lows into 14:00 near HOD, widen the HOD band and expect squeeze risk.
 
-Separate "GOAT direction" from "GOAT timing." Long was correct, but the real completion came around 14:15, not the opening window.
+Separate "extended" from "bearish." Extension near supply is not a short signal unless higher lows fail.
 
-If noon reclaim holds and price forms higher balance, upgrade the afternoon branch from controlled continuation to breakout-drive potential.
+LOD forecasts after reclaim should be raised. F2 kept downside levels too low after buyers had already defended the session.
 
-JSON
-{
-  "actual_summary": {
-    "direction": "up",
-    "open_approx": 29317.25,
-    "close_approx": 29475.5,
-    "hod_approx": 29565.25,
-    "lod_approx": 29281.5,
-    "net_range_pct_open_to_close": 0.5398,
-    "intraday_span_pts": 283.75
-  },
-  "grades": {
-    "pre_session_forecast": {
-      "direction_hit": true,
-      "close_in_band": true,
-      "close_miss_pts": 0,
-      "hod_in_band": false,
-      "lod_in_band": false,
-      "lod_miss_pts": 58.5,
-      "tags_correct": [
-        "direction up",
-        "goat_direction up",
-        "buy_dips_on_reclaim",
-        "upper-half close",
-        "afternoon continuation watch"
-      ],
-      "tags_wrong": [
-        "open_dip_then_reclaim",
-        "early_pullback_reclaim_to_upper_balance",
-        "close_near_extreme no_mid_upper_range",
-        "controlled_continuation_or_failed_breakout_balance"
-      ],
-      "bias_profitable": true,
-      "invalidation_correct": false,
-      "overall_score": 4,
-      "overall_max": 7,
-      "biggest_miss": "Invalidation around 29340 was too tight; actual LOD undercut it before the bullish afternoon breakout."
-    },
-    "F1": {
-      "direction_hit": true,
-      "close_in_band": true,
-      "close_miss_pts": 0,
-      "hod_in_band": true,
-      "lod_in_band": true,
-      "lod_miss_pts": 0,
-      "tags_correct": [
-        "bullish direction",
-        "high-level consolidation / buyable dip",
-        "afternoon continuation higher",
-        "upper-third close"
-      ],
-      "tags_wrong": [
-        "open_drive_trend_to_upper_balance",
-        "opening LONG as GOAT timing"
-      ],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 6,
-      "overall_max": 7,
-      "biggest_miss": "It overcalled the open as an open-drive trend instead of a rotational morning that later became an afternoon breakout."
-    }
-  },
-  "evolution": "Forecast quality improved from pre-session to F1. The pre-session call had the correct bullish direction and dip-buy concept, but its structure and invalidation were too tight. F1 correctly widened the downside tolerance, captured the close/HOD/LOD bands, and identified the continuation setup before the 14:00 breakout.",
-  "summary": "Both forecasts leaned bullish, which matched the completed session. F1 was materially better because it respected the wider demand shelf and projected the afternoon continuation range accurately.",
-  "lessons": [
-    "Do not invalidate a bullish MNQ thesis on a shallow first-hour break of a nearby level unless price sustains below the broader demand shelf.",
-    "When the open is rotational but lows hold above true demand, classify the day as rotational_morning_to_afternoon_breakout rather than open-drive.",
-    "At 10:00, widen HOD and close bands when price holds near early highs without losing the open.",
-    "Separate GOAT direction from GOAT timing; long was right, but the real completion came around 14:15.",
-    "If noon reclaim holds and forms higher balance, upgrade the afternoon branch from controlled continuation to breakout-drive potential."
-  ]
-}
+Add a stronger 14:00 launch classifier: compression below supply + rising demand band + higher balance = breakout-drive probability, not just controlled continuation.

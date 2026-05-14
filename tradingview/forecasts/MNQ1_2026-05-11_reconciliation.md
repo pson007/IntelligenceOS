@@ -1,102 +1,94 @@
 ---
 symbol: MNQ1
 date: 2026-05-11
-dow: Mon
 stage: reconciliation
-screenshot: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-11.png
-forecasts_graded: ['pre_session']
+screenshot: /Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260513_214252.png
+forecasts_graded: ['F1', 'F2', 'F3']
 ground_truth_profile: /Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-11.json
-made_at: 2026-05-12T07:16:06
+made_at: 2026-05-13T21:43:32
 ---
 ACTUAL OUTCOME
 
-Opened near 29305, closed 29429, HOD 29480.5, LOD 29247. Shape: early flush, late-morning upside reversal/trend, upper balance, 15:00 breakdown attempt, then late reclaim into a green close.
+Open 29,373 / Close 29,429 / HOD 29,478 / LOD 29,310 / Shape: Wide two-way green session: gap-up spike failed, early flush held demand, late-morning trend reached upper balance, then 15:00 selloff recovered into the close.
 
-STAGE GRADES
-pre_session_forecast
+F1 GRADE (made at 10:00)
 
 Direction: ✓
 
-Close range hit: ✓
+Close range hit: ✗ (actual 29,429 vs predicted 29,340–29,410, miss +19 pts)
 
-HOD captured: ✓
+HOD captured: ✗ (actual 29,478 vs predicted 29,415–29,455, miss +23 pts)
 
-LOD captured: ✗ (missed by 13 pts below 29260 expected pullback floor; exact LOD 29247)
+LOD captured: ✓ (actual 29,310 vs predicted 29,260–29,315)
 
-Tags correct: direction up, goat_direction up, close_near_extreme no, buy_dips_on_reclaim, gap-up pullback/reclaim, upper balance risk
+Tags correct: direction slightly_bullish, gap_up_drive_then_reversal, goat_direction up, close_near_extreme no, late_reclaim_attempt
 
-Tags wrong: structure too generic, open_type missed gap-up drive then reversal, lunch_behavior not just higher-low base, afternoon_drive missed failed breakdown late reclaim
+Tags wrong: lunch_behavior range_compression; structure understated the later trend/upper balance
 
 Bias profitable if traded: ✓
 
-Invalidation check: Correct. Price did not accept below 29240, did not break 29120, and the post-10:30 reclaim thesis remained valid after the 10:34 reversal.
+Overall score: 4/6
 
-Overall score: 5/7
+Biggest miss: It correctly kept the dip-buy thesis alive but capped upside too low after the early flush held demand.
+
+F2 GRADE (made at 12:00)
+
+Direction: ✓
+
+Close range hit: ✗ (actual 29,429 vs predicted 29,510–29,570, miss -81 pts)
+
+HOD captured: ✗ (actual 29,478 vs predicted 29,540–29,610, miss -62 pts)
+
+LOD captured: ✓/partial (post-12:00 low was near the lower edge of 29,370–29,420; full-day LOD was already in)
+
+Tags correct: direction up, structure early_flush_to_midday_trend_then_upper_balance, lunch higher/sideways balance, goat_direction long
+
+Tags wrong: afternoon_drive bullish breakout attempt; close_near_extreme yes
+
+Bias profitable if traded: ✓/partial
+
+Overall score: 4/6
+
+Biggest miss: It over-upgraded noon strength into a breakout-drive call when supply at 29,460–29,478 capped the session.
+
+F3 GRADE (made at 14:00)
+
+Direction: ✓
+
+Close range hit: ✗ (actual 29,429 vs predicted 29,455–29,505, miss -26 pts)
+
+HOD captured: ✗ (actual 29,478 vs predicted 29,485–29,535, miss -7 pts)
+
+LOD captured: ✗ (post-14:00 low near 29,365–29,370 vs predicted 29,385–29,420, miss ~15–20 pts)
+
+Tags correct: goat_direction long, lunch_behavior held_higher_balance, upper_balance context
+
+Tags wrong: controlled_upside_continuation, close_near_extreme moderately likely, breakout_attempt too optimistic
+
+Bias profitable if traded: ✗
+
+Overall score: 2/6
+
+Biggest miss: It failed to allow for a late failed-breakdown flush before reclaim.
 
 FORECAST EVOLUTION
 
-Only the pre-session forecast was provided. It caught the core signal early: bullish day, dip-buy setup, morning reclaim, non-extreme green close. Its main miss was scale/shape: it expected a larger 260–460 pt span and framed the day as gap-up pullback high balance, while the exact session was a smaller 233.5 pt span with a deeper early flush, stronger late-morning trend leg, and failed 15:00 breakdown/reclaim.
+The forecasts improved from F1 to F2 on structure recognition, then degraded tactically in F3.
+
+F1 caught the key idea: early failed gap-up did not invalidate bullish dip-buying. Its miss was too-tight upside bands.
+
+F2 best identified the actual day structure: early flush → trend → upper balance. Its miss was assuming the 29,478 supply break would extend instead of cap.
+
+F3 correctly saw upper balance but overfit bullish continuation. It missed the 15:00 selloff and failed_breakdown_late_reclaim shape.
 
 LESSONS
 
-When MNQ gaps up and immediately spikes above 29400 but fails within minutes, label the open as gap_up_drive_then_reversal, not merely rotational reclaim.
+Keep the bullish thesis when early demand holds, but do not automatically project a breakout through first major supply.
 
-Keep the bullish dip-buy plan active if the flush holds just above the hard invalidation level; today's 29247 LOD held above 29240, then reversed cleanly.
+After HOD forms near noon and price stalls under supply, add a capped upper-balance branch.
 
-Use exact invalidation separately from expected pullback bands: the forecast's tactical invalidation was good, but the LOD band was too shallow by 13 pts.
+At 14:00, include a late-day liquidation/reclaim path if price has spent hours failing above supply.
 
-After a 10:34 secondary flush base and 11:33 reclaim, upgrade structure from high_balance to early_flush_to_midday_trend_then_upper_balance.
+Separate "long direction correct" from "long trade location safe." F3 long bias was directionally acceptable but tactically vulnerable.
 
-Add a late-day branch for failed breakdown late reclaim when price balances near highs but cannot cleanly break supply.
-
-JSON
-{
-  "actual_summary": {
-    "direction": "up",
-    "open_approx": 29305.0,
-    "close_approx": 29429.0,
-    "hod_approx": 29480.5,
-    "lod_approx": 29247.0,
-    "net_range_pct_open_to_close": 0.4231,
-    "intraday_span_pts": 233.5
-  },
-  "grades": {
-    "pre_session_forecast": {
-      "direction_hit": true,
-      "close_in_band": true,
-      "close_miss_pts": 0,
-      "hod_in_band": true,
-      "lod_in_band": false,
-      "lod_miss_pts": 13,
-      "tags_correct": [
-        "direction up",
-        "goat_direction up",
-        "close_near_extreme no",
-        "buy_dips_on_reclaim",
-        "gap-up pullback/reclaim",
-        "upper balance risk"
-      ],
-      "tags_wrong": [
-        "structure too generic",
-        "open_type missed gap_up_drive_then_reversal",
-        "lunch_behavior not just higher_low_base_required",
-        "afternoon_drive missed failed_breakdown_late_reclaim",
-        "expected_move_size large overstated span"
-      ],
-      "bias_profitable": true,
-      "invalidation_correct": true,
-      "overall_score": 5,
-      "overall_max": 7,
-      "biggest_miss": "The forecast got bullish direction and dip-buy invalidation right, but understated the early flush depth and missed the exact session shape: early flush to midday trend, upper balance, then failed late breakdown/reclaim."
-    }
-  },
-  "evolution": "Only the pre-session forecast was provided, so there is no stage-to-stage improvement to evaluate. The pre-session call caught the real signal first: bullish dip-buy continuation after a defended flush, but it did not refine the intraday structure into the actual early-flush-to-midday-trend and late failed-breakdown pattern.",
-  "summary": "The pre-session forecast was directionally correct and tactically usable: buying the defended flush/reclaim would likely have worked. Its weaknesses were structural precision and range calibration, especially the too-shallow LOD expectation and oversized span forecast.",
-  "lessons": [
-    "When MNQ gaps up and immediately spikes above 29400 but fails within minutes, label the open as gap_up_drive_then_reversal, not merely rotational reclaim.",
-    "Keep the bullish dip-buy plan active if the flush holds just above the hard invalidation level; today's 29247 LOD held above 29240, then reversed cleanly.",
-    "Use exact invalidation separately from expected pullback bands: the forecast's tactical invalidation was good, but the LOD band was too shallow by 13 pts.",
-    "After a 10:34 secondary flush base and 11:33 reclaim, upgrade structure from high_balance to early_flush_to_midday_trend_then_upper_balance.",
-    "Add a late-day branch for failed_breakdown_late_reclaim when price balances near highs but cannot cleanly break supply."
-  ]
-}
+For MNQ upper-balance days, widen LOD bands after 14:00; late flushes often pierce obvious value-band demand before reclaiming.
