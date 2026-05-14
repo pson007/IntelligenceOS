@@ -342,6 +342,74 @@ async def _select_model(page: Page, model_name: str) -> None:
     )
 
 
+async def _composer_text_len(page: Page) -> int:
+    return await page.evaluate(r"""(sel) => {
+        const el = document.querySelector(sel);
+        if (!el) return 0;
+        return ((el.innerText || el.value || '').trim()).length;
+    }""", SEL_COMPOSER)
+
+
+async def _insert_prompt_into_composer(page: Page, text: str) -> bool:
+    """Put `text` into ChatGPT's ProseMirror composer.
+
+    Primary path uses `keyboard.insert_text` — fires the single
+    `inputType="insertText"` event ProseMirror's input handler is built
+    to consume, which is also how IMEs and accessibility tools insert
+    text. Avoids the macOS pbcopy + Cmd+V path entirely: that path is
+    fragile because it depends on (a) the clipboard not being clobbered
+    by another process, (b) the contenteditable actually having
+    keyboard focus when the shortcut fires, and (c) Playwright's
+    `ControlOrMeta+v` correctly translating to the host platform's
+    paste shortcut under CDP attach. Pressure tests showed all three
+    failing intermittently — 3 retries of the same broken sequence
+    didn't help.
+
+    Fallback retains pbcopy + Cmd+V so a future Playwright/ChatGPT
+    quirk that breaks `insert_text` doesn't take the whole flow down.
+    Returns True iff the composer ended up with >50 chars."""
+    composer = page.locator(SEL_COMPOSER).first
+
+    # Primary: insert_text — single synthesized input event.
+    try:
+        await composer.click()
+        await page.wait_for_timeout(150)
+        await page.keyboard.insert_text(text)
+        await page.wait_for_timeout(400)
+        if await _composer_text_len(page) > 50:
+            audit.log("chatgpt_web.insert_text.ok")
+            return True
+        audit.log("chatgpt_web.insert_text.empty")
+    except Exception as e:
+        audit.log("chatgpt_web.insert_text.err", err=str(e))
+
+    # Fallback: clipboard paste + React event nudge (the old path).
+    for attempt in range(3):
+        _pbcopy(text)
+        await composer.click()
+        await page.keyboard.press("ControlOrMeta+v")
+        await page.wait_for_timeout(500)
+        await page.evaluate(r"""(sel) => {
+            const el = document.querySelector(sel);
+            if (!el) return;
+            el.focus();
+            el.dispatchEvent(new InputEvent('input', {
+                bubbles: true, cancelable: true, inputType: 'insertText',
+            }));
+            el.dispatchEvent(new Event('change', {bubbles: true}));
+            el.dispatchEvent(new CompositionEvent('compositionend', {
+                bubbles: true, data: '',
+            }));
+        }""", SEL_COMPOSER)
+        await page.wait_for_timeout(400)
+        if await _composer_text_len(page) > 50:
+            audit.log("chatgpt_web.paste.ok", attempt=attempt + 1)
+            return True
+        audit.log("chatgpt_web.paste.retry", attempt=attempt + 1)
+    audit.log("chatgpt_web.paste.fail")
+    return False
+
+
 async def _wait_for_attachment(page: Page, basename: str, timeout_s: int = 30) -> None:
     """Poll for the attachment tile to render.
 
@@ -434,57 +502,8 @@ async def analyze_via_chatgpt_web(
             await page.wait_for_timeout(2500)
             audit.log("chatgpt_web.upload_done")
 
-            _pbcopy(combined)
-            composer = page.locator(SEL_COMPOSER).first
+            await _insert_prompt_into_composer(page, combined)
             send = page.locator(SEL_SEND_BUTTON).first
-
-            # Paste + dispatch React-style input event. Cmd+V deposits
-            # text into the contenteditable element, but ChatGPT's Send
-            # button is gated on a React state update that listens for
-            # `input`/`compositionend` events. Without an explicit
-            # dispatch the button stays disabled even though the
-            # composer is visually populated. Retry up to 3x in case
-            # the first paste/event sequence was raced.
-            paste_ok = False
-            for attempt in range(3):
-                await composer.click()
-                await page.keyboard.press("ControlOrMeta+v")
-                await page.wait_for_timeout(500)
-                # Dispatch input + compositionend so React's onChange
-                # fires and Send enables. Plus keyboard nudge (End +
-                # space + backspace) which forces the editor into a
-                # dirty state on builds that ignore programmatic events.
-                await page.evaluate(r"""(sel) => {
-                    const el = document.querySelector(sel);
-                    if (!el) return;
-                    el.focus();
-                    el.dispatchEvent(new InputEvent('input', {
-                        bubbles: true, cancelable: true, inputType: 'insertText',
-                    }));
-                    el.dispatchEvent(new Event('change', {bubbles: true}));
-                    el.dispatchEvent(new CompositionEvent('compositionend', {
-                        bubbles: true, data: '',
-                    }));
-                }""", SEL_COMPOSER)
-                await page.keyboard.press("End")
-                await page.keyboard.press("Space")
-                await page.keyboard.press("Backspace")
-                await page.wait_for_timeout(500)
-
-                composer_has_text = await page.evaluate(r"""(sel) => {
-                    const el = document.querySelector(sel);
-                    if (!el) return false;
-                    const txt = (el.innerText || el.value || '').trim();
-                    return txt.length > 50;
-                }""", SEL_COMPOSER)
-                if composer_has_text:
-                    paste_ok = True
-                    break
-                audit.log("chatgpt_web.paste.retry", attempt=attempt + 1)
-                _pbcopy(combined)  # clipboard may have been clobbered
-                await page.wait_for_timeout(300)
-            if not paste_ok:
-                audit.log("chatgpt_web.paste.fail")
 
             audit.log("chatgpt_web.send")
             await send.wait_for(state="visible", timeout=10_000)
@@ -593,57 +612,8 @@ async def analyze_via_chatgpt_web_multi(
                 await _wait_for_attachment(page, Path(p).name, timeout_s=30)
             audit.log("chatgpt_web.upload_done", count=len(image_paths))
 
-            _pbcopy(combined)
-            composer = page.locator(SEL_COMPOSER).first
+            await _insert_prompt_into_composer(page, combined)
             send = page.locator(SEL_SEND_BUTTON).first
-
-            # Paste + dispatch React-style input event. Cmd+V deposits
-            # text into the contenteditable element, but ChatGPT's Send
-            # button is gated on a React state update that listens for
-            # `input`/`compositionend` events. Without an explicit
-            # dispatch the button stays disabled even though the
-            # composer is visually populated. Retry up to 3x in case
-            # the first paste/event sequence was raced.
-            paste_ok = False
-            for attempt in range(3):
-                await composer.click()
-                await page.keyboard.press("ControlOrMeta+v")
-                await page.wait_for_timeout(500)
-                # Dispatch input + compositionend so React's onChange
-                # fires and Send enables. Plus keyboard nudge (End +
-                # space + backspace) which forces the editor into a
-                # dirty state on builds that ignore programmatic events.
-                await page.evaluate(r"""(sel) => {
-                    const el = document.querySelector(sel);
-                    if (!el) return;
-                    el.focus();
-                    el.dispatchEvent(new InputEvent('input', {
-                        bubbles: true, cancelable: true, inputType: 'insertText',
-                    }));
-                    el.dispatchEvent(new Event('change', {bubbles: true}));
-                    el.dispatchEvent(new CompositionEvent('compositionend', {
-                        bubbles: true, data: '',
-                    }));
-                }""", SEL_COMPOSER)
-                await page.keyboard.press("End")
-                await page.keyboard.press("Space")
-                await page.keyboard.press("Backspace")
-                await page.wait_for_timeout(500)
-
-                composer_has_text = await page.evaluate(r"""(sel) => {
-                    const el = document.querySelector(sel);
-                    if (!el) return false;
-                    const txt = (el.innerText || el.value || '').trim();
-                    return txt.length > 50;
-                }""", SEL_COMPOSER)
-                if composer_has_text:
-                    paste_ok = True
-                    break
-                audit.log("chatgpt_web.paste.retry", attempt=attempt + 1)
-                _pbcopy(combined)  # clipboard may have been clobbered
-                await page.wait_for_timeout(300)
-            if not paste_ok:
-                audit.log("chatgpt_web.paste.fail")
 
             audit.log("chatgpt_web.send")
             await send.wait_for(state="visible", timeout=10_000)
