@@ -2376,7 +2376,8 @@ _FORECAST_STEM_RX = __import__("re").compile(
 async def forecast_run_start(payload: dict) -> dict:
     """Kick off a daily-forecast run for one trading day.
 
-    Body: {date: "YYYY-MM-DD", symbol?: "MNQ1", resume?: bool, adhoc?: bool}
+    Body: {date: "YYYY-MM-DD", symbol?: "MNQ1", resume?: bool, adhoc?: bool,
+           stages?: ["F1","F2","F3"]}
     Returns {task_id, request_id}. Poll /api/forecasts/runs/{task_id} for
     status and /api/audit/tail?request_id=... for live stage events.
 
@@ -2386,13 +2387,26 @@ async def forecast_run_start(payload: dict) -> dict:
     `adhoc=true` makes the run time-aware: stages whose cursor time
     hasn't arrived are skipped rather than gate-failing, and
     reconciliation is skipped if RTH isn't closed or the profile is
-    missing. Recommended default when invoking from the UI mid-day."""
+    missing. Recommended default when invoking from the UI mid-day.
+
+    `stages` restricts the run to a subset of F1/F2/F3 — the per-stage
+    Re-run button passes a single stage to re-capture it via Bar Replay.
+    A stage-filtered run always skips reconciliation."""
     global _active_forecast_run
     p = payload or {}
     date = (p.get("date") or "").strip()
     symbol = (p.get("symbol") or "MNQ1").strip()
     resume = bool(p.get("resume", True))
     adhoc = bool(p.get("adhoc", False))
+
+    stages_raw = p.get("stages")
+    stages: set[str] | None = None
+    if stages_raw is not None:
+        if not isinstance(stages_raw, list):
+            raise HTTPException(400, "stages must be a list")
+        stages = {str(s).strip().upper() for s in stages_raw}
+        if not stages or not stages <= {"F1", "F2", "F3"}:
+            raise HTTPException(400, "stages must be a non-empty subset of F1,F2,F3")
 
     if not _PROFILE_DATE_RX.match(date):
         raise HTTPException(400, "date must be YYYY-MM-DD")
@@ -2416,6 +2430,7 @@ async def forecast_run_start(payload: dict) -> dict:
         "request_id": request_id,
         "started_at": time.time(),
         "date": date, "symbol": symbol, "resume": resume, "adhoc": adhoc,
+        "stages": sorted(stages) if stages else None,
     }
 
     async def runner():
@@ -2423,7 +2438,7 @@ async def forecast_run_start(payload: dict) -> dict:
         try:
             from tv_automation.daily_forecast import run_forecast_day
             result = await run_forecast_day(
-                date, symbol=symbol, resume=resume, adhoc=adhoc,
+                date, symbol=symbol, resume=resume, adhoc=adhoc, stages=stages,
             )
             _forecast_run_tasks[task_id]["state"] = "done"
             _forecast_run_tasks[task_id]["result"] = result

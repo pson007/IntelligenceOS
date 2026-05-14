@@ -4841,28 +4841,44 @@ html.is-mobile .forecasts-layout {
   color: var(--fg, #e6edf3);
   font-weight: 600;
 }
+/* Stage-card action buttons — Re-run / Speak / Generate Pine / Apply.
+   One shared rule so all four are the same height and font: fixed
+   height + inline-flex centering keeps them aligned regardless of label
+   length, white-space:nowrap bans the mid-word wrap that made "Re-run"
+   and "Generate Pine overlay" stack onto two lines, and flex:0 0 auto
+   stops the flex row from squeezing them. Spacing comes from the
+   container's gap, so no per-button margin. */
 .forecast-pine-btn,
-.forecast-regen-btn,
-.forecast-apply-btn {
+.forecast-rerun-btn,
+.forecast-apply-btn,
+.forecast-speak-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 12px;
   background: var(--bg-3);
   border: 1px solid var(--border);
   color: var(--accent, #58a6ff);
-  padding: 4px 10px;
   border-radius: 6px;
   font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   font-family: var(--mono);
-  margin-right: 6px;
 }
 .forecast-pine-btn:hover,
-.forecast-regen-btn:hover,
-.forecast-apply-btn:hover {
+.forecast-rerun-btn:hover,
+.forecast-apply-btn:hover,
+.forecast-speak-btn:hover {
   border-color: var(--accent, #58a6ff);
 }
-.forecast-regen-btn {
+.forecast-rerun-btn {
   color: var(--yellow, #e3b341);
 }
-.forecast-regen-btn:hover {
+.forecast-rerun-btn:hover {
   border-color: var(--yellow, #e3b341);
 }
 .forecast-apply-btn {
@@ -4872,8 +4888,9 @@ html.is-mobile .forecasts-layout {
   border-color: var(--green);
 }
 .forecast-pine-btn:disabled,
-.forecast-regen-btn:disabled,
-.forecast-apply-btn:disabled {
+.forecast-rerun-btn:disabled,
+.forecast-apply-btn:disabled,
+.forecast-speak-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

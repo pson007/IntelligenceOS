@@ -159,7 +159,11 @@ async def run_live_stage(
     `image_path` (optional): bypass automated capture and run the LLM
     against a pre-existing PNG. Skips chart_session entirely. The
     staleness guard still applies — `force=True` bypasses it the same
-    way as the live-chart path."""
+    way as the live-chart path.
+
+    `force=True` also overrides the skip-existing guard: a stage whose
+    forecast JSON already exists is re-captured and overwritten rather
+    than returned untouched."""
     if stage not in STAGE_CURSOR:
         raise ValueError(f"stage must be one of F1/F2/F3, got {stage!r}")
     cursor_time = STAGE_CURSOR[stage]
@@ -176,7 +180,10 @@ async def run_live_stage(
     # alongside the Replay-produced ones.
     stage_tag = cursor_time.strftime("%H%M")
     md_path, json_path = _forecast_file_paths(symbol, date_str, stage_tag)
-    if json_path.exists():
+    # `force` bypasses skip-existing too, not just the staleness guard —
+    # the UI's per-stage Re-run button always passes force=True and
+    # expects the stage to actually re-capture, overwriting the old JSON.
+    if json_path.exists() and not force:
         audit.log("live_forecast.skip_existing", stage=stage, path=str(json_path))
         return {"skipped": True, "path": str(json_path)}
 
@@ -336,7 +343,8 @@ def _main() -> None:
     p.add_argument("--date", dest="date_str", default=None,
                    help="Override trading date (default: today)")
     p.add_argument("--force", action="store_true",
-                   help="Run even if current time is >30 min past the stage cursor")
+                   help="Run even if >30 min past the stage cursor, and "
+                        "overwrite the stage's forecast JSON if it already exists")
     args = p.parse_args()
 
     try:

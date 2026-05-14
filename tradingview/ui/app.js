@@ -4210,6 +4210,12 @@ async function _pollForecastRun(task_id, request_id) {
       _finishForecastStatusBar('done');
       await loadForecasts();
       renderForecastCalendar();
+      // Re-render the open stage-detail panel so a just-finished
+      // per-stage Re-run shows its fresh capture without a manual reload.
+      if (_forecastsSelectedKey) {
+        const [selSym, selDate] = _forecastsSelectedKey.split('|');
+        if (selSym && selDate) selectForecastDay(selSym, selDate);
+      }
     } else {
       statusEl.textContent = 'failed';
       phaseEl.textContent = `Error: ${status.error || 'unknown'}`;
@@ -5096,15 +5102,33 @@ async function selectForecastDay(symbol, date) {
   const dayEntry = (_forecastsCache || []).find(d => d.symbol === symbol && d.date === date);
   const accuracyHtml = _renderAccuracyCard(dayEntry);
 
-  // Fetch all known stages + recon variants in parallel.
+  // Fetch all known stages + recon variants + the completed-day profile
+  // in parallel. The profile lives behind a different endpoint
+  // (/api/profiles/{symbol}_{date}) but is normalised onto the same
+  // {stage, json, markdown} shape, so it flows through the rest of the
+  // carousel pipeline like any other card — it's the ground truth
+  // reconciliation grades against, so it belongs in the same strip.
   const stages = ['pre_session', '1000', '1200', '1400', 'reconciliation', 'pre_session_reconciliation'];
-  const results = await Promise.all(stages.map(async s => {
-    try {
-      return { stage: s, ...(await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(s)}`)) };
-    } catch (e) {
-      return { stage: s, error: e.message };
-    }
-  }));
+  const _profileKey = `${symbol}_${date}`;
+  const [stageResults, profileResult] = await Promise.all([
+    Promise.all(stages.map(async s => {
+      try {
+        return { stage: s, ...(await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(s)}`)) };
+      } catch (e) {
+        return { stage: s, error: e.message };
+      }
+    })),
+    (async () => {
+      try {
+        const pr = await api(`/api/profiles/${encodeURIComponent(_profileKey)}`);
+        return { stage: 'profile', json: pr.json, markdown: pr.markdown };
+      } catch (e) {
+        return { stage: 'profile', error: e.message };
+      }
+    })(),
+  ]);
+  // Profile last — it's the answer key, read after the forecasts + recon.
+  const results = [...stageResults, profileResult];
 
   // Always render the four core stages — pre_session + F1/F2/F3 — even
   // when missing, so the operator can see at-a-glance which stages have
@@ -5123,6 +5147,7 @@ async function selectForecastDay(symbol, date) {
     if (stage === 'pre_session') return 'Pre-Session Forecast';
     if (stage === 'pre_session_reconciliation') return 'Pre-Session Reconciliation';
     if (stage === 'reconciliation') return 'In-Session Reconciliation @ 16:00';
+    if (stage === 'profile') return 'Day Profile';
     const idx = ['1000','1200','1400'].indexOf(stage);
     if (idx >= 0) return `F${idx+1} @ ${stage.slice(0,2)}:${stage.slice(2)}`;
     return stage;
@@ -5141,6 +5166,41 @@ async function selectForecastDay(symbol, date) {
   // Stable per-card id so the stage-nav strip can scroll to each one.
   const _stageCardId = stage => `stage-card-${stage.replace(/[^a-z0-9_-]/gi, '')}`;
 
+  // Per-stage re-run: each core stage can be re-captured on its own,
+  // independent of the Ad-hoc full-chain run. Routing is date-aware
+  // (resolved in the click handler below):
+  //   • today      → live capture (/pre_session or /live, force=true)
+  //   • historical → single-stage Bar Replay (/run with stages=[F1])
+  // Pre-session has no Bar Replay path, so its button is only live —
+  // disabled on historical days. Recon variants aren't independently
+  // runnable, so they get no button.
+  const _todayStr = _fmtDate(new Date());
+  const _isToday = (date === _todayStr);
+  const _STAGE_RERUN = {
+    pre_session: { kind: 'pre_session', stage: null },
+    '1000': { kind: 'live_f1', stage: 'F1' },
+    '1200': { kind: 'live_f2', stage: 'F2' },
+    '1400': { kind: 'live_f3', stage: 'F3' },
+  };
+  // Re-run is also offered on the in-session reconciliation card (re-grade
+  // all stages against the profile) and the day-profile card (re-capture +
+  // re-analyze the completed session) — routed in the click handler below.
+  // pre_session_reconciliation is intentionally excluded.
+  const _RERUN_TITLE = {
+    reconciliation: 'Re-run the 16:00 reconciliation — re-grade every forecast stage against the day profile',
+    profile: 'Re-run the day profile — re-capture + re-analyze the completed session (~2-4 min)',
+  };
+  const _rerunBtn = stage => {
+    const known = !!_STAGE_RERUN[stage] || stage === 'reconciliation' || stage === 'profile';
+    if (!known) return '';
+    // Pre-session can't be re-run for a past day — no Bar Replay path.
+    const disabled = (stage === 'pre_session' && !_isToday);
+    const title = disabled
+      ? 'Pre-session re-run is only available for today'
+      : (_RERUN_TITLE[stage] || 'Re-run just this forecast stage — independent of the Ad-hoc full-chain run');
+    return `<button class="btn small forecast-rerun-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${stage}"${disabled ? ' disabled' : ''} title="${title}">↻ Re-run</button>`;
+  };
+
   const sections = present.map(r => {
     const title = titleFor(r.stage);
     const cardId = _stageCardId(r.stage);
@@ -5152,24 +5212,58 @@ async function selectForecastDay(symbol, date) {
         const hint = _captureHintFor(r.stage);
         return `<div id="${cardId}" class="card forecast-stage-card forecast-stage-card--empty">
           <div class="card-head"><h2>${title}</h2>
-            <div class="card-head__actions"><span class="mono small muted">no capture on file</span></div>
+            <div class="card-head__actions">${_rerunBtn(r.stage)}<span class="mono small muted">no capture on file</span></div>
           </div>
           <div class="empty muted">${hint || 'Not captured yet for this day.'}</div>
         </div>`;
       }
       return `<div id="${cardId}" class="card"><div class="card-head"><h2>${title}</h2></div><div class="empty err">${r.error}</div></div>`;
     }
+    if (r.stage === 'profile') {
+      // Ground-truth completed-day profile — own screenshot endpoint,
+      // `profiled_at` in the meta slot, Re-run wired to /api/profiles/run.
+      // Reuses the .forecast-stage-card shell so the carousel CSS,
+      // nav-chip, and scroll-wiring all apply unchanged. The screenshot
+      // URL is cache-busted on profiled_at so a Re-run's fresh capture
+      // replaces the stale cached PNG (the /screenshot URL is otherwise
+      // identical across runs).
+      const pj = r.json || {};
+      const pMeta = pj.profiled_at ? `profiled ${pj.profiled_at}` : '';
+      const pVer = pj.profiled_at ? `?v=${encodeURIComponent(pj.profiled_at)}` : '';
+      const pImg = `/api/profiles/${encodeURIComponent(_profileKey)}/screenshot${pVer}`;
+      return `
+        <div id="${cardId}" class="card forecast-stage-card">
+          <div class="card-head">
+            <h2>${title}</h2>
+            <div class="card-head__actions">
+              ${_rerunBtn(r.stage)}
+              <span class="mono small">${pMeta}</span>
+            </div>
+          </div>
+          <div class="compare-pane">
+            <div class="compare-img">
+              <img src="${pImg}" alt="day profile screenshot" onerror="this.parentNode.innerHTML='<div class=empty>(no screenshot for this profile)</div>';" />
+            </div>
+          </div>
+          <div class="profile-narrative">${renderProfileMarkdown(r.markdown || '')}</div>
+        </div>
+      `;
+    }
     const j = r.json || {};
     const metaBits = [];
     if (j.made_at) metaBits.push(`made ${j.made_at}`);
     if (j.gate && j.gate.reason) metaBits.push(`gate: ${j.gate.reason}`);
-    const imgUrl = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(r.stage)}/screenshot`;
+    // Cache-bust on made_at: a re-run captures a fresh screenshot under
+    // a new timestamped path, but the /screenshot URL is otherwise
+    // identical across runs — without ?v= the browser keeps showing the
+    // stale cached PNG even after the panel re-renders.
+    const imgVer = j.made_at ? `?v=${encodeURIComponent(j.made_at)}` : '';
+    const imgUrl = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(r.stage)}/screenshot${imgVer}`;
     // Pine + Apply buttons only on pre_session — that's the only stage
     // whose forecast shape maps to the overlay template.
     const pineBtns = r.stage === 'pre_session'
       ? `
         <button class="btn small forecast-pine-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">⬇ Generate Pine overlay</button>
-        <button class="btn small forecast-regen-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">↻ Regenerate</button>
         <button class="btn small forecast-apply-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">▶ Apply to chart</button>
       `
       : '';
@@ -5179,6 +5273,7 @@ async function selectForecastDay(symbol, date) {
         <div class="card-head">
           <h2>${title}</h2>
           <div class="card-head__actions">
+            ${_rerunBtn(r.stage)}
             ${speakBtn}
             ${pineBtns}
             <span class="mono small">${metaBits.join('  ')}</span>
@@ -5412,38 +5507,90 @@ async function selectForecastDay(symbol, date) {
     });
   });
 
-  // Wire Regenerate buttons.
+  // Wire per-stage Re-run buttons. Each fires exactly one stage — the
+  // counterpart to the Ad-hoc button on the Plan tab, which runs the
+  // whole F1→F2→F3→recon chain. Routes through _dispatchForecastRun so
+  // the operator gets the shared status bar + audit stream, and so
+  // _cdp_busy serializes it against any concurrent run.
   //
-  // pre_session stage: rerun the whole pipeline (capture + LLM + save).
-  // Routes through _dispatchForecastRun so the user sees the same status
-  // bar + audit stream as a fresh start, and so _cdp_busy serializes us
-  // against concurrent runs. The card itself doesn't auto-refresh after
-  // completion — tap the day again to re-render with the fresh screenshot.
+  // Routing is date-aware: the live endpoints capture the *current*
+  // chart, so they're only correct for today. For a historical day,
+  // F1/F2/F3 re-run via single-stage Bar Replay instead (which seeks
+  // the cursor to that day's stage time). Pre-session has no Bar Replay
+  // path, so its button is disabled on historical days and never
+  // reaches this handler there.
   //
-  // Other stages (1000/1200/1400/reconciliation): keep the legacy Pine-
-  // only regen for now — those stages don't have a force-rerun endpoint
-  // yet, and the Ad-hoc button on the Plan tab is the right escape hatch.
-  main.querySelectorAll('.forecast-regen-btn').forEach(btn => {
+  // Two non-forecast stages route elsewhere: `reconciliation` re-grades
+  // via _dispatchForecastReconcile (same path as the day-list button),
+  // and `profile` re-runs daily_profile via _runProfileAndWait (its own
+  // /api/profiles/run + poll path).
+  //
+  // The detail panel re-renders itself once the run completes (see
+  // _pollForecastRun), so the fresh capture shows without a reload.
+  main.querySelectorAll('.forecast-rerun-btn').forEach(btn => {
     btn.addEventListener('click', async ev => {
       ev.preventDefault();
-      const { symbol, date, stage } = btn.dataset;
-      if (stage === 'pre_session') {
-        _dispatchForecastRun({
-          kind: 'pre_session',
-          endpoint: '/api/forecasts/pre_session',
-          body: { date, symbol, force: true },
-        });
+      if (btn.disabled) return;
+      if (_forecastRunPollTimer) {
+        toast('a forecast run is already in flight', 'err');
         return;
       }
-      setBusy(btn, true, '↻ Regenerate');
-      try {
-        const r = await api(`/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(stage)}/regenerate`, { method: 'POST', body: {} });
-        toast(`regenerated: ${r.pine_path?.split('/').pop() || 'pine'} (${r.bytes} B)`, 'ok');
-      } catch (e) {
-        toast(`regenerate failed: ${e.message}`, 'err');
-      } finally {
-        setBusy(btn, false, '↻ Regenerate');
+      const { symbol, date, stage } = btn.dataset;
+
+      // In-session reconciliation — re-grade every forecast stage
+      // against the day profile. _pollForecastRun re-renders the panel
+      // (and the accuracy card) on completion.
+      if (stage === 'reconciliation') {
+        toast(`Re-running reconciliation for ${date}…`, 'ok');
+        _dispatchForecastReconcile({ date, symbol });
+        return;
       }
+
+      // Day profile — re-capture + re-analyze the completed session.
+      // /api/profiles/run has its own poll path, so disable the button
+      // for the duration. On success, auto-chain a reconciliation
+      // re-run: a fresh profile makes the day's reconciliation stale
+      // (it graded against the *old* profile), and the accuracy card
+      // sits right beside it — they must stay consistent.
+      if (stage === 'profile') {
+        setBusy(btn, true, '↻ Re-run');
+        toast(`Re-running day profile for ${date}… (~2-4 min)`, 'ok');
+        try {
+          await _runProfileAndWait({ dates: [date], symbol, resume: false });
+          toast('day profile done — re-running reconciliation…', 'ok');
+          await selectForecastDay(symbol, date);  // show the fresh profile first
+          _dispatchForecastReconcile({ date, symbol });  // re-renders again on completion
+        } catch (e) {
+          toast(`day profile re-run failed: ${e.message}`, 'err');
+          setBusy(btn, false, '↻ Re-run');
+        }
+        return;
+      }
+
+      const spec = _STAGE_RERUN[stage];
+      if (!spec) return;
+      let runSpec;
+      if (_isToday) {
+        // Live capture — pre_session or F1/F2/F3 against today's chart.
+        const endpoint = spec.stage ? '/api/forecasts/live' : '/api/forecasts/pre_session';
+        const body = spec.stage
+          ? { stage: spec.stage, date, symbol, force: true }
+          : { date, symbol, force: true };
+        runSpec = { kind: spec.kind, endpoint, body };
+      } else {
+        // Historical day — single-stage Bar Replay. resume:false so the
+        // stage's JSON is overwritten rather than skipped.
+        runSpec = {
+          kind: spec.kind,
+          endpoint: '/api/forecasts/run',
+          body: { date, symbol, resume: false, stages: [spec.stage] },
+        };
+      }
+      // Immediate feedback — the live progress bar sits in the Plan-tab
+      // run section, which is off-screen when this fires from the detail
+      // panel (and entirely so in mobile detail view).
+      toast(`Re-running ${_FORECAST_KIND_LABEL[spec.kind] || spec.kind}…`, 'ok');
+      _dispatchForecastRun(runSpec);
     });
   });
 

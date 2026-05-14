@@ -45,9 +45,7 @@ from . import layout_guard, replay, replay_api
 from . import lessons as lessons_mod
 from .chart import ensure_auto_scale
 from .chatgpt_web import analyze_via_chatgpt_web
-from .forecast_capture import (
-    frame_full_session, frame_partial_session, hide_widget_panel,
-)
+from .forecast_capture import frame_partial_session, hide_widget_panel
 from .lib import audit
 from .lib.capture_invariants import (
     CaptureExpect, CaptureInvariantError, assert_capture_ready,
@@ -132,50 +130,6 @@ REQUIRED OUTPUT (use exact headings):
 ## PREDICTION TAGS
 Each tag on its own line with confidence %:
 direction, structure, lunch_behavior, afternoon_drive, goat_direction, close_near_extreme.
-
-{ACCUMULATED_LESSONS}"""
-
-
-_RECONCILE_SYSTEM = """You are a forecast-accuracy adjudicator for day-trading predictions on MNQ1!. You will be given:
-- 3 forecasts made at 10:00, 12:00, and 14:00 ET (F1, F2, F3) as structured JSON
-- The actual full-day outcome (OHLC, pivots, structure tags) as structured JSON if available
-- A screenshot of the completed session
-
-Grade each forecast on:
-1. **Direction** (hit/miss)
-2. **Close price** — did actual close fall within the predicted range? If not, how far outside?
-3. **HOD** — did predicted rest-of-day HOD capture actual HOD?
-4. **LOD** — did predicted rest-of-day LOD capture actual LOD?
-5. **Structure tags** — how well did predicted tags match actual?
-6. **Tactical bias** — would the predicted bias (short/long) have been profitable?
-
-Output format (use exact headings):
-
-## ACTUAL OUTCOME
-Open / Close / HOD / LOD / Shape (1 sentence)
-
-## F1 GRADE (made at 10:00)
-- Direction: ✓/✗
-- Close range hit: ✓/✗ (actual vs predicted, miss in pts)
-- HOD captured: ✓/✗ (miss in pts)
-- LOD captured: ✓/✗ (miss in pts)
-- Tags correct: list
-- Tags wrong: list
-- Bias profitable if traded: ✓/✗
-- Overall score: X/6
-- Biggest miss: one sentence
-
-## F2 GRADE (made at 12:00)
-[same structure]
-
-## F3 GRADE (made at 14:00)
-[same structure]
-
-## FORECAST EVOLUTION
-Did the forecasts improve/narrow as the day progressed? Where did each catch/miss the key signal?
-
-## LESSONS
-What would make forecasts better next time? Specific, actionable.
 
 {ACCUMULATED_LESSONS}"""
 
@@ -442,95 +396,27 @@ def _build_forecast_md(*, symbol, date_str, stage_label, cursor_time,
 # Reconciliation
 # ---------------------------------------------------------------------------
 
-async def _run_reconciliation(
-    page: Page, *, symbol: str, date_str: str, stages_run: list[dict],
-) -> dict:
-    """Grade F1/F2/F3 against the actual day outcome."""
-    with audit.timed("daily_forecast.reconciliation", date=date_str) as ac:
-        await frame_full_session(page)
-        close_target = datetime.strptime(date_str, "%Y-%m-%d").replace(
-            hour=16, minute=0, second=0, microsecond=0,
-        )
-        screenshot = await _capture(
-            page, symbol, "1600_close",
-            expect=CaptureExpect(
-                symbol=_symbol_for_api(symbol),
-                interval="1m",
-                replay_mode=True,
-                cursor_time=close_target,
-                cursor_tolerance_min=10,
-            ),
-        )
-        ac["screenshot"] = str(screenshot)
+async def _run_reconciliation(*, symbol: str, date_str: str) -> dict:
+    """Grade the day's forecasts against the completed-day profile.
 
-        # Load completed-day profile if available — stronger ground truth than
-        # re-deriving from the screenshot alone.
-        profile_path = _PROFILES_ROOT / f"{symbol}_{date_str}.json"
-        actual_block: dict = {}
-        if profile_path.exists():
-            try:
-                prof = json.loads(profile_path.read_text())
-                actual_block = {
-                    "summary": prof.get("summary", {}),
-                    "pivots": (prof.get("pivots") or [])[:6],
-                    "tags": prof.get("tags", {}),
-                }
-            except Exception as e:
-                audit.log("daily_forecast.reconciliation.profile_load_fail", err=str(e))
+    Delegates to `forecast_reconcile.run_reconciliation` — the same path
+    the standalone "Re-reconcile" button uses — so the Ad-hoc chain and
+    the button produce identical reconciliation JSON, with parsed
+    `grades` + `actual_summary` (not just free-text `raw_response`). A
+    raw-only reconciliation reads as "no forecast on file" in the
+    accuracy card, which is the bug this consolidation fixes.
 
-        # Compose user prompt — 3 forecasts + actual (if any)
-        parts = []
-        if actual_block:
-            parts.append("## ACTUAL OUTCOME (from completed-day profile)")
-            parts.append(json.dumps(actual_block, indent=2))
-            parts.append("")
-        else:
-            parts.append("(No matching completed-day profile in DB — grade from screenshot alone.)")
-            parts.append("")
-        for s in stages_run:
-            parts.append(f"## FORECAST {s['stage']} (made at {s['cursor_time']})")
-            parts.append(s.get("raw_response", "(raw response missing)"))
-            parts.append("")
-        parts.append("Grade each forecast against the actual outcome using the exact format in the system prompt. Be fair and specific.")
-        user_prompt = "\n".join(parts)
-
-        system_prompt = _RECONCILE_SYSTEM.replace("{ACCUMULATED_LESSONS}", _render_lessons_block())
-        text, _, _ = await analyze_via_chatgpt_web(
-            image_path=str(screenshot),
-            system_prompt=system_prompt,
-            user_text=user_prompt,
-            model="Thinking",
-            timeout_s=300,
-        )
-        ac["response_chars"] = len(text)
-
-        md_path, json_path = _reconciliation_file_paths(symbol, date_str)
-        fm = "\n".join([
-            "---",
-            f"symbol: {symbol}",
-            f"date: {date_str}",
-            "stage: reconciliation",
-            f"screenshot: {screenshot}",
-            f"forecasts_graded: {[s['stage'] for s in stages_run]}",
-            f"ground_truth_profile: {str(profile_path) if profile_path.exists() else 'none'}",
-            f"made_at: {datetime.now().isoformat(timespec='seconds')}",
-            "---",
-            "",
-        ])
-        md_path.write_text(fm + text.strip() + "\n")
-        saved = {
-            "symbol": symbol,
-            "date": date_str,
-            "stage": "reconciliation",
-            "screenshot_path": str(screenshot),
-            "forecasts_graded": [s["stage"] for s in stages_run],
-            "ground_truth_profile": str(profile_path) if profile_path.exists() else None,
-            "made_at": datetime.now().isoformat(timespec="seconds"),
-            "raw_response": text,
-        }
-        json_path.write_text(json.dumps(saved, indent=2))
-        ac["saved_to"] = str(json_path)
-        return saved
+    forecast_reconcile reads the profile + stage files straight off disk
+    and grades against the profile's own screenshot, so no chart
+    interaction (and no 16:00 Replay seek) is needed here. A missing
+    profile/screenshot raises FileNotFoundError — caught and downgraded
+    to a skipped result so one bad day can't fail the whole pipeline."""
+    from .forecast_reconcile import run_reconciliation
+    try:
+        return await run_reconciliation(symbol=symbol, date_str=date_str)
+    except FileNotFoundError as e:
+        audit.log("daily_forecast.reconciliation.skipped", reason=str(e))
+        return {"skipped": True, "reason": str(e)}
 
 
 # ---------------------------------------------------------------------------
@@ -582,7 +468,8 @@ def _adhoc_reconciliation_blocked(date_str: str, profile_path: Path) -> str | No
 
 async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
                            resume: bool = False,
-                           adhoc: bool = False) -> dict:
+                           adhoc: bool = False,
+                           stages: set[str] | None = None) -> dict:
     """Run the full forecast workflow for one trading day.
 
     Returns a dict summarizing the artifacts produced.
@@ -596,7 +483,12 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
     reconciliation is skipped if the completed-day profile doesn't
     exist OR RTH hasn't closed yet. Use this when invoking the
     pipeline intraday — unlike a scheduled eod run, adhoc won't
-    produce gate-failed stages or blind reconciliations."""
+    produce gate-failed stages or blind reconciliations.
+
+    `stages` (e.g. {"F1"}) restricts the run to a subset of F1/F2/F3 —
+    used by the UI's per-stage Re-run button to re-capture one stage via
+    Bar Replay. A stage-filtered run always skips reconciliation (it's a
+    partial re-run, not a full day)."""
     try:
         target_date = datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError as e:
@@ -633,6 +525,12 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
                     audit.log("daily_forecast.navigated.fail", err=str(e))
 
                 for (label, cursor_time, step_bars) in STAGES:
+                    # Stage filter — per-stage Re-run asks for one of F1/F2/F3.
+                    # `continue` (not `break`): a later stage may still be
+                    # requested even when an earlier one is filtered out.
+                    if stages is not None and label not in stages:
+                        continue
+
                     # Ad-hoc time gate — bail the remainder of the pipeline once
                     # we hit a stage whose wall-clock time hasn't arrived yet.
                     # (Later stages can't possibly be past-cursor either, so we
@@ -687,6 +585,8 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
 
                 if not saved_stages:
                     recon_blocked = "no forecast stages produced artifacts"
+                elif stages is not None:
+                    recon_blocked = "stage-filtered re-run — reconciliation skipped"
                 elif adhoc:
                     recon_blocked = _adhoc_reconciliation_blocked(date_str, profile_path)
                 elif not profile_path.exists():
@@ -702,23 +602,16 @@ async def run_forecast_day(date_str: str, *, symbol: str = "MNQ1",
                               reason=recon_blocked)
                     reconciliation = {"skipped": True, "reason": recon_blocked}
                 else:
-                    # Seek to 16:00 ET via navigate_to — same rationale as
-                    # the inter-stage seeks above.
-                    close_target = target_date.replace(
-                        hour=16, minute=0, second=0, microsecond=0,
-                    )
-                    try:
-                        await replay.navigate_to(page, close_target,
-                                                  tolerance_min=5)
-                    except RuntimeError as e:
-                        audit.log("daily_forecast.reconciliation.nav_fail",
-                                  err=str(e))
+                    # Reconciliation grades off the completed-day profile +
+                    # stage files on disk (see _run_reconciliation →
+                    # forecast_reconcile) — no chart interaction, so no
+                    # 16:00 Replay seek is needed here.
                     if resume and recon_json.exists():
                         audit.log("daily_forecast.reconciliation.skip_existing")
                         reconciliation = json.loads(recon_json.read_text())
                     else:
                         reconciliation = await _run_reconciliation(
-                            page, symbol=symbol, date_str=date_str, stages_run=saved_stages,
+                            symbol=symbol, date_str=date_str,
                         )
         finally:
             try:
@@ -754,10 +647,18 @@ def _main() -> None:
                         "isn't closed or profile is missing. Use this when "
                         "running the pipeline mid-day without leaving gate-"
                         "failed artifacts behind.")
+    p.add_argument("--stages", default=None,
+                   help="Comma-separated subset of F1,F2,F3 to run (default: "
+                        "all). A stage-filtered run skips reconciliation.")
     args = p.parse_args()
+
+    stages: set[str] | None = None
+    if args.stages:
+        stages = {s.strip().upper() for s in args.stages.split(",") if s.strip()}
 
     result = asyncio.run(run_forecast_day(
         args.date, symbol=args.symbol, resume=args.resume, adhoc=args.adhoc,
+        stages=stages,
     ))
     print(json.dumps(result, indent=2))
 
