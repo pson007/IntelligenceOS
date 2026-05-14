@@ -1,0 +1,84 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-13",
+  "dow": "Wed",
+  "made_at": "2026-05-13T08:04:38",
+  "thesis_summary": "Bullish continuation is valid only if the gap-up pullback holds overnight demand and price accepts above VWAP rather than rejecting the 29400-29420 area.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "overnight_posture",
+      "label": "Pre-open gap posture holds above demand",
+      "rationale": "The bullish case depends on price staying above the overnight demand shelf instead of returning into prior-day value.",
+      "check_type": "price_level",
+      "evaluate_at": "09:30",
+      "evaluate_after": "2026-05-13T09:30:00-0400",
+      "evaluate_before": "2026-05-13T09:35:00-0400",
+      "params": {
+        "price_above": 29355
+      },
+      "weight": 2
+    },
+    {
+      "id": "open_structure",
+      "label": "Open avoids immediate gap-up rejection",
+      "rationale": "A fast spike above 29400 that fails would flip the session from bullish continuation to gap-up rejection.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-05-13T09:35:00-0400",
+      "evaluate_before": "2026-05-13T09:40:00-0400",
+      "params": {
+        "expected": "dip_then_reclaim",
+        "tolerated": [
+          "dip_then_reclaim",
+          "rotational_open",
+          "gap_and_go"
+        ]
+      },
+      "weight": 2
+    },
+    {
+      "id": "first_30_low",
+      "label": "First 30-minute low defends gap support",
+      "rationale": "Breaking below this level would show the gap is being sold instead of absorbed.",
+      "check_type": "price_level_window",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-05-13T10:00:00-0400",
+      "evaluate_before": "2026-05-13T10:05:00-0400",
+      "params": {
+        "window": "09:30-10:00",
+        "low_of_window_above": 29340
+      },
+      "weight": 2
+    },
+    {
+      "id": "vwap_control",
+      "label": "Late morning holds above VWAP",
+      "rationale": "VWAP control is needed to convert early rotation into trend continuation.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-05-13T10:30:00-0400",
+      "evaluate_before": "2026-05-13T10:35:00-0400",
+      "params": {
+        "side": "above"
+      },
+      "weight": 2
+    },
+    {
+      "id": "upper_acceptance",
+      "label": "Midday accepts above overnight high zone",
+      "rationale": "Acceptance above 29420 confirms buyers absorbed the obvious supply and can widen the upside target.",
+      "check_type": "price_level",
+      "evaluate_at": "12:00",
+      "evaluate_after": "2026-05-13T12:00:00-0400",
+      "evaluate_before": "2026-05-13T12:05:00-0400",
+      "params": {
+        "price_above": 29420
+      },
+      "weight": 1
+    }
+  ]
+}

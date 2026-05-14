@@ -1,0 +1,141 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-13",
+  "dow": "Wed",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-13T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-13.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "10:00:00",
+    "last": "15:30:00"
+  },
+  "profiled_at": "2026-05-13T18:31:09-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "bullish_reclaim_afternoon_breakout",
+    "open_approx": 29286.5,
+    "close_approx": 29475.5,
+    "hod_approx": 29557.75,
+    "lod_approx": 29265.0,
+    "net_range_pts_open_to_close": 189,
+    "net_range_pct_open_to_close": 0.65,
+    "intraday_span_pts": 293,
+    "shape_sentence": "Bullish reclaim/trend day: early chop and dip, noon reclaim, 14:00 breakout drive, late pullback into a still-bullish close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 29286.5,
+      "type": "open"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 29265.0,
+      "type": "morning_dip_base"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 29305.0,
+      "type": "reclaim_pivot"
+    },
+    {
+      "time_et": "12:30",
+      "price_approx": 29420.0,
+      "type": "first_upside_expansion"
+    },
+    {
+      "time_et": "13:10",
+      "price_approx": 29470.0,
+      "type": "midday_pause_high"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 29455.0,
+      "type": "bullish_launch_pivot"
+    },
+    {
+      "time_et": "14:25",
+      "price_approx": 29557.75,
+      "type": "hod_goat_completion"
+    },
+    {
+      "time_et": "15:00",
+      "price_approx": 29505.0,
+      "type": "supply_retest"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 29530.0,
+      "type": "late_lower_high"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 29475.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "14:15",
+      "direction": "up",
+      "note": "Strong upside breakout from the 29480 area through 29550, producing the standout move of the day."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots appeared around the 29500-29530 supply shelf and marked pullbacks rather than full reversal."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots appeared on the 14:00 breakout and later reclaim attempts near 29490-29505."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 29500-29506 was broken during the GOAT drive, then retested and contested late."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 29455-29475 held into the close after the late-session pullback."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Early RTH remained unstable and rotational near the lower/mid range.",
+    "12pm_red": "Noon acted as the key reclaim point after the morning dip.",
+    "2pm_green": "Clean bullish trigger and launch into the strongest upside drive.",
+    "4pm_yellow": "Closed green at roughly 29475.50, off the high but above afternoon demand."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "bullish_reclaim_afternoon_breakout",
+    "open_type": "rotational_open",
+    "lunch_behavior": "higher_balance_after_noon_reclaim",
+    "afternoon_drive": "strong_2pm_breakout_then_late_pullback",
+    "goat_time": "14:15",
+    "goat_direction": "up",
+    "peak_hour": 14,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "late demand around 29455-29475",
+    "banks_broken": "supply around 29500-29506 broken during goat drive"
+  },
+  "takeaway": "Bullish reclaim day with a decisive 14:00 breakout drive, followed by a late pullback that held afternoon demand. Best comparable: rotational morning into afternoon trend expansion, not an all-day one-way trend.",
+  "actual_summary_api": {
+    "bars_count": 300,
+    "start_et": "2026-05-13T09:30",
+    "end_et": "2026-05-13T16:00",
+    "open": 29317.25,
+    "close": 29475.5,
+    "hod": 29565.25,
+    "lod": 29281.5,
+    "span_pts": 283.75,
+    "net_pts": 158.25,
+    "net_pct": 0.5398,
+    "first_bar_ts": 1778684400,
+    "last_bar_ts": 1778702340
+  }
+}

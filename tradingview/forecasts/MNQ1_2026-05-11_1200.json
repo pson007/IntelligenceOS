@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-11",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260512_232752.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "01:00:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-12T23:28:37",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-11, ~12:00 ET\n\nBars observed so far this session: ~151 one-minute bars, 09:30\u201312:00 ET\n\nWhat has happened so far: Before the cursor, MNQ had a violent RTH upside expansion from the 09:30 open, then held successive higher lows and pushed into fresh highs near 29,465\u201329,480 by noon.\n\nRANKED SIMILAR ARCHETYPES\n\nBullish open-drive trend day \u2014 The session opened with aggressive vertical demand and never fully gave back the impulse.\n\nGap/impulse continuation into upper balance \u2014 After the first expansion, price consolidated high rather than reverting toward morning value.\n\nLate squeeze risk day \u2014 Strong midday positioning near HOD creates risk of another upside drive if shorts fail to force acceptance below 29,400.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect shallow pullback or high consolidation between 29,420\u201329,470, with buyers defending dips unless 29,400 breaks cleanly.\n\nBetween next marker and 14:00: Likely sideways-to-up continuation; a brief lunch fade toward 29,390\u201329,420 is possible, but structure favors dip absorption.\n\nBetween 14:00 and 16:00: Bias for afternoon continuation or late high retest. If price holds above 29,400, expect a push toward 29,500+ into the close.\n\nProjected close price range: 29,470\u201329,540\n\nRest-of-day HOD range: 29,500\u201329,575\n\nRest-of-day LOD range: 29,360\u201329,410\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate bias: Sustained acceptance below 29,360\n\nPreferred entry zone: 29,395\u201329,425 on controlled pullback / higher-low formation\n\nR:R logic: Longs are attractive only if risk can be defined below 29,360\u201329,375, targeting HOD retest first, then 29,520+ extension. Chasing above 29,480 has worse R:R unless momentum expands immediately.\n\nKEY LEVELS\n\nOverhead supply: 29,480\u201329,500, then 29,540\u201329,575\n\nUnderlying demand: 29,395\u201329,425, then 29,340\u201329,365\n\nPivot-to-watch: 29,400\n\nPREDICTION TAGS\n\ndirection: bullish, 68%\n\nstructure: open_drive_trend_into_upper_balance, 64%\n\nlunch_behavior: high-level consolidation / shallow pullback, 61%\n\nafternoon_drive: upside continuation, 58%\n\ngoat_direction: long, 72%\n\nclose_near_extreme: yes, 63%"
+}

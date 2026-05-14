@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-13",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260513_183227.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "08:30:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-13T18:33:05",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-13 ~12:00 ET\n\nBars observed so far this session: ~151 one-minute bars, 09:30\u201312:00 ET\n\nWhat has happened so far in 1 sentence: MNQ opened bullish, flushed hard into 09:40 demand, reclaimed by late morning, then built higher lows into an upper-balance pullback near 29,310.\n\nRANKED SIMILAR ARCHETYPES\n\nearly_flush_to_midday_trend_then_upper_balance \u2014 The 09:30\u201309:45 ET flush held demand, then price reclaimed and trended into late-morning highs before pausing.\n\nrotational_morning_to_afternoon_breakout \u2014 Morning was not clean open-drive; the key feature is reclaim + higher-low structure into noon.\n\nfailed_breakdown_late_reclaim candidate \u2014 If noon pullback cannot break 29,285\u201329,300, shorts are likely trapped and afternoon can squeeze higher.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: 12:00\u201314:00 ET likely chops/retests 29,285\u201329,330, with dip-buy interest if 29,275 holds.\n\nBetween next marker and 14:00: Same window; expect lunch compression, not immediate collapse, unless 29,270 fails with acceptance.\n\nBetween 14:00 and 16:00 close: Bias for afternoon continuation toward late-morning high, then extension if 29,370\u201329,390 clears.\n\nProjected close price range: 29,420\u201329,500\n\nRest-of-day HOD range: 29,475\u201329,560\n\nRest-of-day LOD range: 29,255\u201329,295\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained trade below 29,240\n\nPreferred entry zone: 29,275\u201329,305 on pullback/reclaim\n\nR:R logic: Risk below 29,240\u201329,255; target first 29,370\u201329,390, then 29,475+. Roughly 1:2 to 1:3 if entered near demand.\n\nKEY LEVELS\n\nOverhead supply: 29,360\u201329,390; then 29,475\u201329,510\n\nUnderlying demand: 29,275\u201329,305; deeper 29,240\u201329,255\n\nPivot-to-watch: 29,330\u201329,350 reclaim/hold\n\nPREDICTION TAGS\n\ndirection: up, 68%\n\nstructure: upper_balance_to_afternoon_breakout, 61%\n\nlunch_behavior: sideways-to-bullish digestion, 64%\n\nafternoon_drive: upside continuation after 14:00, 58%\n\ngoat_direction: long, 66%\n\nclose_near_extreme: yes, upper-third close, 57%"
+}

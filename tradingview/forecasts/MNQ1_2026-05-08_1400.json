@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-08",
+  "cursor_time": "14:00",
+  "stage": "F3",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f31400_20260513_190726.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "05:00:00",
+    "session_last": "14:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-13T19:08:11",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-08 ~14:00 ET, per prompt. The visible chart label itself appears inconsistent/unclear.\n\nBars observed so far this session: ~270 RTH 1-minute bars, ~09:30\u201314:00 ET. Premarket/previous context on the left is also usable.\n\nWhat has happened so far: MNQ has produced a strong bullish trend session: 09:30 launch, repeated higher-lows, multiple supply absorptions, then upper balance near the day's highs into ~14:00.\n\nRANKED SIMILAR ARCHETYPES\n\nTrend-day continuation into upper balance \u2014 Persistent higher-lows and failure to lose the green demand band suggest buyers still control value.\n\nMidday breakout-drive with late consolidation risk \u2014 The 10:00\u201312:00 expansion was clean, but price is now extended and balancing near overhead supply.\n\nFailed-breakdown late reclaim \u2014 If a 14:00\u201315:00 flush appears, the likely bear case is shallow unless price loses the broader 29,180\u201329,140 shelf.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop-to-dip first, likely testing 29,235\u201329,210, with buyers defending unless volume expands down.\n\nBetween next marker and 14:00: Cursor is already ~14:00; no additional pre-14:00 forecast.\n\nBetween 14:00 and 16:00 close: Base case is sideways-to-higher continuation: one more push toward/above the current HOD, then close in the upper quartile. Late failure only matters below ~29,180.\n\nProjected close price range: 29,275\u201329,335\n\nRest-of-day HOD range: 29,320\u201329,380\n\nRest-of-day LOD range: 29,185\u201329,235\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained trade below 29,180, especially if unable to reclaim 29,210\n\nPreferred entry zone: Pullback into 29,235\u201329,210, secondary deeper buy zone 29,185\u201329,170\n\nR:R logic: Longs are favorable only on pullbacks; chasing near 29,300 has poor asymmetry. Ideal setup risks ~35\u201350 pts for upside into 29,330\u201329,370.\n\nKEY LEVELS\n\nOverhead supply: 29,300\u201329,320, then 29,350\u201329,380\n\nUnderlying demand: 29,210\u201329,180, then 29,140\u201329,110\n\nPivot-to-watch: 29,260 \u2014 holding above keeps pressure on highs; losing it opens the 29,235\u201329,210 dip zone.\n\nPREDICTION TAGS\n\ndirection: up / bullish continuation \u2014 68%\n\nstructure: trend_day_upper_balance \u2014 64%\n\nlunch_behavior: high balance, shallow pullbacks \u2014 70%\n\nafternoon_drive: controlled continuation / possible late breakout \u2014 58%\n\ngoat_direction: long \u2014 72%\n\nclose_near_extreme: upper-quartile close \u2014 61%"
+}

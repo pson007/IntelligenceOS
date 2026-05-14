@@ -1,0 +1,17 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-13",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "mode": "live",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_live_f11000_20260513_110556.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:25:00",
+    "session_last": "11:15:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-13T11:06:44",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-13, ~10:00 ET\n\nBars observed so far this session: ~31 one-minute RTH bars, ~09:30\u201310:00 ET\n\nWhat has happened so far: MNQ opened near 29,286.50, drove higher immediately, held bullish structure, and is now consolidating just under/around 29,340\u201329,345.\n\nRANKED SIMILAR ARCHETYPES\n\nBullish_open_drive_trend_day \u2014 Strong open drive, no meaningful rejection, and price is holding near early highs.\n\nGap_up_pullback_reclaim_into_upper_balance \u2014 If 29,345 supply caps temporarily, likely path is shallow pullback then another reclaim attempt.\n\nEarly_drive_then_10\u201312_watch_balance \u2014 The forecast panel flags 10:00\u201312:00 as watch phase, so chop below target is possible before afternoon continuation.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect testing/absorption around 29,345\u201329,360; shallow dips likely bought if above 29,285\u201329,300.\n\nBetween next marker and 14:00: Bullish balance-to-continuation favored; likely stair-step toward 29,420\u201329,500 if 29,345 accepts.\n\nBetween 14:00 and 16:00: If price remains above VWAP/open and no failed breakout forms, expect late push or high-level close near upper range.\n\nProjected close price range: 29,430\u201329,560\n\nRest-of-day HOD range: 29,500\u201329,610\n\nRest-of-day LOD range: 29,245\u201329,305\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained loss of 29,240\u201329,250\n\nPreferred entry zone: Pullback into 29,285\u201329,315, especially if it holds and reclaims 29,340\n\nR:R logic: Risk can sit below 29,240\u201329,250; upside target zone is 29,500+, giving roughly 1.5R\u20132.5R from a 29,300-area entry.\n\nKEY LEVELS\n\nOverhead supply: 29,345\u201329,360, then 29,500\u201329,610\n\nUnderlying demand: 29,285\u201329,300, then 29,240\u201329,250\n\nPivot-to-watch: 29,345 acceptance/rejection\n\nPREDICTION TAGS\n\ndirection: bullish 68%\n\nstructure: open_drive_trend_to_upper_balance 64%\n\nlunch_behavior: high-level consolidation / buyable dip 61%\n\nafternoon_drive: continuation higher 58%\n\ngoat_direction: opening LONG 72%\n\nclose_near_extreme: upper-third close 60%"
+}

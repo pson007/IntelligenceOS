@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-07",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260513_191457.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "03:00:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-13T19:15:42",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-07, ~12:00 ET\n\nBars observed so far this session: ~151 one-minute RTH bars, ~09:30\u201312:00 ET\n\nWhat has happened so far: MNQ opened strong, drove into upper supply near 28,930\u201328,960, failed to extend, then pulled back toward 28,780\u201328,820 while still holding above broader demand.\n\nRANKED SIMILAR ARCHETYPES\n\nGap/drive into supply \u2192 midday pullback \u2192 afternoon reclaim attempt\nEarly strength was real, but the first major supply test rejected instead of cleanly trending.\n\nBullish morning exhaustion into high balance\nPrice remains above key demand, but the post-HOD structure is no longer cleanly impulsive.\n\nFailed breakout leading to afternoon liquidation risk\nIf 28,740\u201328,720 fails, the morning long inventory can unwind toward lower demand.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop-to-down or controlled digestion between 28,760\u201328,850, with buyers trying to defend the current pullback zone.\n\nBetween next marker and 14:00: Base case is a higher-low attempt above 28,720\u201328,740, followed by a grind back toward 28,850\u201328,900.\n\nBetween 14:00 and 16:00: Afternoon likely decides at 28,900\u201328,930. Reclaim favors late squeeze; rejection favors upper balance into close.\n\nProjected close price range: 28,840\u201328,930\n\nRest-of-day HOD range: 28,930\u201329,000\n\nRest-of-day LOD range: 28,700\u201328,760\n\nTACTICAL BIAS\n\nPrimary bias: Long, 58% confidence\n\nKey level to invalidate the bias: Sustained trade below 28,700\n\nPreferred entry zone: 28,730\u201328,775, only if selling slows and price forms a higher low\n\nR:R logic: Longs near demand risk ~35\u201355 pts for upside back to 28,900\u201328,960; avoid chasing into overhead supply unless price accepts above 28,930.\n\nKEY LEVELS\n\nOverhead supply: 28,880\u201328,960, then 29,000\n\nUnderlying demand: 28,730\u201328,760, then 28,660\u201328,700\n\nPivot-to-watch: 28,840\u201328,860\n\nPREDICTION TAGS\n\ndirection: bullish-neutral, 58%\n\nstructure: morning_drive_to_supply_then_midday_pullback, 64%\n\nlunch_behavior: high-balance / dip-defense, 61%\n\nafternoon_drive: reclaim_attempt, 56%\n\ngoat_direction: long, 60%\n\nclose_near_extreme: moderate, 48%"
+}

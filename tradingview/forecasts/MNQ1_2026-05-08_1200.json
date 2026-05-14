@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-08",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260512_233334.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "06:30:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-12T23:34:28",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-08 ~12:00 ET from Bar Replay context.\n\nBars observed so far this session: ~150 one-minute RTH bars, 09:30\u201312:00 ET.\n\nWhat has happened so far in 1 sentence: MNQ broke out hard after 09:30, trended upward in clean higher-high / higher-low structure, then compressed near the session highs into noon.\n\nRANKED SIMILAR ARCHETYPES\n\nBullish open-drive trend day \u2014 Strong 09:30 breakout, rising volume, repeated higher lows, and no meaningful reclaim failure before cursor.\n\nMidday high-level consolidation before continuation \u2014 Price is holding near highs instead of rotating back into value.\n\nStair-step squeeze / supply absorption day \u2014 Multiple orange supply zones were tested and absorbed as price continued grinding higher.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: 12:00\u201314:00 likely chops sideways-to-higher between ~29,165\u201329,230, with shallow pullbacks bought.\n\nBetween next marker and 14:00: Same window: expect lunch compression, not a full reversal, unless 29,150 fails.\n\nBetween 14:00 and 16:00 close: Bias for afternoon continuation or high-level grind; likely new HOD attempt if price holds above 29,170.\n\nProjected close price range: 29,220\u201329,285\n\nRest-of-day HOD range: 29,260\u201329,335\n\nRest-of-day LOD range: 29,130\u201329,165\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: 29,120\n\nPreferred entry zone: 29,155\u201329,180 on pullback hold / higher-low confirmation\n\nR:R logic: Risk below 29,120; target first 29,230\u201329,260, then 29,300+ if afternoon continuation starts. Minimum acceptable setup is roughly 1:2.\n\nKEY LEVELS\n\nOverhead supply: 29,205\u201329,225, then 29,250\u201329,335\n\nUnderlying demand: 29,155\u201329,170, then 29,120\u201329,140\n\nPivot-to-watch: 29,190\u201329,200\n\nPREDICTION TAGS\n\ndirection: up / bullish, 68%\n\nstructure: trend_continuation_into_high_balance, 64%\n\nlunch_behavior: high-level sideways consolidation, 61%\n\nafternoon_drive: late continuation / squeeze attempt, 58%\n\ngoat_direction: bullish, 72%\n\nclose_near_extreme: yes, upper-quartile close, 60%"
+}

@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-13",
+  "cursor_time": "14:00",
+  "stage": "F3",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f31400_20260513_194348.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:45:00",
+    "session_last": "14:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-13T19:44:28",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-13 ~14:00 ET\n\nBars observed so far this session: ~270 one-minute RTH bars, 09:30\u201314:00 ET\n\nWhat has happened so far in 1 sentence: MNQ opened above prior value, flushed hard into early demand, reclaimed by late morning, then converted the noon reclaim into a strong upside trend and high balance near 29,440\u201329,480.\n\nRANKED SIMILAR ARCHETYPES\n\nearly_flush_to_midday_trend_then_upper_balance \u2014 The session made a deep early low, reclaimed structure, then trended higher into 14:00 before pausing near highs.\n\nrotational_morning_to_afternoon_breakout \u2014 The morning was noisy but held above true demand, and the noon push broke into a sustained upside leg.\n\nfailed_breakdown_late_reclaim \u2014 Price is extended into upper balance, so a late dip is possible, but reclaim odds stay high unless 29,395\u201329,410 fails.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: 14:00\u201316:00 should favor high-balance continuation with one liquidation dip likely before any final push.\n\nBetween next marker and 14:00: N/A \u2014 cursor is already at the 14:00 marker.\n\nBetween 14:00 and 16:00: Expect consolidation above 29,410 first, then either a late grind through 29,480 or a shallow failed breakdown that reclaims into the close.\n\nProjected close price range: 29,465\u201329,505\n\nRest-of-day HOD range: 29,490\u201329,530\n\nRest-of-day LOD range: 29,395\u201329,425\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained trade below 29,395\n\nPreferred entry zone: 29,410\u201329,430 on pullback/reclaim\n\nR:R logic: Risk below 29,395; target 29,490\u201329,515 gives roughly 2:1 if filled near 29,420. Chasing above 29,480 has worse R:R unless volume expands.\n\nKEY LEVELS\n\nOverhead supply: 29,480\u201329,505, then 29,525\u201329,540\n\nUnderlying demand: 29,410\u201329,430, then 29,355\u201329,375\n\nPivot-to-watch: 29,444 current/upper-balance pivot; holding above keeps pressure upward\n\nPREDICTION TAGS\n\ndirection: up, 68%\nstructure: early_flush_to_midday_trend_then_upper_balance, 72%\nlunch_behavior: noon_reclaim_held, 78%\nafternoon_drive: controlled_upside_continuation, 62%\ngoat_direction: long, 74%\nclose_near_extreme: yes, upper-third close, 64%"
+}
