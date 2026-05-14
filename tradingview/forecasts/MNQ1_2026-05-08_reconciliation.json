@@ -1,14 +1,137 @@
 {
   "symbol": "MNQ1",
   "date": "2026-05-08",
+  "dow": "Fri",
   "stage": "reconciliation",
-  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_1600_close_20260513_213915.png",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-08.png",
   "forecasts_graded": [
-    "F1",
-    "F2",
-    "F3"
+    "pre_session",
+    "1000",
+    "1200",
+    "1400"
   ],
   "ground_truth_profile": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-08.json",
-  "made_at": "2026-05-13T21:39:53",
-  "raw_response": "ACTUAL OUTCOME\n\nOpen / Close / HOD / LOD / Shape: 28,890 / 29,339.50 / 29,340.75 / 28,875 \u2014 bullish open-drive trend day with early LOD, persistent stair-step continuation, high consolidation, and close at/near HOD.\n\nF1 GRADE (made at 10:00)\n\nDirection: \u2713\n\nClose range hit: \u2717 (29,339.50 vs 29,040\u201329,095, miss +244.50 pts)\n\nHOD captured: \u2717 (29,340.75 vs 29,065\u201329,125, miss +215.75 pts)\n\nLOD captured: \u2717 (28,875 vs 28,915\u201328,950, miss -40 pts)\n\nTags correct: bullish, goat_direction: long, close_near_extreme: yes_near_highs, shallow-pullback continuation idea\n\nTags wrong: high_balance, controlled_upside_grind, undercalled trend-day strength, missed bullish_open_drive_trend_day\n\nBias profitable if traded: \u2713\n\nOverall score: 3/6\n\nBiggest miss: F1 correctly leaned long but massively under-estimated upside range and failed to classify the session as an open-drive trend day.\n\nF2 GRADE (made at 12:00)\n\nDirection: \u2713\n\nClose range hit: \u2717 (29,339.50 vs 29,195\u201329,245, miss +94.50 pts)\n\nHOD captured: \u2717 (29,340.75 vs 29,220\u201329,275, miss +65.75 pts)\n\nLOD captured: \u2713 / partial (rest-of-day pullback area near 29,075 fit 29,045\u201329,085; full-day LOD was pre-forecast at 28,875)\n\nTags correct: up, bullish_morning_pullback_to_afternoon_continuation, higher_balance, upside_breakout_attempt, goat_direction: long\n\nTags wrong: still too conservative; missed full bullish_open_drive_trend_day and close-at-HOD strength\n\nBias profitable if traded: \u2713\n\nOverall score: 4/6\n\nBiggest miss: F2 caught the continuation structure but capped the upside too low.\n\nF3 GRADE (made at 14:00)\n\nDirection: \u2713\n\nClose range hit: \u2717 (29,339.50 vs 29,285\u201329,330, miss +9.50 pts)\n\nHOD captured: \u2713 (29,340.75 vs 29,320\u201329,360)\n\nLOD captured: \u2713 (post-14:00 pullback stayed within/near 29,215\u201329,245 zone)\n\nTags correct: up, trend_up_to_upper_balance, bullish consolidation, late upside probe, goat_direction: long, close_near_extreme: yes\n\nTags wrong: slightly undercalled close strength; \"upper balance\" was true, but final push was stronger than implied\n\nBias profitable if traded: \u2713\n\nOverall score: 5/6\n\nBiggest miss: F3 was accurate, but the close band was about 10 pts too low.\n\nFORECAST EVOLUTION\n\nThe forecasts improved materially as the day progressed.\n\nF1 caught the long bias but treated the move as controlled continuation instead of a true open-drive trend day. It missed the key signal: early demand held and price never meaningfully lost the open-drive structure.\n\nF2 improved by recognizing bullish continuation and higher balance, but still underestimated afternoon expansion. It saw breakout potential but did not widen HOD/close enough.\n\nF3 was the best forecast. It correctly identified trend-up behavior, late upside probe risk, and high-level consolidation. Its only real miss was a slightly low close range.\n\nLESSONS\n\nAfter a violent RTH open drive with LOD set in the first minutes, do not anchor HOD/close bands near early supply.\n\nIf every pullback holds above the rising demand/value band, upgrade from controlled_upside_grind to bullish_open_drive_trend_day.\n\nF1 needed wider upside bands once price held near highs without losing the open.\n\nF2 should have upgraded from \"breakout attempt\" to \"trend-day continuation\" after higher lows held and sellers failed to reclaim value.\n\nF3 should allow a closing push beyond the upper supply band when price consolidates near highs without rejection.\n\nDistinguish upper balance near highs from distribution; this session showed absorption, not exhaustion."
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-14T19:16:03",
+  "raw_response": "ACTUAL OUTCOME\n\nMNQ opened near 28878, printed an early LOD near 28863.5, then ran a bullish open-drive trend day to a 29340.75 HOD and 29339.5 close, finishing essentially at the high after a stair-step higher-low grind.\n\nSTAGE GRADES\nPRE-SESSION\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 miss by ~230.5 pts above implied +0.80% upper band\n\nHOD captured: \u2717\n\nLOD captured: \u2713\n\nTags correct: direction up, GOAT up, morning long bias, opening pullback/reclaim concept, demand hold\n\nTags wrong: high balance, no close near extreme, late pullback risk, capped 28950\u201328980 continuation caution\n\nBias profitable if traded: \u2713\n\nInvalidation check: \u2713 \u2014 bearish invalidations did not fire; 28820/28790 held and VWAP acceptance stayed bullish\n\nOverall score: 4/7\n\nF1\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 miss by 244.5 pts above 29095\n\nHOD captured: \u2717 \u2014 miss by 215.75 pts above 29125\n\nLOD captured: \u2717 \u2014 actual full-session LOD was 51.5 pts below 28915\n\nTags correct: bullish, early impulse, shallow pullback, long GOAT, close near highs\n\nTags wrong: high balance framing, muted continuation target, 29065\u201329125 HOD ceiling\n\nBias profitable if traded: \u2713\n\nInvalidation check: \u2713 \u2014 sustained trade below 28900 did not occur after the bullish reclaim\n\nOverall score: 4/7\n\nF2\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 miss by 94.5 pts above 29245\n\nHOD captured: \u2717 \u2014 miss by 65.75 pts above 29275\n\nLOD captured: \u2713 \u2014 post-forecast pullbacks held near the projected 29045\u201329085 zone\n\nTags correct: bullish morning, higher balance, afternoon upside breakout attempt, long GOAT, upper-third close\n\nTags wrong: undercalled close strength, undercalled full trend-day extension\n\nBias profitable if traded: \u2713\n\nInvalidation check: \u2713 \u2014 sustained trade below 29040 did not fire\n\nOverall score: 5/7\n\nF3\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 miss by 9.5 pts above 29330\n\nHOD captured: \u2713\n\nLOD captured: \u2713\n\nTags correct: controlled trend-up, higher lows, late upside probe, long GOAT, close near extreme\n\nTags wrong: upper-balance caution slightly overstated; close pushed through the upper edge\n\nBias profitable if traded: \u2713\n\nInvalidation check: \u2713 \u2014 sustained trade below 29195 did not fire\n\nOverall score: 6/7\n\nFORECAST EVOLUTION\n\nForecasts improved steadily. Pre-session caught the bullish direction and correct opening long idea, but badly undercalled range expansion and close location. F1 still capped the day too low. F2 first recognized the trend-continuation structure, but still underestimated afternoon extension. F3 caught the real signal best: persistent trend-up with higher lows, late upside attempt, HOD near 29340, and close near the extreme.\n\nLESSONS\n\nWhen the open-drive holds above the first pullback low and reclaims quickly, upgrade from \"pullback/reclaim into balance\" to \"trend-day candidate\" before 10:30.\n\nDo not cap HOD near early supply after price accepts above it with higher lows; absorbed supply should become the next demand reference.\n\nAt noon, if the morning has made multiple higher highs and no VWAP loss, widen close/HOD bands instead of projecting only a modest upper-third finish.\n\nAt 14:00, when price is already stair-stepping above rising demand, keep the long bias but allow for a close through the projected upper band.\n\nReinforce prior lesson: after a confirmed upside breakout, anchor pullback expectations to the new demand shelf, not old lower balance levels.\n\nSTRUCTURED JSON\nJSON\n{\n  \"actual_summary\": {\n    \"direction\": \"up\",\n    \"open_approx\": 28878.0,\n    \"close_approx\": 29339.5,\n    \"hod_approx\": 29340.75,\n    \"lod_approx\": 28863.5,\n    \"net_range_pct_open_to_close\": 1.5981,\n    \"intraday_span_pts\": 477\n  },\n  \"grades\": {\n    \"pre_session_forecast\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 230.5,\n      \"hod_in_band\": false,\n      \"lod_in_band\": true,\n      \"lod_miss_pts\": 0,\n      \"tags_correct\": [\n        \"direction up\",\n        \"GOAT up\",\n        \"morning long bias\",\n        \"opening pullback/reclaim\",\n        \"demand held\"\n      ],\n      \"tags_wrong\": [\n        \"high balance\",\n        \"no close near extreme\",\n        \"late pullback risk\",\n        \"28950-28980 cap emphasis\"\n      ],\n      \"bias_profitable\": true,\n      \"invalidation_correct\": true,\n      \"overall_score\": 4,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"Correct bullish thesis but treated the day as capped high balance instead of a full open-drive trend day closing at HOD.\"\n    },\n    \"F1\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 244.5,\n      \"hod_in_band\": false,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 51.5,\n      \"tags_correct\": [\n        \"bullish\",\n        \"early impulse\",\n        \"shallow pullback\",\n        \"long GOAT\",\n        \"close near highs\"\n      ],\n      \"tags_wrong\": [\n        \"high balance above reclaimed supply\",\n        \"controlled upside grind too small\",\n        \"HOD ceiling too low\"\n      ],\n      \"bias_profitable\": true,\n      \"invalidation_correct\": true,\n      \"overall_score\": 4,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"Projected continuation but anchored targets far too close to early supply.\"\n    },\n    \"F2\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 94.5,\n      \"hod_in_band\": false,\n      \"lod_in_band\": true,\n      \"lod_miss_pts\": 0,\n      \"tags_correct\": [\n        \"bullish morning\",\n        \"higher balance\",\n        \"afternoon upside breakout attempt\",\n        \"long GOAT\",\n        \"upper-third close\"\n      ],\n      \"tags_wrong\": [\n        \"close band too low\",\n        \"HOD band too low\",\n        \"undercalled trend-day extension\"\n      ],\n      \"bias_profitable\": true,\n      \"invalidation_correct\": true,\n      \"overall_score\": 5,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"Recognized continuation but failed to expand the afternoon target range enough.\"\n    },\n    \"F3\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 9.5,\n      \"hod_in_band\": true,\n      \"lod_in_band\": true,\n      \"lod_miss_pts\": 0,\n      \"tags_correct\": [\n        \"controlled trend-up\",\n        \"higher lows\",\n        \"late upside probe\",\n        \"long GOAT\",\n        \"close near extreme\"\n      ],\n      \"tags_wrong\": [\n        \"upper-balance caution slightly overstated\"\n      ],\n      \"bias_profitable\": true,\n      \"invalidation_correct\": true,\n      \"overall_score\": 6,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"Close band was slightly too conservative; actual close exceeded the top by 9.5 pts.\"\n    }\n  },\n  \"evolution\": \"The forecast sequence improved materially through the day. Pre-session and F1 were directionally right but underestimated trend strength. F2 first caught the continuation regime, though still with compressed targets. F3 was the best forecast because it identified the active trend-up structure, defended demand, late upside probe, and near-HOD close.\",\n  \"summary\": \"All forecasts correctly leaned long, and every tactical long bias was profitable. The repeated miss was range compression: each forecast until F3 underestimated how strongly absorbed supply would convert into a full bullish open-drive trend day.\",\n  \"lessons\": [\n    \"When the open-drive holds above the first pullback low and reclaims quickly, upgrade from pullback/reclaim into balance to trend-day candidate before 10:30.\",\n    \"Do not cap HOD near early supply after price accepts above it with higher lows; absorbed supply should become the next demand reference.\",\n    \"At noon, if the morning has made multiple higher highs and no VWAP loss, widen close/HOD bands instead of projecting only a modest upper-third finish.\",\n    \"At 14:00, when price is already stair-stepping above rising demand, keep the long bias but allow for a close through the projected upper band.\",\n    \"After a confirmed upside breakout, anchor pullback expectations to the new demand shelf, not old lower balance levels.\"\n  ]\n}",
+  "actual_summary": {
+    "direction": "up",
+    "open_approx": 28878.0,
+    "close_approx": 29339.5,
+    "hod_approx": 29340.75,
+    "lod_approx": 28863.5,
+    "net_range_pct_open_to_close": 1.5981,
+    "intraday_span_pts": 477
+  },
+  "grades": {
+    "pre_session_forecast": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 230.5,
+      "hod_in_band": false,
+      "lod_in_band": true,
+      "lod_miss_pts": 0,
+      "tags_correct": [
+        "direction up",
+        "GOAT up",
+        "morning long bias",
+        "opening pullback/reclaim",
+        "demand held"
+      ],
+      "tags_wrong": [
+        "high balance",
+        "no close near extreme",
+        "late pullback risk",
+        "28950-28980 cap emphasis"
+      ],
+      "bias_profitable": true,
+      "invalidation_correct": true,
+      "overall_score": 4,
+      "overall_max": 7,
+      "biggest_miss": "Correct bullish thesis but treated the day as capped high balance instead of a full open-drive trend day closing at HOD."
+    },
+    "F1": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 244.5,
+      "hod_in_band": false,
+      "lod_in_band": false,
+      "lod_miss_pts": 51.5,
+      "tags_correct": [
+        "bullish",
+        "early impulse",
+        "shallow pullback",
+        "long GOAT",
+        "close near highs"
+      ],
+      "tags_wrong": [
+        "high balance above reclaimed supply",
+        "controlled upside grind too small",
+        "HOD ceiling too low"
+      ],
+      "bias_profitable": true,
+      "invalidation_correct": true,
+      "overall_score": 4,
+      "overall_max": 7,
+      "biggest_miss": "Projected continuation but anchored targets far too close to early supply."
+    },
+    "F2": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 94.5,
+      "hod_in_band": false,
+      "lod_in_band": true,
+      "lod_miss_pts": 0,
+      "tags_correct": [
+        "bullish morning",
+        "higher balance",
+        "afternoon upside breakout attempt",
+        "long GOAT",
+        "upper-third close"
+      ],
+      "tags_wrong": [
+        "close band too low",
+        "HOD band too low",
+        "undercalled trend-day extension"
+      ],
+      "bias_profitable": true,
+      "invalidation_correct": true,
+      "overall_score": 5,
+      "overall_max": 7,
+      "biggest_miss": "Recognized continuation but failed to expand the afternoon target range enough."
+    },
+    "F3": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 9.5,
+      "hod_in_band": true,
+      "lod_in_band": true,
+      "lod_miss_pts": 0,
+      "tags_correct": [
+        "controlled trend-up",
+        "higher lows",
+        "late upside probe",
+        "long GOAT",
+        "close near extreme"
+      ],
+      "tags_wrong": [
+        "upper-balance caution slightly overstated"
+      ],
+      "bias_profitable": true,
+      "invalidation_correct": true,
+      "overall_score": 6,
+      "overall_max": 7,
+      "biggest_miss": "Close band was slightly too conservative; actual close exceeded the top by 9.5 pts."
+    }
+  },
+  "evolution": "The forecast sequence improved materially through the day. Pre-session and F1 were directionally right but underestimated trend strength. F2 first caught the continuation regime, though still with compressed targets. F3 was the best forecast because it identified the active trend-up structure, defended demand, late upside probe, and near-HOD close.",
+  "summary": "All forecasts correctly leaned long, and every tactical long bias was profitable. The repeated miss was range compression: each forecast until F3 underestimated how strongly absorbed supply would convert into a full bullish open-drive trend day.",
+  "lessons": [
+    "When the open-drive holds above the first pullback low and reclaims quickly, upgrade from pullback/reclaim into balance to trend-day candidate before 10:30.",
+    "Do not cap HOD near early supply after price accepts above it with higher lows; absorbed supply should become the next demand reference.",
+    "At noon, if the morning has made multiple higher highs and no VWAP loss, widen close/HOD bands instead of projecting only a modest upper-third finish.",
+    "At 14:00, when price is already stair-stepping above rising demand, keep the long bias but allow for a close through the projected upper band.",
+    "After a confirmed upside breakout, anchor pullback expectations to the new demand shelf, not old lower balance levels."
+  ],
+  "parsed_structured": true
 }

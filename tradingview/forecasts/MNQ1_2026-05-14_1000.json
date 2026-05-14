@@ -1,0 +1,17 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-14",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "mode": "live",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_live_f11000_20260514_100438.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:30:00",
+    "session_last": "10:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-14T10:05:21",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-14 ~10:04 ET\n\nBars observed so far this session: ~35 one-minute bars, 09:30\u201310:04 ET\n\nStrong bullish opening drive made an early HOD near 29,695, then pulled back into VWAP/demand around 29,540\u201329,560 and bounced.\n\nRANKED SIMILAR ARCHETYPES\n\nOpening-drive up \u2192 VWAP retest \u2192 high-balance rotation \u2014 First impulse was strong, but price has not cleanly extended after the early HOD.\n\nGap-up drive with dip-buy defense \u2014 Pullback into the green demand/VWAP band was defended sharply near 10:00.\n\nMorning-high failure risk \u2014 Lower highs from ~09:46 into 09:58 warn that buyers may only be repairing unless 29,650\u201329,700 is reclaimed.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop-to-up repair while 29,540\u201329,560 holds; likely probe 29,620\u201329,670.\n\nBetween next marker and 14:00: Likely balance/lunch compression between 29,560\u201329,700 unless volume expands through HOD.\n\nBetween 14:00 and 16:00 close: Bias for either late continuation above 29,700 or fade back toward VWAP if HOD fails again.\n\nProjected close price range: 29,620\u201329,735\n\nRest-of-day HOD range: 29,690\u201329,785\n\nRest-of-day LOD range: 29,500\u201329,555\n\nTACTICAL BIAS\n\nPrimary bias: Long, 56%\n\nKey level to invalidate the bias: Acceptance below 29,520\n\nPreferred entry zone: 29,545\u201329,575, only if buyers defend and reclaim 29,590+\n\nR:R logic: Longs near demand risk ~30\u201345 pts for upside into 29,660\u201329,725; avoid chasing into 29,680+ unless breakout holds.\n\nKEY LEVELS\n\nOverhead supply: 29,650\u201329,700, then 29,735\u201329,785\n\nUnderlying demand: 29,540\u201329,560, then 29,500\u201329,520\n\nPivot-to-watch: 29,600\n\nPREDICTION TAGS\n\ndirection: up-to-sideways, 56%\n\nstructure: opening_drive_then_high_balance, 61%\n\nlunch_behavior: range_compression_above_VWAP, 58%\n\nafternoon_drive: late_retest_of_HOD_or_failed_push_fade, 52%\n\ngoat_direction: long, 55%\n\nclose_near_extreme: upper-half_close_not_clean_HOD_close, 54%"
+}

@@ -1,0 +1,17 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-14",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "mode": "live",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_live_f21200_20260514_134115.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:00:00",
+    "session_last": "12:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-14T13:41:57",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-14 ~12:00 ET\n\nBars observed so far this session: ~151 one-minute bars, 09:30\u201312:00 ET\n\nWhat has happened so far in 1 sentence: MNQ drove hard from the open, absorbed two pullbacks above rising demand, made successive higher highs into late morning, and is now holding near the upper third just below/near midday supply.\n\nRANKED SIMILAR ARCHETYPES\n\nOpening-drive trend day into midday high-balance \u2014 strong 09:30\u201311:30 impulse, then controlled rotation near highs without a real loss of structure.\n\nGap-up drive with afternoon continuation risk \u2014 price accepted above early value and never returned to the first defended RTH pullback zone.\n\nLate-morning extension into lunch digestion \u2014 the current area looks stretched, but pullbacks remain shallow and buyers keep defending higher lows.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect sideways-to-slightly-up rotation between ~29,680 and ~29,780, with failed dips likely bought unless 29,640 breaks.\n\nBetween next marker and 14:00: Likely compression or shallow pullback; best bullish setup is a hold above 29,640\u201329,665 followed by reclaim of 29,740+.\n\nBetween 14:00 and 16:00: Bias favors another upside attempt toward the day's upper extension, but close may rotate off the high if 29,800 rejects.\n\nProjected close price range: 29,720\u201329,820\n\nRest-of-day HOD range: 29,795\u201329,880\n\nRest-of-day LOD range: 29,600\u201329,665\n\nTACTICAL BIAS\n\nPrimary bias: Long, 64% confidence\n\nKey level to invalidate the bias: 29,595\n\nPreferred entry zone: 29,640\u201329,675, or momentum reclaim above 29,776\n\nR:R logic: Longs are favorable only while pullbacks hold above the rising demand band; risk below ~29,595 targets a retest/extension of 29,795\u201329,880. Chasing directly into 29,780\u201329,820 has poor R:R unless breakout volume expands.\n\nKEY LEVELS\n\nOverhead supply: 29,776\u201329,820, then 29,850\u201329,880\n\nUnderlying demand: 29,640\u201329,675, then 29,595\u201329,610\n\nPivot-to-watch: 29,776.50\n\nPREDICTION TAGS\n\ndirection: up / bullish continuation, 64%\nstructure: trend-day high-balance, 61%\nlunch_behavior: sideways digestion above demand, 66%\nafternoon_drive: late upside attempt, 58%\ngoat_direction: long, 63%\nclose_near_extreme: moderately likely, 55%"
+}

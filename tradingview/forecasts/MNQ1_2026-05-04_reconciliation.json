@@ -5,12 +5,14 @@
   "stage": "reconciliation",
   "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-04.png",
   "forecasts_graded": [
-    "pre_session"
+    "pre_session",
+    "1000",
+    "1200"
   ],
   "ground_truth_profile": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-04.json",
   "model": "chatgpt_thinking",
-  "made_at": "2026-05-06T19:47:55",
-  "raw_response": "ACTUAL OUTCOME\n\nOpened ~27,854, closed 27,779.75, HOD 27,941, LOD 27,614.25. Shape: morning push to highs failed into an 11:00\u201312:10 liquidation flush, then afternoon repair stalled below the morning breakdown zone.\n\nSTAGE GRADES\npre_session_forecast\n\nDirection: \u2717\n\nClose range hit: \u2717 \u2014 forecast implied +0.15% to +0.65%; actual was -0.27%, about 116 pts below the lower close band.\n\nHOD captured: \u2713 \u2014 expected span 210\u2013360 pts; actual span was 326.75 pts, and the morning upside probe fit the forecast's \"extended/rotational\" risk.\n\nLOD captured: \u2717 \u2014 forecast expected dip support/reclaim behavior, not a 27,614 liquidation flush.\n\nTags correct: rotational risk, morning upside extension risk, medium span\n\nTags wrong: direction up, stop_hunt_reclaim_high_balance_trend_up, open_dip_then_reclaim, constructive_high_base, controlled_upside_continuation, goat_direction up, close_near_HOD\n\nBias profitable if traded: \u2717\n\nInvalidation check: Mostly correct as a risk framework, but levels were unusable. The long thesis should have degraded by the failed rebound/breakdown, yet the named 28,500/28,450 thresholds were far above actual RTH price and therefore not operational for this session.\n\nOverall score: 2/7\n\nFORECAST EVOLUTION\n\nOnly the pre-session forecast was provided, so there was no intraday improvement to evaluate. It identified the main risk conceptually \u2014 large overnight advance already spent, open-near-high fade \u2014 but still anchored the base case to long reclaim continuation. The real signal was the 10:45 HOD failure followed by the 11:00 breakdown; no provided stage caught it in real time.\n\nLESSONS\n\nWhen the forecast's price ladder is far from the live RTH open, invalidate the forecast mechanically before grading directional bias; unusable levels should not remain active trade triggers.\n\nIf MNQ makes HOD before 11:00 and then breaks the opening support shelf with expanding volume, switch from \"dip/reclaim\" to morning_high_failure_midday_flush.\n\nDo not label GOAT long when the best move is a post-HOD liquidation leg; today's GOAT was down around 11:00, not morning dip-buy.\n\nAfter a failed morning high, treat afternoon strength as repair unless price reclaims the morning range; today's 13:25\u201314:05 push stalled near 27,805\u201327,815 and never restored bullish control.\n\nAdd a \"level sanity check\" before publishing: all support/resistance and invalidation levels must be within the current session's plausible price area.\n\nJSON\n{\n  \"actual_summary\": {\n    \"direction\": \"down\",\n    \"open_approx\": 27854.0,\n    \"close_approx\": 27779.75,\n    \"hod_approx\": 27941.0,\n    \"lod_approx\": 27614.25,\n    \"net_range_pct_open_to_close\": -0.2666,\n    \"intraday_span_pts\": 326.75\n  },\n  \"grades\": {\n    \"pre_session_forecast\": {\n      \"direction_hit\": false,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 116.03,\n      \"hod_in_band\": true,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 0,\n      \"tags_correct\": [\n        \"rotational risk\",\n        \"morning upside extension risk\",\n        \"medium span\"\n      ],\n      \"tags_wrong\": [\n        \"direction up\",\n        \"stop_hunt_reclaim_high_balance_trend_up\",\n        \"open_dip_then_reclaim\",\n        \"constructive_high_base\",\n        \"controlled_upside_continuation\",\n        \"goat_direction up\",\n        \"close_near_extreme yes_closer_to_HOD\"\n      ],\n      \"bias_profitable\": false,\n      \"invalidation_correct\": false,\n      \"overall_score\": 2,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"Forecast stayed anchored to long reclaim continuation despite the actual day being a morning-high failure into midday liquidation; stated invalidation levels were also far from the live RTH price area.\"\n    }\n  },\n  \"evolution\": \"Only the pre-session forecast was provided, so no forecast progression can be scored. The forecast recognized the possible open-near-high fade risk, but its base case remained long continuation and it did not capture the decisive 10:45 HOD failure into the 11:00 breakdown.\",\n  \"summary\": \"The forecast got the approximate volatility regime right but missed the direction, close, LOD, tactical bias, and core structure. The main failure was treating early weakness as potential dip-buy fuel instead of preparing for failed-morning-high liquidation once the upside extension rejected.\",\n  \"lessons\": [\n    \"When the forecast's price ladder is far from the live RTH open, invalidate the forecast mechanically before grading directional bias; unusable levels should not remain active trade triggers.\",\n    \"If MNQ makes HOD before 11:00 and then breaks the opening support shelf with expanding volume, switch from dip/reclaim to morning_high_failure_midday_flush.\",\n    \"Do not label GOAT long when the best move is a post-HOD liquidation leg; today's GOAT was down around 11:00, not morning dip-buy.\",\n    \"After a failed morning high, treat afternoon strength as repair unless price reclaims the morning range; today's 13:25\u201314:05 push stalled near 27805\u201327815 and never restored bullish control.\",\n    \"Add a level sanity check before publishing: all support/resistance and invalidation levels must be within the current session's plausible price area.\"\n  ]\n}",
+  "made_at": "2026-05-14T19:10:13",
+  "raw_response": "ACTUAL OUTCOME\n\nMNQ opened near 27,854, pushed to a failed morning high near 27,941, flushed to 27,614.25, then repaired into a 27,779.75 close; net direction was down, with a morning-high failure, midday liquidation, and afternoon repair below the morning range.\n\nSTAGE GRADES\nPRE-SESSION\n\nDirection: \u2717\n\nClose range hit: \u2717 \u2014 predicted roughly 27,896\u201328,035 using +0.15% to +0.65%; actual 27,779.75, miss 116.1 pts below\n\nHOD captured: \u2713 \u2014 predicted span 210\u2013360 pts captured actual span 326.75 pts, but directional HOD thesis was wrong\n\nLOD captured: \u2717 \u2014 expected dip/reclaim above 28,450\u201328,500, while actual LOD was 27,614.25\n\nTags correct: rotational/reclaim risk noted, extended-gap exhaustion risk noted\n\nTags wrong: direction up, stop_hunt_reclaim_high_balance_trend_up, constructive_high_base, controlled_upside_continuation, goat_direction up, close_near_HOD\n\nBias profitable if traded: \u2717\n\nInvalidation check: \u2713 \u2014 the forecast's own invalidation should have fired immediately because RTH opened far below the forecast ladder and never interacted with the stated 28,500+ thesis levels\n\nOverall score: 2/7\n\nF1 \u2014 10:00 ET\n\nDirection: \u2717\n\nClose range hit: \u2717 \u2014 predicted 27,910\u201327,955; actual 27,779.75, miss 130.25 pts below\n\nHOD captured: \u2713 \u2014 predicted 27,940\u201327,985; actual HOD 27,941, captured\n\nLOD captured: \u2717 \u2014 predicted 27,845\u201327,875; actual LOD 27,614.25, miss 230.75 pts below\n\nTags correct: morning upside trend attempt, supply-test breakout attempt\n\nTags wrong: direction up, bullish reclaim/trend attempt, sideways-to-higher lunch, upside continuation, goat_direction long, high-close\n\nBias profitable if traded: \u2717\n\nInvalidation check: \u2713 \u2014 27,845\u201327,850 acceptance below rising value correctly invalidated the long bias before the major liquidation expanded\n\nOverall score: 3/7\n\nF2 \u2014 12:00 ET\n\nDirection: \u2713\n\nClose range hit: \u2717 \u2014 predicted 27,590\u201327,680; actual 27,779.75, miss 99.75 pts above\n\nHOD captured: \u2717 \u2014 rest-of-day recovery reached about 27,815, above the projected 27,760\u201327,805 band by about 10 pts\n\nLOD captured: \u2717 \u2014 predicted 27,520\u201327,610; actual LOD 27,614.25, miss 4.25 pts above\n\nTags correct: failed rally \u2192 lower-high liquidation, bearish regime break, goat_direction short\n\nTags wrong: weak lunch consolidation, downside afternoon continuation, close near LOD\n\nBias profitable if traded: \u2713\n\nInvalidation check: \u2713 \u2014 acceptance above 27,820 did not clearly occur; the bearish trade could target the flush before the afternoon repair\n\nOverall score: 4/7\n\nFORECAST EVOLUTION\n\nForecasts improved materially after the 11:00 breakdown. Pre-session was unusable because it carried a stale 28,500+ ladder into a session that opened around 27,854. F1 correctly identified the morning high zone but misread it as continuation rather than exhaustion. F2 caught the real signal first: failed morning rally into lower-high liquidation. Its main miss was extrapolating the flush into a weak close instead of respecting the post-liquidation demand repair.\n\nLESSONS\n\nInvalidate stale ladders at the open. When RTH opens hundreds of points away from the pre-session reference zone, do not grade the thesis as \"still pending\"; mark it broken and rebuild from live RTH structure.\n\nAt 10:00, separate HOD capture from bullish continuation. F1 nailed the 27,940 HOD area but treated the test as breakout fuel; require acceptance above supply, not just a probe into it.\n\nAfter an 11:00 liquidation impulse, expect one more low, but do not automatically forecast a low close. Today flushed from 27,700s to 27,614, then repaired almost 165 pts into the close.\n\nUse demand-hit behavior to adjust close targets. Once 27,645\u201327,680 demand defended and reclaimed 27,735, the close forecast should shift from near-low continuation to midrange repair.\n\nFor noon shorts, define cover targets separately from close targets. F2's short was tradable into the flush, but the close call failed because it assumed the trade target would also become the settlement zone.\n\nJSON\n{\n  \"actual_summary\": {\n    \"direction\": \"down\",\n    \"open_approx\": 27854.0,\n    \"close_approx\": 27779.75,\n    \"hod_approx\": 27941.0,\n    \"lod_approx\": 27614.25,\n    \"net_range_pct_open_to_close\": -0.2666,\n    \"intraday_span_pts\": 326.75\n  },\n  \"grades\": {\n    \"pre_session_forecast\": {\n      \"direction_hit\": false,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 116.1,\n      \"hod_in_band\": true,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 835.75,\n      \"tags_correct\": [\n        \"rotational/reclaim risk noted\",\n        \"extended-gap exhaustion risk noted\"\n      ],\n      \"tags_wrong\": [\n        \"direction up\",\n        \"stop_hunt_reclaim_high_balance_trend_up\",\n        \"constructive_high_base\",\n        \"controlled_upside_continuation\",\n        \"goat_direction up\",\n        \"close_near_HOD\"\n      ],\n      \"bias_profitable\": false,\n      \"invalidation_correct\": true,\n      \"overall_score\": 2,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"The forecast carried a 28500+ bullish ladder into a session that opened near 27854, making the entire pre-session structure stale immediately.\"\n    },\n    \"F1\": {\n      \"direction_hit\": false,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 130.25,\n      \"hod_in_band\": true,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 230.75,\n      \"tags_correct\": [\n        \"morning upside trend attempt\",\n        \"supply-test breakout attempt\"\n      ],\n      \"tags_wrong\": [\n        \"direction up\",\n        \"bullish reclaim/trend attempt\",\n        \"sideways-to-higher lunch\",\n        \"upside continuation\",\n        \"goat_direction long\",\n        \"high-close\"\n      ],\n      \"bias_profitable\": false,\n      \"invalidation_correct\": true,\n      \"overall_score\": 3,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"It correctly located the HOD zone near 27940 but interpreted the supply test as continuation instead of morning-high failure.\"\n    },\n    \"F2\": {\n      \"direction_hit\": true,\n      \"close_in_band\": false,\n      \"close_miss_pts\": 99.75,\n      \"hod_in_band\": false,\n      \"lod_in_band\": false,\n      \"lod_miss_pts\": 4.25,\n      \"tags_correct\": [\n        \"failed rally -> lower-high liquidation\",\n        \"bearish regime break\",\n        \"goat_direction short\"\n      ],\n      \"tags_wrong\": [\n        \"weak lunch consolidation\",\n        \"downside afternoon continuation\",\n        \"close near LOD\"\n      ],\n      \"bias_profitable\": true,\n      \"invalidation_correct\": true,\n      \"overall_score\": 4,\n      \"overall_max\": 7,\n      \"biggest_miss\": \"It caught the bearish liquidation but over-projected downside persistence and missed the afternoon repair back toward 27800.\"\n    }\n  },\n  \"evolution\": \"The forecast sequence improved after live evidence replaced the stale pre-session ladder. Pre-session was directionally wrong and invalid at the open. F1 found the correct morning supply/HOD zone but drew the wrong continuation conclusion. F2 caught the real signal first by identifying the failed morning rally and lower-high liquidation, though it failed to adjust for demand defense and afternoon repair.\",\n  \"summary\": \"This was a bearish failed-morning-high day, not a bullish reclaim/high-balance session. The best actionable read was F2's short after the 11:00 regime break, but the correct close framework was midrange repair, not near-low continuation.\",\n  \"lessons\": [\n    \"Invalidate stale ladders at the open when RTH opens hundreds of points away from the forecast reference zone; rebuild from live RTH structure instead of carrying the old thesis.\",\n    \"At 10:00, require acceptance above supply before calling continuation; a probe into the projected HOD zone can be the exhaustion signal.\",\n    \"After an 11:00 liquidation impulse, forecast one more low but do not automatically forecast a low close unless demand fails on the rebound.\",\n    \"When post-flush demand defends and price reclaims the breakdown shelf, move close targets from lower-extreme to midrange repair.\",\n    \"For noon shorts, separate trade targets from settlement targets; a flush target can hit even when the final close repairs sharply.\"\n  ]\n}",
   "actual_summary": {
     "direction": "down",
     "open_approx": 27854.0,
@@ -24,39 +26,85 @@
     "pre_session_forecast": {
       "direction_hit": false,
       "close_in_band": false,
-      "close_miss_pts": 116.03,
+      "close_miss_pts": 116.1,
       "hod_in_band": true,
       "lod_in_band": false,
-      "lod_miss_pts": 0,
+      "lod_miss_pts": 835.75,
       "tags_correct": [
-        "rotational risk",
-        "morning upside extension risk",
-        "medium span"
+        "rotational/reclaim risk noted",
+        "extended-gap exhaustion risk noted"
       ],
       "tags_wrong": [
         "direction up",
         "stop_hunt_reclaim_high_balance_trend_up",
-        "open_dip_then_reclaim",
         "constructive_high_base",
         "controlled_upside_continuation",
         "goat_direction up",
-        "close_near_extreme yes_closer_to_HOD"
+        "close_near_HOD"
       ],
       "bias_profitable": false,
-      "invalidation_correct": false,
+      "invalidation_correct": true,
       "overall_score": 2,
       "overall_max": 7,
-      "biggest_miss": "Forecast stayed anchored to long reclaim continuation despite the actual day being a morning-high failure into midday liquidation; stated invalidation levels were also far from the live RTH price area."
+      "biggest_miss": "The forecast carried a 28500+ bullish ladder into a session that opened near 27854, making the entire pre-session structure stale immediately."
+    },
+    "F1": {
+      "direction_hit": false,
+      "close_in_band": false,
+      "close_miss_pts": 130.25,
+      "hod_in_band": true,
+      "lod_in_band": false,
+      "lod_miss_pts": 230.75,
+      "tags_correct": [
+        "morning upside trend attempt",
+        "supply-test breakout attempt"
+      ],
+      "tags_wrong": [
+        "direction up",
+        "bullish reclaim/trend attempt",
+        "sideways-to-higher lunch",
+        "upside continuation",
+        "goat_direction long",
+        "high-close"
+      ],
+      "bias_profitable": false,
+      "invalidation_correct": true,
+      "overall_score": 3,
+      "overall_max": 7,
+      "biggest_miss": "It correctly located the HOD zone near 27940 but interpreted the supply test as continuation instead of morning-high failure."
+    },
+    "F2": {
+      "direction_hit": true,
+      "close_in_band": false,
+      "close_miss_pts": 99.75,
+      "hod_in_band": false,
+      "lod_in_band": false,
+      "lod_miss_pts": 4.25,
+      "tags_correct": [
+        "failed rally -> lower-high liquidation",
+        "bearish regime break",
+        "goat_direction short"
+      ],
+      "tags_wrong": [
+        "weak lunch consolidation",
+        "downside afternoon continuation",
+        "close near LOD"
+      ],
+      "bias_profitable": true,
+      "invalidation_correct": true,
+      "overall_score": 4,
+      "overall_max": 7,
+      "biggest_miss": "It caught the bearish liquidation but over-projected downside persistence and missed the afternoon repair back toward 27800."
     }
   },
-  "evolution": "Only the pre-session forecast was provided, so no forecast progression can be scored. The forecast recognized the possible open-near-high fade risk, but its base case remained long continuation and it did not capture the decisive 10:45 HOD failure into the 11:00 breakdown.",
-  "summary": "The forecast got the approximate volatility regime right but missed the direction, close, LOD, tactical bias, and core structure. The main failure was treating early weakness as potential dip-buy fuel instead of preparing for failed-morning-high liquidation once the upside extension rejected.",
+  "evolution": "The forecast sequence improved after live evidence replaced the stale pre-session ladder. Pre-session was directionally wrong and invalid at the open. F1 found the correct morning supply/HOD zone but drew the wrong continuation conclusion. F2 caught the real signal first by identifying the failed morning rally and lower-high liquidation, though it failed to adjust for demand defense and afternoon repair.",
+  "summary": "This was a bearish failed-morning-high day, not a bullish reclaim/high-balance session. The best actionable read was F2's short after the 11:00 regime break, but the correct close framework was midrange repair, not near-low continuation.",
   "lessons": [
-    "When the forecast's price ladder is far from the live RTH open, invalidate the forecast mechanically before grading directional bias; unusable levels should not remain active trade triggers.",
-    "If MNQ makes HOD before 11:00 and then breaks the opening support shelf with expanding volume, switch from dip/reclaim to morning_high_failure_midday_flush.",
-    "Do not label GOAT long when the best move is a post-HOD liquidation leg; today's GOAT was down around 11:00, not morning dip-buy.",
-    "After a failed morning high, treat afternoon strength as repair unless price reclaims the morning range; today's 13:25\u201314:05 push stalled near 27805\u201327815 and never restored bullish control.",
-    "Add a level sanity check before publishing: all support/resistance and invalidation levels must be within the current session's plausible price area."
+    "Invalidate stale ladders at the open when RTH opens hundreds of points away from the forecast reference zone; rebuild from live RTH structure instead of carrying the old thesis.",
+    "At 10:00, require acceptance above supply before calling continuation; a probe into the projected HOD zone can be the exhaustion signal.",
+    "After an 11:00 liquidation impulse, forecast one more low but do not automatically forecast a low close unless demand fails on the rebound.",
+    "When post-flush demand defends and price reclaims the breakdown shelf, move close targets from lower-extreme to midrange repair.",
+    "For noon shorts, separate trade targets from settlement targets; a flush target can hit even when the final close repairs sharply."
   ],
   "parsed_structured": true
 }

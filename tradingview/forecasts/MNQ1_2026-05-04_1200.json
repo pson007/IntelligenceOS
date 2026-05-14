@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-04",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260514_181037.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:30:00",
+    "session_last": "11:51:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-14T18:11:21",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: Mon 04 May 2026, 11:51 AM ET\n\nBars observed so far this session: ~142 one-minute bars, 09:30\u201311:51 ET\n\nWhat has happened so far: Morning upside auction failed near 27,940, then price broke below value/VWAP and transitioned into a persistent lower-high liquidation toward 27,701 demand.\n\nRANKED SIMILAR ARCHETYPES\n\nFailed morning rally \u2192 midday liquidation trend \u2014 strong early bid exhausted near highs, then lost value and produced clean lower-high pressure.\n\nBearish trend-day attempt after 11:00 regime break \u2014 post-11:00 selloff was impulsive, high-volume, and failed to reclaim the green value band.\n\nLate-morning breakdown into afternoon continuation risk \u2014 current structure is not balanced enough to assume lunch mean reversion yet.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Likely sideways-to-lower chop under 27,760\u201327,780; any bounce should struggle unless it reclaims 27,790.\n\nBetween next marker and 14:00: Bearish continuation favored; expect a test/break of 27,701 with possible extension into 27,650\u201327,600.\n\nBetween 14:00 and 16:00 close: If price remains below 27,780, afternoon likely grinds lower or closes weak near the lower third. A reclaim above 27,820 would shift to range-repair.\n\nProjected close price range: 27,590\u201327,680\n\nRest-of-day HOD range: 27,760\u201327,805\n\nRest-of-day LOD range: 27,520\u201327,610\n\nTACTICAL BIAS\n\nPrimary bias: Short, 68%\n\nKey level to invalidate the bias: Acceptance back above 27,820\n\nPreferred entry zone: 27,750\u201327,790 rejection, especially if volume fades\n\nR:R logic: Risk above 27,820; target 27,650 first, then 27,560\u201327,600. Approx. 1.8R\u20132.5R if entry is near 27,770.\n\nKEY LEVELS\n\nOverhead supply: 27,780\u201327,820, then 27,880\u201327,900\n\nUnderlying demand: 27,701\u201327,690, then 27,600\u201327,560\n\nPivot-to-watch: 27,740\u201327,760\n\nPREDICTION TAGS\n\ndirection: bearish, 68%\n\nstructure: failed rally \u2192 lower-high liquidation, 72%\n\nlunch_behavior: weak consolidation below reclaim pivot, 61%\n\nafternoon_drive: downside continuation, 64%\n\ngoat_direction: short, 70%\n\nclose_near_extreme: near low of day, 58%"
+}

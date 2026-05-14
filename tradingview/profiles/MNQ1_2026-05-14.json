@@ -1,0 +1,141 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-14",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-14T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-14.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "10:00:00",
+    "last": "15:45:00"
+  },
+  "profiled_at": "2026-05-14T16:07:42-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "early_drive_midday_flush_afternoon_reclaim_chop",
+    "open_approx": 29675.0,
+    "close_approx": 29686.5,
+    "hod_approx": 29780.0,
+    "lod_approx": 29605.0,
+    "net_range_pts_open_to_close": 12,
+    "net_range_pct_open_to_close": 0.04,
+    "intraday_span_pts": 175,
+    "shape_sentence": "Bullish early drive faded into a deep early-PM flush, then recovered into a choppy midrange close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 29675.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 29715.0,
+      "type": "early_drive"
+    },
+    {
+      "time_et": "11:20",
+      "price_approx": 29765.0,
+      "type": "morning_high_zone"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 29765.0,
+      "type": "goat_long"
+    },
+    {
+      "time_et": "12:20",
+      "price_approx": 29780.0,
+      "type": "hod_attempt"
+    },
+    {
+      "time_et": "13:20",
+      "price_approx": 29605.0,
+      "type": "lod_flush"
+    },
+    {
+      "time_et": "13:55",
+      "price_approx": 29755.0,
+      "type": "reclaim_high"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 29740.0,
+      "type": "upside_probe_rejection"
+    },
+    {
+      "time_et": "15:05",
+      "price_approx": 29720.0,
+      "type": "afternoon_reclaim"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 29686.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "12:00",
+      "direction": "up",
+      "note": "GOAT midday LONG near the upper morning range around 29765."
+    },
+    "red_circles": {
+      "behavior": "Late-session bearish pivot cluster near 29690-29705, showing failed continuation into the close."
+    },
+    "green_circles": {
+      "behavior": "Late-session bullish pivot cluster near 29685-29695, showing repeated dip-buy attempts after the afternoon recovery."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply concentrated around 29735-29780; probed in the morning and near 14:00 but not sustained."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand respected around 29600-29650 after the early-PM flush; LOD zone held."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Early upside drive already active, holding above the open.",
+    "12pm_red": "GOAT midday LONG near 29765, close to the morning high zone.",
+    "2pm_green": "Upside probe near 29740-29755 followed by sharp rejection.",
+    "4pm_yellow": "Closed near 29686.50 after late chop, away from both HOD and LOD."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "early_drive_midday_flush_afternoon_reclaim_chop",
+    "open_type": "gap_up_drive",
+    "lunch_behavior": "failed_high_then_hard_flush",
+    "afternoon_drive": "reclaim_then_rotational_close",
+    "goat_time": "12:00",
+    "goat_direction": "up",
+    "peak_hour": 12,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "demand_respected_near_29600_29650",
+    "banks_broken": "morning_supply_probed_but_not_sustained"
+  },
+  "takeaway": "Bullish-green close but not a clean trend day: early strength and a midday GOAT long were followed by a deep flush, then a defended-demand recovery into late-session chop.",
+  "actual_summary_api": {
+    "bars_count": 300,
+    "start_et": "2026-05-14T09:30",
+    "end_et": "2026-05-14T16:00",
+    "open": 29674.75,
+    "close": 29686.5,
+    "hod": 29783.75,
+    "lod": 29595.25,
+    "span_pts": 188.5,
+    "net_pts": 11.75,
+    "net_pct": 0.0396,
+    "first_bar_ts": 1778770800,
+    "last_bar_ts": 1778788740
+  }
+}

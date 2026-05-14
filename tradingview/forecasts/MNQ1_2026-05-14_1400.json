@@ -1,0 +1,17 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-14",
+  "cursor_time": "14:00",
+  "stage": "F3",
+  "mode": "live",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_live_f31400_20260514_151820.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:30:00",
+    "session_last": "14:00:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-14T15:18:55",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-14 ~14:00 ET\n\nBars observed so far this session: ~270 one-minute bars, 09:30\u201314:00 ET\n\nWhat has happened so far in 1 sentence: MNQ opened strong, made a late-morning/early-afternoon high near 29,780, lost the midday value shelf, repaired into 14:00, then rejected sharply back toward 29,640\u201329,665.\n\nRANKED SIMILAR ARCHETYPES\n\nFailed late push then fade \u2014 Afternoon strength reached supply near 29,740\u201329,760 and immediately failed into the 14:00 marker.\n\nHigh-balance rotation after morning HOD \u2014 The day made a strong upper extreme before 14:00, then rotated broadly between 29,600 and 29,780.\n\nPost-HOD liquidation repair day \u2014 The selloff from the high was impulsive, but price is still above the main RTH demand base, so full trend-down confirmation is not yet present.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect choppy downside continuation or weak bounce attempts below 29,690\u201329,710.\n\nBetween next marker and 14:00: Already at/near 14:00; the key read is whether 29,640 holds or fails.\n\nBetween 14:00 and 16:00 (close): Base case is lower-high rotation, with sellers pressing toward 29,590\u201329,620 unless price quickly reclaims 29,710+.\n\nProjected close price (range): 29,600\u201329,670\n\nRest-of-day HOD (range): 29,705\u201329,745\n\nRest-of-day LOD (range): 29,560\u201329,610\n\nTACTICAL BIAS\n\nPrimary bias: short, 62% confidence\n\nKey level to invalidate the bias: Sustained reclaim above 29,720, especially if holding above the green value band\n\nPreferred entry zone: 29,680\u201329,715 failed bounce / lower-high zone\n\nR:R logic: Favor shorts only if entry is close to resistance; target 29,610 first, then 29,570\u201329,590. Avoid chasing below 29,600 unless volume expands.\n\nKEY LEVELS\n\nOverhead supply: 29,705\u201329,720, then 29,740\u201329,765\n\nUnderlying demand: 29,610\u201329,640, then 29,560\u201329,590\n\nPivot-to-watch: 29,665\n\nPREDICTION TAGS\n\ndirection: down / fade, 62%\nstructure: failed_late_push_then_fade, 58%\nlunch_behavior: repair rally into supply, 66%\nafternoon_drive: seller-control below 29,710, 61%\ngoat_direction: down, 57%\nclose_near_extreme: moderate chance near lower third, 54%"
+}

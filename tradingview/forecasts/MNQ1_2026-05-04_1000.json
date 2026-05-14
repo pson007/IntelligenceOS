@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-04",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f11000_20260514_180951.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:30:00",
+    "session_last": "09:55:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-14T18:10:30",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: ~10:00 ET. BarDate exact label is not legible; prompt says MNQ1! 2026-05-04 RTH.\n\nBars observed so far this session: ~30 one-minute bars, 09:30\u201310:00 ET.\n\nWhat has happened so far in 1 sentence: Early chop/weakness failed near 27,825\u201327,840, then price reclaimed value, built higher lows, and is now pressing the session high near 27,896\u201327,900.\n\nRANKED SIMILAR ARCHETYPES\n\nOpening reclaim into upside trend attempt \u2014 Failed early sell pressure was absorbed, then buyers held above the rising value/VWAP band.\n\nSupply-test breakout day \u2014 Price is now attacking overhead stored orders near 27,890\u201327,900, so acceptance above that zone could expand range.\n\nMorning squeeze then midday rotation \u2014 The rally is strong, but it has already traveled far into resistance before 10:00, making a pullback/retest likely before clean continuation.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect a test/overshoot of 27,900, then either quick continuation toward 27,920\u201327,940 or a retest of 27,875\u201327,885.\n\nBetween next marker and 14:00: Base case is controlled bullish rotation: higher-low pullbacks into 27,860\u201327,880, with buyers trying to keep price above the reclaimed shelf.\n\nBetween 14:00 and 16:00 (close): If price holds above 27,850, afternoon likely drives higher again; if 27,845\u201327,850 breaks, day shifts to range/fade.\n\nProjected close price (range): 27,910\u201327,955\n\nRest-of-day HOD (range): 27,940\u201327,985\n\nRest-of-day LOD (range): 27,845\u201327,875\n\nTACTICAL BIAS\n\nPrimary bias: Long, 64% confidence\n\nKey level to invalidate the bias: 27,845\u201327,850 acceptance below the rising value band\n\nPreferred entry zone: 27,875\u201327,885 first pullback; deeper valid reload near 27,850\u201327,860\n\nR:R logic: Longs only make sense if risk can stay below 27,845\u201327,850 while targeting 27,925+; chasing above 27,900 has worse R:R unless volume confirms breakout acceptance.\n\nKEY LEVELS\n\nOverhead supply: 27,895\u201327,905, then 27,930\u201327,950\n\nUnderlying demand: 27,845\u201327,860, then 27,825\u201327,835\n\nPivot-to-watch: 27,875\u201327,885\n\nPREDICTION TAGS\n\ndirection: up, 64%\nstructure: bullish reclaim / trend attempt, 61%\nlunch_behavior: sideways-to-higher pullback consolidation, 56%\nafternoon_drive: upside continuation if 27,850 holds, 58%\ngoat_direction: long, 62%\nclose_near_extreme: moderately likely high-close, 55%"
+}

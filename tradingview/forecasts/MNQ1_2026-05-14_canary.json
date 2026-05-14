@@ -1,0 +1,84 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-14",
+  "dow": "Thu",
+  "made_at": "2026-05-14T09:06:25",
+  "thesis_summary": "Bearish bias remains actionable only if the open fails to reclaim 29535-29555 and trades below VWAP into late morning.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "level_sanity_open_area",
+      "label": "Open remains near forecast ladder",
+      "rationale": "The forecast levels are only usable if RTH opens within the current plausible pre-session area.",
+      "check_type": "price_level_window",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-05-14T09:35:00-0400",
+      "evaluate_before": "2026-05-14T09:40:00-0400",
+      "params": {
+        "window": "09:30-09:35",
+        "high_of_window_below": 29620
+      },
+      "weight": 2
+    },
+    {
+      "id": "failed_upper_reclaim",
+      "label": "No acceptance above 29555",
+      "rationale": "Reclaiming 29555 would negate the failed-overnight-high thesis and restore bullish control.",
+      "check_type": "price_level",
+      "evaluate_at": "09:45",
+      "evaluate_after": "2026-05-14T09:45:00-0400",
+      "evaluate_before": "2026-05-14T09:50:00-0400",
+      "params": {
+        "price_below": 29555
+      },
+      "weight": 2
+    },
+    {
+      "id": "open_structure",
+      "label": "Open does not classify as bullish drive",
+      "rationale": "A gap-and-go or trend-break-up open would invalidate the short-first read.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-05-14T09:35:00-0400",
+      "evaluate_before": "2026-05-14T09:40:00-0400",
+      "params": {
+        "expected": "rotational_open",
+        "tolerated": [
+          "rotational_open",
+          "trend_break_down",
+          "dip_then_reclaim"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "vwap_control",
+      "label": "Price below session VWAP",
+      "rationale": "Short bias needs sellers controlling value after the open, not just a pre-open liquidation.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-05-14T10:00:00-0400",
+      "evaluate_before": "2026-05-14T10:05:00-0400",
+      "params": {
+        "side": "below"
+      },
+      "weight": 2
+    },
+    {
+      "id": "morning_support_break",
+      "label": "Morning loses 29475 support shelf",
+      "rationale": "A clean break of the prior close/late-demand shelf confirms downside continuation rather than balance.",
+      "check_type": "price_level",
+      "evaluate_at": "11:00",
+      "evaluate_after": "2026-05-14T11:00:00-0400",
+      "evaluate_before": "2026-05-14T11:05:00-0400",
+      "params": {
+        "price_below": 29475
+      },
+      "weight": 2
+    }
+  ]
+}
