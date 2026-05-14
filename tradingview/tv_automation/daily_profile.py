@@ -39,6 +39,7 @@ from playwright.async_api import Page
 from . import bar_reader, replay, replay_api
 from .chart import ensure_auto_scale
 from .chatgpt_web import analyze_via_chatgpt_web
+from .forecast_capture import hide_widget_panel
 from .lib import audit
 from .lib.capture_invariants import (
     CaptureExpect, CaptureInvariantError, assert_capture_ready,
@@ -268,11 +269,17 @@ async def _capture(
 ) -> Path:
     """Screenshot the chart, return the path.
 
+    Hides the right-sidebar widget panel first so the watchlist doesn't
+    land in the capture — matches `daily_forecast`/`live_forecast`,
+    which already share this primitive. Best-effort: a transient
+    selector miss logs and continues rather than blocking the run.
+
     When `expect` is given, runs `assert_capture_ready` first — silent
     flaky captures (wrong symbol, wrong TF, modal in frame, drawing
     tool armed, replay off, cursor at wrong bar) become loud
     `CaptureInvariantError`s instead of useless PNGs that the LLM
     misreads hours later."""
+    await hide_widget_panel(page)
     if expect is not None:
         await assert_capture_ready(page, expect)
     _SCREENSHOT_ROOT.mkdir(parents=True, exist_ok=True)
