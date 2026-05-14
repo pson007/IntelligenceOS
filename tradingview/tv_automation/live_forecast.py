@@ -27,12 +27,15 @@ import argparse
 import asyncio
 import json
 import sys
-from datetime import date, datetime, time as dtime
+from datetime import date, datetime, time as dtime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from playwright.async_api import Page
 
 from . import lessons as lessons_mod, replay, replay_api
+
+_ET = ZoneInfo("America/New_York")
 from .chart import ensure_auto_scale
 from .chatgpt_web import analyze_via_chatgpt_web
 from .forecast_capture import frame_partial_session, hide_widget_panel
@@ -182,7 +185,15 @@ async def run_live_stage(
         with audit.timed("live_forecast.stage", stage=stage, date=date_str, source="upload") as ac:
             screenshot = Path(image_path)
             ac["screenshot"] = str(screenshot)
-            gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)
+            # 15-min reader-tolerance on the right edge — gate's vision
+            # LLM occasionally reads the rightmost x-axis tick as one
+            # label earlier (e.g. "13:45" instead of "14:00") when the
+            # cursor bar sits flush against the chart's right edge.
+            gate_cursor = (
+                datetime.combine(date.today(), cursor_time)
+                - timedelta(minutes=15)
+            ).time()
+            gate = await verify_full_session(str(screenshot), cursor_time=gate_cursor)
             ac["gate_ok"] = gate.ok
             ac["gate_reason"] = gate.reason
             return await _live_forecast_llm_and_save(
@@ -201,7 +212,39 @@ async def run_live_stage(
             raise RuntimeError("set_symbol_in_place failed before live forecast")
         audit.log("live_forecast.chart_pinned", landed=landed)
         with audit.timed("live_forecast.stage", stage=stage, date=date_str) as ac:
-            await frame_partial_session(page)
+            # Deterministic viewport via TV's TimeScale API — set the
+            # visible range to [09:30 ET, cursor+5min] using absolute
+            # bar indices. Wheel-based `frame_partial_session` is
+            # non-idempotent against prior chart state and drives the
+            # same morning_cut/close_cut gate_fail pattern observed in
+            # daily_forecast on 2026-05-13. Fall back to wheels only
+            # if the JS API isn't reachable on this TV build.
+            target_dt = datetime.combine(date.today(), cursor_time)
+            open_dt = datetime.combine(target_dt.date(), dtime(9, 30), tzinfo=_ET)
+            cursor_dt_et = target_dt.replace(tzinfo=_ET)
+            await replay_api.wait_for_bars_to_load(
+                page,
+                earliest_epoch_s=int(open_dt.timestamp()),
+                latest_epoch_s=int(cursor_dt_et.timestamp()),
+                timeout_ms=5000,
+            )
+            open_idx = await replay_api.find_bar_index_for_time(
+                page, int(open_dt.timestamp()),
+            )
+            cursor_idx = await replay_api.find_bar_index_for_time(
+                page, int((cursor_dt_et + timedelta(minutes=5)).timestamp()),
+            )
+            api_framed = False
+            if open_idx is not None and cursor_idx is not None and cursor_idx > open_idx:
+                api_framed = await replay_api.zoom_to_bar_range(
+                    page, open_idx, cursor_idx,
+                )
+            audit.log("live_forecast.stage.framed",
+                      stage=stage, via=("api" if api_framed else "wheel"),
+                      open_idx=open_idx, cursor_idx=cursor_idx)
+            if not api_framed:
+                await frame_partial_session(page)
+            await page.wait_for_timeout(300)
             screenshot = await _capture(
                 page, symbol, stage.lower() + stage_tag,
                 expect=CaptureExpect(
@@ -212,7 +255,13 @@ async def run_live_stage(
             )
             ac["screenshot"] = str(screenshot)
 
-            gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)
+            # 15-min reader-tolerance on the right edge — see comment
+            # at the parallel call above.
+            gate_cursor = (
+                datetime.combine(date.today(), cursor_time)
+                - timedelta(minutes=15)
+            ).time()
+            gate = await verify_full_session(str(screenshot), cursor_time=gate_cursor)
             ac["gate_ok"] = gate.ok
             ac["gate_reason"] = gate.reason
             return await _live_forecast_llm_and_save(

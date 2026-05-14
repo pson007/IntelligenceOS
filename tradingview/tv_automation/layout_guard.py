@@ -110,6 +110,26 @@ async def assert_layout(page: Page) -> dict[str, Any]:
     return info
 
 
+async def assert_money_print(page: Page) -> dict[str, Any]:
+    """Fail fast (~5s) when the active chart isn't on "Money Print".
+    The Replay-driven forecast/profile workflows need that layout
+    specifically — a bare `/chart/` URL has no warmed history and
+    `replay.navigate_to` hangs at `replay.history_loaded {batches: 0}`
+    indefinitely (~1h regression in `daily_profile` on 2026-05-05).
+    Normalized compare tolerates emoji-prefixed layout names since the
+    toolbar `innerText` reader drops glyphs."""
+    expected = "Money Print"
+    expected_norm = _normalize_layout_name(expected)
+    info = await current_layout(page)
+    if _normalize_layout_name(info.get("name")) != expected_norm:
+        audit.log("layout_guard.assert_money_print.mismatch",
+                  expected=expected, **info)
+        raise LayoutMismatchError(expected, info.get("name"),
+                                   action="assert_money_print")
+    audit.log("layout_guard.assert_money_print.ok", **info)
+    return info
+
+
 def _normalize_layout_name(s: str | None) -> str:
     """Strip leading non-alphanumeric/non-letter chars (emoji prefixes
     like 🟢, 📊, 🕵 the user uses to flag active layouts) and lowercase

@@ -526,6 +526,14 @@ async def run_profile_day(date_str: str, *, symbol: str = "MNQ1",
 
     async with chart_session() as (_ctx, page):
         from . import layout_guard
+        # Fail fast (~5s) when the active chart isn't Money Print —
+        # the bare `/chart/` URL has no warmed history and
+        # `replay.navigate_to` hangs at `replay.history_loaded
+        # {batches: 0}` indefinitely. Same vulnerability that ate ~1h
+        # here on 2026-05-05 (PID 28695); the guard was added to
+        # `daily_forecast.py` first but never mirrored to this file
+        # until 2026-05-13.
+        await layout_guard.assert_money_print(page)
         layout_info = await layout_guard.current_layout(page)
         landed = await replay_api.set_symbol_in_place(
             page, symbol=_symbol_for_api(symbol), interval="1",

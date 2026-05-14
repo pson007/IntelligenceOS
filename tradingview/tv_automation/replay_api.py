@@ -641,6 +641,78 @@ async def zoom_to_bar_range(
         return False
 
 
+async def wait_for_bars_to_load(
+    page: Page, *,
+    earliest_epoch_s: int | None = None,
+    latest_epoch_s: int | None = None,
+    timeout_ms: int = 5000,
+    poll_ms: int = 200,
+) -> bool:
+    """Poll the bar buffer until it covers the requested time range.
+
+    Returns True when both `earliest_epoch_s` (if given) and
+    `latest_epoch_s` (if given) fall inside [firstBar.timestamp,
+    lastBar.timestamp]. Useful before `find_bar_index_for_time` /
+    `zoom_to_bar_range` after navigating across dates in the same chart
+    session — TV may have evicted older history, leaving stale indices
+    that map to whichever bars happen to be loaded (2026-05-13 backfill
+    diagnostic: `find_bar_index_for_time(09:30 ET 05-07)` returned the
+    bar at 09:45, off by hours from cursor at 14:00, because the 05-07
+    buffer was evicted after intermediate navigation through 05-08 and
+    05-13).
+
+    Returns False on timeout. Caller should treat a False return the
+    same as a stale-buffer hit — either retry or accept degraded
+    framing. Does not itself force-load bars; callers needing that
+    should drive a `replay.navigate_to` or chart-scroll first."""
+    import asyncio
+    deadline_s = timeout_ms / 1000.0
+    poll_s = poll_ms / 1000.0
+    elapsed = 0.0
+    while True:
+        try:
+            info = await _eval(page, """(() => {
+                try {
+                    const b = window.TradingViewApi
+                        ._activeChartWidgetWV.value()
+                        ._chartWidget.model().mainSeries().bars();
+                    if (!b) return null;
+                    const fi = b.firstIndex();
+                    const li = b.lastIndex();
+                    if (typeof fi !== 'number' || typeof li !== 'number')
+                        return null;
+                    const fv = b.valueAt(fi);
+                    const lv = b.valueAt(li);
+                    if (!fv || !lv) return null;
+                    return {first_ts: fv[0], last_ts: lv[0]};
+                } catch (e) { return null; }
+            })()""")
+        except Exception:
+            info = None
+        if info is not None:
+            first_ts = info.get("first_ts")
+            last_ts = info.get("last_ts")
+            ok_first = (earliest_epoch_s is None
+                        or (first_ts is not None and first_ts <= earliest_epoch_s))
+            ok_last = (latest_epoch_s is None
+                       or (last_ts is not None and last_ts >= latest_epoch_s))
+            if ok_first and ok_last:
+                audit.log("replay_api.wait_for_bars.ok",
+                          first_ts=first_ts, last_ts=last_ts,
+                          earliest=earliest_epoch_s, latest=latest_epoch_s,
+                          waited_s=round(elapsed, 2))
+                return True
+        if elapsed >= deadline_s:
+            audit.log("replay_api.wait_for_bars.timeout",
+                      first_ts=(info or {}).get("first_ts"),
+                      last_ts=(info or {}).get("last_ts"),
+                      earliest=earliest_epoch_s, latest=latest_epoch_s,
+                      waited_s=round(elapsed, 2))
+            return False
+        await asyncio.sleep(poll_s)
+        elapsed += poll_s
+
+
 async def find_bar_index_for_time(
     page: Page, target_epoch_s: int,
 ) -> int | None:

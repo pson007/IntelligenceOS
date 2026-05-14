@@ -91,7 +91,21 @@ async def frame_partial_session(page: Page) -> None:
     if geom is None:
         await page.keyboard.press("End")
         return
-    _, x_right, y = geom
+    x_left, x_right, y = geom
+    # Reset wide first, so the subsequent zoom-IN nudge lands at a
+    # consistent absolute state regardless of prior chart zoom. The
+    # mid-sequence `End` re-anchors the rightmost bar to the Replay
+    # cursor — left-anchored wheel-OUT can drift the visible window
+    # backward in time, which would otherwise make the zoom-IN-at-right
+    # below tighten against the wrong (drifted) right boundary and
+    # leave the cursor off-screen (close_cut gate_fail).
+    await page.mouse.move(x_left, y)
+    await page.wait_for_timeout(100)
+    for _ in range(15):
+        await page.mouse.wheel(0, 120)  # zoom OUT at left
+        await page.wait_for_timeout(40)
+    await page.keyboard.press("End")
+    await page.wait_for_timeout(200)
     await page.mouse.move(x_right, y)
     await page.wait_for_timeout(150)
     for _ in range(5):

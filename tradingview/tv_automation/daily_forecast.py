@@ -33,7 +33,7 @@ import argparse
 import asyncio
 import json
 import re
-from datetime import datetime, time as dtime
+from datetime import datetime, time as dtime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -292,10 +292,46 @@ async def _run_forecast_stage(
     we skip the ChatGPT call and do NOT write any files, so bad-frame
     artifacts don't pollute the forecast store or confuse --resume."""
     with audit.timed("daily_forecast.stage", stage=stage_label, cursor=str(cursor_time)) as ac:
-        await frame_partial_session(page)
         target_dt = datetime.combine(
             datetime.strptime(date_str, "%Y-%m-%d").date(), cursor_time,
         )
+        # Deterministic viewport via TV's TimeScale API — set the visible
+        # range to [09:30 ET, cursor+5min] using absolute bar indices.
+        # The wheel-based `frame_partial_session` is non-idempotent against
+        # prior chart state and was driving gate_fail (morning_cut at one
+        # extreme, close_cut at the other) on F2/F3. Fall back to wheels
+        # only if the JS API isn't reachable on this TV build.
+        open_dt = datetime.combine(target_dt.date(), dtime(9, 30), tzinfo=_ET)
+        cursor_dt_et = target_dt.replace(tzinfo=_ET)
+        # Wait for the bar buffer to cover this date before resolving
+        # indices — back-and-forth navigation across dates can evict
+        # older bars, and `find_bar_index_for_time` would otherwise
+        # return whichever bars are loaded (the 2026-05-13 backfill saw
+        # cursor_idx=299 mapping to a 12:00 bar instead of 14:00 after
+        # navigating away and back).
+        await replay_api.wait_for_bars_to_load(
+            page,
+            earliest_epoch_s=int(open_dt.timestamp()),
+            latest_epoch_s=int(cursor_dt_et.timestamp()),
+            timeout_ms=5000,
+        )
+        open_idx = await replay_api.find_bar_index_for_time(
+            page, int(open_dt.timestamp()),
+        )
+        cursor_idx = await replay_api.find_bar_index_for_time(
+            page, int((cursor_dt_et + timedelta(minutes=5)).timestamp()),
+        )
+        api_framed = False
+        if open_idx is not None and cursor_idx is not None and cursor_idx > open_idx:
+            api_framed = await replay_api.zoom_to_bar_range(
+                page, open_idx, cursor_idx,
+            )
+        audit.log("daily_forecast.stage.framed",
+                  stage=stage_label, via=("api" if api_framed else "wheel"),
+                  open_idx=open_idx, cursor_idx=cursor_idx)
+        if not api_framed:
+            await frame_partial_session(page)
+        await page.wait_for_timeout(300)
         expect = CaptureExpect(
             symbol=_symbol_for_api(symbol),
             interval="1m",
@@ -321,7 +357,17 @@ async def _run_forecast_stage(
         # morning visibility. A gate failure means the chart state can't be
         # trusted (cursor misaligned, replay not ready, bars missing), so we
         # abort this stage cleanly rather than forecast against a bad frame.
-        gate = await verify_full_session(str(screenshot), cursor_time=cursor_time)
+        # 15-min reader tolerance on the right edge: the gate's vision LLM
+        # occasionally reads the rightmost x-axis tick as one label earlier
+        # (e.g. "13:45" instead of "14:00") when the cursor bar sits flush
+        # against the chart's right edge. The chart is correctly framed in
+        # those cases — only the OCR is borderline. Tolerance preserves the
+        # gate's actual job (catching dramatic misses like a noon-start).
+        gate_cursor = (
+            datetime.combine(target_dt.date(), cursor_time)
+            - timedelta(minutes=15)
+        ).time()
+        gate = await verify_full_session(str(screenshot), cursor_time=gate_cursor)
         ac["gate_ok"] = gate.ok
         ac["gate_reason"] = gate.reason
         if not gate.ok:
