@@ -5273,6 +5273,34 @@ async function selectForecastDay(symbol, date) {
       `
       : '';
     const speakBtn = `<button class="btn small forecast-speak-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}" title="Read this forecast aloud (Qwen3-TTS, local)">🔊 Speak</button>`;
+    // Similar-days block — only on the reconciliation card, only when the
+    // recon JSON carries `similar_days` (cached by forecast_reconcile at
+    // run time; existing recons were backfilled deterministically).
+    // Clicking a row navigates to that day's detail panel.
+    const similarBlock = (r.stage === 'reconciliation'
+                          && Array.isArray(j.similar_days)
+                          && j.similar_days.length)
+      ? `<div class="recon-similar">
+           <div class="recon-similar__head">Similar days · tag overlap</div>
+           <ul class="recon-similar__list">
+             ${j.similar_days.map(d => {
+               const dirCls = d.direction === 'up'   ? 'badge-green' :
+                              d.direction === 'down' ? 'badge-red'   : 'badge-neutral';
+               const tags = (d.matched_tags || []).join(' · ');
+               return `<li class="recon-similar__row">
+                 <button type="button" class="recon-similar__day"
+                         data-symbol="${symbol}" data-date="${d.date}">
+                   ${d.date}<span class="muted small"> ${d.dow || ''}</span>
+                 </button>
+                 <span class="badge ${dirCls}">${d.direction || '—'}</span>
+                 <span class="mono small recon-similar__score">${d.score}/${d.max_score}</span>
+                 <span class="mono small muted recon-similar__tags">${tags}</span>
+                 <div class="recon-similar__shape small muted">${escapeHTML(d.shape_sentence || '')}</div>
+               </li>`;
+             }).join('')}
+           </ul>
+         </div>`
+      : '';
     return `
       <div id="${cardId}" class="card forecast-stage-card">
         <div class="card-head">
@@ -5289,6 +5317,7 @@ async function selectForecastDay(symbol, date) {
             <img src="${imgUrl}" alt="stage screenshot" onerror="this.parentNode.innerHTML='<div class=empty>(no screenshot for this stage)</div>';" />
           </div>
         </div>
+        ${similarBlock}
         <div class="profile-narrative">${renderProfileMarkdown(r.markdown || j.raw_response || '')}</div>
       </div>
     `;
@@ -5335,6 +5364,15 @@ async function selectForecastDay(symbol, date) {
         // user lands mid-narrative wherever they last scrolled.
         target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'start' });
       }
+    });
+  });
+
+  // Similar-day rows on the reconciliation card — jump into that day's
+  // detail panel. Same selectForecastDay used by the day-list cards, so
+  // the carousel transitions cleanly without a full page reload.
+  main.querySelectorAll('.recon-similar__day').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectForecastDay(btn.dataset.symbol, btn.dataset.date);
     });
   });
 

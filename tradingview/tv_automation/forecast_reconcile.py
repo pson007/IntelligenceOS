@@ -239,6 +239,91 @@ def _split_response(text: str) -> tuple[str, dict | None]:
     return text[:narrative_end].strip(), structured
 
 
+# Tag weights for "similar profile" scoring. Tuned empirically against
+# the 65-profile corpus: `structure`, `lunch_behavior`, `afternoon_drive`
+# are free-form LLM prose with ~1 unique value per day — they NEVER
+# match across days and were dead weight. The signals that actually
+# discriminate are bucketed tags: direction (3 buckets), open_type
+# (30 unique but `rotational_open` is 29/65), goat_direction (binary),
+# close_near_extreme (3 buckets). _SIMILAR_MIN_SCORE filters out
+# spurious single-tag matches (e.g. just sharing goat_direction).
+_SIMILARITY_WEIGHTS = {
+    "direction": 3,
+    "open_type": 2,
+    "goat_direction": 2,
+    "close_near_extreme": 2,
+}
+_SIMILAR_MIN_SCORE = 3  # at minimum direction must match, OR multiple lesser tags
+
+
+def _profile_tag(profile: dict, key: str) -> str | None:
+    """Read a tag from either profile.tags (canonical) or profile.summary
+    (some fields like `direction` live in summary instead)."""
+    tags = profile.get("tags") or {}
+    if key in tags:
+        return tags[key]
+    summary = profile.get("summary") or {}
+    return summary.get(key)
+
+
+def _compute_similar_days(
+    symbol: str, target_date: str, n: int = 5,
+    profiles_root: Path | None = None,
+) -> list[dict]:
+    """Return up to N profile dates whose tags most overlap with target_date's.
+
+    Deterministic — no LLM. Walks all sibling profiles, scores by
+    weighted-tag-match against the target, drops zero-score candidates,
+    sorts (score desc, date desc) so ties favor recent days. Stores
+    enough metadata for the UI to render a clickable row per match
+    without re-fetching each profile."""
+    root = profiles_root or _PROFILES_ROOT
+    target_path = root / f"{symbol}_{target_date}.json"
+    if not target_path.exists():
+        return []
+    try:
+        target = json.loads(target_path.read_text())
+    except Exception:
+        return []
+    target_vals = {k: _profile_tag(target, k) for k in _SIMILARITY_WEIGHTS}
+
+    candidates: list[dict] = []
+    for f in sorted(root.glob(f"{symbol}_*.json")):
+        if "metadata" in f.stem:
+            continue
+        cand_date = f.stem.removeprefix(f"{symbol}_")
+        if cand_date == target_date:
+            continue
+        try:
+            cand = json.loads(f.read_text())
+        except Exception:
+            continue
+        score = 0
+        matched: list[str] = []
+        for key, weight in _SIMILARITY_WEIGHTS.items():
+            tv = target_vals.get(key)
+            cv = _profile_tag(cand, key)
+            if tv is not None and tv == cv:
+                score += weight
+                matched.append(key)
+        if score < _SIMILAR_MIN_SCORE:
+            continue
+        summary = cand.get("summary") or {}
+        candidates.append({
+            "date": cand_date,
+            "dow": cand.get("dow"),
+            "score": score,
+            "max_score": sum(_SIMILARITY_WEIGHTS.values()),
+            "matched_tags": matched,
+            "direction": summary.get("direction"),
+            "structure": _profile_tag(cand, "structure"),
+            "shape_sentence": summary.get("shape_sentence", ""),
+        })
+
+    candidates.sort(key=lambda c: (c["score"], c["date"]), reverse=True)
+    return candidates[:n]
+
+
 async def run_reconciliation(
     *, symbol: str = "MNQ1", date_str: str | None = None,
 ) -> dict:
@@ -362,6 +447,15 @@ async def run_reconciliation(
             saved["parsed_structured"] = True
         else:
             saved["parsed_structured"] = False
+        # Cache top-N similar prior profiles so the reconciliation card
+        # can surface them in the UI without per-render computation.
+        # Pure tag-overlap — no LLM, safe to recompute by re-reconciling
+        # or by the standalone backfill script.
+        try:
+            saved["similar_days"] = _compute_similar_days(symbol, date_str, n=5)
+        except Exception as e:
+            audit.log("forecast_reconcile.similar_days.fail", err=str(e))
+            saved["similar_days"] = []
         json_path.write_text(json.dumps(saved, indent=2))
         ac["saved_to"] = str(json_path)
         ac["stages_graded"] = len(stages)

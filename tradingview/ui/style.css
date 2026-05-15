@@ -4685,6 +4685,70 @@ html.is-mobile .forecasts-layout {
   scroll-margin-top: 88px;
 }
 
+/* Reconciliation card — "Similar days" list. Sits between the chart
+   image and the narrative, surfaces the top-N tag-overlap profiles so
+   the operator can jump from the reconciliation into a prior analog
+   day with one tap. Visual weight: lighter than the narrative
+   (supporting context, not the main read). */
+.recon-similar {
+  margin: var(--s-3) 0 var(--s-2);
+  padding: var(--s-3);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.recon-similar__head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent, #58a6ff);
+  margin-bottom: var(--s-2);
+}
+.recon-similar__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.recon-similar__row {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.recon-similar__row:last-child {
+  border-bottom: none;
+}
+.recon-similar__day {
+  background: transparent;
+  border: none;
+  color: var(--accent, #58a6ff);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.recon-similar__day:hover {
+  text-decoration: underline;
+}
+.recon-similar__score {
+  color: var(--muted);
+}
+.recon-similar__tags {
+  font-size: 10px;
+}
+.recon-similar__shape {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
 /* -- Accuracy tiers (shared by list pill, calendar cell, recon table) -- */
 .acc-strong {
   --acc-col: var(--green);
