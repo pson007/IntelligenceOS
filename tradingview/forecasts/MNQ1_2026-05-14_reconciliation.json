@@ -128,5 +128,78 @@
     "Use 14:00 probe rejection as a regime reset; failure near 29740-29755 correctly shifted the read from continuation to rotation/fade.",
     "For late-day fades after a defended 29600 flush, keep close targets nearer midrange unless demand breaks again."
   ],
-  "parsed_structured": true
+  "parsed_structured": true,
+  "similar_days": [
+    {
+      "date": "2026-05-05",
+      "dow": "Tue",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "morning_drive_lunch_flush_afternoon_high_late_pullback",
+      "shape_sentence": "Bullish drive off the open, midday consolidation, afternoon continuation to new highs, then late selloff into a higher close."
+    },
+    {
+      "date": "2026-05-11",
+      "dow": "Mon",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "early_flush_to_midday_trend_then_upper_balance",
+      "shape_sentence": "Wide two-way RTH session with early volatility, a strong late-morning upside trend, upper balance through early afternoon, a 15:00 selloff, then late recovery into the close."
+    },
+    {
+      "date": "2026-05-08",
+      "dow": "Fri",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction"
+      ],
+      "direction": "up",
+      "structure": "bullish_open_drive_trend_day",
+      "shape_sentence": "Bullish trend day: violent RTH open drive, midday stair-step continuation, afternoon high consolidation, then closing push to the high."
+    },
+    {
+      "date": "2026-05-01",
+      "dow": "Fri",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction"
+      ],
+      "direction": "up",
+      "structure": "opening_drive_then_high_balance_rotation",
+      "shape_sentence": "Strong opening drive into late-morning highs, followed by broad midday/afternoon rotation and a modest late fade into a still-bullish close."
+    },
+    {
+      "date": "2026-04-10",
+      "dow": "Fri",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "morning_breakout_midday_flush_afternoon_repair",
+      "shape_sentence": "Morning trend-up into a late-morning high, hard midday liquidation, then afternoon repair and a firm upper-half close."
+    }
+  ]
 }

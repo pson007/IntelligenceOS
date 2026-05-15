@@ -55,5 +55,80 @@
     "Do not anchor LOD to overnight demand if RTH opens above it and never tests it; raise the LOD band to the first defended RTH pullback zone.",
     "Use failed_late_push_then_fade when afternoon price rotates below supply and fades into close instead of expanding steadily."
   ],
-  "parsed_structured": true
+  "parsed_structured": true,
+  "similar_days": [
+    {
+      "date": "2026-05-08",
+      "dow": "Fri",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "bullish_open_drive_trend_day",
+      "shape_sentence": "Bullish trend day: violent RTH open drive, midday stair-step continuation, afternoon high consolidation, then closing push to the high."
+    },
+    {
+      "date": "2026-02-25",
+      "dow": "Wed",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "opening_drive_then_stair_step_trend",
+      "shape_sentence": "Gap-and-go style bullish trend day: sharp opening markup, brief digestion, then steady stair-step advance into a near-high close."
+    },
+    {
+      "date": "2026-02-20",
+      "dow": "Fri",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "bullish_drive_then_high_range_rotation",
+      "shape_sentence": "Bullish gap/drive day that expanded hard from the open, rotated through midday, flushed after lunch, then reclaimed into a firm close."
+    },
+    {
+      "date": "2026-05-14",
+      "dow": "Thu",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction"
+      ],
+      "direction": "up",
+      "structure": "early_drive_midday_flush_afternoon_reclaim_chop",
+      "shape_sentence": "Bullish early drive faded into a deep early-PM flush, then recovered into a choppy midrange close."
+    },
+    {
+      "date": "2026-05-13",
+      "dow": "Wed",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "bullish_reclaim_afternoon_breakout",
+      "shape_sentence": "Bullish reclaim/trend day: early chop and dip, noon reclaim, 14:00 breakout drive, late pullback into a still-bullish close."
+    }
+  ]
 }

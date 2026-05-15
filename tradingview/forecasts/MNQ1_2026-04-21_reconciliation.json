@@ -3,7 +3,7 @@
   "date": "2026-04-21",
   "dow": "Tue",
   "stage": "reconciliation",
-  "note": "Partial/manual reconciliation — only pre_session + F1(10:00) stages were produced today; F2/F3 skipped. Grades computed from those two stages against the MNQ1_2026-04-21.json profile. Lessons target the LOD/close-extension miss on the F1 stage.",
+  "note": "Partial/manual reconciliation \u2014 only pre_session + F1(10:00) stages were produced today; F2/F3 skipped. Grades computed from those two stages against the MNQ1_2026-04-21.json profile. Lessons target the LOD/close-extension miss on the F1 stage.",
   "forecast_file": "forecasts/MNQ1_2026-04-21_pre_session.json, forecasts/MNQ1_2026-04-21_1000.json",
   "actual_file": "profiles/MNQ1_2026-04-21.json",
   "ground_truth_profile": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-04-21.json",
@@ -25,33 +25,189 @@
   },
   "grades": {
     "pre_session": {
-      "direction": {"forecast": "up", "actual": "down", "hit": false},
-      "open_type": {"forecast": "open_dip_then_reclaim", "actual": "rotational_open", "hit": false},
-      "structure": {"forecast": "trend_up_with_midday_pause_or_shakeout", "actual": "failed_opening_push_trend_down", "hit": false},
-      "range_pct": {"forecast_lo": 0.25, "forecast_hi": 0.85, "actual": -0.75, "hit": false, "in_band": false},
-      "intraday_span_pts": {"forecast_lo": 240, "forecast_hi": 360, "actual": 345, "hit": true},
-      "goat_direction": {"forecast": "up", "actual": "down", "hit": false},
-      "goat_window": {"forecast": "midday", "actual": "15:50", "hit": false},
-      "tactical_bias": {"forecast": "buy_failed_weakness_buy_reclaim_after_morning_test", "profitable": "no_direction_wrong", "hit": false},
+      "direction": {
+        "forecast": "up",
+        "actual": "down",
+        "hit": false
+      },
+      "open_type": {
+        "forecast": "open_dip_then_reclaim",
+        "actual": "rotational_open",
+        "hit": false
+      },
+      "structure": {
+        "forecast": "trend_up_with_midday_pause_or_shakeout",
+        "actual": "failed_opening_push_trend_down",
+        "hit": false
+      },
+      "range_pct": {
+        "forecast_lo": 0.25,
+        "forecast_hi": 0.85,
+        "actual": -0.75,
+        "hit": false,
+        "in_band": false
+      },
+      "intraday_span_pts": {
+        "forecast_lo": 240,
+        "forecast_hi": 360,
+        "actual": 345,
+        "hit": true
+      },
+      "goat_direction": {
+        "forecast": "up",
+        "actual": "down",
+        "hit": false
+      },
+      "goat_window": {
+        "forecast": "midday",
+        "actual": "15:50",
+        "hit": false
+      },
+      "tactical_bias": {
+        "forecast": "buy_failed_weakness_buy_reclaim_after_morning_test",
+        "profitable": "no_direction_wrong",
+        "hit": false
+      },
       "invalidation_flagged_correctly": true,
-      "invalidation_note": "Pre-session named 'failure of any 10:00 reclaim OR repeated failed rallies after noon with expanding lower lows' — exact path that played out."
+      "invalidation_note": "Pre-session named 'failure of any 10:00 reclaim OR repeated failed rallies after noon with expanding lower lows' \u2014 exact path that played out."
     },
     "F1_1000": {
-      "direction": {"forecast": "down_67pct", "actual": "down", "hit": true},
-      "structure": {"forecast": "opening_flush_reflex_bounce_lower_high_fade", "actual": "failed_opening_push_trend_down", "hit": true},
-      "afternoon_drive": {"forecast": "liquidation_extension", "actual": "late_flush_then_partial_rebound", "hit": true},
-      "close_near_extreme": {"forecast": "near_low_64pct", "actual": "yes_closer_to_LOD", "hit": true},
-      "projected_close": {"forecast_lo": 26695, "forecast_hi": 26745, "actual": 26610, "hit": false, "in_band": false, "miss_pts": -85},
-      "rest_of_day_hod": {"forecast_lo": 26850, "forecast_hi": 26890, "actual": 26890, "hit": true, "in_band": true},
-      "rest_of_day_lod": {"forecast_lo": 26665, "forecast_hi": 26725, "actual": 26545, "hit": false, "in_band": false, "miss_pts": -120},
-      "goat_direction": {"forecast": "bearish_primary_bullish_best_reversal", "actual": "down", "hit": true},
-      "tactical_bias": {"forecast": "short", "profitable": "yes", "hit": true}
+      "direction": {
+        "forecast": "down_67pct",
+        "actual": "down",
+        "hit": true
+      },
+      "structure": {
+        "forecast": "opening_flush_reflex_bounce_lower_high_fade",
+        "actual": "failed_opening_push_trend_down",
+        "hit": true
+      },
+      "afternoon_drive": {
+        "forecast": "liquidation_extension",
+        "actual": "late_flush_then_partial_rebound",
+        "hit": true
+      },
+      "close_near_extreme": {
+        "forecast": "near_low_64pct",
+        "actual": "yes_closer_to_LOD",
+        "hit": true
+      },
+      "projected_close": {
+        "forecast_lo": 26695,
+        "forecast_hi": 26745,
+        "actual": 26610,
+        "hit": false,
+        "in_band": false,
+        "miss_pts": -85
+      },
+      "rest_of_day_hod": {
+        "forecast_lo": 26850,
+        "forecast_hi": 26890,
+        "actual": 26890,
+        "hit": true,
+        "in_band": true
+      },
+      "rest_of_day_lod": {
+        "forecast_lo": 26665,
+        "forecast_hi": 26725,
+        "actual": 26545,
+        "hit": false,
+        "in_band": false,
+        "miss_pts": -120
+      },
+      "goat_direction": {
+        "forecast": "bearish_primary_bullish_best_reversal",
+        "actual": "down",
+        "hit": true
+      },
+      "tactical_bias": {
+        "forecast": "short",
+        "profitable": "yes",
+        "hit": true
+      }
     }
   },
-  "summary": "Pre-session stage missed direction but correctly flagged its own invalidation (10:00 reclaim failure + failed afternoon rallies). F1 10:00 stage flipped to short and cleanly hit direction, structure, afternoon drive, close-near-extreme, HOD, and GOAT direction — but UNDER-ESTIMATED extension on the downside: projected close range missed by 85pts and projected LOD band missed by 120pts. Pattern: F1 conservative ranges bracket symmetrically, but trend-down liquidation days overshoot asymmetrically lower.",
+  "summary": "Pre-session stage missed direction but correctly flagged its own invalidation (10:00 reclaim failure + failed afternoon rallies). F1 10:00 stage flipped to short and cleanly hit direction, structure, afternoon drive, close-near-extreme, HOD, and GOAT direction \u2014 but UNDER-ESTIMATED extension on the downside: projected close range missed by 85pts and projected LOD band missed by 120pts. Pattern: F1 conservative ranges bracket symmetrically, but trend-down liquidation days overshoot asymmetrically lower.",
   "lessons": [
-    "Close extension in trend-down liquidation days routinely breaks below F1's projected close range — extend the lower bound ~1.5x when close_near_extreme=near_low is the primary prediction",
-    "When F1 calls 'liquidation extension' as the afternoon drive, bias the LOD band lower than symmetric — late-session flushes 14:30-15:55 overshoot conservative ranges by 80-120 pts on MNQ1!",
-    "Pre-session forecasts after a broken green streak should default direction confidence to 'low' rather than 'med' until the first 30min of RTH confirms — the regime-shift read is right, but the continuation-vs-reversal coin flip is still open"
+    "Close extension in trend-down liquidation days routinely breaks below F1's projected close range \u2014 extend the lower bound ~1.5x when close_near_extreme=near_low is the primary prediction",
+    "When F1 calls 'liquidation extension' as the afternoon drive, bias the LOD band lower than symmetric \u2014 late-session flushes 14:30-15:55 overshoot conservative ranges by 80-120 pts on MNQ1!",
+    "Pre-session forecasts after a broken green streak should default direction confidence to 'low' rather than 'med' until the first 30min of RTH confirms \u2014 the regime-shift read is right, but the continuation-vs-reversal coin flip is still open"
+  ],
+  "similar_days": [
+    {
+      "date": "2026-03-30",
+      "dow": "Mon",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "opening_failure_then_afternoon_trend_down",
+      "shape_sentence": "Early pop and lower-high fade, brief midday reclaim attempt, then steady afternoon trend-down into a near-LOD close."
+    },
+    {
+      "date": "2026-03-26",
+      "dow": "Thu",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "failed_morning_pop_to_persistent_trend_down",
+      "shape_sentence": "Rotational open into a failed morning lift, then a steady lower-high downtrend that pressed into the close and finished near the day's low."
+    },
+    {
+      "date": "2026-03-24",
+      "dow": "Tue",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "opening_flush_then_failed_rebound",
+      "shape_sentence": "Open selloff into a sharp mid-morning rebound, then a lower-high rotational fade that closed back near lower-session support."
+    },
+    {
+      "date": "2026-03-23",
+      "dow": "Mon",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "late_morning_top_then_noon_flush",
+      "shape_sentence": "RTH opened in rotation, pushed into a late-morning high under 24,700, broke sharply through noon, then rebounded and faded into a weak close."
+    },
+    {
+      "date": "2026-03-13",
+      "dow": "Fri",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "failed_open_to_trend_down_continuation",
+      "shape_sentence": "early failed push up followed by sustained sell trend, weak bounce, and close near lows"
+    }
   ]
 }

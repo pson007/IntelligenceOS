@@ -106,5 +106,79 @@
     "When post-flush demand defends and price reclaims the breakdown shelf, move close targets from lower-extreme to midrange repair.",
     "For noon shorts, separate trade targets from settlement targets; a flush target can hit even when the final close repairs sharply."
   ],
-  "parsed_structured": true
+  "parsed_structured": true,
+  "similar_days": [
+    {
+      "date": "2026-04-23",
+      "dow": "Thu",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "morning_rally_midday_flush_afternoon_partial_reclaim",
+      "shape_sentence": "Morning grind-up into late-morning HOD, sharp lunch/early-PM liquidation to LOD, then partial afternoon repair that failed to reclaim the open."
+    },
+    {
+      "date": "2026-03-05",
+      "dow": "Thu",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "morning_pop_then_pm_flush_then_rebound",
+      "shape_sentence": "Early squeeze to a morning peak, then a lower-high fade into a sharp early-PM flush, followed by a late rebound that still finished slightly red."
+    },
+    {
+      "date": "2026-05-07",
+      "dow": "Thu",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "morning_drive_midday_failure_afternoon_balance",
+      "shape_sentence": "Morning upside drive failed into a midday breakdown, followed by afternoon balance and a modest late reclaim that closed below the open."
+    },
+    {
+      "date": "2026-04-21",
+      "dow": "Tue",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction"
+      ],
+      "direction": "down",
+      "structure": "failed_opening_push_trend_down",
+      "shape_sentence": "Early push to a post-open high failed, then the session turned into a trend-down / sell-the-bounce day with a late panic flush and small rebound into the close."
+    },
+    {
+      "date": "2026-04-08",
+      "dow": "Wed",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "down",
+      "structure": "opening_flush_then_lower_high_range",
+      "shape_sentence": "Gap-up open at the highs, hard opening flush, reflex squeeze, then lower-high chop/fade into the close."
+    }
+  ]
 }

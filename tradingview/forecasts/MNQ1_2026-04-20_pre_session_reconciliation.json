@@ -1,28 +1,65 @@
 {
-  "symbol": "MNQ1!", "date": "2026-04-20", "dow": "Mon",
+  "symbol": "MNQ1!",
+  "date": "2026-04-20",
+  "dow": "Mon",
   "stage": "pre_session_reconciliation",
   "forecast_file": "forecasts/MNQ1_2026-04-20_pre_session.json",
   "actual_file": "profiles/MNQ1_2026-04-20.json",
   "made_at": "2026-04-20T22:30:00-04:00",
-
   "actual_summary": {
     "direction": "down_then_partial_recovery",
-    "net_pct": -0.51, "intraday_span_pts": 310,
+    "net_pct": -0.51,
+    "intraday_span_pts": 310,
     "open_type": "open_near_high_fade",
-    "goat_direction": "down", "goat_time": "11:00"
+    "goat_direction": "down",
+    "goat_time": "11:00"
   },
-
   "grades": {
-    "direction": {"forecast": "up", "actual": "down", "hit": false},
-    "open_type": {"forecast": "open_dip_then_reclaim", "actual": "open_near_high_fade", "hit": false},
-    "structure": {"forecast": "open_dip_reclaim_bullish_staircase", "actual": "trend_down_v_reversal_grind_up", "hit": false, "partial": "afternoon grind/balance overlap"},
-    "range_pct": {"forecast_lo": 0.4, "forecast_hi": 1.0, "actual": -0.51, "hit": false, "in_band": false},
-    "intraday_span_pts": {"forecast_lo": 260, "forecast_hi": 420, "actual": 310, "hit": true},
-    "goat_direction": {"forecast": "long", "actual": "down", "hit": false},
-    "goat_window": {"forecast": "midday", "actual": "11:00", "hit": false},
-    "tactical_bias": {"forecast": "buy_dips_buy_reclaim", "profitable": "partial_yes_after_flush_reversal", "hit": "partial"}
+    "direction": {
+      "forecast": "up",
+      "actual": "down",
+      "hit": false
+    },
+    "open_type": {
+      "forecast": "open_dip_then_reclaim",
+      "actual": "open_near_high_fade",
+      "hit": false
+    },
+    "structure": {
+      "forecast": "open_dip_reclaim_bullish_staircase",
+      "actual": "trend_down_v_reversal_grind_up",
+      "hit": false,
+      "partial": "afternoon grind/balance overlap"
+    },
+    "range_pct": {
+      "forecast_lo": 0.4,
+      "forecast_hi": 1.0,
+      "actual": -0.51,
+      "hit": false,
+      "in_band": false
+    },
+    "intraday_span_pts": {
+      "forecast_lo": 260,
+      "forecast_hi": 420,
+      "actual": 310,
+      "hit": true
+    },
+    "goat_direction": {
+      "forecast": "long",
+      "actual": "down",
+      "hit": false
+    },
+    "goat_window": {
+      "forecast": "midday",
+      "actual": "11:00",
+      "hit": false
+    },
+    "tactical_bias": {
+      "forecast": "buy_dips_buy_reclaim",
+      "profitable": "partial_yes_after_flush_reversal",
+      "hit": "partial"
+    }
   },
-
   "tag_scores": {
     "direction": false,
     "structure": false,
@@ -34,7 +71,6 @@
   },
   "tag_hit_count": 2,
   "tag_total": 7,
-
   "confidence_calibration": {
     "forecast_confidence": "med",
     "appropriate": true,
@@ -42,15 +78,14 @@
     "risk_materialized": true,
     "note": "Miss was in base-case selection, not risk framing. Confidence calibration was good."
   },
-
   "overall_score": 4,
   "overall_max": 10,
   "summary": "Good risk framing and decent afternoon/lunch read, but core calls on direction, open type, structure, GOAT, and net range missed.",
-
   "lessons": [
     "Separate trend-regime continuation from exhaustion-after-extension scenarios when prior week is 5+ green days straight",
     "Weight opening-fade risk more heavily after close-near-high streaks - continuation becomes less reliable not more",
     "Split GOAT into primary impulse and best reversal trade - today's best long came AFTER the bearish GOAT not instead of it",
     "Forecast net close outcome and intraday path independently - today path offered long opportunity even though day still closed red"
-  ]
+  ],
+  "similar_days": []
 }

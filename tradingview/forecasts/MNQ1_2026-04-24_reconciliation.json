@@ -130,5 +130,77 @@
     "At 14:00, once price is above breakout base and no reversal attempt exists, prioritize close accuracy over exaggerated upside extension.",
     "Label the structure specifically as failed_breakdown_midday_reclaim_trend_up; generic trend-up misses the tactical reason the long worked."
   ],
-  "parsed_structured": true
+  "parsed_structured": true,
+  "similar_days": [
+    {
+      "date": "2026-05-13",
+      "dow": "Wed",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "bullish_reclaim_afternoon_breakout",
+      "shape_sentence": "Bullish reclaim/trend day: early chop and dip, noon reclaim, 14:00 breakout drive, late pullback into a still-bullish close."
+    },
+    {
+      "date": "2026-05-12",
+      "dow": "Tue",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "failed_opening_pop_afternoon_v_reversal",
+      "shape_sentence": "Opening pop failed into a long morning selloff, then a 13:00 low produced a full afternoon V-reversal back near the open/upper session."
+    },
+    {
+      "date": "2026-05-08",
+      "dow": "Fri",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "bullish_open_drive_trend_day",
+      "shape_sentence": "Bullish trend day: violent RTH open drive, midday stair-step continuation, afternoon high consolidation, then closing push to the high."
+    },
+    {
+      "date": "2026-05-06",
+      "dow": "Wed",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "early_flush_reclaim_trend_up_close",
+      "shape_sentence": "Bullish trend day: early dip, sharp morning reclaim, midday consolidation, then steady afternoon continuation into a near-HOD close."
+    },
+    {
+      "date": "2026-05-01",
+      "dow": "Fri",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "opening_drive_then_high_balance_rotation",
+      "shape_sentence": "Strong opening drive into late-morning highs, followed by broad midday/afternoon rotation and a modest late fade into a still-bullish close."
+    }
+  ]
 }

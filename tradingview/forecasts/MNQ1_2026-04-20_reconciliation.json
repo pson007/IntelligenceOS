@@ -56,5 +56,6 @@
     "Only assign a midday long GOAT after the stop-hunt flush has actually occurred; otherwise keep the long setup conditional, not primary.",
     "Match span projections to directional distribution: if you allow a 300+ point day, include an explicit downside-expansion branch instead of assuming the range will be used bullishly."
   ],
-  "parsed_structured": true
+  "parsed_structured": true,
+  "similar_days": []
 }

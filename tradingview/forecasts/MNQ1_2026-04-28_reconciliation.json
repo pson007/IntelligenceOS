@@ -96,5 +96,78 @@
     "After a morning high fails near supply, cap HOD expectations unless price reclaims that high with expanding volume.",
     "Use early_failed_high_late_reclaim for this structure, not clean stop_hunt_reclaim trend-up."
   ],
-  "parsed_structured": true
+  "parsed_structured": true,
+  "similar_days": [
+    {
+      "date": "2026-02-19",
+      "dow": "Thu",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "volatile_reclaim_after_midday_flush",
+      "shape_sentence": "Volatile two-way session: morning upside expansion, midday liquidation, afternoon basing, then late reclaim into the close."
+    },
+    {
+      "date": "2026-04-10",
+      "dow": "Fri",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "morning_breakout_midday_flush_afternoon_repair",
+      "shape_sentence": "Morning trend-up into a late-morning high, hard midday liquidation, then afternoon repair and a firm upper-half close."
+    },
+    {
+      "date": "2026-04-06",
+      "dow": "Mon",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "early_squeeze_midday_flush_afternoon_recovery",
+      "shape_sentence": "Early squeeze to a morning high, midday liquidation, then a choppy afternoon recovery that finished above the open but below the session peak."
+    },
+    {
+      "date": "2026-03-10",
+      "dow": "Tue",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "early_flush_then_trend_up_then_late_selloff",
+      "shape_sentence": "Early flush into demand, strong morning recovery, midday grind higher to a PM high, then sharp late selloff and partial rebound into the close."
+    },
+    {
+      "date": "2026-03-02",
+      "dow": "Mon",
+      "score": 7,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "bullish_opening_base_then_trend_up_with_midday_pullback",
+      "shape_sentence": "Early RTH base and squeeze, then a strong upside trend leg into midday, a moderate pullback, and a close in the upper portion of the session after failing to hold the absolute high."
+    }
+  ]
 }

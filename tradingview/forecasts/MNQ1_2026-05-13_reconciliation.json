@@ -131,5 +131,82 @@
     "Treat 14:00 strength through supply as a potential GOAT launch, not merely controlled continuation, when supply breaks with volume and price holds above the breakout base.",
     "For late-day forecasts after a confirmed upside breakout, anchor pullback targets to the new demand shelf, not the old pre-breakout balance low."
   ],
-  "parsed_structured": true
+  "parsed_structured": true,
+  "similar_days": [
+    {
+      "date": "2026-04-22",
+      "dow": "Wed",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "stop_hunt_reclaim_then_afternoon_grind",
+      "shape_sentence": "Early stop-hunt flush below the open, fast reclaim, then a steady afternoon upside grind that closed near the high."
+    },
+    {
+      "date": "2026-04-09",
+      "dow": "Thu",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "early_flush_then_afternoon_trend_up",
+      "shape_sentence": "Early RTH flush and reclaim, long midday balance, then a 14:00 upside expansion that closed near the high."
+    },
+    {
+      "date": "2026-04-07",
+      "dow": "Tue",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "morning_flush_then_afternoon_short_squeeze",
+      "shape_sentence": "Opened weak, flushed hard into late morning, then reversed in stages and finished with a late-day squeeze back to the upper end of the session."
+    },
+    {
+      "date": "2026-04-02",
+      "dow": "Thu",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "open_flush_reversal_then_pm_grind_higher",
+      "shape_sentence": "Opened weak, reversed hard off the early low, then spent the rest of RTH holding higher and grinding back toward the upper band into the close."
+    },
+    {
+      "date": "2026-04-01",
+      "dow": "Wed",
+      "score": 9,
+      "max_score": 9,
+      "matched_tags": [
+        "direction",
+        "open_type",
+        "goat_direction",
+        "close_near_extreme"
+      ],
+      "direction": "up",
+      "structure": "early_flush_then_trend_up",
+      "shape_sentence": "early flush followed by sustained trend up with higher highs into afternoon and slight late fade"
+    }
+  ]
 }
