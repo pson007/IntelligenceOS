@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 import sys
 from datetime import date, datetime, time as dtime, timedelta
 from pathlib import Path
@@ -117,11 +118,89 @@ REQUIRED OUTPUT (use exact headings):
 Each tag on its own line with confidence %:
 direction, structure, lunch_behavior, afternoon_drive, goat_direction, close_near_extreme.
 
+## STRUCTURED JSON
+After the narrative sections above, emit a fenced JSON block with the exact shape below so the forecast overlay can re-render the chart's lines from this stage's prediction. Use the SAME field names as the pre-session forecast — the overlay's renderer reads these keys directly.
+
+```json
+{
+  "predictions": {
+    "direction": "up|down",
+    "direction_confidence": "low|med|high",
+    "predicted_net_pct_lo": 0.25,
+    "predicted_net_pct_hi": 0.85,
+    "open_type": "rotational_open"
+  },
+  "probable_goat": {
+    "direction": "long|short",
+    "time_window": "opening|midday|afternoon"
+  },
+  "prediction_tags": {
+    "direction": "up",
+    "structure": "...",
+    "lunch_behavior": "...",
+    "afternoon_drive": "...",
+    "goat_direction": "long",
+    "close_near_extreme": "no"
+  },
+  "tactical_bias": {
+    "bias": "buy_dips_above_29400",
+    "invalidation": "Acceptance below 29380 closes the long thesis"
+  }
+}
+```
+
+`predicted_net_pct_lo` and `predicted_net_pct_hi` MUST be your projected close range expressed as percentage from TODAY's RTH OPEN (which is visible on the chart) — positive above the open, negative below. Example: open 29400, projected close 29470–29530 → `predicted_net_pct_lo=0.24, predicted_net_pct_hi=0.44`. Be consistent with the PROJECTED PATH section above.
+
 {ACCUMULATED_LESSONS}"""
 
 
 def _render_lessons_block() -> str:
     return lessons_mod.format_historical_feedback(n=10, min_occurrences=2)
+
+
+# Structured-JSON parser (mirrors pre_session_forecast / forecast_reconcile;
+# duplicated rather than imported because each module owns its prompt format
+# and the parser is 30 lines).
+_STRUCTURED_HEADER_RX = re.compile(r"^#{1,3}\s*STRUCTURED\s+JSON\s*$", re.MULTILINE)
+
+
+def _extract_balanced_json(text: str, start: int) -> dict | None:
+    i = text.find("{", start)
+    if i < 0:
+        return None
+    depth = 0
+    in_str = False
+    escape = False
+    for j in range(i, len(text)):
+        ch = text[j]
+        if in_str:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[i : j + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
+
+
+def _split_response(text: str) -> tuple[str, dict | None]:
+    header = _STRUCTURED_HEADER_RX.search(text)
+    narrative_end = header.start() if header else len(text)
+    search_start = header.end() if header else 0
+    structured = _extract_balanced_json(text, search_start)
+    return text[:narrative_end].strip(), structured
 
 
 async def _capture(
@@ -297,6 +376,13 @@ async def _live_forecast_llm_and_save(
     )
     ac["response_chars"] = len(text)
 
+    # Parse the structured JSON block at the tail of the response. The
+    # block's shape mirrors the pre-session forecast so render_pine reads
+    # this stage's `predictions` / `prediction_tags` / etc. directly when
+    # the Apply-to-chart button hits the /apply endpoint on F1/F2/F3.
+    _, structured = _split_response(text)
+    ac["parsed_structured"] = structured is not None
+
     fm = "\n".join([
         "---",
         f"symbol: {symbol}",
@@ -327,6 +413,14 @@ async def _live_forecast_llm_and_save(
         "made_at": datetime.now().isoformat(timespec="seconds"),
         "raw_response": text,
     }
+    # Merge structured fields at the top level so the JSON shape matches
+    # pre_session — same keys, same renderer. parsed_structured=True is
+    # the gate the Apply endpoint checks before rendering Pine.
+    if structured:
+        saved.update(structured)
+        saved["parsed_structured"] = True
+    else:
+        saved["parsed_structured"] = False
     json_path.write_text(json.dumps(saved, indent=2))
     ac["saved_to"] = str(json_path)
     return saved

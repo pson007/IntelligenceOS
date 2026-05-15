@@ -5259,9 +5259,14 @@ async function selectForecastDay(symbol, date) {
     // stale cached PNG even after the panel re-renders.
     const imgVer = j.made_at ? `?v=${encodeURIComponent(j.made_at)}` : '';
     const imgUrl = `/api/forecasts/${encodeURIComponent(symbol)}/${encodeURIComponent(date)}/${encodeURIComponent(r.stage)}/screenshot${imgVer}`;
-    // Pine + Apply buttons only on pre_session — that's the only stage
-    // whose forecast shape maps to the overlay template.
-    const pineBtns = r.stage === 'pre_session'
+    // Pine + Apply buttons on every directional stage — pre_session AND
+    // F1/F2/F3 emit the same structured JSON shape (predictions /
+    // prediction_tags / tactical_bias), so render_pine + the /apply
+    // endpoint work on any of them. Applying F2 at noon moves the
+    // chart's TP/STOP lines to F2's projected close range instead of
+    // leaving the morning's pre_session lines in place.
+    const _PINE_STAGES = new Set(['pre_session', '1000', '1200', '1400']);
+    const pineBtns = _PINE_STAGES.has(r.stage)
       ? `
         <button class="btn small forecast-pine-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">⬇ Generate Pine overlay</button>
         <button class="btn small forecast-apply-btn" data-symbol="${symbol}" data-date="${date}" data-stage="${r.stage}">▶ Apply to chart</button>

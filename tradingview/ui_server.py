@@ -3354,6 +3354,19 @@ async def forecast_apply(
     except Exception as e:
         raise HTTPException(500, f"forecast json malformed: {e}")
 
+    # Live-stage forecasts (F1/F2/F3) only carry the structured fields
+    # render_pine reads if their LLM response parsed correctly. Older
+    # JSONs written before the structured-JSON prompt addition won't have
+    # `parsed_structured`, and rendering them would silently emit default
+    # levels. Reject explicitly so the user re-runs the stage instead.
+    is_live_stage = stage in {"1000", "1200", "1400"}
+    if is_live_stage and not data.get("parsed_structured"):
+        raise HTTPException(409, {
+            "detail": "live-stage forecast has no parseable levels — re-run "
+                      "this stage to regenerate it with the structured JSON block",
+            "stage": stage, "date": date,
+        })
+
     from tv_automation.forecast_pine import render_pine
     pine_text = render_pine(data)
 
