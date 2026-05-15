@@ -88,6 +88,7 @@ show_vol_climax    = input.bool(true, "Show VOL climax labels",  group="Detector
 show_followthrough = input.bool(true, "Show ✓/✗ follow-through", group="Detectors — toggles")
 show_mr_break      = input.bool(true, "Show MR BREAK label",     group="Detectors — toggles")
 show_vwap_event    = input.bool(true, "Show VWAP RECLAIM/REJECT label", group="Detectors — toggles")
+show_regime_flip   = input.bool(true, "Show REGIME FLIP label",  group="Detectors — toggles")
 
 // Status table — visibility, position, text size.
 show_status_table = input.bool(true, "Show status table", group="Status table")
@@ -153,6 +154,7 @@ var int    confirm_score     = 0
 var bool   mr_break_up_fired = false
 var bool   mr_break_dn_fired = false
 var bool   vwap_event_fired  = false
+var bool   regime_flip_fired = false
 // Initial Balance — classic first-60-min range (09:30–10:30). Complements
 // morning_low/high (09:30–10:00). IB levels often act as intraday pivots.
 var float ib_high = na
@@ -552,6 +554,35 @@ if vwap_aligned and not vwap_event_fired and barstate.isconfirmed
              size=size.small)
 
 // ---------------------------------------------------------------------------
+// REGIME FLIP — composite bias-contradicting trigger
+// ---------------------------------------------------------------------------
+// Reconciliation lessons across the dataset show the dominant failure mode
+// is regime change inside an F1/F2/F3 window — the LLM stages run stateless
+// every 2 hours and can't see the shift between cursor times. Pine runs every
+// bar, so we synthesize the regime call here.
+//
+// Two subtypes, either fires the composite:
+//   1) target_fake then close in the wrong direction — the predicted target
+//      printed but immediately failed past the open; the directional thesis
+//      was the stop hunt, not the move.
+//   2) Afternoon morning-range break in the WRONG direction with zero prior
+//      bias-confirmations — there were no aligned events all morning, then
+//      the opposite MR break confirmed; the bias is dead.
+regime_flip_now = in_today_rth and (
+     (is_long and target_fake_fired and not na(open_price) and close < open_price) or
+     (not is_long and target_fake_fired and not na(open_price) and close > open_price) or
+     (is_long and mr_break_dn_fired and confirm_score == 0 and time >= t_1200) or
+     (not is_long and mr_break_up_fired and confirm_score == 0 and time >= t_1200))
+
+if in_today_rth and regime_flip_now and not regime_flip_fired and barstate.isconfirmed and show_regime_flip
+    regime_flip_fired := true
+    label.new(bar_index, is_long ? high : low,
+         text="REGIME FLIP\\n" + (is_long ? "bull thesis broke" : "bear thesis broke"),
+         color=color.new(color.purple, 20), textcolor=color.white,
+         style=is_long ? label.style_label_down : label.style_label_up,
+         size=size.large)
+
+// ---------------------------------------------------------------------------
 // Status table (top-right) — levels, phase, current action hint
 // ---------------------------------------------------------------------------
 // Status-table helpers.
@@ -586,7 +617,7 @@ _size_from_str(_s) =>
 
 var table tbl = na
 if na(tbl) and show_status_table
-    tbl := table.new(_pos_from_str(table_pos_str), 2, 13,
+    tbl := table.new(_pos_from_str(table_pos_str), 2, 14,
          bgcolor=color.new(color.black, 75), border_width=1,
          border_color=color.new(color.gray, 50))
 
@@ -700,6 +731,26 @@ if barstate.islast and in_target_day and show_status_table and not na(tbl)
          + "  " + str.tostring(live_score) + "/" + str.tostring(max_confirm),
          text_color=dots_col, text_halign=text.align_right, text_size=_tsize)
 
+    // REGIME — current verdict synthesized from the detectors above. Sticky
+    // on REGIME FLIP / INVALIDATED since those are session-killers; the
+    // earlier states recompute each bar from confirm_score + fired flags.
+    string regime_label = not in_today_rth ? "PRE-OPEN" :
+         (stop_broken and not stop_hunt_fired) ? "INVALIDATED" :
+         regime_flip_fired                    ? "REGIME FLIP" :
+         target_fake_fired                    ? "AT RISK" :
+         confirm_score >= 3                   ? "BIAS CONFIRMED" :
+         confirm_score >= 1                   ? "BIAS BUILDING" :
+         "WAIT"
+    color regime_col = regime_label == "BIAS CONFIRMED" ? color.lime :
+         regime_label == "BIAS BUILDING" ? color.yellow :
+         regime_label == "AT RISK"       ? color.orange :
+         regime_label == "REGIME FLIP"   ? color.purple :
+         regime_label == "INVALIDATED"   ? color.red :
+         color.gray
+    tbl.cell(0, 13, "Regime", text_color=color.white, text_size=_tsize)
+    tbl.cell(1, 13, regime_label,
+         text_color=regime_col, text_halign=text.align_right, text_size=_tsize)
+
 // ---------------------------------------------------------------------------
 // Alerts — set these up in TV's Alert dialog (dropdown lists these conditions).
 // Each uses the raw trigger condition (pre-fired-flag) so TV's "Only Once"
@@ -726,6 +777,9 @@ alertcondition(in_today_rth and stop_broken and barstate.isconfirmed,
 alertcondition(in_today_rth and target_fake_now and barstate.isconfirmed,
      title="TARGET FAKE",
      message="MNQ1 poked through target and rejected")
+alertcondition(in_today_rth and regime_flip_now and not regime_flip_fired[1] and barstate.isconfirmed,
+     title="REGIME FLIP",
+     message="MNQ1 forecast bias contradicted — regime flip; reassess direction")
 """
 
 

@@ -419,6 +419,19 @@ the git log captures *what*, but this captures *why*.
   trigger labels simplified to one-word action verbs (BUY / SELL / OUT / WIN /
   TRAP / UP BREAK / DOWN BREAK / ABOVE VWAP / BELOW VWAP), all `size.large`
   and `size.normal` labels demoted to `size.small`.
+- **2026-05-15** — added REGIME FLIP composite detector + a "Regime" row in
+  the status table (table bumped from 13→14 rows). Composes existing fired
+  flags (`target_fake_fired`, `mr_break_dn/up_fired`, `confirm_score`,
+  `stop_broken`) against the forecast `is_long` bias to surface a single
+  per-bar regime verdict: WAIT → BIAS BUILDING → BIAS CONFIRMED, or
+  AT RISK / REGIME FLIP / INVALIDATED. Composite trigger fires on
+  target_fake-then-close-wrong-side OR afternoon MR-break-in-wrong-direction
+  with zero prior bias-aligned events. New `show_regime_flip` toggle,
+  one-shot `regime_flip_fired` flag, `alertcondition` for the trigger.
+  Motivation: the n=21 reconciliation dataset shows the dominant failure
+  mode is regime change inside an F1/F2/F3 window — the LLM stages run
+  stateless across cursor times and can't see the shift. Pine runs every
+  bar, so the regime synthesis lives here instead.
 - **2026-04-22** — status table is now user-configurable: visibility toggle,
   9-option position dropdown, 3-option text-size dropdown. Position dropdown
   works via recompile-on-change (Pine v6 `table.new()` requires const position).
