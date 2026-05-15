@@ -1,0 +1,146 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-26",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-26T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-26.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T02:05:16-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "opening_drive_high_base_late_fade",
+    "open_approx": 25935.0,
+    "close_approx": 26060.0,
+    "hod_approx": 26150.0,
+    "lod_approx": 25925.0,
+    "net_range_pts_open_to_close": 125,
+    "net_range_pct_open_to_close": 0.48,
+    "intraday_span_pts": 225,
+    "shape_sentence": "Early RTH upside drive, midday high-base rotation, then late-day lower-high fade into a still-green close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25935.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:31",
+      "price_approx": 25925.0,
+      "type": "early_rth_low_shakeout"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 26015.0,
+      "type": "first_impulse_high"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 26060.0,
+      "type": "pullback_continuation_area"
+    },
+    {
+      "time_et": "10:25",
+      "price_approx": 26100.0,
+      "type": "breakout_continuation"
+    },
+    {
+      "time_et": "11:15",
+      "price_approx": 26115.0,
+      "type": "morning_high_area"
+    },
+    {
+      "time_et": "12:05",
+      "price_approx": 26145.0,
+      "type": "midday_high_test"
+    },
+    {
+      "time_et": "13:30",
+      "price_approx": 26150.0,
+      "type": "hod_failed_extension"
+    },
+    {
+      "time_et": "14:30",
+      "price_approx": 26115.0,
+      "type": "lower_high_rotation"
+    },
+    {
+      "time_et": "15:40",
+      "price_approx": 26095.0,
+      "type": "late_selloff_begins"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26060.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:30",
+      "direction": "up",
+      "note": "No visible GOAT icon; visually the standout move was the opening upside drive from roughly 25,925 to 26,015."
+    },
+    "red_circles": {
+      "behavior": "No visible red-circle labels; bearish behavior appeared as failed pushes near 26,120\u201326,150 and the late-day breakdown after about 15:35."
+    },
+    "green_circles": {
+      "behavior": "No visible green-circle labels; bullish behavior concentrated in the opening reclaim and early continuation above 26,040\u201326,060."
+    },
+    "orange_banks_supply": {
+      "behavior": "No visible orange bank icons; effective supply was around 26,120\u201326,150, repeatedly tested and respected into the afternoon fade."
+    },
+    "blue_banks_demand": {
+      "behavior": "No visible blue bank icons; effective demand was around 26,040\u201326,060 and was retested into the close."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Already above the open after the morning drive, consolidating near 26,060.",
+    "12pm_red": "Trading near the upper distribution around 26,130\u201326,145.",
+    "2pm_green": "Elevated but no longer expanding, rotating around 26,110\u201326,125.",
+    "4pm_yellow": "Closed near 26,060 after a late fade, still green versus the RTH open."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "opening_drive_high_base_late_fade",
+    "open_type": "gap_up_drive",
+    "lunch_behavior": "upper_range_rotation",
+    "afternoon_drive": "lower_high_fade",
+    "goat_time": "09:30",
+    "goat_direction": "up",
+    "peak_hour": 13,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "upper_supply_rejected_and_midrange_demand_defended",
+    "banks_broken": "no_visible_bank_breaks"
+  },
+  "takeaway": "Bullish opening-drive day with an upper-range midday base and a late fade; trend-up morning, stalled afternoon, green close despite failure to hold near HOD.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-01-26T09:30",
+    "end_et": "2026-01-26T16:00",
+    "open": 25964,
+    "close": 26060,
+    "hod": 26148.25,
+    "lod": 25919.75,
+    "span_pts": 228.5,
+    "net_pts": 96,
+    "net_pct": 0.3697,
+    "first_bar_ts": 1769437800,
+    "last_bar_ts": 1769461140
+  }
+}

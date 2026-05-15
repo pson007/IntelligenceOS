@@ -1,0 +1,146 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-15",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-15T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-15.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T01:56:55-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "midday_failure_afternoon_trend_down",
+    "open_approx": 26150.0,
+    "close_approx": 25934.5,
+    "hod_approx": 26170.0,
+    "lod_approx": 25886.0,
+    "net_range_pts_open_to_close": -216,
+    "net_range_pct_open_to_close": -0.83,
+    "intraday_span_pts": 284,
+    "shape_sentence": "Failed open and midday recovery resolved into a sustained afternoon liquidation, closing weak near the session lows."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 26150.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:33",
+      "price_approx": 26170.0,
+      "type": "hod_opening_spike"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 26070.0,
+      "type": "opening_breakdown_low"
+    },
+    {
+      "time_et": "10:55",
+      "price_approx": 26025.0,
+      "type": "morning_washout_low"
+    },
+    {
+      "time_et": "12:05",
+      "price_approx": 26150.0,
+      "type": "midday_failed_high"
+    },
+    {
+      "time_et": "13:35",
+      "price_approx": 26120.0,
+      "type": "lower_high"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 26095.0,
+      "type": "bearish_breakdown_pivot"
+    },
+    {
+      "time_et": "14:35",
+      "price_approx": 25970.0,
+      "type": "acceleration_low"
+    },
+    {
+      "time_et": "15:25",
+      "price_approx": 25910.0,
+      "type": "late_day_flush"
+    },
+    {
+      "time_et": "15:55",
+      "price_approx": 25886.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25934.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "14:00",
+      "direction": "down",
+      "note": "Sustained afternoon liquidation from roughly 26095 toward 25910, with lower highs and shallow countertrend bounces."
+    },
+    "red_circles": {
+      "behavior": "Best bearish pivots occurred at failed reclaims near midday supply and during the post-14:00 breakdown sequence."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots were mostly countertrend bounces; demand reactions failed to produce sustained continuation after the morning."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply near 26120-26160 was respected repeatedly and capped the midday recovery."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand near 26025, 25970, and 25920 was progressively broken; final lower demand near 25890 produced only a closing bounce."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Below the open after a volatile opening rejection; price was stabilizing but still weak.",
+    "12pm_red": "Near the recovery high and main failed reclaim zone around 26150.",
+    "2pm_green": "Bearish pivot; price lost balance near 26095 and began the session's strongest downside drive.",
+    "4pm_yellow": "Closed after a late bounce from the low, still much closer to LOD than HOD."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "midday_failure_afternoon_trend_down",
+    "open_type": "volatile_opening_rejection",
+    "lunch_behavior": "recovery_to_failed_lower_high",
+    "afternoon_drive": "sustained_liquidation",
+    "goat_time": "14:00",
+    "goat_direction": "down",
+    "peak_hour": 9,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "supply_near_26120_26160",
+    "banks_broken": "demand_near_26025_25970_25920"
+  },
+  "takeaway": "Bearish reference day with a volatile open, midday failure at supply, and decisive 14:00 downside expansion into a weak close near the lows.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-01-15T09:30",
+    "end_et": "2026-01-15T16:00",
+    "open": 26140.5,
+    "close": 25934.5,
+    "hod": 26169.75,
+    "lod": 25896.25,
+    "span_pts": 273.5,
+    "net_pts": -206.0,
+    "net_pct": -0.788,
+    "first_bar_ts": 1768487400,
+    "last_bar_ts": 1768510740
+  }
+}

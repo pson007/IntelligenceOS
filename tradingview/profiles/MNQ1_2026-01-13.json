@@ -1,0 +1,131 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-13",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-13T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-13.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T01:54:23-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "failed_high_two_way_reversal_late_reclaim",
+    "open_approx": 26195.0,
+    "close_approx": 26119.5,
+    "hod_approx": 26255.0,
+    "lod_approx": 26018.0,
+    "net_range_pts_open_to_close": -76,
+    "net_range_pct_open_to_close": -0.29,
+    "intraday_span_pts": 237,
+    "shape_sentence": "Wide two-way reversal day: early upside failure, sharp selloff, lunch rally, afternoon lower-low flush, then late reclaim into close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 26195.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 26255.0,
+      "type": "hod_early_upside_failure"
+    },
+    {
+      "time_et": "10:35",
+      "price_approx": 26035.0,
+      "type": "morning_selloff_low"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 26235.0,
+      "type": "lunch_rally_high"
+    },
+    {
+      "time_et": "13:00",
+      "price_approx": 26080.0,
+      "type": "bearish_breakdown"
+    },
+    {
+      "time_et": "14:05",
+      "price_approx": 26045.0,
+      "type": "afternoon_selloff_base"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 26018.0,
+      "type": "lod_late_flush"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26119.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "11:30",
+      "direction": "up",
+      "note": "Cleanest expansion was the late-morning upside drive from roughly 26125 to 26235 into lunch supply."
+    },
+    "red_circles": {
+      "behavior": "Best bearish pivots appeared after failed highs: early spike failure, lunch rejection near upper supply, and post-13:00 breakdown continuation."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots were mostly reversal signals near morning demand, afternoon demand, and the late-session LOD bounce."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 26235-26255 was respected twice; minor 26115-26130 supply was reclaimed into the close."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 26035-26045 held in the morning but broke late; deeper demand near 26018 triggered the closing reversal."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Rolling over from the early spike; bearish momentum expanded below roughly 26160 shortly after.",
+    "12pm_red": "Near the lunch rally high around 26230-26240; this became the major failed reclaim zone.",
+    "2pm_green": "Pressing into the lower distribution near 26045-26055 after the afternoon selloff.",
+    "4pm_yellow": "Closed near 26119.5 after a late recovery from the LOD, but still below the open."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "failed_high_two_way_reversal_late_reclaim",
+    "open_type": "gap_up_failure",
+    "lunch_behavior": "strong_reclaim_into_supply",
+    "afternoon_drive": "lower_low_flush_then_late_bounce",
+    "goat_time": "11:30",
+    "goat_direction": "up",
+    "peak_hour": 12,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "upper_supply_26235_26255_respected",
+    "banks_broken": "morning_demand_26035_26045_broke_late"
+  },
+  "takeaway": "Bearish two-way reversal day with early high failure, lunch reclaim into respected supply, afternoon lower-low flush, and a strong late reversal attempt that still closed below the open.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-01-13T09:30",
+    "end_et": "2026-01-13T16:00",
+    "open": 26165.75,
+    "close": 26119.5,
+    "hod": 26258.5,
+    "lod": 26018.75,
+    "span_pts": 239.75,
+    "net_pts": -46.25,
+    "net_pct": -0.1768,
+    "first_bar_ts": 1768314600,
+    "last_bar_ts": 1768337940
+  }
+}

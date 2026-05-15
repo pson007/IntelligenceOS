@@ -1,0 +1,136 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-29",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-29T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-29.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "01:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T02:08:42-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "opening_liquidation_v_recovery_late_reclaim",
+    "open_approx": 26310.0,
+    "close_approx": 26207.75,
+    "hod_approx": 26325.0,
+    "lod_approx": 25760.0,
+    "net_range_pts_open_to_close": -102,
+    "net_range_pct_open_to_close": -0.39,
+    "intraday_span_pts": 565,
+    "shape_sentence": "Bearish shock-drop off the open, V-bottom recovery, midday digestion, and late reclaim that still closed below the RTH open."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 26310.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 26050.0,
+      "type": "breakdown_acceleration"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 25950.0,
+      "type": "flush_continuation"
+    },
+    {
+      "time_et": "10:55",
+      "price_approx": 25760.0,
+      "type": "lod_capitulation_low"
+    },
+    {
+      "time_et": "12:35",
+      "price_approx": 26085.0,
+      "type": "recovery_high"
+    },
+    {
+      "time_et": "13:05",
+      "price_approx": 25965.0,
+      "type": "pullback_higher_low"
+    },
+    {
+      "time_et": "14:10",
+      "price_approx": 26095.0,
+      "type": "afternoon_range_high"
+    },
+    {
+      "time_et": "15:35",
+      "price_approx": 26115.0,
+      "type": "late_breakout_reclaim"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26207.75,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:30",
+      "direction": "down",
+      "note": "No visible GOAT marker on the frame; standout move was the opening liquidation into the 10:55 low."
+    },
+    "red_circles": {
+      "behavior": "No visible red-circle labels; bearish behavior was concentrated in the opening sell program and continuation into the late-morning low."
+    },
+    "green_circles": {
+      "behavior": "No visible green-circle labels; bullish behavior appeared after the 10:55 low, with higher lows through lunch and afternoon."
+    },
+    "orange_banks_supply": {
+      "behavior": "No visible orange banks; implied supply around 26085-26115 was tested repeatedly and partially broken late."
+    },
+    "blue_banks_demand": {
+      "behavior": "No visible blue banks; implied demand around 25760-25810 was strongly respected after the capitulation low."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Active downside continuation near 25950 after the opening breakdown, with elevated volume.",
+    "12pm_red": "Recovery phase underway, price reclaiming toward 25950-26000 after the morning low.",
+    "2pm_green": "Balanced afternoon trade near 26060-26090, holding above the recovery base.",
+    "4pm_yellow": "Late-session upside drive closed near 26208, well off LOD but still below the RTH open."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "opening_liquidation_v_recovery_late_reclaim",
+    "open_type": "gap_down_drive",
+    "lunch_behavior": "steady_recovery",
+    "afternoon_drive": "late_upside_reclaim",
+    "goat_time": "09:30",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "morning_demand_25760_25810_respected",
+    "banks_broken": "midday_supply_26085_26115_partially_broken_late"
+  },
+  "takeaway": "Bearish open-drive liquidation day with a sharp V-bottom and strong late reclaim; early panic flush into defended demand followed by afternoon repair that failed to fully reclaim the RTH open.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-01-29T09:30",
+    "end_et": "2026-01-29T16:00",
+    "open": 26348.75,
+    "close": 26207.75,
+    "hod": 26392.75,
+    "lod": 25751.5,
+    "span_pts": 641.25,
+    "net_pts": -141.0,
+    "net_pct": -0.5351,
+    "first_bar_ts": 1769697000,
+    "last_bar_ts": 1769720340
+  }
+}

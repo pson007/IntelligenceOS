@@ -1,0 +1,131 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-27",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-27T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-27.png",
+  "gate": {
+    "ok": false,
+    "reason": "morning_cut (session_first=11:15:00, required\u226410:15:00)",
+    "first": "11:15:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T02:06:26-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "midday_flush_afternoon_reclaim_late_failure",
+    "open_approx": null,
+    "close_approx": 26291.5,
+    "hod_approx": 26329.0,
+    "lod_approx": 26261.0,
+    "net_range_pts_open_to_close": null,
+    "net_range_pct_open_to_close": null,
+    "intraday_span_pts": 68,
+    "shape_sentence": "Choppy bearish-to-rotational day with a midday flush, afternoon recovery to HOD, then late selloff into a weak close."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": null,
+      "type": "open_not_visible"
+    },
+    {
+      "time_et": "11:15",
+      "price_approx": 26314.0,
+      "type": "visible_frame_start_upper_balance"
+    },
+    {
+      "time_et": "12:15",
+      "price_approx": 26269.0,
+      "type": "morning_selloff_low"
+    },
+    {
+      "time_et": "13:05",
+      "price_approx": 26261.0,
+      "type": "lod_bullish_reversal"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 26292.0,
+      "type": "midday_reclaim"
+    },
+    {
+      "time_et": "15:15",
+      "price_approx": 26329.0,
+      "type": "hod_upside_exhaustion"
+    },
+    {
+      "time_et": "15:50",
+      "price_approx": 26295.0,
+      "type": "late_breakdown"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26291.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "13:05",
+      "direction": "up",
+      "note": "No visible GOAT label; standout move was the reversal from LOD near 26261 to HOD near 26329."
+    },
+    "red_circles": {
+      "behavior": "No visible red-circle labels; bearish behavior concentrated at the 15:15 HOD failure and late breakdown."
+    },
+    "green_circles": {
+      "behavior": "No visible green-circle labels; strongest bullish pivot occurred at the 13:05 LOD reclaim."
+    },
+    "orange_banks_supply": {
+      "behavior": "No visible orange bank labels; functional supply near 26312-26329 was briefly broken before failing."
+    },
+    "blue_banks_demand": {
+      "behavior": "No visible blue bank labels; functional demand near 26261-26270 was defended and produced the day's best reversal."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Not visible in frame.",
+    "12pm_red": "Downside continuation near 26290, pressing toward the late-morning low.",
+    "2pm_green": "Recovery phase near 26292 after reclaiming from the LOD.",
+    "4pm_yellow": "Weak close near 26291.50 after failed late breakout."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "midday_flush_afternoon_reclaim_late_failure",
+    "open_type": "unavailable_from_frame",
+    "lunch_behavior": "downside_flush_then_reversal",
+    "afternoon_drive": "strong_reclaim_to_hod_then_failed_breakout",
+    "goat_time": "13:05",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "demand_near_26261_26270_defended",
+    "banks_broken": "supply_near_26312_26329_briefly_broken_then_failed"
+  },
+  "takeaway": "Bearish-to-rotational reversal day: early visible weakness flushed into defended demand, afternoon buyers forced a full reclaim to HOD, but the breakout failed into a weak close.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-01-27T09:30",
+    "end_et": "2026-01-27T16:00",
+    "open": 26198.25,
+    "close": 26291.5,
+    "hod": 26330,
+    "lod": 26132.75,
+    "span_pts": 197.25,
+    "net_pts": 93.25,
+    "net_pct": 0.3559,
+    "first_bar_ts": 1769524200,
+    "last_bar_ts": 1769547540
+  }
+}

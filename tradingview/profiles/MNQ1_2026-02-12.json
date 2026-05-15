@@ -1,0 +1,151 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-12",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-12T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-02-12.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:30:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T02:22:02-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "morning_liquidation_lower_range_late_flush",
+    "open_approx": 25580.0,
+    "close_approx": 24979.5,
+    "hod_approx": 25600.0,
+    "lod_approx": 24960.0,
+    "net_range_pts_open_to_close": -600,
+    "net_range_pct_open_to_close": -2.35,
+    "intraday_span_pts": 640,
+    "shape_sentence": "Opening failure into a large morning liquidation, then lower-half afternoon rotation with a late flush near the lows."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25580.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:35",
+      "price_approx": 25600.0,
+      "type": "hod_early_rejection"
+    },
+    {
+      "time_et": "09:55",
+      "price_approx": 25460.0,
+      "type": "first_major_breakdown"
+    },
+    {
+      "time_et": "10:25",
+      "price_approx": 25470.0,
+      "type": "lower_high_failed_bounce"
+    },
+    {
+      "time_et": "11:30",
+      "price_approx": 25040.0,
+      "type": "morning_liquidation_low"
+    },
+    {
+      "time_et": "12:35",
+      "price_approx": 25135.0,
+      "type": "lunch_rebound_high"
+    },
+    {
+      "time_et": "13:10",
+      "price_approx": 25030.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 25135.0,
+      "type": "afternoon_rebound_zone"
+    },
+    {
+      "time_et": "14:50",
+      "price_approx": 25155.0,
+      "type": "afternoon_lower_high"
+    },
+    {
+      "time_et": "15:40",
+      "price_approx": 25020.0,
+      "type": "late_breakdown"
+    },
+    {
+      "time_et": "15:55",
+      "price_approx": 24960.0,
+      "type": "lod_late_flush"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24979.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:30",
+      "direction": "down",
+      "note": "Strongest directional leg; liquidation from roughly 25460 toward 25040 into late morning."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots aligned with lower highs and failed reclaim attempts across the session."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots were countertrend bounces only and failed to reverse the bearish structure."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 25560-25600 was respected early; later supply around 25130-25160 capped afternoon rallies."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand near 25040-25010 held temporarily during midday but broke late, leading to the 24960 flush."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Bearish continuation near 25450 after opening failure.",
+    "12pm_red": "Lower-range stabilization around 25070-25100 after the morning liquidation.",
+    "2pm_green": "Afternoon rebound attempt near 25135, still below key breakdown structure.",
+    "4pm_yellow": "Close near 24979.5 after late flush and weak bounce, near RTH lows."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "morning_liquidation_lower_range_late_flush",
+    "open_type": "gap_down_drive",
+    "lunch_behavior": "lower_range_chop_after_selloff",
+    "afternoon_drive": "failed_rebound_then_late_selloff",
+    "goat_time": "10:30",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "upper_supply_respected_midday_supply_capped",
+    "banks_broken": "midday_demand_broke_late"
+  },
+  "takeaway": "Bearish trend day with a major morning liquidation, lower-half afternoon balance, and late breakdown through demand.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-12T09:30",
+    "end_et": "2026-02-12T16:00",
+    "open": 25562.25,
+    "close": 24979.5,
+    "hod": 25609.25,
+    "lod": 24937,
+    "span_pts": 672.25,
+    "net_pts": -582.75,
+    "net_pct": -2.2797,
+    "first_bar_ts": 1770906600,
+    "last_bar_ts": 1770929940
+  }
+}

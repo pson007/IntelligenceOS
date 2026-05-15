@@ -1,0 +1,131 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-19",
+  "dow": "Mon",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-19T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-19.png",
+  "gate": {
+    "ok": false,
+    "reason": "close_cut (session_last=12:45:00, required\u226515:30:00)",
+    "first": "08:45:00",
+    "last": "12:45:00"
+  },
+  "profiled_at": "2026-05-15T01:59:09-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "morning_flush_reversal_to_trend_up",
+    "open_approx": 25485.0,
+    "close_approx": 25613.0,
+    "hod_approx": 25633.0,
+    "lod_approx": 25452.0,
+    "net_range_pts_open_to_close": 128,
+    "net_range_pct_open_to_close": 0.5,
+    "intraday_span_pts": 181,
+    "shape_sentence": "Early selloff into 09:45 LOD, strong 10:00 reclaim, then stair-step bullish trend into midday highs with mild late consolidation."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25485.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 25452.0,
+      "type": "lod_bullish_reversal_base"
+    },
+    {
+      "time_et": "10:05",
+      "price_approx": 25552.0,
+      "type": "reclaim_high_after_goat_drive"
+    },
+    {
+      "time_et": "10:25",
+      "price_approx": 25507.0,
+      "type": "pullback_low"
+    },
+    {
+      "time_et": "11:15",
+      "price_approx": 25596.0,
+      "type": "breakout_high"
+    },
+    {
+      "time_et": "11:30",
+      "price_approx": 25552.0,
+      "type": "higher_low_pullback"
+    },
+    {
+      "time_et": "12:45",
+      "price_approx": 25633.0,
+      "type": "hod_late_high"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25613.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:45",
+      "direction": "up",
+      "note": "Upside reversal from roughly 25,452 to 25,552 into the 10:00 window."
+    },
+    "red_circles": {
+      "behavior": "No red-circle labels visible in the provided frame; bearish pivots were temporary pullbacks only."
+    },
+    "green_circles": {
+      "behavior": "No green-circle labels visible in the provided frame; bullish behavior concentrated at the 09:45 reversal and 11:00 continuation."
+    },
+    "orange_banks_supply": {
+      "behavior": "No orange bank/castle icons visible; implied supply near 25,590-25,600 was broken and accepted above."
+    },
+    "blue_banks_demand": {
+      "behavior": "No blue bank/castle icons visible; implied demand near 25,452-25,460 and 25,550-25,560 was respected."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Strong upside reversal/reclaim phase off the 09:45 low.",
+    "12pm_red": "Bullish high hold around 25,590-25,600 before another push higher.",
+    "2pm_green": "Not visible in the provided chart frame.",
+    "4pm_yellow": "Not visible in the provided chart frame; close inferred near 25,613."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "morning_flush_reversal_to_trend_up",
+    "open_type": "rotational_open_flush",
+    "lunch_behavior": "bullish_high_hold",
+    "afternoon_drive": "not_visible_in_frame",
+    "goat_time": "09:45",
+    "goat_direction": "up",
+    "peak_hour": 12,
+    "late_reversal_attempt": false,
+    "session_completion": "partial",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "implied demand defended near 25,452-25,460 and 25,550-25,560",
+    "banks_broken": "implied supply near 25,590-25,600 broken/accepted above"
+  },
+  "takeaway": "Bullish reversal trend day: early RTH flush into demand, violent 10:00 reclaim, then higher-low continuation and high-end consolidation.",
+  "actual_summary_api": {
+    "bars_count": 210,
+    "start_et": "2026-01-19T09:30",
+    "end_et": "2026-01-19T16:00",
+    "open": 25508.5,
+    "close": 25613.25,
+    "hod": 25633.5,
+    "lod": 25451.75,
+    "span_pts": 181.75,
+    "net_pts": 104.75,
+    "net_pct": 0.4106,
+    "first_bar_ts": 1768833000,
+    "last_bar_ts": 1768845540
+  }
+}

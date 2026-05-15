@@ -1,0 +1,151 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-06",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-06T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-02-06.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:30:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T02:16:47-04:00",
+  "summary": {
+    "direction": "up",
+    "box_color": "green",
+    "structure": "bullish_trend_day_with_open_flush_and_late_squeeze",
+    "open_approx": 25025.0,
+    "close_approx": 25362.5,
+    "hod_approx": 25435.0,
+    "lod_approx": 24975.0,
+    "net_range_pts_open_to_close": 338,
+    "net_range_pct_open_to_close": 1.35,
+    "intraday_span_pts": 460,
+    "shape_sentence": "Bullish trend day: volatile open, 10:00 flush, steady higher-low climb, afternoon compression, late upside squeeze, then closing pullback."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 25025.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:54",
+      "price_approx": 25195.0,
+      "type": "morning_impulse_high"
+    },
+    {
+      "time_et": "10:08",
+      "price_approx": 24975.0,
+      "type": "lod_failed_breakdown"
+    },
+    {
+      "time_et": "10:34",
+      "price_approx": 25140.0,
+      "type": "reclaim_high"
+    },
+    {
+      "time_et": "10:58",
+      "price_approx": 25060.0,
+      "type": "higher_low_launch_base"
+    },
+    {
+      "time_et": "11:42",
+      "price_approx": 25265.0,
+      "type": "morning_trend_leg_high"
+    },
+    {
+      "time_et": "12:15",
+      "price_approx": 25210.0,
+      "type": "lunch_pullback_higher_low"
+    },
+    {
+      "time_et": "12:35",
+      "price_approx": 25315.0,
+      "type": "breakout_continuation"
+    },
+    {
+      "time_et": "13:05",
+      "price_approx": 25340.0,
+      "type": "early_pm_range_high"
+    },
+    {
+      "time_et": "15:05",
+      "price_approx": 25275.0,
+      "type": "afternoon_higher_low"
+    },
+    {
+      "time_et": "15:50",
+      "price_approx": 25435.0,
+      "type": "hod_late_squeeze_high"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25362.5,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "10:58",
+      "direction": "up",
+      "note": "No visible star label; inferred standout move was the upside drive from ~25,060 into ~25,265."
+    },
+    "red_circles": {
+      "behavior": "No visible red-circle labels; bearish pivots functionally appeared at the ~09:54 high, ~13:05 range high, and ~15:50 HOD rejection."
+    },
+    "green_circles": {
+      "behavior": "No visible green-circle labels; bullish pivots functionally appeared at the ~10:08 LOD, ~10:58 higher low, ~12:15 higher low, and ~15:05 higher low."
+    },
+    "orange_banks_supply": {
+      "behavior": "No visible orange bank icons; implied supply at ~25,190 was broken, ~25,335 capped early afternoon before breaking late, and ~25,425\u201325,435 rejected into close."
+    },
+    "blue_banks_demand": {
+      "behavior": "No visible blue bank icons; implied demand at ~24,975\u201325,005 held after the 10:00 flush, and ~25,275\u201325,295 held during the afternoon."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Price was rolling over from the first impulse high into the sharp morning flush.",
+    "12pm_red": "Price was holding elevated after the morning recovery, consolidating above prior higher lows.",
+    "2pm_green": "Price was balanced in a tight upper range near ~25,300\u201325,320.",
+    "4pm_yellow": "Session closed green near ~25,362.50 after a late HOD squeeze and pullback."
+  },
+  "tags": {
+    "direction": "up",
+    "structure": "bullish_trend_day_with_open_flush_and_late_squeeze",
+    "open_type": "volatile_open_drive_then_flush",
+    "lunch_behavior": "elevated_higher_low_consolidation",
+    "afternoon_drive": "late_upside_squeeze_then_pullback",
+    "goat_time": "10:58",
+    "goat_direction": "up",
+    "peak_hour": 15,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_HOD",
+    "banks_respected": "implied_demand_24975_25005_and_25275_25295_held",
+    "banks_broken": "implied_supply_25190_and_25335_broke_late"
+  },
+  "takeaway": "Bullish trend day with a failed 10:00 breakdown, persistent higher-low structure, and late upside expansion. Comparable to sessions where early weakness becomes the day's demand base and afternoon compression resolves higher before closing pullback.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-06T09:30",
+    "end_et": "2026-02-06T16:00",
+    "open": 24975.5,
+    "close": 25362.5,
+    "hod": 25437,
+    "lod": 24916,
+    "span_pts": 521,
+    "net_pts": 387.0,
+    "net_pct": 1.5495,
+    "first_bar_ts": 1770388200,
+    "last_bar_ts": 1770411540
+  }
+}

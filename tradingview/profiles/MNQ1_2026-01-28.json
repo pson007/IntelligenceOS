@@ -1,0 +1,131 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-28",
+  "dow": "Wed",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-28T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-28.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "00:00:00",
+    "last": "15:30:00"
+  },
+  "profiled_at": "2026-05-15T02:07:35-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "opening_spike_morning_liquidation_noon_low_afternoon_repair",
+    "open_approx": 26480.0,
+    "close_approx": 26366.0,
+    "hod_approx": 26520.0,
+    "lod_approx": 26324.0,
+    "net_range_pts_open_to_close": -114,
+    "net_range_pct_open_to_close": -0.43,
+    "intraday_span_pts": 196,
+    "shape_sentence": "Morning liquidation from an opening spike, noon capitulation low, then choppy afternoon repair that failed to reclaim the open."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 26480.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:40",
+      "price_approx": 26520.0,
+      "type": "hod_failed_opening_push"
+    },
+    {
+      "time_et": "10:35",
+      "price_approx": 26420.0,
+      "type": "bear_continuation_breakdown"
+    },
+    {
+      "time_et": "11:55",
+      "price_approx": 26324.0,
+      "type": "lod_noon_flush"
+    },
+    {
+      "time_et": "12:45",
+      "price_approx": 26376.0,
+      "type": "lunch_rebound_high"
+    },
+    {
+      "time_et": "13:55",
+      "price_approx": 26395.0,
+      "type": "afternoon_reclaim_attempt"
+    },
+    {
+      "time_et": "15:20",
+      "price_approx": 26425.0,
+      "type": "late_high_failed_reversal"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 26366.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:45",
+      "direction": "down",
+      "note": "Standout move was the sustained morning selloff from the opening spike into the noon low."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots aligned with failed rallies and lower-high continuation during the morning decline."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots appeared mainly after the noon flush as repair attempts, not as a full trend reversal."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply around 26400-26425 was tested in the afternoon and respected into the close."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand around 26320-26350 was defended after the noon low and again late day."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Already rejecting the opening high and entering bearish continuation.",
+    "12pm_red": "Marked the capitulation low zone near 26324.",
+    "2pm_green": "Afternoon recovery attempt was active but still below the open.",
+    "4pm_yellow": "Bearish close near 26366, above LOD but far below the opening high."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "opening_spike_morning_liquidation_noon_low_afternoon_repair",
+    "open_type": "gap_up_rejection_drive_down",
+    "lunch_behavior": "base_after_noon_flush",
+    "afternoon_drive": "choppy_recovery_failed_late",
+    "goat_time": "09:45",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "supply_26400_26425_and_demand_26320_26350",
+    "banks_broken": "opening_support_broke_during_morning_liquidation"
+  },
+  "takeaway": "Bearish rejection day: opening strength failed quickly, producing a clean morning liquidation into a noon low, followed by choppy afternoon repair that could not reclaim the open.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-01-28T09:30",
+    "end_et": "2026-01-28T16:00",
+    "open": 26468.75,
+    "close": 26366,
+    "hod": 26520.75,
+    "lod": 26316.25,
+    "span_pts": 204.5,
+    "net_pts": -102.75,
+    "net_pct": -0.3882,
+    "first_bar_ts": 1769610600,
+    "last_bar_ts": 1769633940
+  }
+}

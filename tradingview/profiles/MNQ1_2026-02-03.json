@@ -1,0 +1,136 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-03",
+  "dow": "Tue",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-03T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-02-03.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:30:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T02:12:38-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "opening_drive_down_midday_continuation_late_rebound",
+    "open_approx": 26145.0,
+    "close_approx": 25660.75,
+    "hod_approx": 26155.0,
+    "lod_approx": 25435.0,
+    "net_range_pts_open_to_close": -484,
+    "net_range_pct_open_to_close": -1.85,
+    "intraday_span_pts": 720,
+    "shape_sentence": "Bearish trend day with a hard opening liquidation, midday stair-step continuation, 14:00 low, then a late rebound that failed to reclaim the opening damage."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 26145.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:35",
+      "price_approx": 26155.0,
+      "type": "hod_opening_rejection"
+    },
+    {
+      "time_et": "10:05",
+      "price_approx": 25765.0,
+      "type": "morning_liquidation_low"
+    },
+    {
+      "time_et": "10:55",
+      "price_approx": 25845.0,
+      "type": "bounce_high"
+    },
+    {
+      "time_et": "12:20",
+      "price_approx": 25650.0,
+      "type": "midday_breakdown"
+    },
+    {
+      "time_et": "14:05",
+      "price_approx": 25435.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "14:25",
+      "price_approx": 25560.0,
+      "type": "sharp_rebound_high"
+    },
+    {
+      "time_et": "15:05",
+      "price_approx": 25485.0,
+      "type": "higher_low_retest"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25660.75,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:30",
+      "direction": "down",
+      "note": "Opening selloff from near 26145 toward 25765 was the standout move."
+    },
+    "red_circles": {
+      "behavior": "No visible red-circle labels on this frame; bearish pivots were concentrated at the opening rejection and midday continuation."
+    },
+    "green_circles": {
+      "behavior": "No visible green-circle labels on this frame; bullish behavior was mainly the post-14:00 countertrend recovery."
+    },
+    "orange_banks_supply": {
+      "behavior": "No visible orange supply-bank icons; resistance appeared respected near the late-morning bounce zone around 25840-25850."
+    },
+    "blue_banks_demand": {
+      "behavior": "No visible blue demand-bank icons; demand emerged near the 14:00 low around 25435 but only produced a rebound, not a full reversal."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Active downside expansion near the first liquidation low around 25800.",
+    "12pm_red": "Weak consolidation below the morning bounce, with sellers still controlling structure.",
+    "2pm_green": "Price was pressing into the session low zone near 25435 before the late rebound.",
+    "4pm_yellow": "Closed near 25660.75 after a late recovery, still far below the open."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "opening_drive_down_midday_continuation_late_rebound",
+    "open_type": "gap_down_drive",
+    "lunch_behavior": "weak_drift_lower",
+    "afternoon_drive": "flush_then_late_reclaim_attempt",
+    "goat_time": "09:30",
+    "goat_direction": "down",
+    "peak_hour": 9,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "no_visible_banks; resistance respected below late-morning bounce zone",
+    "banks_broken": "no_visible_banks; early demand failed during opening liquidation"
+  },
+  "takeaway": "Bearish opening-drive trend day with the GOAT move immediately after the bell, followed by controlled downside continuation into a 14:00 flush and a late countertrend rebound.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-03T09:30",
+    "end_et": "2026-02-03T16:00",
+    "open": 26150,
+    "close": 25660.75,
+    "hod": 26168,
+    "lod": 25433.5,
+    "span_pts": 734.5,
+    "net_pts": -489.25,
+    "net_pct": -1.8709,
+    "first_bar_ts": 1770129000,
+    "last_bar_ts": 1770152340
+  }
+}

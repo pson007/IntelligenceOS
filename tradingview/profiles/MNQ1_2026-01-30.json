@@ -1,0 +1,146 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-01-30",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-01-30T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-01-30.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:30:00",
+    "last": "15:30:00"
+  },
+  "profiled_at": "2026-05-15T02:10:12-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "failed_morning_push_lower_high_trend_day",
+    "open_approx": 26040.0,
+    "close_approx": 25891.25,
+    "hod_approx": 26150.0,
+    "lod_approx": 25790.0,
+    "net_range_pts_open_to_close": -149,
+    "net_range_pct_open_to_close": -0.57,
+    "intraday_span_pts": 360,
+    "shape_sentence": "Early push into a morning high failed, then the session stair-stepped lower with two sharp recovery attempts that could not reclaim the open."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 26040.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 26150.0,
+      "type": "hod_zone"
+    },
+    {
+      "time_et": "10:30",
+      "price_approx": 26125.0,
+      "type": "failed_reclaim_lower_high"
+    },
+    {
+      "time_et": "11:25",
+      "price_approx": 25955.0,
+      "type": "breakdown_low"
+    },
+    {
+      "time_et": "12:15",
+      "price_approx": 25905.0,
+      "type": "lunch_continuation_low"
+    },
+    {
+      "time_et": "12:30",
+      "price_approx": 26000.0,
+      "type": "midday_lower_high"
+    },
+    {
+      "time_et": "13:25",
+      "price_approx": 25820.0,
+      "type": "flush_low"
+    },
+    {
+      "time_et": "14:10",
+      "price_approx": 25975.0,
+      "type": "afternoon_rebound_high"
+    },
+    {
+      "time_et": "15:30",
+      "price_approx": 25790.0,
+      "type": "lod"
+    },
+    {
+      "time_et": "15:50",
+      "price_approx": 25930.0,
+      "type": "late_reversal_high"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 25891.25,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "13:25",
+      "direction": "down",
+      "note": "Strongest clean directional expansion was the early-PM flush from roughly 25900 into 25820."
+    },
+    "red_circles": {
+      "behavior": "Best bearish pivots aligned with lower-high failures after the morning HOD, especially near 26125, 26000, and 25975."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots were countertrend bounce points at roughly 25955, 25820, and 25790; none reclaimed the open."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply near 26120-26150, 26000-26020, and 25960-25980 was respected after the morning failure."
+    },
+    "blue_banks_demand": {
+      "behavior": "Demand near 25900 broke in early afternoon; lower demand near 25820-25790 produced reaction bounces."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Upper-distribution rotation after the opening push, below HOD but still elevated.",
+    "12pm_red": "Active downside continuation from a late-morning lower high.",
+    "2pm_green": "Strong rebound underway from the early-PM flush, still below the open and supply.",
+    "4pm_yellow": "Bearish close below the open after a late reversal attempt."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "failed_morning_push_lower_high_trend_day",
+    "open_type": "gap_down_drive",
+    "lunch_behavior": "downside_continuation",
+    "afternoon_drive": "flush_rebound_then_lower_low",
+    "goat_time": "13:25",
+    "goat_direction": "down",
+    "peak_hour": 9,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "morning_and_afternoon_supply_respected",
+    "banks_broken": "25900_demand_broke_in_early_pm"
+  },
+  "takeaway": "Bearish failed-drive trend day: early push into supply set the high, then lower highs controlled the session while late demand created only a partial reversal.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-01-30T09:30",
+    "end_et": "2026-01-30T16:00",
+    "open": 26049.75,
+    "close": 25891.25,
+    "hod": 26154.75,
+    "lod": 25784.25,
+    "span_pts": 370.5,
+    "net_pts": -158.5,
+    "net_pct": -0.6085,
+    "first_bar_ts": 1769783400,
+    "last_bar_ts": 1769806740
+  }
+}

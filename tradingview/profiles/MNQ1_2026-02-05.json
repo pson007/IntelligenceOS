@@ -1,0 +1,151 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-02-05",
+  "dow": "Thu",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-02-05T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-02-05.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "09:00:00",
+    "last": "16:00:00"
+  },
+  "profiled_at": "2026-05-15T02:15:17-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "failed_opening_spike_two_way_bearish_close",
+    "open_approx": 24900.0,
+    "close_approx": 24854.75,
+    "hod_approx": 25165.0,
+    "lod_approx": 24780.0,
+    "net_range_pts_open_to_close": -45,
+    "net_range_pct_open_to_close": -0.18,
+    "intraday_span_pts": 385,
+    "shape_sentence": "Failed opening spike into morning liquidation, followed by wide two-way repair and a late downside retest with a small close bounce."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 24900.0,
+      "type": "open"
+    },
+    {
+      "time_et": "09:45",
+      "price_approx": 25165.0,
+      "type": "hod_failed_opening_drive"
+    },
+    {
+      "time_et": "10:20",
+      "price_approx": 24790.0,
+      "type": "morning_flush_low"
+    },
+    {
+      "time_et": "10:45",
+      "price_approx": 24915.0,
+      "type": "bounce_high"
+    },
+    {
+      "time_et": "11:15",
+      "price_approx": 24780.0,
+      "type": "demand_retest_low"
+    },
+    {
+      "time_et": "11:50",
+      "price_approx": 25055.0,
+      "type": "midday_recovery_high"
+    },
+    {
+      "time_et": "12:45",
+      "price_approx": 25085.0,
+      "type": "secondary_lower_high"
+    },
+    {
+      "time_et": "13:55",
+      "price_approx": 24875.0,
+      "type": "afternoon_pullback_low"
+    },
+    {
+      "time_et": "14:25",
+      "price_approx": 25045.0,
+      "type": "lower_high_failed_push"
+    },
+    {
+      "time_et": "15:15",
+      "price_approx": 25020.0,
+      "type": "final_lower_high"
+    },
+    {
+      "time_et": "15:50",
+      "price_approx": 24790.0,
+      "type": "late_selloff_low"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 24854.75,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "09:55",
+      "direction": "down",
+      "note": "No visible star label; standout move was the post-open rejection from the 25150s into the 24790 area."
+    },
+    "red_circles": {
+      "behavior": "No visible red-circle labels; bearish pivots visually aligned with the opening spike high and later lower highs."
+    },
+    "green_circles": {
+      "behavior": "No visible green-circle labels; bullish reactions appeared near 24780-24800 but did not produce sustained trend continuation."
+    },
+    "orange_banks_supply": {
+      "behavior": "No visible orange bank icons; inferred supply at 25150-25165 and 25040-25085 was respected."
+    },
+    "blue_banks_demand": {
+      "behavior": "No visible blue bank icons; inferred demand at 24780-24800 was tested multiple times and partially defended."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Rejecting from the opening spike and entering the strongest downside leg of the day.",
+    "12pm_red": "Midday recovery active near 25000 after holding the morning base.",
+    "2pm_green": "Afternoon pullback stabilizing near 24880 before a lower-high bounce.",
+    "4pm_yellow": "Closed below the open after a late selloff and modest reclaim bounce."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "failed_opening_spike_two_way_bearish_close",
+    "open_type": "gap_up_failed_drive",
+    "lunch_behavior": "recovery_rotation",
+    "afternoon_drive": "lower_high_selloff_late_bounce",
+    "goat_time": "09:55",
+    "goat_direction": "down",
+    "peak_hour": 9,
+    "late_reversal_attempt": true,
+    "session_completion": "full",
+    "close_near_extreme": "no",
+    "banks_respected": "inferred_supply_25150_25165_and_25040_25085_respected",
+    "banks_broken": "none_visible"
+  },
+  "takeaway": "Failed upside impulse day: early squeeze trapped near the highs, then the session converted into broad bearish rotation with defended but repeatedly pressured demand near 24780-24800.",
+  "actual_summary_api": {
+    "bars_count": 390,
+    "start_et": "2026-02-05T09:30",
+    "end_et": "2026-02-05T16:00",
+    "open": 24986.5,
+    "close": 24854.75,
+    "hod": 25176.75,
+    "lod": 24752.5,
+    "span_pts": 424.25,
+    "net_pts": -131.75,
+    "net_pct": -0.5273,
+    "first_bar_ts": 1770301800,
+    "last_bar_ts": 1770325140
+  }
+}
