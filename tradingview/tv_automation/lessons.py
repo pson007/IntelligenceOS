@@ -271,3 +271,62 @@ def to_dicts(lessons: list[Lesson]) -> list[dict]:
         {"text": l.text, "count": l.count, "sources": l.sources}
         for l in lessons
     ]
+
+
+def format_calibration_for_prompt(
+    *, min_occurrences: int = 2, forecasts_root: Path | None = None,
+) -> str:
+    """Render per-tag prediction accuracy as a markdown table for prompt
+    injection. The structured counterpart to `format_for_prompt`.
+
+    Where `format_for_prompt` returns prose lessons that paraphrase
+    across days (and so don't dedupe well), this gives the model
+    deterministic `correct N / wrong M` stats per (field, value) pair it
+    has historically predicted — feedback the model can actually weight
+    when generating today's prediction_tags. Patterns the model
+    consistently gets wrong are surfaced as a caution flag; patterns it
+    reliably nails earn trust.
+
+    Empty string when no patterns meet the threshold yet — caller
+    omits the section header rather than rendering an empty table."""
+    stats = collect_calibration(forecasts_root, min_occurrences=min_occurrences)
+    if not stats:
+        return ""
+    rows = ["| pattern | correct | wrong | accuracy |", "|---|---|---|---|"]
+    for s in stats:
+        pct = int(round(s.pct_correct * 100))
+        rows.append(f"| {s.field}={s.value} | {s.correct} | {s.wrong} | {pct}% |")
+    return "\n".join(rows)
+
+
+def format_historical_feedback(
+    *, n: int = 10, min_occurrences: int = 2,
+    forecasts_root: Path | None = None,
+) -> str:
+    """Combined prose-lessons + structured-calibration block for forecast
+    prompt injection. One canonical assembly so the three forecast
+    prompts (pre_session, daily, live) speak the same dialect about
+    "your prior performance, applied to today's call."
+
+    Returns empty string when neither part has content yet — callers
+    omit the substitution entirely.
+    """
+    body = format_for_prompt(n, forecasts_root)
+    cal = format_calibration_for_prompt(
+        min_occurrences=min_occurrences, forecasts_root=forecasts_root,
+    )
+    parts = []
+    if body:
+        parts.append(
+            "## ACCUMULATED LESSONS (from prior reconciliations — apply these)\n"
+            + body
+        )
+    if cal:
+        parts.append(
+            "## PATTERN ACCURACY (your prior prediction_tags, graded against actuals)\n"
+            + cal
+            + "\n\nLow-accuracy rows = recurring blindspots — bias against "
+            "repeating them today. High-accuracy rows = patterns you've "
+            "reliably called — lean in when the chart agrees."
+        )
+    return "\n\n".join(parts)

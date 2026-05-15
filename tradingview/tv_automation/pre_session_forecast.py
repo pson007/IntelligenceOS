@@ -300,10 +300,7 @@ Return ONLY the narrative sections followed by the fenced JSON block. No preambl
 
 
 def _render_lessons_block() -> str:
-    body = lessons_mod.format_for_prompt(n=10)
-    if not body:
-        return ""
-    return "## ACCUMULATED LESSONS (from prior reconciliations — apply these)\n" + body
+    return lessons_mod.format_historical_feedback(n=10, min_occurrences=2)
 
 
 def _select_priors(symbol: str, target_date: date) -> tuple[list[dict], list[dict]]:

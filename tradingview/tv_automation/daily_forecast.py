@@ -139,18 +139,10 @@ direction, structure, lunch_behavior, afternoon_drive, goat_direction, close_nea
 # ---------------------------------------------------------------------------
 
 def _render_lessons_block() -> str:
-    """Build the `## ACCUMULATED LESSONS` section for prompt injection.
-
-    Reads top-N lessons from disk via `lessons` module. Returns the section
-    header + bullet list, or empty string when no reconciliations exist
-    yet — the empty case keeps prompts clean for first-time runs."""
-    body = lessons_mod.format_for_prompt(n=10)
-    if not body:
-        return ""
-    return (
-        "## ACCUMULATED LESSONS (from prior reconciliations — apply these)\n"
-        + body
-    )
+    """Inject prior-reconciliation feedback into the forecast prompt:
+    prose lessons + structured per-tag accuracy. See
+    `lessons.format_historical_feedback` for the canonical assembly."""
+    return lessons_mod.format_historical_feedback(n=10, min_occurrences=2)
 
 
 def _bardate_to_datetime(legend_text: str | None) -> datetime | None:
