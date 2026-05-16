@@ -1,0 +1,121 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-15",
+  "dow": "Fri",
+  "timeframe": "1m",
+  "session": "RTH",
+  "session_complete": true,
+  "cursor_ts_approx": "2026-05-15T16:00:00-04:00",
+  "layout": "Money Print",
+  "provider": "chatgpt_web",
+  "model": "Thinking",
+  "screenshot_path": "/Users/pson/Desktop/IntelligenceOS/tradingview/profiles/MNQ1_2026-05-15.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "first": "10:00:00",
+    "last": "15:45:00"
+  },
+  "profiled_at": "2026-05-15T16:50:58-04:00",
+  "summary": {
+    "direction": "down",
+    "box_color": "red",
+    "structure": "failed_reclaim_rotation_lower",
+    "open_approx": 29278.0,
+    "close_approx": 29231.0,
+    "hod_approx": 29291.75,
+    "lod_approx": 29219.75,
+    "net_range_pts_open_to_close": -47,
+    "net_range_pct_open_to_close": -0.16,
+    "intraday_span_pts": 72,
+    "shape_sentence": "Bearish RTH session that opened near the upper zone, failed to reclaim prior value, rotated lower into the close, and finished near LOD."
+  },
+  "pivots": [
+    {
+      "time_et": "09:30",
+      "price_approx": 29278.0,
+      "type": "open"
+    },
+    {
+      "time_et": "10:00",
+      "price_approx": 29291.75,
+      "type": "early_upper_test"
+    },
+    {
+      "time_et": "12:00",
+      "price_approx": 29280.0,
+      "type": "goat_midday_short"
+    },
+    {
+      "time_et": "14:00",
+      "price_approx": 29290.0,
+      "type": "failed_reclaim"
+    },
+    {
+      "time_et": "15:45",
+      "price_approx": 29219.75,
+      "type": "late_breakdown_lod"
+    },
+    {
+      "time_et": "16:00",
+      "price_approx": 29231.0,
+      "type": "close"
+    }
+  ],
+  "labels": {
+    "goat": {
+      "in_rth": true,
+      "time_et": "12:00",
+      "direction": "down",
+      "note": "GOAT midday short near 29275-29285; bearish thesis persisted after failed reclaim."
+    },
+    "red_circles": {
+      "behavior": "Bearish pivots clustered near failed reclaim and upper-value rejection areas, especially around 29290-29300."
+    },
+    "green_circles": {
+      "behavior": "Bullish pivots produced only minor bounces and failed to create sustained upside continuation."
+    },
+    "orange_banks_supply": {
+      "behavior": "Supply near 29290-29300 was respected; price failed to reclaim and rotated lower."
+    },
+    "blue_banks_demand": {
+      "behavior": "Lower demand near 29220-29240 was tested into the close and only partially defended."
+    }
+  },
+  "time_markers": {
+    "10am_blue": "Early upper test near 29285-29292; extension failed.",
+    "12pm_red": "GOAT midday short zone near 29275-29285.",
+    "2pm_green": "Failed reclaim around 29290; rotation lower confirmed.",
+    "4pm_yellow": "Bearish close near 29231, close near LOD."
+  },
+  "tags": {
+    "direction": "down",
+    "structure": "failed_reclaim_rotation_lower",
+    "open_type": "rotational_open",
+    "lunch_behavior": "midday_short_trigger",
+    "afternoon_drive": "failed_reclaim_then_lower",
+    "goat_time": "12:00",
+    "goat_direction": "down",
+    "peak_hour": 10,
+    "late_reversal_attempt": false,
+    "session_completion": "full",
+    "close_near_extreme": "yes_closer_to_LOD",
+    "banks_respected": "supply_29290_29300_respected",
+    "banks_broken": "lower_demand_stressed_into_close"
+  },
+  "takeaway": "Bearish failed-reclaim day: early upper probing failed, the 12:00 GOAT short framed the session, and the afternoon confirmed downside rotation into a close near LOD.",
+  "actual_summary_api": {
+    "bars_count": 300,
+    "start_et": "2026-05-15T09:30",
+    "end_et": "2026-05-15T16:00",
+    "open": 29281,
+    "close": 29231,
+    "hod": 29487,
+    "lod": 29208,
+    "span_pts": 279,
+    "net_pts": -50,
+    "net_pct": -0.1708,
+    "first_bar_ts": 1778857200,
+    "last_bar_ts": 1778875140
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-15",
+  "cursor_time": "12:00",
+  "stage": "F2",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f21200_20260515_164308.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:30:00",
+    "session_last": "11:45:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-15T16:44:02",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-15 ~12:00 ET\n\nBars observed so far this session: ~150 one-minute bars, 09:30\u201312:00 ET\n\nWhat has happened so far: RTH flushed hard after the open, reclaimed through VWAP, made a late-morning upside push, then faded back into the 29,275\u201329,300 value area before noon.\n\nRANKED SIMILAR ARCHETYPES\n\nFailed liquidation \u2192 reclaim \u2192 midday rotation \u2014 early sell failed, but the reclaim has not held clean upside continuation.\n\nGap-up exhaustion / late-morning fade risk \u2014 price accepted above early lows but rejected the 29,340\u201329,375 supply shelf.\n\nTwo-way balanced session with afternoon probe \u2014 structure is not a clean trend day; likely needs a 14:00 break/reject to choose direction.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: 12:00\u201314:00 likely compresses around VWAP / value, with chop between ~29,255 and ~29,335.\n\nBetween next marker and 14:00: Same window: watch for failed pushes into 29,330\u201329,360; reclaim above that shifts to upside continuation.\n\nBetween 14:00 and 16:00: Base case is an afternoon probe higher that struggles near late-morning supply, then closes mid-to-upper range unless 29,250 breaks.\n\nProjected close price range: 29,295\u201329,355\n\nRest-of-day HOD range: 29,365\u201329,430\n\nRest-of-day LOD range: 29,220\u201329,260\n\nTACTICAL BIAS\n\nPrimary bias: neutral-to-long, 56% confidence\n\nKey level to invalidate the bias: acceptance below 29,250\n\nPreferred entry zone: 29,255\u201329,285 on pullback/reclaim confirmation\n\nR:R logic: Longs from 29,260\u201329,280 risk below 29,235\u201329,250, targeting 29,350 first, then 29,390\u201329,430 if supply breaks. Shorts are cleaner only on rejection below 29,250 or failed reclaim of 29,330\u201329,360.\n\nKEY LEVELS\n\nOverhead supply: 29,330\u201329,375; then 29,400\u201329,430\n\nUnderlying demand: 29,255\u201329,275; then 29,215\u201329,230; major prior reclaim low near 29,100\n\nPivot-to-watch: 29,291\u201329,300 VWAP / prior-value reclaim zone\n\nPREDICTION TAGS\n\ndirection=slightly_up 56%\n\nstructure=failed_liquidation_reclaim_then_rotation 62%\n\nlunch_behavior=chop_value_compression 64%\n\nafternoon_drive=upside_probe_then_fade_or_midrange_close 54%\n\ngoat_direction=up 52%\n\nclose_near_extreme=no_mid_upper_range 66%"
+}

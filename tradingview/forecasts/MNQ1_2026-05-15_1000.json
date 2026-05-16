@@ -1,0 +1,41 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-15",
+  "cursor_time": "10:00",
+  "stage": "F1",
+  "mode": "live",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_live_f11000_20260515_104705.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:30:00",
+    "session_last": "10:05:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-15T10:47:50",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-15 ~10:00 ET, current bar near 10:05 ET\n\nBars observed so far this session: ~36 one-minute RTH bars, 09:30\u201310:05 ET\n\nWhat has happened so far in 1 sentence: MNQ opened near 29,278, failed to hold VWAP/value, flushed to ~29,085, reclaimed weakly, then rejected below 29,290 and is now bear-flagging under supply.\n\nRANKED SIMILAR ARCHETYPES\n\nFailed liquidation reclaim \u2192 lower-high sell day \u2014 Early demand held, but the reclaim could not sustain above VWAP/supply and produced a lower-high rejection.\n\nBearish rotational trend day \u2014 Price is not one-way collapsing, but lower highs and failed value reclaim keep pressure aimed lower.\n\nMorning stop-run fade into midday balance \u2014 The 09:55 high looks like a stop probe into resistance before returning below value.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect chop-to-lower action under 29,205\u201329,230; any pop into that zone likely attracts sellers.\n\nBetween next marker and 14:00: Likely midday compression between ~29,030 and ~29,180 unless 29,230 reclaims cleanly.\n\nBetween 14:00 and 16:00: Bias for another downside drive if price remains below 29,205; late-day close likely lower half of range.\n\nProjected close price range: 29,030\u201329,120\n\nRest-of-day HOD range: 29,205\u201329,275\n\nRest-of-day LOD range: 28,960\u201329,060\n\nTACTICAL BIAS\n\nPrimary bias: short, 62%\n\nKey level to invalidate the bias: Acceptance above 29,230\u201329,250\n\nPreferred entry zone: 29,190\u201329,230 failed reclaim / supply retest\n\nR:R logic: Shorting near 29,205\u201329,230 risks ~40\u201365 pts against a reclaim, targeting 29,060 first and 28,980 extension, giving roughly 2:1 or better if entry is not chased.\n\nKEY LEVELS\n\nOverhead supply: 29,205\u201329,230, then 29,275\u201329,292\n\nUnderlying demand: 29,120\u201329,085, then 29,030\u201328,960\n\nPivot-to-watch: 29,180\u201329,205; hold above shifts to rotation, fail below keeps sell pressure active.\n\nPREDICTION TAGS\n\ndirection: down 64%\nstructure: failed_reclaim_lower_high_bearish_rotation 61%\nlunch_behavior: compressed_below_value 58%\nafternoon_drive: downside_probe_or_lower_close 55%\ngoat_direction: short 60%\nclose_near_extreme: no 57%\n\nSTRUCTURED JSON\nJSON\n{\n  \"predictions\": {\n    \"direction\": \"down\",\n    \"direction_confidence\": \"med\",\n    \"predicted_net_pct_lo\": -0.85,\n    \"predicted_net_pct_hi\": -0.54,\n    \"open_type\": \"failed_reclaim_bearish_rotation\"\n  },\n  \"probable_goat\": {\n    \"direction\": \"short\",\n    \"time_window\": \"afternoon\"\n  },\n  \"prediction_tags\": {\n    \"direction\": \"down\",\n    \"structure\": \"failed_reclaim_lower_high_bearish_rotation\",\n    \"lunch_behavior\": \"compressed_below_value\",\n    \"afternoon_drive\": \"downside_probe_or_lower_close\",\n    \"goat_direction\": \"short\",\n    \"close_near_extreme\": \"no\"\n  },\n  \"tactical_bias\": {\n    \"bias\": \"sell_rips_below_29230\",\n    \"invalidation\": \"Acceptance above 29230-29250 closes the short thesis\"\n  }\n}",
+  "predictions": {
+    "direction": "down",
+    "direction_confidence": "med",
+    "predicted_net_pct_lo": -0.85,
+    "predicted_net_pct_hi": -0.54,
+    "open_type": "failed_reclaim_bearish_rotation"
+  },
+  "probable_goat": {
+    "direction": "short",
+    "time_window": "afternoon"
+  },
+  "prediction_tags": {
+    "direction": "down",
+    "structure": "failed_reclaim_lower_high_bearish_rotation",
+    "lunch_behavior": "compressed_below_value",
+    "afternoon_drive": "downside_probe_or_lower_close",
+    "goat_direction": "short",
+    "close_near_extreme": "no"
+  },
+  "tactical_bias": {
+    "bias": "sell_rips_below_29230",
+    "invalidation": "Acceptance above 29230-29250 closes the short thesis"
+  },
+  "parsed_structured": true
+}

@@ -1,0 +1,84 @@
+{
+  "symbol": "MNQ1!",
+  "date": "2026-05-15",
+  "dow": "Fri",
+  "made_at": "2026-05-15T07:02:21",
+  "thesis_summary": "Bias remains short only if the gap down is accepted below prior value and early reclaim attempts fail under 29476.",
+  "default_action_if_passing": "trade_half_size",
+  "default_action_if_partial": "trade_smallest",
+  "default_action_if_failing": "stand_down",
+  "auto_pause_if_failing": true,
+  "checks": [
+    {
+      "id": "prior_value_rejection",
+      "label": "Price remains below prior-value reclaim zone",
+      "rationale": "Short bias depends on sellers defending the gap-down posture below the prior-day open/value area.",
+      "check_type": "price_level",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-05-15T10:00:00-0400",
+      "evaluate_before": "2026-05-15T10:05:00-0400",
+      "params": {
+        "price_below": 29476
+      },
+      "weight": 2
+    },
+    {
+      "id": "opening_acceptance",
+      "label": "Opening print does not reclaim into bullish drive",
+      "rationale": "A fast reclaim would convert the setup from gap-down acceptance into failed liquidation.",
+      "check_type": "open_pattern",
+      "evaluate_at": "09:35",
+      "evaluate_after": "2026-05-15T09:35:00-0400",
+      "evaluate_before": "2026-05-15T09:40:00-0400",
+      "params": {
+        "expected": "trend_break_down",
+        "tolerated": [
+          "trend_break_down",
+          "rotational_open",
+          "inside_bar_open"
+        ]
+      },
+      "weight": 2
+    },
+    {
+      "id": "first_30_resistance",
+      "label": "First 30 minutes fail below 29520",
+      "rationale": "A push through 29520 would imply buyers are absorbing the gap and targeting prior supply.",
+      "check_type": "price_level_window",
+      "evaluate_at": "10:00",
+      "evaluate_after": "2026-05-15T10:00:00-0400",
+      "evaluate_before": "2026-05-15T10:05:00-0400",
+      "params": {
+        "window": "09:30-10:00",
+        "high_of_window_below": 29520
+      },
+      "weight": 2
+    },
+    {
+      "id": "vwap_control",
+      "label": "Price remains below session VWAP",
+      "rationale": "Short continuation needs VWAP to act as resistance, not support.",
+      "check_type": "vwap_relationship",
+      "evaluate_at": "10:30",
+      "evaluate_after": "2026-05-15T10:30:00-0400",
+      "evaluate_before": "2026-05-15T10:35:00-0400",
+      "params": {
+        "side": "below"
+      },
+      "weight": 1
+    },
+    {
+      "id": "overnight_low_pressure",
+      "label": "Morning can pressure the overnight lower shelf",
+      "rationale": "Without pressure toward 29245, the setup is more likely balance than directional downside.",
+      "check_type": "price_level",
+      "evaluate_at": "12:00",
+      "evaluate_after": "2026-05-15T12:00:00-0400",
+      "evaluate_before": "2026-05-15T12:05:00-0400",
+      "params": {
+        "price_below": 29330
+      },
+      "weight": 1
+    }
+  ]
+}

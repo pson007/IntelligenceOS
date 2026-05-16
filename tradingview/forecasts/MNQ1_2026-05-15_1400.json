@@ -1,0 +1,16 @@
+{
+  "symbol": "MNQ1",
+  "date": "2026-05-15",
+  "cursor_time": "14:00",
+  "stage": "F3",
+  "screenshot_path": "/Users/pson/Desktop/TradingView/MNQ1_forecast_f31400_20260515_164409.png",
+  "gate": {
+    "ok": true,
+    "reason": "ok",
+    "session_first": "09:45:00",
+    "session_last": "13:45:00"
+  },
+  "model": "chatgpt_thinking",
+  "made_at": "2026-05-15T16:44:50",
+  "raw_response": "CURSOR CONTEXT\n\nCursor date/time: 2026-05-15 ~14:00 ET\n\nBars observed so far this session: ~270 one-minute RTH bars, ~09:30\u201314:00 ET\n\nWhat has happened so far: Early chop and failed liquidation gave way to a noon reclaim, higher lows, and a strong upside breakout into the 14:00 area.\n\nRANKED SIMILAR ARCHETYPES\n\nBreakout-after-balance / afternoon trend continuation \u2014 price reclaimed the noon breakdown area, built higher lows, then broke above prior supply into the cursor.\n\nFailed liquidation \u2192 reclaim \u2192 squeeze \u2014 the bearish regime flip near noon failed to generate downside continuation, trapping shorts below the reclaim shelf.\n\nControlled trend day, not runaway trend day \u2014 structure is bullish, but volume is not extreme enough to assume a straight-line close without pullbacks.\n\nPROJECTED PATH\n\nBetween cursor and next time marker: Expect pullback or pause near 29450\u201329475, but buyers likely defend 29380\u201329410.\n\nBetween next marker and 14:00: Cursor is already at/near 14:00; the key read is whether price holds above the breakout base.\n\nBetween 14:00 and 16:00 close: Favor continued upside grind/squeeze, with one shallow shakeout likely before another push toward upper supply.\n\nProjected close price range: 29510\u201329575\n\nRest-of-day HOD range: 29555\u201329615\n\nRest-of-day LOD range: 29370\u201329405\n\nTACTICAL BIAS\n\nPrimary bias: Long, 68% confidence\n\nKey level to invalidate the bias: Sustained loss of 29370\u201329380\n\nPreferred entry zone: Pullback into 29405\u201329380, especially if it holds above the breakout base\n\nR:R logic: Longs near 29390 risk below 29360; upside target 29540\u201329590 gives roughly 3:1 if support holds.\n\nKEY LEVELS\n\nOverhead supply: 29470\u201329490, then 29555\u201329615\n\nUnderlying demand: 29380\u201329405, then 29325\u201329345\n\nPivot-to-watch: 29380 \u2014 hold above keeps breakout valid; lose it and the day returns to rotation.\n\nPREDICTION TAGS\n\ndirection=up 68%\n\nstructure=afternoon_breakout_then_grind 64%\n\nlunch_behavior=noon_failed_breakdown_reclaim 72%\n\nafternoon_drive=upside_continuation_with_pullbacks 63%\n\ngoat_direction=up 66%\n\nclose_near_extreme=yes_upper_quartile 61%"
+}
